@@ -1,0 +1,51 @@
+{
+  "hosting": {
+    "site": "pilot-travelcard-webshop",
+    "public": "dist",
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "gateway",
+          "region": "europe-west1"
+        }
+      },
+      {
+        "source": "/hellosecure",
+        "run": {
+          "serviceId": "gateway",
+          "region": "europe-west1"
+        }
+      }
+    ],
+    "headers": [
+      {
+        "source": "/service-worker.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=0"
+          }
+        ]
+      },
+      {
+        "source": "/",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=0"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(css|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=604800"
+          }
+        ]
+      }
+    ]
+  }
+}

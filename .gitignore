@@ -1,0 +1,13 @@
+.idea
+dist
+elm-stuff
+node_modules
+webpack.local.config.js
+yarn-error.log
+
+*~
+*.bak
+
+.DS_Store
+.firebase
+

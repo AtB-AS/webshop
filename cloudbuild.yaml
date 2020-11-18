@@ -1,0 +1,12 @@
+steps:
+- name: 'gcr.io/cloud-builders/yarn'
+  args: ['install']
+- name: 'gcr.io/cloud-builders/yarn'
+  args: ['build']
+- name: 'gcr.io/$PROJECT_ID/firebase'
+  args: ['deploy', '--only', 'hosting:pilot-travelcard-webshop']
+  secretEnv: ['FIREBASE_TOKEN']
+secrets:
+- kmsKeyName: 'projects/pilot-travelcard-webshop/locations/global/keyRings/firebase-token/cryptoKeys/firebase-token'
+  secretEnv:
+    FIREBASE_TOKEN: 'CiQAvtdDtdzAUzLWF2JWl3tGPuyEictuEEgF2UzbKeYm2PZEeqUSkQEAPWPe5kMbDU3TTQFCU81jPlqnR3ubQP4qgruPu6GlmTn250yrZrHlO22gRsLSPwDN1aDo+WKFdRi5mDE0aimBMVEAgZATTaPu3L9n/Jo6XZWOVtV1Lb9mjZaVjCiDuu2GHqXZTNWRcTpofsz0iruu4gOl4tsb7S6ZDRlcAvL5oaptwgwh9kthh9Ovu4SA8n5g'

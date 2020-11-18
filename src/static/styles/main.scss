@@ -1,0 +1,51 @@
+* {
+    box-sizing: content-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.2em;
+    color: #3c505e;
+    margin: 0;
+    background-color: #00252c;
+}
+
+a:link,
+a:active,
+a:visited {
+    color: #fc6;
+}
+
+a:hover {
+    color: #ff9;
+}
+
+.box {
+    background-color: #00323a;
+    color: #fff;
+    padding: 2rem;
+    margin: 1rem;
+    border-radius: 8px;
+}
+
+header {
+    margin: 1rem;
+    padding: 8px;
+    display: flex;
+    flex: 1;
+    color: white;
+
+    > span {
+        flex-grow: 1;
+    }
+
+    svg {
+        width: 50px;
+        height: 50px;
+    }
+}
