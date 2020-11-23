@@ -9,13 +9,6 @@
           "serviceId": "gateway",
           "region": "europe-west1"
         }
-      },
-      {
-        "source": "/hellosecure",
-        "run": {
-          "serviceId": "gateway",
-          "region": "europe-west1"
-        }
       }
     ],
     "headers": [

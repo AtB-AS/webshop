@@ -2,6 +2,7 @@ module Page.Home exposing (Model, Msg, init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, Ticket)
+import Data.Webshop exposing (Profile, Token)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -20,12 +21,22 @@ type Msg
     | ReceiveOffers (Result Http.Error (List Offer))
     | Hello
     | ReceiveHello (Result Http.Error ())
+    | GetProfile
+    | ReceiveProfile (Result Http.Error Profile)
+    | GetTokens
+    | ReceiveTokens (Result Http.Error (List Token))
+    | UpdateTravelCardId String
+    | AddTravelCard
+    | ReceiveAddTravelCard (Result Http.Error ())
 
 
 type alias Model =
     { tickets : List Ticket
     , offers : List Offer
     , hello : String
+    , profile : Maybe Profile
+    , tokens : List Token
+    , travelCardId : String
     }
 
 
@@ -34,6 +45,9 @@ init =
     ( { tickets = []
       , offers = []
       , hello = ""
+      , profile = Nothing
+      , tokens = []
+      , travelCardId = ""
       }
     , Cmd.none
     )
@@ -79,6 +93,42 @@ update msg env model =
                 Err _ ->
                     ( { model | hello = "Server refused to say hello :(" }, Cmd.none )
 
+        GetProfile ->
+            ( model, fetchProfile env )
+
+        ReceiveProfile result ->
+            case result of
+                Ok profile ->
+                    ( { model | profile = Just profile }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        GetTokens ->
+            ( model, fetchTokens env )
+
+        ReceiveTokens result ->
+            case result of
+                Ok tokens ->
+                    ( { model | tokens = tokens }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        UpdateTravelCardId value ->
+            ( { model | travelCardId = value }, Cmd.none )
+
+        AddTravelCard ->
+            ( model, addTravelCard env model.travelCardId )
+
+        ReceiveAddTravelCard result ->
+            case result of
+                Ok () ->
+                    ( model, fetchTokens env )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
 view env _ model _ =
@@ -94,6 +144,29 @@ view env _ model _ =
                 , H.h2 [] [ H.text "Tickets" ]
                 , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
                 , H.ol [] <| List.map viewTicket model.tickets
+                , H.h2 [] [ H.text "Profile" ]
+                , H.button [ E.onClick GetProfile ] [ H.text "Refresh" ]
+                , H.div [] [ viewProfile model.profile ]
+                , H.h2 [] [ H.text "Tokens" ]
+                , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
+                , if List.length model.tokens == 0 then
+                    H.p [] [ H.text "No tokens." ]
+
+                  else
+                    H.ol [] <| List.map viewToken model.tokens
+                , H.h2 [] [ H.text "Add travel card" ]
+                , H.input
+                    [ A.value model.travelCardId
+                    , E.onInput UpdateTravelCardId
+                    , A.placeholder "Travel card id"
+                    ]
+                    []
+                , H.button
+                    [ A.disabled (String.trim model.travelCardId == "")
+                    , E.onClick AddTravelCard
+                    ]
+                    [ H.text "Add" ]
+                , H.ol [] <| List.map viewToken model.tokens
                 ]
 
         Nothing ->
@@ -121,6 +194,25 @@ viewOffer offer =
 viewTicket : Ticket -> Html msg
 viewTicket ticket =
     H.text "ticket"
+
+
+viewProfile : Maybe Profile -> Html msg
+viewProfile maybeProfile =
+    case maybeProfile of
+        Just profile ->
+            H.ul []
+                [ H.li [] [ H.text ("First name: " ++ profile.firstName) ]
+                , H.li [] [ H.text ("Last name: " ++ profile.lastName) ]
+                , H.li [] [ H.text ("Email: " ++ profile.email) ]
+                ]
+
+        Nothing ->
+            H.p [] [ H.text "No profile." ]
+
+
+viewToken : Token -> Html msg
+viewToken token =
+    H.text token.id
 
 
 subscriptions : Model -> Sub Msg
@@ -151,3 +243,24 @@ fetchHello env =
     WebshopService.hello env
         |> Http.toTask
         |> Task.attempt ReceiveHello
+
+
+fetchProfile : Environment -> Cmd Msg
+fetchProfile env =
+    WebshopService.getProfile env
+        |> Http.toTask
+        |> Task.attempt ReceiveProfile
+
+
+fetchTokens : Environment -> Cmd Msg
+fetchTokens env =
+    WebshopService.getTokens env
+        |> Http.toTask
+        |> Task.attempt ReceiveTokens
+
+
+addTravelCard : Environment -> String -> Cmd Msg
+addTravelCard env id =
+    WebshopService.addTravelCard env id
+        |> Http.toTask
+        |> Task.attempt ReceiveAddTravelCard
