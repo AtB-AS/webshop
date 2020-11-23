@@ -258,7 +258,6 @@ viewProfile maybeProfile =
             H.ul []
                 [ H.li [] [ H.text ("First name: " ++ profile.firstName) ]
                 , H.li [] [ H.text ("Last name: " ++ profile.lastName) ]
-                , H.li [] [ H.text ("Email: " ++ profile.email) ]
                 ]
 
         Nothing ->
