@@ -70,7 +70,8 @@ addTravelCard env id =
 profileDecoder : Decoder Profile
 profileDecoder =
     Decode.succeed Profile
-        |> DecodeP.required "email" Decode.string
+        --|> DecodeP.required "email" Decode.string
+        |> DecodeP.hardcoded ""
         |> DecodeP.required "firstName" Decode.string
         |> DecodeP.required "surname" Decode.string
 
