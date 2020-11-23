@@ -1,4 +1,4 @@
-module Page.Home exposing (Model, Msg, init, subscriptions, update, view)
+module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, Ticket)

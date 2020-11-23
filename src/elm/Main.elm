@@ -230,7 +230,9 @@ update msg model =
                                 , token = value.token
                             }
                     in
-                        ( { model | userData = Just value, environment = newEnvironment }, Cmd.none )
+                        ( { model | userData = Just value, environment = newEnvironment }
+                        , TaskUtil.doTask (HomeMsg HomePage.GetProfile)
+                        )
 
                 Err error ->
                     ( { model | authError = AuthErrorSimple <| Decode.errorToString error }, Cmd.none )
