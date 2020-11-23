@@ -23,6 +23,10 @@ type Msg
     | ReceiveHello (Result Http.Error ())
     | GetProfile
     | ReceiveProfile (Result Http.Error Profile)
+    | UpdateFirstName String
+    | UpdateLastName String
+    | UpdateProfile
+    | ReceiveUpdateProfile (Result Http.Error ())
     | GetTokens
     | ReceiveTokens (Result Http.Error (List Token))
     | UpdateTravelCardId String
@@ -37,6 +41,8 @@ type alias Model =
     , profile : Maybe Profile
     , tokens : List Token
     , travelCardId : String
+    , firstName : String
+    , lastName : String
     }
 
 
@@ -48,6 +54,8 @@ init =
       , profile = Nothing
       , tokens = []
       , travelCardId = ""
+      , firstName = ""
+      , lastName = ""
       }
     , Cmd.none
     )
@@ -99,7 +107,30 @@ update msg env model =
         ReceiveProfile result ->
             case result of
                 Ok profile ->
-                    ( { model | profile = Just profile }, Cmd.none )
+                    ( { model
+                        | profile = Just profile
+                        , firstName = profile.firstName
+                        , lastName = profile.lastName
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        UpdateFirstName value ->
+            ( { model | firstName = value }, Cmd.none )
+
+        UpdateLastName value ->
+            ( { model | lastName = value }, Cmd.none )
+
+        UpdateProfile ->
+            ( model, updateProfile env model.firstName model.lastName )
+
+        ReceiveUpdateProfile result ->
+            case result of
+                Ok () ->
+                    ( model, fetchProfile env )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -147,6 +178,30 @@ view env _ model _ =
                 , H.h2 [] [ H.text "Profile" ]
                 , H.button [ E.onClick GetProfile ] [ H.text "Refresh" ]
                 , H.div [] [ viewProfile model.profile ]
+                , H.h2 [] [ H.text "Update profile" ]
+                , H.div []
+                    [ H.text "First name: "
+                    , H.input
+                        [ A.value model.firstName
+                        , E.onInput UpdateFirstName
+                        , A.placeholder "First name"
+                        ]
+                        []
+                    ]
+                , H.div []
+                    [ H.text "Last name: "
+                    , H.input
+                        [ A.value model.lastName
+                        , E.onInput UpdateLastName
+                        , A.placeholder "Last name"
+                        ]
+                        []
+                    ]
+                , H.button
+                    [ A.disabled (String.trim model.firstName == "" || String.trim model.lastName == "")
+                    , E.onClick UpdateProfile
+                    ]
+                    [ H.text "Update" ]
                 , H.h2 [] [ H.text "Tokens" ]
                 , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
                 , if List.length model.tokens == 0 then
@@ -250,6 +305,13 @@ fetchProfile env =
     WebshopService.getProfile env
         |> Http.toTask
         |> Task.attempt ReceiveProfile
+
+
+updateProfile : Environment -> String -> String -> Cmd Msg
+updateProfile env firstName lastName =
+    WebshopService.updateProfile env firstName lastName
+        |> Http.toTask
+        |> Task.attempt ReceiveUpdateProfile
 
 
 fetchTokens : Environment -> Cmd Msg
