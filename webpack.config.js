@@ -424,7 +424,9 @@ if (isDevelopment) {
             new HashOutput({}),
 
             // Set up Workbox
-            new WorkboxWebpackPlugin.GenerateSW(),
+            new WorkboxWebpackPlugin.GenerateSW({
+                exclude: ['index.html']
+            }),
 
             // Compress everything with Zopfli (gzip)
             new ZopfliPlugin({
