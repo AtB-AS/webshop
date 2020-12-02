@@ -8,7 +8,9 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Http
+import Json.Decode as Decode exposing (Decoder)
 import Route exposing (Route)
+import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Task
@@ -36,6 +38,7 @@ type Msg
     | AddQrCode
     | ReceiveAddQrCode (Result Http.Error ())
     | LoadAccount
+    | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
 
 
 type alias Model =
@@ -44,6 +47,7 @@ type alias Model =
     , hello : String
     , profile : Maybe Profile
     , tokens : List Token
+    , tokenPayloads : List ( String, String )
     , travelCardId : String
     , firstName : String
     , lastName : String
@@ -57,6 +61,7 @@ init =
       , hello = ""
       , profile = Nothing
       , tokens = []
+      , tokenPayloads = []
       , travelCardId = ""
       , firstName = ""
       , lastName = ""
@@ -184,6 +189,14 @@ update msg env model =
                 ]
             )
 
+        ReceiveTokenPayloads result ->
+            case result of
+                Ok value ->
+                    ( { model | tokenPayloads = value }, Cmd.none )
+
+                Err error ->
+                    ( { model | tokenPayloads = [] }, Cmd.none )
+
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
 view env _ model _ =
@@ -304,11 +317,21 @@ viewToken token =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    MiscService.receiveTokens (Decode.decodeValue tokenPayloadsDecoder >> ReceiveTokenPayloads)
 
 
 
 -- INTERNAL
+
+
+tokenPayloadDecoder : Decoder ( String, String )
+tokenPayloadDecoder =
+    Decode.map2 Tuple.pair (Decode.index 0 Decode.string) (Decode.index 1 Decode.string)
+
+
+tokenPayloadsDecoder : Decoder (List ( String, String ))
+tokenPayloadsDecoder =
+    Decode.list tokenPayloadDecoder
 
 
 fetchTickets : Environment -> String -> Cmd Msg

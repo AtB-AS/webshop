@@ -2,6 +2,7 @@ require('./styles/main.scss');
 
 import * as firebase from "firebase/app";
 import "firebase/firebase-auth";
+import "firebase/firebase-firestore";
 
 import {Elm} from '../elm/Main';
 
@@ -38,6 +39,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const provider = new firebase.auth.GoogleAuthProvider();
+const db = firebase.firestore();
 const app = Elm.Main.init({flags: Object.assign({installId}, elmFlags)});
 
 app.ports.signIn.subscribe(() => {
@@ -73,15 +75,34 @@ function fetchAuthInfo(user) {
             if (!idToken || !idToken.claims || !idToken.claims["abt_id"] || typeof idToken.claims["abt_id"] !== 'string') {
                 setTimeout(() => fetchAuthInfo(user), 500);
             } else {
+                const accountId = idToken.claims["abt_id"];
+
                 app.ports.signInInfo.send({
                     token: idToken.token,
                     email: user.email,
-                    uid: idToken.claims["abt_id"]
+                    uid: accountId
                 });
+
+                const path = `users/${accountId}/tokens`;
+
+                try {
+                    db.collection(path).onSnapshot(docs => {
+                        const tokens = [];
+
+                        docs.forEach(doc => {
+                            if (doc.data().payload) {
+                                tokens.push([doc.id, doc.data().payload.toBase64()]);
+                            }
+                        });
+
+                        app.ports.receiveTokens.send(tokens);
+                    });
+                } catch (e) {
+                    console.error("Error when retrieving user", e);
+                }
             }
         })
         .catch(error => {
-            console.log("Error when retrieving cached user");
-            console.log(error);
+            console.log("Error when retrieving cached user", error);
         });
 }
