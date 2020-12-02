@@ -231,7 +231,7 @@ update msg model =
                             }
                     in
                         ( { model | userData = Just value, environment = newEnvironment }
-                        , TaskUtil.doTask (HomeMsg HomePage.GetProfile)
+                        , TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
                         )
 
                 Err error ->

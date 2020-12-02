@@ -12,6 +12,7 @@ import Route exposing (Route)
 import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Task
+import Util.Task as TaskUtil
 
 
 type Msg
@@ -34,6 +35,7 @@ type Msg
     | ReceiveAddTravelCard (Result Http.Error ())
     | AddQrCode
     | ReceiveAddQrCode (Result Http.Error ())
+    | LoadAccount
 
 
 type alias Model =
@@ -172,6 +174,15 @@ update msg env model =
 
                 Err _ ->
                     ( model, Cmd.none )
+
+        LoadAccount ->
+            ( model
+            , Cmd.batch
+                [ TaskUtil.doTask GetProfile
+                , TaskUtil.doTask GetTokens
+                , TaskUtil.doTask FetchTickets
+                ]
+            )
 
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
