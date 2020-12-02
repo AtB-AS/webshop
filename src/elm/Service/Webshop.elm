@@ -2,15 +2,18 @@ module Service.Webshop exposing
     ( addQrCode
     , addTravelCard
     , getFareContracts
+    , getFareProducts
     , getProfile
+    , getTariffZones
     , getToken
     , getTokens
+    , getUserProfiles
     , hello
     , inspectQrCode
     , updateProfile
     )
 
-import Data.Webshop exposing (FareContract, FareContractState(..), InspectionResult(..), Profile, RejectionReason(..), Token, TokenAction(..), TokenStatus(..), TokenType(..))
+import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, InspectionResult(..), LangString(..), Profile, RejectionReason(..), TariffZone, Token, TokenAction(..), TokenStatus(..), TokenType(..), UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -94,8 +97,120 @@ getFareContracts env =
     HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
 
 
+{-| Get list of tariff zones.
+-}
+getTariffZones : Environment -> Http.Request (List TariffZone)
+getTariffZones env =
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/reference-data/ATB/tariff-zones") (Decode.list tariffZoneDecoder)
+
+
+{-| Get list of fare products.
+-}
+getFareProducts : Environment -> Http.Request (List FareProduct)
+getFareProducts env =
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/reference-data/ATB/preassigned-fare-products") (Decode.list fareProductDecoder)
+
+
+{-| Get list of user profiles.
+-}
+getUserProfiles : Environment -> Http.Request (List UserProfile)
+getUserProfiles env =
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/reference-data/ATB/user-profiles") (Decode.list userProfileDecoder)
+
+
 
 -- DECODERS
+
+
+langStringDecoder : Decoder LangString
+langStringDecoder =
+    Decode.succeed LangString
+        |> DecodeP.required "lang" Decode.string
+        |> DecodeP.required "value" Decode.string
+
+
+tariffZoneDecoder : Decoder TariffZone
+tariffZoneDecoder =
+    Decode.succeed TariffZone
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "name" langStringDecoder
+
+
+fareProductDecoder : Decoder FareProduct
+fareProductDecoder =
+    Decode.succeed FareProduct
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "name" langStringDecoder
+        |> DecodeP.required "description" langStringDecoder
+        |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
+
+
+userProfileDecoder : Decoder UserProfile
+userProfileDecoder =
+    Decode.succeed UserProfile
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "name" langStringDecoder
+        |> DecodeP.required "description" langStringDecoder
+        |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
+        |> DecodeP.custom
+            (Decode.succeed Tuple.pair
+                |> DecodeP.optional "minAge" Decode.int 0
+                |> DecodeP.required "maxAge" Decode.int
+            )
+        |> DecodeP.required "userType" userTypeDecoder
+
+
+userTypeDecoder : Decoder UserType
+userTypeDecoder =
+    Decode.andThen
+        (\userType ->
+            case userType of
+                1 ->
+                    Decode.succeed UserTypeAdult
+
+                2 ->
+                    Decode.succeed UserTypeChild
+
+                3 ->
+                    Decode.succeed UserTypeInfant
+
+                4 ->
+                    Decode.succeed UserTypeSenior
+
+                5 ->
+                    Decode.succeed UserTypeStudent
+
+                6 ->
+                    Decode.succeed UserTypeYoungPerson
+
+                7 ->
+                    Decode.succeed UserTypeSchoolPupil
+
+                8 ->
+                    Decode.succeed UserTypeMilitary
+
+                9 ->
+                    Decode.succeed UserTypeDisabled
+
+                10 ->
+                    Decode.succeed UserTypeDisabledCompanion
+
+                11 ->
+                    Decode.succeed UserTypeJobSeeker
+
+                12 ->
+                    Decode.succeed UserTypeEmployee
+
+                13 ->
+                    Decode.succeed UserTypeAnimal
+
+                14 ->
+                    Decode.succeed UserTypeAnyone
+
+                _ ->
+                    Decode.fail "Invalid user type"
+        )
+        Decode.int
 
 
 inspectionDecoder : Decoder InspectionResult

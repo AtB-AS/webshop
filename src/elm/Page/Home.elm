@@ -2,7 +2,7 @@ module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation, Ticket)
-import Data.Webshop exposing (FareContract, InspectionResult, Profile, Token)
+import Data.Webshop exposing (FareContract, FareProduct, InspectionResult, Profile, TariffZone, Token, UserProfile)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -45,6 +45,9 @@ type Msg
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | Inspect String
     | ReceiveInspectQrCode (Result Http.Error (List InspectionResult))
+    | ReceiveTariffZones (Result Http.Error (List TariffZone))
+    | ReceiveFareProducts (Result Http.Error (List FareProduct))
+    | ReceiveUserProfiles (Result Http.Error (List UserProfile))
 
 
 type alias Model =
@@ -59,6 +62,9 @@ type alias Model =
     , firstName : String
     , lastName : String
     , inspection : String
+    , tariffZones : List TariffZone
+    , fareProducts : List FareProduct
+    , userProfiles : List UserProfile
     }
 
 
@@ -75,6 +81,9 @@ init =
       , firstName = ""
       , lastName = ""
       , inspection = ""
+      , tariffZones = []
+      , fareProducts = []
+      , userProfiles = []
       }
     , Cmd.none
     )
@@ -255,6 +264,9 @@ update msg env model =
                 [ TaskUtil.doTask GetProfile
                 , TaskUtil.doTask GetTokens
                 , TaskUtil.doTask FetchTickets
+                , fetchTariffZones env
+                , fetchFareProducts env
+                , fetchUserProfiles env
                 ]
             )
 
@@ -265,6 +277,30 @@ update msg env model =
 
                 Err error ->
                     ( { model | tokenPayloads = [] }, Cmd.none )
+
+        ReceiveTariffZones result ->
+            case result of
+                Ok value ->
+                    ( { model | tariffZones = value }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
+
+        ReceiveFareProducts result ->
+            case result of
+                Ok value ->
+                    ( { model | fareProducts = value }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
+
+        ReceiveUserProfiles result ->
+            case result of
+                Ok value ->
+                    ( { model | userProfiles = value }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
 
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
@@ -522,3 +558,24 @@ fetchPaymentStatus env paymentId =
                     |> Http.toTask
             )
         |> Task.attempt (ReceivePaymentStatus paymentId)
+
+
+fetchTariffZones : Environment -> Cmd Msg
+fetchTariffZones env =
+    WebshopService.getTariffZones env
+        |> Http.toTask
+        |> Task.attempt ReceiveTariffZones
+
+
+fetchFareProducts : Environment -> Cmd Msg
+fetchFareProducts env =
+    WebshopService.getFareProducts env
+        |> Http.toTask
+        |> Task.attempt ReceiveFareProducts
+
+
+fetchUserProfiles : Environment -> Cmd Msg
+fetchUserProfiles env =
+    WebshopService.getUserProfiles env
+        |> Http.toTask
+        |> Task.attempt ReceiveUserProfiles

@@ -1,13 +1,18 @@
 module Data.Webshop exposing
     ( FareContract
     , FareContractState(..)
+    , FareProduct
     , InspectionResult(..)
+    , LangString(..)
     , Profile
     , RejectionReason(..)
+    , TariffZone
     , Token
     , TokenAction(..)
     , TokenStatus(..)
     , TokenType(..)
+    , UserProfile
+    , UserType(..)
     )
 
 
@@ -87,3 +92,48 @@ type InspectionResult
     = InspectionGreen
     | InspectionYellow
     | InspectionRed RejectionReason
+
+
+type LangString
+    = LangString String String
+
+
+type alias TariffZone =
+    { id : String
+    , name : LangString
+    }
+
+
+type alias FareProduct =
+    { id : String
+    , name : LangString
+    , description : LangString
+    , alternativeNames : List LangString
+    }
+
+
+type UserType
+    = UserTypeAdult
+    | UserTypeChild
+    | UserTypeInfant
+    | UserTypeSenior
+    | UserTypeStudent
+    | UserTypeYoungPerson
+    | UserTypeSchoolPupil
+    | UserTypeMilitary
+    | UserTypeDisabled
+    | UserTypeDisabledCompanion
+    | UserTypeJobSeeker
+    | UserTypeEmployee
+    | UserTypeAnimal
+    | UserTypeAnyone
+
+
+type alias UserProfile =
+    { id : String
+    , name : LangString
+    , description : LangString
+    , alternativeNames : List LangString
+    , age : ( Int, Int )
+    , userType : UserType
+    }
