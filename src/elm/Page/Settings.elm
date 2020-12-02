@@ -3,6 +3,7 @@ module Page.Settings exposing (Model, Msg(..), init, subscriptions, update, view
 import Base exposing (AppInfo)
 import Data.Webshop exposing (Profile)
 import Environment exposing (Environment)
+import Fragment.Button as Button
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -27,6 +28,7 @@ type alias Model =
     { firstName : String
     , lastName : String
     , profile : Maybe Profile
+    , updating : Bool
     }
 
 
@@ -35,6 +37,7 @@ init =
     ( { firstName = ""
       , lastName = ""
       , profile = Nothing
+      , updating = False
       }
     , Cmd.none
     )
@@ -54,6 +57,7 @@ update msg env model =
                             | profile = Just profile
                             , firstName = profile.firstName
                             , lastName = profile.lastName
+                            , updating = False
                         }
                         |> PageUpdater.addGlobalAction (GA.SetCustomerNumber profile.customerNumber)
 
@@ -67,7 +71,10 @@ update msg env model =
             PageUpdater.init { model | lastName = value }
 
         UpdateProfile ->
-            PageUpdater.fromPair ( model, updateProfile env model.firstName model.lastName )
+            PageUpdater.fromPair
+                ( { model | updating = True }
+                , updateProfile env model.firstName model.lastName
+                )
 
         ReceiveUpdateProfile result ->
             case result of
@@ -75,7 +82,7 @@ update msg env model =
                     PageUpdater.fromPair ( model, fetchProfile env )
 
                 Err _ ->
-                    PageUpdater.init model
+                    PageUpdater.init { model | updating = False }
 
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
@@ -85,29 +92,38 @@ view _ _ model _ =
         , H.button [ E.onClick GetProfile ] [ H.text "Refresh" ]
         , H.div [] [ viewProfile model.profile ]
         , H.h2 [] [ H.text "Update profile" ]
-        , H.div []
-            [ H.text "First name: "
-            , H.input
-                [ A.value model.firstName
-                , E.onInput UpdateFirstName
-                , A.placeholder "First name"
+        , H.dl []
+            [ H.dt [] [ H.text "First name: " ]
+            , H.dd []
+                [ H.input
+                    [ A.value model.firstName
+                    , E.onInput UpdateFirstName
+                    , A.placeholder "First name"
+                    , A.disabled model.updating
+                    ]
+                    []
                 ]
-                []
-            ]
-        , H.div []
-            [ H.text "Last name: "
-            , H.input
-                [ A.value model.lastName
-                , E.onInput UpdateLastName
-                , A.placeholder "Last name"
+            , H.dt [] [ H.text "Last name: " ]
+            , H.dd []
+                [ H.input
+                    [ A.value model.lastName
+                    , E.onInput UpdateLastName
+                    , A.placeholder "Last name"
+                    , A.disabled model.updating
+                    ]
+                    []
                 ]
-                []
             ]
         , H.button
-            [ A.disabled (String.trim model.firstName == "" || String.trim model.lastName == "")
+            [ A.disabled (String.trim model.firstName == "" || String.trim model.lastName == "" || model.updating)
             , E.onClick UpdateProfile
             ]
-            [ H.text "Update" ]
+            [ if model.updating then
+                Button.loading
+
+              else
+                H.text "Update"
+            ]
         ]
 
 
