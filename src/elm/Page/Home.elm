@@ -2,7 +2,7 @@ module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation, Ticket)
-import Data.Webshop exposing (FareContract, FareProduct, InspectionResult(..), Profile, RejectionReason(..), TariffZone, Token, UserProfile)
+import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, InspectionResult(..), Profile, RejectionReason(..), TariffZone, Token, TokenType(..), UserProfile)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -411,8 +411,27 @@ viewTicket : FareContract -> Html msg
 viewTicket fareContract =
     H.li []
         [ H.div [] [ H.text <| "Id: " ++ fareContract.id ]
-        , H.div [] [ H.text <| "State: " ++ Debug.toString fareContract.state ]
+        , H.div [] [ H.text <| "State: " ++ fareContractStateToString fareContract.state ]
         ]
+
+
+fareContractStateToString : FareContractState -> String
+fareContractStateToString state =
+    case state of
+        FareContractStateUnspecified ->
+            "Unspecified"
+
+        FareContractStateNotActivated ->
+            "Not activated"
+
+        FareContractStateActivated ->
+            "Activated"
+
+        FareContractStateCancelled ->
+            "Cancelled"
+
+        FareContractStateRefunded ->
+            "Refunded"
 
 
 viewInspection : Status InspectionResult -> Html msg
@@ -515,13 +534,38 @@ viewToken payloads token =
     in
         H.li []
             [ H.div [] [ H.text <| "Id: " ++ token.id ]
-            , H.div [] [ H.text <| "Type: " ++ Debug.toString token.type_ ]
+            , H.div [] [ H.text <| "Type: " ++ tokenTypeToString token.type_ ]
             , if payload /= "" then
                 H.div [] [ H.button [ E.onClick (Inspect payload) ] [ H.text "Inspect" ] ]
 
               else
                 H.text ""
             ]
+
+
+tokenTypeToString : TokenType -> String
+tokenTypeToString type_ =
+    case type_ of
+        TokenTypeUnspecified ->
+            "Unspecified"
+
+        TokenTypeQrSmartphone ->
+            "QR (smartphone)"
+
+        TokenTypeQrPaper ->
+            "QR (paper)"
+
+        TokenTypeTravelCard ->
+            "Travel card"
+
+        TokenTypeReferenceCode ->
+            "Reference code"
+
+        TokenTypePlainUnsigned ->
+            "Plain unsigned"
+
+        TokenTypeExternal ->
+            "External"
 
 
 subscriptions : Model -> Sub Msg
