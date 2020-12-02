@@ -27,8 +27,6 @@ type Msg
     | BuyOffers PaymentType
     | ReceiveBuyOffers (Result Http.Error Reservation)
     | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
-    | Hello
-    | ReceiveHello (Result Http.Error ())
     | GetProfile
     | ReceiveProfile (Result Http.Error Profile)
     | UpdateFirstName String
@@ -55,7 +53,6 @@ type alias Model =
     { tickets : List FareContract
     , offers : List Offer
     , reservation : Maybe Reservation
-    , hello : String
     , profile : Maybe Profile
     , tokens : List Token
     , tokenPayloads : List ( String, String )
@@ -74,7 +71,6 @@ init =
     ( { tickets = []
       , offers = []
       , reservation = Nothing
-      , hello = ""
       , profile = Nothing
       , tokens = []
       , tokenPayloads = []
@@ -159,17 +155,6 @@ update msg env model =
 
                 Err err ->
                     ( model, Cmd.none )
-
-        Hello ->
-            ( { model | hello = "Trying to say hello..." }, fetchHello env )
-
-        ReceiveHello result ->
-            case result of
-                Ok () ->
-                    ( { model | hello = "Hello was OK" }, Cmd.none )
-
-                Err _ ->
-                    ( { model | hello = "Server refused to say hello :(" }, Cmd.none )
 
         GetProfile ->
             ( model, fetchProfile env )
@@ -309,10 +294,7 @@ view env _ model _ =
     case env.customerId of
         Just _ ->
             H.div [ A.class "box" ]
-                [ H.h2 [] [ H.text "Hello" ]
-                , H.button [ E.onClick Hello ] [ H.text "Hello" ]
-                , H.p [] [ H.text model.hello ]
-                , H.h2 [] [ H.text "Offers" ]
+                [ H.h2 [] [ H.text "Offers" ]
                 , H.button [ E.onClick FetchOffers ] [ H.text "Search" ]
                 , H.ol [] <| List.map viewOffer model.offers
                 , if List.length model.offers > 0 then
@@ -599,13 +581,6 @@ fetchOffers env =
     TicketService.search env
         |> Http.toTask
         |> Task.attempt ReceiveOffers
-
-
-fetchHello : Environment -> Cmd Msg
-fetchHello env =
-    WebshopService.hello env
-        |> Http.toTask
-        |> Task.attempt ReceiveHello
 
 
 fetchProfile : Environment -> Cmd Msg
