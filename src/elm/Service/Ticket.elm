@@ -16,7 +16,7 @@ search env =
     let
         url =
             Url.Builder.absolute
-                [ "api", "ticket", "v1", "search" ]
+                [ "ticket", "v1", "search" ]
                 []
 
         body =
@@ -44,7 +44,7 @@ reserve env offers =
     let
         url =
             Url.Builder.absolute
-                [ "api", "ticket", "v1", "reserve" ]
+                [ "ticket", "v1", "reserve" ]
                 []
 
         body =
@@ -99,7 +99,7 @@ receipt env emailAddress orderId =
     let
         url =
             Url.Builder.absolute
-                [ "api", "ticket", "v1", "receipt" ]
+                [ "ticket", "v1", "receipt" ]
                 []
 
         body =
@@ -127,7 +127,7 @@ getTicketList env customerId =
     let
         url =
             Url.Builder.absolute
-                [ "api", "ticket", "v1", "ticket", env.installId ]
+                [ "ticket", "v1", "ticket", env.installId ]
                 []
     in
         Http.request
