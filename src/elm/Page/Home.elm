@@ -265,7 +265,10 @@ viewProfile maybeProfile =
 
 viewToken : Token -> Html msg
 viewToken token =
-    H.text token.id
+    H.li []
+        [ H.div [] [ H.text <| "Id: " ++ token.id ]
+        , H.div [] [ H.text <| "Type: " ++ Debug.toString token.type_ ]
+        ]
 
 
 subscriptions : Model -> Sub Msg
