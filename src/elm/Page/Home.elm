@@ -2,7 +2,7 @@ module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, Ticket)
-import Data.Webshop exposing (Profile, Token)
+import Data.Webshop exposing (FareContract, Profile, Token)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -17,7 +17,7 @@ import Util.Task as TaskUtil
 
 type Msg
     = FetchTickets
-    | ReceiveTickets (Result Http.Error (List Ticket))
+    | ReceiveTickets (Result Http.Error (List FareContract))
     | FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
     | Hello
@@ -39,7 +39,7 @@ type Msg
 
 
 type alias Model =
-    { tickets : List Ticket
+    { tickets : List FareContract
     , offers : List Offer
     , hello : String
     , profile : Maybe Profile
@@ -273,9 +273,12 @@ viewOffer offer =
         ]
 
 
-viewTicket : Ticket -> Html msg
-viewTicket ticket =
-    H.text "ticket"
+viewTicket : FareContract -> Html msg
+viewTicket fareContract =
+    H.li []
+        [ H.div [] [ H.text <| "Id: " ++ fareContract.id ]
+        , H.div [] [ H.text <| "State: " ++ Debug.toString fareContract.state ]
+        ]
 
 
 viewProfile : Maybe Profile -> Html msg
@@ -310,7 +313,7 @@ subscriptions _ =
 
 fetchTickets : Environment -> String -> Cmd Msg
 fetchTickets env customerId =
-    TicketService.getTicketList env customerId
+    WebshopService.getFareContracts env
         |> Http.toTask
         |> Task.attempt ReceiveTickets
 

@@ -1,5 +1,7 @@
 module Data.Webshop exposing
-    ( Profile
+    ( FareContract
+    , FareContractState(..)
+    , Profile
     , Token
     , TokenAction(..)
     , TokenStatus(..)
@@ -46,4 +48,18 @@ type alias Token =
     , allowedAction : List TokenAction
     , status : TokenStatus
     , type_ : TokenType
+    }
+
+
+type FareContractState
+    = FareContractStateUnspecified
+    | FareContractStateNotActivated
+    | FareContractStateActivated
+    | FareContractStateCancelled
+    | FareContractStateRefunded
+
+
+type alias FareContract =
+    { id : String
+    , state : FareContractState
     }

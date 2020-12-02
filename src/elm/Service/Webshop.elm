@@ -1,6 +1,7 @@
 module Service.Webshop exposing
     ( addQrCode
     , addTravelCard
+    , getFareContracts
     , getProfile
     , getToken
     , getTokens
@@ -8,7 +9,7 @@ module Service.Webshop exposing
     , updateProfile
     )
 
-import Data.Webshop exposing (Profile, Token, TokenAction(..), TokenStatus(..), TokenType(..))
+import Data.Webshop exposing (FareContract, FareContractState(..), Profile, Token, TokenAction(..), TokenStatus(..), TokenType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -76,8 +77,45 @@ addQrCode env =
     HttpUtil.post env "/api/v1/tokens/qrcode" Http.emptyBody (Decode.succeed ())
 
 
+{-| Get list of tickets.
+-}
+getFareContracts : Environment -> Http.Request (List FareContract)
+getFareContracts env =
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
+
+
 
 -- DECODERS
+
+
+fareContractDecoder : Decoder FareContract
+fareContractDecoder =
+    Decode.succeed FareContract
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "state"
+            (Decode.andThen
+                (\value ->
+                    case value of
+                        0 ->
+                            Decode.succeed FareContractStateUnspecified
+
+                        1 ->
+                            Decode.succeed FareContractStateNotActivated
+
+                        2 ->
+                            Decode.succeed FareContractStateActivated
+
+                        3 ->
+                            Decode.succeed FareContractStateCancelled
+
+                        4 ->
+                            Decode.succeed FareContractStateRefunded
+
+                        _ ->
+                            Decode.fail "Invalid fare contract state"
+                )
+                Decode.int
+            )
 
 
 profileDecoder : Decoder Profile
