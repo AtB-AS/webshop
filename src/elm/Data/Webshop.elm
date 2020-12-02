@@ -2,10 +2,10 @@ module Data.Webshop exposing
     ( FareContract
     , FareContractState(..)
     , FareProduct
-    , InspectionResult(..)
+    , Inspection(..)
     , LangString(..)
     , Profile
-    , RejectionReason(..)
+    , Rejection(..)
     , TariffZone
     , Token
     , TokenAction(..)
@@ -73,25 +73,25 @@ type alias FareContract =
     }
 
 
-type RejectionReason
-    = RejectionReasonNoActiveFareContracts -- 1
-    | RejectionReasonNoFareContracts -- 2
-    | RejectionReasonFareContractNotActivated -- 3
-    | RejectionReasonValidityParametersInvalid -- 4
-    | RejectionReasonTokenMarkedInactive -- 100
-    | RejectionReasonTokenValidityNotStarted -- 101
-    | RejectionReasonTokenValidityEnded -- 102
-    | RejectionReasonTokenSignatureInvalid -- 103
-    | RejectionReasonTokenNotFound -- 104
-    | RejectionReasonDifferentTokenType -- 105
-    | RejectionReasonTokenIdMismatch -- 106
-    | RejectionReasonTokenActionsMismatch -- 107
+type Rejection
+    = RejectionNoActiveFareContracts
+    | RejectionNoFareContracts
+    | RejectionFareContractNotActivated
+    | RejectionValidityParametersInvalid
+    | RejectionTokenMarkedInactive
+    | RejectionTokenValidityNotStarted
+    | RejectionTokenValidityEnded
+    | RejectionTokenSignatureInvalid
+    | RejectionTokenNotFound
+    | RejectionDifferentTokenType
+    | RejectionTokenIdMismatch
+    | RejectionTokenActionsMismatch
 
 
-type InspectionResult
+type Inspection
     = InspectionGreen
     | InspectionYellow
-    | InspectionRed RejectionReason
+    | InspectionRed Rejection
 
 
 type LangString

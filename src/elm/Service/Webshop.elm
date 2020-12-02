@@ -12,7 +12,7 @@ module Service.Webshop exposing
     , updateProfile
     )
 
-import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, InspectionResult(..), LangString(..), Profile, RejectionReason(..), TariffZone, Token, TokenAction(..), TokenStatus(..), TokenType(..), UserProfile, UserType(..))
+import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, Inspection(..), LangString(..), Profile, Rejection(..), TariffZone, Token, TokenAction(..), TokenStatus(..), TokenType(..), UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -62,7 +62,7 @@ addQrCode env =
     HttpUtil.post env "/api/v1/tokens/qrcode" Http.emptyBody (Decode.succeed ())
 
 
-inspectQrCode : Environment -> String -> Http.Request (List InspectionResult)
+inspectQrCode : Environment -> String -> Http.Request (List Inspection)
 inspectQrCode env tokenPayload =
     let
         payload =
@@ -194,7 +194,7 @@ userTypeDecoder =
         Decode.int
 
 
-inspectionDecoder : Decoder InspectionResult
+inspectionDecoder : Decoder Inspection
 inspectionDecoder =
     Decode.andThen
         (\result ->
@@ -214,46 +214,46 @@ inspectionDecoder =
         (Decode.field "result" Decode.int)
 
 
-rejectionReasonDecoder : Decoder RejectionReason
+rejectionReasonDecoder : Decoder Rejection
 rejectionReasonDecoder =
     Decode.andThen
         (\reason ->
             case reason of
                 1 ->
-                    Decode.succeed RejectionReasonNoActiveFareContracts
+                    Decode.succeed RejectionNoActiveFareContracts
 
                 2 ->
-                    Decode.succeed RejectionReasonNoFareContracts
+                    Decode.succeed RejectionNoFareContracts
 
                 3 ->
-                    Decode.succeed RejectionReasonFareContractNotActivated
+                    Decode.succeed RejectionFareContractNotActivated
 
                 4 ->
-                    Decode.succeed RejectionReasonValidityParametersInvalid
+                    Decode.succeed RejectionValidityParametersInvalid
 
                 100 ->
-                    Decode.succeed RejectionReasonTokenMarkedInactive
+                    Decode.succeed RejectionTokenMarkedInactive
 
                 101 ->
-                    Decode.succeed RejectionReasonTokenValidityNotStarted
+                    Decode.succeed RejectionTokenValidityNotStarted
 
                 102 ->
-                    Decode.succeed RejectionReasonTokenValidityEnded
+                    Decode.succeed RejectionTokenValidityEnded
 
                 103 ->
-                    Decode.succeed RejectionReasonTokenSignatureInvalid
+                    Decode.succeed RejectionTokenSignatureInvalid
 
                 104 ->
-                    Decode.succeed RejectionReasonTokenNotFound
+                    Decode.succeed RejectionTokenNotFound
 
                 105 ->
-                    Decode.succeed RejectionReasonDifferentTokenType
+                    Decode.succeed RejectionDifferentTokenType
 
                 106 ->
-                    Decode.succeed RejectionReasonTokenIdMismatch
+                    Decode.succeed RejectionTokenIdMismatch
 
                 107 ->
-                    Decode.succeed RejectionReasonTokenActionsMismatch
+                    Decode.succeed RejectionTokenActionsMismatch
 
                 _ ->
                     Decode.fail "Invalid rejection reason"

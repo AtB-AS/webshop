@@ -1,7 +1,7 @@
 module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, InspectionResult(..), Profile, RejectionReason(..), TariffZone, Token, TokenType(..), UserProfile)
+import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, Inspection(..), Profile, Rejection(..), TariffZone, Token, TokenType(..), UserProfile)
 import Environment exposing (Environment)
 import GlobalActions as GA
 import Html as H exposing (Html)
@@ -31,7 +31,7 @@ type Msg
     | LoadAccount
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | Inspect String
-    | ReceiveInspectQrCode (Result Http.Error (List InspectionResult))
+    | ReceiveInspectQrCode (Result Http.Error (List Inspection))
     | ReceiveTariffZones (Result Http.Error (List TariffZone))
     | ReceiveFareProducts (Result Http.Error (List FareProduct))
     | ReceiveUserProfiles (Result Http.Error (List UserProfile))
@@ -43,7 +43,7 @@ type alias Model =
     , tokens : List Token
     , tokenPayloads : List ( String, String )
     , travelCardId : String
-    , inspection : Status InspectionResult
+    , inspection : Status Inspection
     , tariffZones : List TariffZone
     , fareProducts : List FareProduct
     , userProfiles : List UserProfile
@@ -258,7 +258,7 @@ fareContractStateToString state =
             "Refunded"
 
 
-viewInspection : Status InspectionResult -> Html msg
+viewInspection : Status Inspection -> Html msg
 viewInspection inspection =
     case inspection of
         NotLoaded ->
@@ -274,7 +274,7 @@ viewInspection inspection =
             H.div [] [ H.text ("Inspection: Error - " ++ error) ]
 
 
-inspectionToString : InspectionResult -> String
+inspectionToString : Inspection -> String
 inspectionToString inspection =
     case inspection of
         InspectionGreen ->
@@ -287,43 +287,43 @@ inspectionToString inspection =
             "Red - " ++ rejectionToString reason
 
 
-rejectionToString : RejectionReason -> String
+rejectionToString : Rejection -> String
 rejectionToString rejection =
     case rejection of
-        RejectionReasonNoActiveFareContracts ->
+        RejectionNoActiveFareContracts ->
             "No active fare contracts"
 
-        RejectionReasonNoFareContracts ->
+        RejectionNoFareContracts ->
             "No fare contracts"
 
-        RejectionReasonFareContractNotActivated ->
+        RejectionFareContractNotActivated ->
             "Fare contract not activated"
 
-        RejectionReasonValidityParametersInvalid ->
+        RejectionValidityParametersInvalid ->
             "Validity parameters are invalid"
 
-        RejectionReasonTokenMarkedInactive ->
+        RejectionTokenMarkedInactive ->
             "Token marked as inactive"
 
-        RejectionReasonTokenValidityNotStarted ->
+        RejectionTokenValidityNotStarted ->
             "Token is not valid yet"
 
-        RejectionReasonTokenValidityEnded ->
+        RejectionTokenValidityEnded ->
             "Token is no longer valid"
 
-        RejectionReasonTokenSignatureInvalid ->
+        RejectionTokenSignatureInvalid ->
             "Token signature is invalid"
 
-        RejectionReasonTokenNotFound ->
+        RejectionTokenNotFound ->
             "Token was not found"
 
-        RejectionReasonDifferentTokenType ->
+        RejectionDifferentTokenType ->
             "Different token type"
 
-        RejectionReasonTokenIdMismatch ->
+        RejectionTokenIdMismatch ->
             "Token id mismatch"
 
-        RejectionReasonTokenActionsMismatch ->
+        RejectionTokenActionsMismatch ->
             "Token actions mismatch"
 
 
@@ -454,7 +454,7 @@ fetchUserProfiles env =
         |> Task.attempt ReceiveUserProfiles
 
 
-checkInspection : List InspectionResult -> InspectionResult
+checkInspection : List Inspection -> Inspection
 checkInspection results =
     let
         greens =
@@ -483,5 +483,5 @@ checkInspection results =
 
         else
             Maybe.withDefault
-                (InspectionRed RejectionReasonNoActiveFareContracts)
+                (InspectionRed RejectionNoActiveFareContracts)
                 (List.head reds)
