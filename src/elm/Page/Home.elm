@@ -275,10 +275,16 @@ view env _ model _ =
                   else
                     H.ol [] <| List.map (viewToken model.tokenPayloads) model.tokens
                 , viewInspection model.inspection
-                , H.h3 [] [ H.text "Add QR token" ]
-                , H.button
-                    [ E.onClick AddQrCode ]
-                    [ H.text "Add" ]
+                , if List.isEmpty model.tokens then
+                    H.div []
+                        [ H.h3 [] [ H.text "Add QR token" ]
+                        , H.button
+                            [ E.onClick AddQrCode ]
+                            [ H.text "Add" ]
+                        ]
+
+                  else
+                    H.text ""
                 , H.h3 [] [ H.text "Add travel card" ]
                 , H.input
                     [ A.value model.travelCardId
