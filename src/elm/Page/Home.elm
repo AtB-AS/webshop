@@ -2,7 +2,7 @@ module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation, Ticket)
-import Data.Webshop exposing (FareContract, Profile, Token)
+import Data.Webshop exposing (FareContract, InspectionResult, Profile, Token)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -43,6 +43,8 @@ type Msg
     | ReceiveAddQrCode (Result Http.Error ())
     | LoadAccount
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
+    | Inspect String
+    | ReceiveInspectQrCode (Result Http.Error (List InspectionResult))
 
 
 type alias Model =
@@ -56,6 +58,7 @@ type alias Model =
     , travelCardId : String
     , firstName : String
     , lastName : String
+    , inspection : String
     }
 
 
@@ -71,6 +74,7 @@ init =
       , travelCardId = ""
       , firstName = ""
       , lastName = ""
+      , inspection = ""
       }
     , Cmd.none
     )
@@ -173,6 +177,24 @@ update msg env model =
 
                 Err _ ->
                     ( model, Cmd.none )
+
+        Inspect tokenPayload ->
+            ( { model | inspection = "Starting inspection..." }, inspect env tokenPayload )
+
+        ReceiveInspectQrCode result ->
+            case result of
+                Ok (inspection :: _) ->
+                    ( { model | inspection = Debug.toString inspection }
+                    , Cmd.none
+                    )
+
+                Ok [] ->
+                    ( { model | inspection = "No inspection results" }
+                    , Cmd.none
+                    )
+
+                Err err ->
+                    ( { model | inspection = Debug.toString err }, Cmd.none )
 
         UpdateFirstName value ->
             ( { model | firstName = value }, Cmd.none )
@@ -306,7 +328,12 @@ view env _ model _ =
                     H.p [] [ H.text "No tokens." ]
 
                   else
-                    H.ol [] <| List.map viewToken model.tokens
+                    H.ol [] <| List.map (viewToken model.tokenPayloads) model.tokens
+                , if model.inspection /= "" then
+                    H.div [] [ H.text <| "Inspection: " ++ model.inspection ]
+
+                  else
+                    H.text ""
                 , H.h3 [] [ H.text "Add QR token" ]
                 , H.button
                     [ E.onClick AddQrCode ]
@@ -368,12 +395,31 @@ viewProfile maybeProfile =
             H.p [] [ H.text "No profile." ]
 
 
-viewToken : Token -> Html msg
-viewToken token =
-    H.li []
-        [ H.div [] [ H.text <| "Id: " ++ token.id ]
-        , H.div [] [ H.text <| "Type: " ++ Debug.toString token.type_ ]
-        ]
+viewToken : List ( String, String ) -> Token -> Html Msg
+viewToken payloads token =
+    let
+        payload =
+            payloads
+                |> List.filterMap
+                    (\( id, value ) ->
+                        if id == token.id then
+                            Just value
+
+                        else
+                            Nothing
+                    )
+                |> List.head
+                |> Maybe.withDefault ""
+    in
+        H.li []
+            [ H.div [] [ H.text <| "Id: " ++ token.id ]
+            , H.div [] [ H.text <| "Type: " ++ Debug.toString token.type_ ]
+            , if payload /= "" then
+                H.div [] [ H.button [ E.onClick (Inspect payload) ] [ H.text "Inspect" ] ]
+
+              else
+                H.text ""
+            ]
 
 
 subscriptions : Model -> Sub Msg
@@ -449,6 +495,13 @@ addQrCode env =
     WebshopService.addQrCode env
         |> Http.toTask
         |> Task.attempt ReceiveAddQrCode
+
+
+inspect : Environment -> String -> Cmd Msg
+inspect env tokenPayload =
+    WebshopService.inspectQrCode env tokenPayload
+        |> Http.toTask
+        |> Task.attempt ReceiveInspectQrCode
 
 
 buyOffers : Environment -> Int -> PaymentType -> List Offer -> Cmd Msg

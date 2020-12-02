@@ -6,10 +6,11 @@ module Service.Webshop exposing
     , getToken
     , getTokens
     , hello
+    , inspectQrCode
     , updateProfile
     )
 
-import Data.Webshop exposing (FareContract, FareContractState(..), Profile, Token, TokenAction(..), TokenStatus(..), TokenType(..))
+import Data.Webshop exposing (FareContract, FareContractState(..), InspectionResult(..), Profile, RejectionReason(..), Token, TokenAction(..), TokenStatus(..), TokenType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -77,6 +78,15 @@ addQrCode env =
     HttpUtil.post env "/api/v1/tokens/qrcode" Http.emptyBody (Decode.succeed ())
 
 
+inspectQrCode : Environment -> String -> Http.Request (List InspectionResult)
+inspectQrCode env tokenPayload =
+    let
+        payload =
+            Encode.object [ ( "token", Encode.string tokenPayload ) ]
+    in
+        HttpUtil.post env "/api/v1/inspection/qrcode" (Http.jsonBody payload) (Decode.list inspectionDecoder)
+
+
 {-| Get list of tickets.
 -}
 getFareContracts : Environment -> Http.Request (List FareContract)
@@ -86,6 +96,73 @@ getFareContracts env =
 
 
 -- DECODERS
+
+
+inspectionDecoder : Decoder InspectionResult
+inspectionDecoder =
+    Decode.andThen
+        (\result ->
+            case result of
+                1 ->
+                    Decode.succeed InspectionGreen
+
+                2 ->
+                    Decode.succeed InspectionYellow
+
+                3 ->
+                    Decode.field "reason" (Decode.map InspectionRed rejectionReasonDecoder)
+
+                _ ->
+                    Decode.fail "Invalid inspection result"
+        )
+        (Decode.field "result" Decode.int)
+
+
+rejectionReasonDecoder : Decoder RejectionReason
+rejectionReasonDecoder =
+    Decode.andThen
+        (\reason ->
+            case reason of
+                1 ->
+                    Decode.succeed RejectionReasonNoActiveFareContracts
+
+                2 ->
+                    Decode.succeed RejectionReasonNoFareContracts
+
+                3 ->
+                    Decode.succeed RejectionReasonFareContractNotActivated
+
+                4 ->
+                    Decode.succeed RejectionReasonValidityParametersInvalid
+
+                100 ->
+                    Decode.succeed RejectionReasonTokenMarkedInactive
+
+                101 ->
+                    Decode.succeed RejectionReasonTokenValidityNotStarted
+
+                102 ->
+                    Decode.succeed RejectionReasonTokenValidityEnded
+
+                103 ->
+                    Decode.succeed RejectionReasonTokenSignatureInvalid
+
+                104 ->
+                    Decode.succeed RejectionReasonTokenNotFound
+
+                105 ->
+                    Decode.succeed RejectionReasonDifferentTokenType
+
+                106 ->
+                    Decode.succeed RejectionReasonTokenIdMismatch
+
+                107 ->
+                    Decode.succeed RejectionReasonTokenActionsMismatch
+
+                _ ->
+                    Decode.fail "Invalid rejection reason"
+        )
+        Decode.int
 
 
 fareContractDecoder : Decoder FareContract

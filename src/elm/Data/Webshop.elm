@@ -1,7 +1,9 @@
 module Data.Webshop exposing
     ( FareContract
     , FareContractState(..)
+    , InspectionResult(..)
     , Profile
+    , RejectionReason(..)
     , Token
     , TokenAction(..)
     , TokenStatus(..)
@@ -64,3 +66,24 @@ type alias FareContract =
     { id : String
     , state : FareContractState
     }
+
+
+type RejectionReason
+    = RejectionReasonNoActiveFareContracts -- 1
+    | RejectionReasonNoFareContracts -- 2
+    | RejectionReasonFareContractNotActivated -- 3
+    | RejectionReasonValidityParametersInvalid -- 4
+    | RejectionReasonTokenMarkedInactive -- 100
+    | RejectionReasonTokenValidityNotStarted -- 101
+    | RejectionReasonTokenValidityEnded -- 102
+    | RejectionReasonTokenSignatureInvalid -- 103
+    | RejectionReasonTokenNotFound -- 104
+    | RejectionReasonDifferentTokenType -- 105
+    | RejectionReasonTokenIdMismatch -- 106
+    | RejectionReasonTokenActionsMismatch -- 107
+
+
+type InspectionResult
+    = InspectionGreen
+    | InspectionYellow
+    | InspectionRed RejectionReason
