@@ -16,6 +16,7 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 
 type Route
     = Home
+    | Shop
     | Settings
     | NotFound
 
@@ -24,6 +25,7 @@ parser : Parser (Route -> a) a
 parser =
     oneOf
         [ Parser.map Home Parser.top
+        , Parser.map Shop <| s "shop"
         , Parser.map Settings <| s "settings"
         ]
 
@@ -35,6 +37,9 @@ routeToString page =
             case page of
                 Home ->
                     []
+
+                Shop ->
+                    [ "shop" ]
 
                 Settings ->
                     [ "settings" ]

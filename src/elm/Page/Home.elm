@@ -1,18 +1,17 @@
 module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation, Ticket)
 import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, InspectionResult(..), Profile, RejectionReason(..), TariffZone, Token, TokenType(..), UserProfile)
 import Environment exposing (Environment)
+import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Process
+import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
-import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Task
 import Util.Status exposing (Status(..))
@@ -22,11 +21,6 @@ import Util.Task as TaskUtil
 type Msg
     = FetchTickets
     | ReceiveTickets (Result Http.Error (List FareContract))
-    | FetchOffers
-    | ReceiveOffers (Result Http.Error (List Offer))
-    | BuyOffers PaymentType
-    | ReceiveBuyOffers (Result Http.Error Reservation)
-    | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
     | GetTokens
     | ReceiveTokens (Result Http.Error (List Token))
     | UpdateTravelCardId String
@@ -41,12 +35,11 @@ type Msg
     | ReceiveTariffZones (Result Http.Error (List TariffZone))
     | ReceiveFareProducts (Result Http.Error (List FareProduct))
     | ReceiveUserProfiles (Result Http.Error (List UserProfile))
+    | OpenShop
 
 
 type alias Model =
     { tickets : List FareContract
-    , offers : List Offer
-    , reservation : Maybe Reservation
     , tokens : List Token
     , tokenPayloads : List ( String, String )
     , travelCardId : String
@@ -60,8 +53,6 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { tickets = []
-      , offers = []
-      , reservation = Nothing
       , tokens = []
       , tokenPayloads = []
       , travelCardId = ""
@@ -74,172 +65,122 @@ init =
     )
 
 
-update : Msg -> Environment -> Model -> ( Model, Cmd Msg )
+update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
-        FetchOffers ->
-            ( model, fetchOffers env )
-
-        ReceiveOffers result ->
-            case result of
-                Ok offers ->
-                    ( { model | offers = offers }, Cmd.none )
-
-                Err err ->
-                    ( model, Cmd.none )
-
-        BuyOffers paymentType ->
-            ( model
-            , case env.customerNumber of
-                0 ->
-                    Cmd.none
-
-                customerNumber ->
-                    buyOffers env customerNumber paymentType model.offers
-            )
-
-        ReceiveBuyOffers result ->
-            case result of
-                Ok reservation ->
-                    ( { model | reservation = Just reservation }
-                    , Cmd.batch
-                        [ MiscService.openWindow reservation.url
-                        , fetchPaymentStatus env reservation.paymentId
-                        ]
-                    )
-
-                Err err ->
-                    ( model, Cmd.none )
-
-        ReceivePaymentStatus paymentId result ->
-            case result of
-                Ok paymentStatus ->
-                    case paymentStatus.status of
-                        "CAPTURE" ->
-                            ( { model | reservation = Nothing, offers = [] }
-                            , TaskUtil.doTask FetchTickets
-                            )
-
-                        "CANCEL" ->
-                            ( { model | reservation = Nothing }, Cmd.none )
-
-                        _ ->
-                            ( model, fetchPaymentStatus env paymentId )
-
-                Err err ->
-                    ( { model | reservation = Nothing }, Cmd.none )
-
         FetchTickets ->
-            ( model
-            , env.customerId
-                |> Maybe.map (fetchTickets env)
-                |> Maybe.withDefault Cmd.none
-            )
+            PageUpdater.fromPair
+                ( model
+                , env.customerId
+                    |> Maybe.map (fetchTickets env)
+                    |> Maybe.withDefault Cmd.none
+                )
 
         ReceiveTickets result ->
             case result of
                 Ok tickets ->
-                    ( { model | tickets = tickets }, Cmd.none )
+                    PageUpdater.init { model | tickets = tickets }
 
                 Err err ->
-                    ( model, Cmd.none )
+                    PageUpdater.init model
 
         Inspect tokenPayload ->
-            ( { model | inspection = Loading Nothing }, inspect env tokenPayload )
+            PageUpdater.fromPair ( { model | inspection = Loading Nothing }, inspect env tokenPayload )
 
         ReceiveInspectQrCode result ->
             case result of
                 Ok [] ->
-                    ( { model | inspection = NotLoaded }
-                    , Cmd.none
-                    )
+                    PageUpdater.init { model | inspection = NotLoaded }
 
                 Ok inspection ->
-                    ( { model | inspection = Loaded <| checkInspection inspection }
-                    , Cmd.none
-                    )
+                    PageUpdater.init { model | inspection = Loaded <| checkInspection inspection }
 
                 Err err ->
-                    ( { model | inspection = Failed "Failed to perform inspection" }, Cmd.none )
+                    PageUpdater.init { model | inspection = Failed "Failed to perform inspection" }
 
         GetTokens ->
-            ( model, fetchTokens env )
+            PageUpdater.fromPair ( model, fetchTokens env )
 
         ReceiveTokens result ->
             case result of
                 Ok tokens ->
-                    ( { model | tokens = tokens }, Cmd.none )
+                    PageUpdater.init { model | tokens = tokens }
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    PageUpdater.init model
 
         UpdateTravelCardId value ->
-            ( { model | travelCardId = value }, Cmd.none )
+            PageUpdater.init { model | travelCardId = value }
 
         AddTravelCard ->
-            ( model, addTravelCard env model.travelCardId )
+            PageUpdater.fromPair ( model, addTravelCard env model.travelCardId )
 
         ReceiveAddTravelCard result ->
             case result of
                 Ok () ->
-                    ( model, fetchTokens env )
+                    PageUpdater.fromPair ( model, fetchTokens env )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    PageUpdater.init model
 
         AddQrCode ->
-            ( model, addQrCode env )
+            PageUpdater.fromPair ( model, addQrCode env )
 
         ReceiveAddQrCode result ->
             case result of
                 Ok () ->
-                    ( model, fetchTokens env )
+                    PageUpdater.fromPair ( model, fetchTokens env )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    PageUpdater.init model
 
         LoadAccount ->
-            ( model
-            , Cmd.batch
-                [ TaskUtil.doTask GetTokens
-                , TaskUtil.doTask FetchTickets
-                , fetchTariffZones env
-                , fetchFareProducts env
-                , fetchUserProfiles env
-                ]
-            )
+            PageUpdater.fromPair
+                ( model
+                , Cmd.batch
+                    [ TaskUtil.doTask GetTokens
+                    , TaskUtil.doTask FetchTickets
+                    , fetchTariffZones env
+                    , fetchFareProducts env
+                    , fetchUserProfiles env
+                    ]
+                )
 
         ReceiveTokenPayloads result ->
             case result of
                 Ok value ->
-                    ( { model | tokenPayloads = value }, Cmd.none )
+                    PageUpdater.init { model | tokenPayloads = value }
 
-                Err error ->
-                    ( { model | tokenPayloads = [] }, Cmd.none )
+                Err _ ->
+                    PageUpdater.init { model | tokenPayloads = [] }
 
         ReceiveTariffZones result ->
             case result of
                 Ok value ->
-                    ( { model | tariffZones = value }, Cmd.none )
+                    PageUpdater.init { model | tariffZones = value }
 
-                Err error ->
-                    ( model, Cmd.none )
+                Err _ ->
+                    PageUpdater.init model
 
         ReceiveFareProducts result ->
             case result of
                 Ok value ->
-                    ( { model | fareProducts = value }, Cmd.none )
+                    PageUpdater.init { model | fareProducts = value }
 
-                Err error ->
-                    ( model, Cmd.none )
+                Err _ ->
+                    PageUpdater.init model
 
         ReceiveUserProfiles result ->
             case result of
                 Ok value ->
-                    ( { model | userProfiles = value }, Cmd.none )
+                    PageUpdater.init { model | userProfiles = value }
 
-                Err error ->
-                    ( model, Cmd.none )
+                Err _ ->
+                    PageUpdater.init model
+
+        OpenShop ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction GA.OpenShop
 
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
@@ -247,25 +188,9 @@ view env _ model _ =
     case env.customerId of
         Just _ ->
             H.div [ A.class "box" ]
-                [ H.h2 [] [ H.text "Offers" ]
-                , H.button [ E.onClick FetchOffers ] [ H.text "Search" ]
-                , H.ol [] <| List.map viewOffer model.offers
-                , if List.length model.offers > 0 then
-                    H.div []
-                        [ H.button [ E.onClick <| BuyOffers Nets ] [ H.text "Buy with Nets" ]
-                        , H.button [ E.onClick <| BuyOffers Vipps ] [ H.text "Buy with Vipps" ]
-                        ]
-
-                  else
-                    H.text ""
-                , case model.reservation of
-                    Just reservation ->
-                        H.p [] [ H.text <| "Waiting for NETS with order" ++ reservation.orderId ]
-
-                    Nothing ->
-                        H.text ""
-                , H.h2 [] [ H.text "Tickets" ]
+                [ H.h2 [] [ H.text "Tickets" ]
                 , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
+                , H.button [ E.onClick OpenShop ] [ H.text "Buy" ]
                 , H.ol [] <| List.map viewTicket model.tickets
                 , H.h2 [] [ H.text "Tokens" ]
                 , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
@@ -304,21 +229,6 @@ view env _ model _ =
                 [ H.h2 [] [ H.text "Not logged in" ]
                 , H.p [] [ H.text "You need to log in." ]
                 ]
-
-
-viewOffer : Offer -> Html msg
-viewOffer offer =
-    H.div []
-        [ H.div [] [ H.text offer.offerId ]
-        , H.div [] [ H.text offer.travellerId ]
-        , H.div []
-            [ offer.prices
-                |> List.head
-                |> Maybe.map (\price -> price.currency ++ " " ++ price.amount)
-                |> Maybe.withDefault "No prices"
-                |> H.text
-            ]
-        ]
 
 
 viewTicket : FareContract -> Html msg
@@ -495,13 +405,6 @@ fetchTickets env customerId =
         |> Task.attempt ReceiveTickets
 
 
-fetchOffers : Environment -> Cmd Msg
-fetchOffers env =
-    TicketService.search env
-        |> Http.toTask
-        |> Task.attempt ReceiveOffers
-
-
 fetchTokens : Environment -> Cmd Msg
 fetchTokens env =
     WebshopService.getTokens env
@@ -528,26 +431,6 @@ inspect env tokenPayload =
     WebshopService.inspectQrCode env tokenPayload
         |> Http.toTask
         |> Task.attempt ReceiveInspectQrCode
-
-
-buyOffers : Environment -> Int -> PaymentType -> List Offer -> Cmd Msg
-buyOffers env customerNumber paymentType offers =
-    offers
-        |> List.map (\offer -> ( offer.offerId, 1 ))
-        |> TicketService.reserve env customerNumber paymentType
-        |> Http.toTask
-        |> Task.attempt ReceiveBuyOffers
-
-
-fetchPaymentStatus : Environment -> Int -> Cmd Msg
-fetchPaymentStatus env paymentId =
-    Process.sleep 500
-        |> Task.andThen
-            (\_ ->
-                TicketService.getPaymentStatus env paymentId
-                    |> Http.toTask
-            )
-        |> Task.attempt (ReceivePaymentStatus paymentId)
 
 
 fetchTariffZones : Environment -> Cmd Msg

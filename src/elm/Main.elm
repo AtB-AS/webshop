@@ -14,6 +14,7 @@ import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
 import Page.Home as HomePage
 import Page.Settings as SettingsPage
+import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
@@ -32,6 +33,7 @@ type Msg
     | UrlRequested Browser.UrlRequest
     | CloseNotification Time.Posix
     | HomeMsg HomePage.Msg
+    | ShopMsg ShopPage.Msg
     | SettingsMsg SettingsPage.Msg
     | LogIn
     | LogOut
@@ -43,6 +45,7 @@ type alias Model =
     { environment : Environment
     , appInfo : AppInfo
     , home : HomePage.Model
+    , shop : Maybe ShopPage.Model
     , settings : SettingsPage.Model
     , route : Maybe Route.Route
     , errors : List Error
@@ -126,6 +129,7 @@ init flags url navKey =
                 { environment = environment
                 , appInfo = appInfo
                 , home = homeModel
+                , shop = Nothing
                 , settings = settingsModel
                 , route = route
                 , errors = []
@@ -165,6 +169,24 @@ update msg model =
                     in
                         ( { model | environment = newEnvironment }, Cmd.none )
 
+                GA.OpenShop ->
+                    let
+                        ( initModel, initCmd ) =
+                            ShopPage.init
+                    in
+                        ( { model | shop = Just initModel }
+                        , Cmd.batch
+                            [ Cmd.map ShopMsg initCmd
+                            , Route.newUrl model.navKey Route.Shop
+                            ]
+                        )
+
+                GA.CloseShop ->
+                    ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
+
+                GA.RefreshTickets ->
+                    ( model, TaskUtil.doTask (HomeMsg HomePage.FetchTickets) )
+
         SetRoute route ->
             setRoute route model
 
@@ -194,13 +216,19 @@ update msg model =
                 ( { model | notifications = newNotifications }, Cmd.none )
 
         HomeMsg subMsg ->
-            let
-                ( newModel, newCmd ) =
-                    HomePage.update subMsg model.environment model.home
-            in
-                ( { model | home = newModel }
-                , Cmd.map HomeMsg newCmd
-                )
+            HomePage.update subMsg model.environment model.home
+                |> PageUpdater.map (\newModel -> { model | home = newModel }) HomeMsg
+                |> doPageUpdate
+
+        ShopMsg subMsg ->
+            case model.shop of
+                Just shop ->
+                    ShopPage.update subMsg model.environment shop
+                        |> PageUpdater.map (\newModel -> { model | shop = Just newModel }) ShopMsg
+                        |> doPageUpdate
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         SettingsMsg subMsg ->
             SettingsPage.update subMsg model.environment model.settings
@@ -279,6 +307,19 @@ viewInternal model =
                         ]
                         [ H.text "Home"
                         ]
+                    , if model.shop /= Nothing then
+                        H.a
+                            [ A.href "#/shop"
+                            , if model.route == Just Route.Shop then
+                                A.class "selected-tab"
+
+                              else
+                                A.class ""
+                            ]
+                            [ H.text "Shop" ]
+
+                      else
+                        H.text ""
                     , H.a
                         [ A.href "#/settings"
                         , if model.route == Just Route.Settings then
@@ -331,6 +372,15 @@ viewPage model =
                 HomePage.view env model.appInfo model.home model.route
                     |> H.map HomeMsg
 
+            Just Route.Shop ->
+                case model.shop of
+                    Just shop ->
+                        ShopPage.view env model.appInfo shop model.route
+                            |> H.map ShopMsg
+
+                    Nothing ->
+                        H.text ""
+
             Just Route.Settings ->
                 SettingsPage.view env model.appInfo model.settings model.route
                     |> H.map SettingsMsg
@@ -360,6 +410,9 @@ subs model =
     Sub.batch
         [ HomePage.subscriptions model.home
             |> Sub.map HomeMsg
+        , model.shop
+            |> Maybe.map (ShopPage.subscriptions >> Sub.map ShopMsg)
+            |> Maybe.withDefault Sub.none
         , SettingsPage.subscriptions model.settings
             |> Sub.map SettingsMsg
         , model.notifications

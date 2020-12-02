@@ -11,6 +11,9 @@ type GlobalAction msg
     = RouteTo Route.Route
     | ShowNotification (Notification msg)
     | SetCustomerNumber Int
+    | OpenShop
+    | CloseShop
+    | RefreshTickets
 
 
 map : (a -> msg) -> GlobalAction a -> GlobalAction msg
@@ -24,3 +27,12 @@ map f ga =
 
         SetCustomerNumber number ->
             SetCustomerNumber number
+
+        OpenShop ->
+            OpenShop
+
+        CloseShop ->
+            CloseShop
+
+        RefreshTickets ->
+            RefreshTickets
