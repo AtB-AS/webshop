@@ -256,6 +256,32 @@ viewInternal : Model -> Html Msg
 viewInternal model =
     H.div []
         [ header model
+        , case model.userData of
+            Just _ ->
+                H.div [ A.class "tab-bar" ]
+                    [ H.a
+                        [ A.href "#/"
+                        , if model.route == Just Route.Home then
+                            A.class "selected-tab"
+
+                          else
+                            A.class ""
+                        ]
+                        [ H.text "Home"
+                        ]
+                    , H.a
+                        [ A.href "#/settings"
+                        , if model.route == Just Route.Settings then
+                            A.class "selected-tab"
+
+                          else
+                            A.class ""
+                        ]
+                        [ H.text "Settings" ]
+                    ]
+
+            Nothing ->
+                H.text ""
         , viewPage model
         ]
 

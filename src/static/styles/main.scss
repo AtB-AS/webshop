@@ -49,3 +49,23 @@ header {
         height: 50px;
     }
 }
+
+.tab-bar {
+    margin: 1rem;
+    padding: 0.5rem;
+    background-color: #00323a;
+    color: #fff;
+    border-radius: 8px;
+
+    a {
+        display: inline-block;
+        padding: 0.5rem;
+        text-decoration: none;
+        margin-right: 0.5rem;
+        outline: none;
+
+        &.selected-tab {
+            background-color: #044;
+        }
+    }
+}
