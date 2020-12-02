@@ -209,7 +209,7 @@ tokenDecoder =
     Decode.succeed Token
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "allowedActions" (Decode.list tokenActionDecoder)
-        |> DecodeP.required "status" tokenStatusDecoder
+        |> DecodeP.optional "status" tokenStatusDecoder TokenStatusUnspecified
         |> DecodeP.required "type" tokenTypeDecoder
 
 
