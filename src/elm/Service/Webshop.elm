@@ -42,7 +42,7 @@ hello env =
 
 getProfile : Environment -> Http.Request Profile
 getProfile env =
-    HttpUtil.get env "/api/v1/profile" profileDecoder
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/profile") profileDecoder
 
 
 updateProfile : Environment -> String -> String -> Http.Request ()
@@ -54,7 +54,7 @@ updateProfile env firstName lastName =
                 , ( "surname", Encode.string lastName )
                 ]
     in
-        HttpUtil.put env "/api/v1/profile" (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.put env (env.baseUrl ++ "/api/v1/profile") (Http.jsonBody payload) (Decode.succeed ())
 
 
 getTokens : Environment -> Http.Request (List Token)
