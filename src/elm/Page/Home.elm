@@ -1,7 +1,7 @@
 module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.Ticket exposing (Offer, Ticket)
+import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation, Ticket)
 import Data.Webshop exposing (FareContract, Profile, Token)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
@@ -9,6 +9,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Http
 import Json.Decode as Decode exposing (Decoder)
+import Process
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
@@ -22,6 +23,9 @@ type Msg
     | ReceiveTickets (Result Http.Error (List FareContract))
     | FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
+    | BuyOffers PaymentType
+    | ReceiveBuyOffers (Result Http.Error Reservation)
+    | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
     | Hello
     | ReceiveHello (Result Http.Error ())
     | GetProfile
@@ -44,6 +48,7 @@ type Msg
 type alias Model =
     { tickets : List FareContract
     , offers : List Offer
+    , reservation : Maybe Reservation
     , hello : String
     , profile : Maybe Profile
     , tokens : List Token
@@ -58,6 +63,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { tickets = []
       , offers = []
+      , reservation = Nothing
       , hello = ""
       , profile = Nothing
       , tokens = []
@@ -83,6 +89,47 @@ update msg env model =
 
                 Err err ->
                     ( model, Cmd.none )
+
+        BuyOffers paymentType ->
+            ( model
+            , case model.profile of
+                Just profile ->
+                    buyOffers env profile.customerNumber paymentType model.offers
+
+                Nothing ->
+                    Cmd.none
+            )
+
+        ReceiveBuyOffers result ->
+            case result of
+                Ok reservation ->
+                    ( { model | reservation = Just reservation }
+                    , Cmd.batch
+                        [ MiscService.openWindow reservation.url
+                        , fetchPaymentStatus env reservation.paymentId
+                        ]
+                    )
+
+                Err err ->
+                    ( model, Cmd.none )
+
+        ReceivePaymentStatus paymentId result ->
+            case result of
+                Ok paymentStatus ->
+                    case paymentStatus.status of
+                        "CAPTURE" ->
+                            ( { model | reservation = Nothing, offers = [] }
+                            , TaskUtil.doTask FetchTickets
+                            )
+
+                        "CANCEL" ->
+                            ( { model | reservation = Nothing }, Cmd.none )
+
+                        _ ->
+                            ( model, fetchPaymentStatus env paymentId )
+
+                Err err ->
+                    ( { model | reservation = Nothing }, Cmd.none )
 
         FetchTickets ->
             ( model
@@ -207,8 +254,22 @@ view env _ model _ =
                 , H.button [ E.onClick Hello ] [ H.text "Hello" ]
                 , H.p [] [ H.text model.hello ]
                 , H.h2 [] [ H.text "Offers" ]
-                , H.button [ E.onClick FetchOffers ] [ H.text "Refresh" ]
+                , H.button [ E.onClick FetchOffers ] [ H.text "Search" ]
                 , H.ol [] <| List.map viewOffer model.offers
+                , if List.length model.offers > 0 then
+                    H.div []
+                        [ H.button [ E.onClick <| BuyOffers Nets ] [ H.text "Buy with Nets" ]
+                        , H.button [ E.onClick <| BuyOffers Vipps ] [ H.text "Buy with Vipps" ]
+                        ]
+
+                  else
+                    H.text ""
+                , case model.reservation of
+                    Just reservation ->
+                        H.p [] [ H.text <| "Waiting for NETS with order" ++ reservation.orderId ]
+
+                    Nothing ->
+                        H.text ""
                 , H.h2 [] [ H.text "Tickets" ]
                 , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
                 , H.ol [] <| List.map viewTicket model.tickets
@@ -388,3 +449,23 @@ addQrCode env =
     WebshopService.addQrCode env
         |> Http.toTask
         |> Task.attempt ReceiveAddQrCode
+
+
+buyOffers : Environment -> Int -> PaymentType -> List Offer -> Cmd Msg
+buyOffers env customerNumber paymentType offers =
+    offers
+        |> List.map (\offer -> ( offer.offerId, 1 ))
+        |> TicketService.reserve env customerNumber paymentType
+        |> Http.toTask
+        |> Task.attempt ReceiveBuyOffers
+
+
+fetchPaymentStatus : Environment -> Int -> Cmd Msg
+fetchPaymentStatus env paymentId =
+    Process.sleep 500
+        |> Task.andThen
+            (\_ ->
+                TicketService.getPaymentStatus env paymentId
+                    |> Http.toTask
+            )
+        |> Task.attempt (ReceivePaymentStatus paymentId)

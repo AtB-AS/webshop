@@ -1,5 +1,7 @@
 module Data.Ticket exposing
     ( Offer
+    , PaymentStatus
+    , PaymentType(..)
     , Price
     , Reservation
     , Ticket
@@ -37,3 +39,15 @@ type alias Reservation =
     , transactionId : Int
     , url : String
     }
+
+
+type alias PaymentStatus =
+    { orderId : String
+    , status : String
+    , paymentType : String
+    }
+
+
+type PaymentType
+    = Nets
+    | Vipps

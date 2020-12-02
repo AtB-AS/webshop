@@ -1,12 +1,13 @@
 module Service.Ticket exposing
     ( capture
+    , getPaymentStatus
     , getTicketList
     , receipt
     , reserve
     , search
     )
 
-import Data.Ticket exposing (Offer, Price, Reservation, Ticket)
+import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation, Ticket)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -45,8 +46,8 @@ search env =
 
 {-| Reserve offers.
 -}
-reserve : Environment -> List ( String, Int ) -> Http.Request Reservation
-reserve env offers =
+reserve : Environment -> Int -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
+reserve env customerNumber paymentType offers =
     let
         url =
             Url.Builder.absolute
@@ -56,8 +57,10 @@ reserve env offers =
         body =
             Encode.object
                 [ ( "customer_id", Encode.string env.installId )
+                , ( "customer_number", Encode.int customerNumber )
                 , ( "offers", Encode.list encodeOffer offers )
-                , ( "payment_type", Encode.int 1 )
+                , ( "payment_type", encodePaymentType paymentType )
+                , ( "payment_redirect_url", Encode.string "http://127.0.0.1:8080/thanks" )
                 ]
     in
         Http.request
@@ -147,8 +150,35 @@ getTicketList env customerId =
             }
 
 
+getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
+getPaymentStatus env paymentId =
+    let
+        url =
+            Url.Builder.absolute
+                [ "ticket", "v1", "payments", String.fromInt paymentId ]
+                []
+    in
+        Http.request
+            { method = "GET"
+            , headers = [ Http.header "Atb-Install-Id" env.installId ]
+            , url = url
+            , body = Http.emptyBody
+            , expect = Http.expectJson paymentStatusDecoder
+            , timeout = Nothing
+            , withCredentials = False
+            }
+
+
 
 -- INTERNAL
+
+
+paymentStatusDecoder : Decoder PaymentStatus
+paymentStatusDecoder =
+    Decode.succeed PaymentStatus
+        |> DecodeP.required "order_id" Decode.string
+        |> DecodeP.required "status" Decode.string
+        |> DecodeP.required "payment_type" Decode.string
 
 
 ticketDecoder : Decoder Ticket
@@ -208,3 +238,13 @@ reservationDecoder =
         |> DecodeP.required "payment_id" Decode.int
         |> DecodeP.required "transaction_id" Decode.int
         |> DecodeP.required "url" Decode.string
+
+
+encodePaymentType : PaymentType -> Value
+encodePaymentType paymentType =
+    case paymentType of
+        Nets ->
+            Encode.int 1
+
+        Vipps ->
+            Encode.int 2

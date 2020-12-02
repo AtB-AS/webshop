@@ -106,3 +106,7 @@ function fetchAuthInfo(user) {
             console.log("Error when retrieving cached user", error);
         });
 }
+
+app.ports.openWindow.subscribe((url) => {
+    window.open(url);
+});
