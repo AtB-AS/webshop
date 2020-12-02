@@ -2,7 +2,7 @@ module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation, Ticket)
-import Data.Webshop exposing (FareContract, FareProduct, InspectionResult, Profile, TariffZone, Token, UserProfile)
+import Data.Webshop exposing (FareContract, FareProduct, InspectionResult(..), Profile, RejectionReason(..), TariffZone, Token, UserProfile)
 import Environment exposing (Environment)
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -15,6 +15,7 @@ import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Task
+import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 
 
@@ -61,7 +62,7 @@ type alias Model =
     , travelCardId : String
     , firstName : String
     , lastName : String
-    , inspection : String
+    , inspection : Status InspectionResult
     , tariffZones : List TariffZone
     , fareProducts : List FareProduct
     , userProfiles : List UserProfile
@@ -80,7 +81,7 @@ init =
       , travelCardId = ""
       , firstName = ""
       , lastName = ""
-      , inspection = ""
+      , inspection = NotLoaded
       , tariffZones = []
       , fareProducts = []
       , userProfiles = []
@@ -188,22 +189,22 @@ update msg env model =
                     ( model, Cmd.none )
 
         Inspect tokenPayload ->
-            ( { model | inspection = "Starting inspection..." }, inspect env tokenPayload )
+            ( { model | inspection = Loading Nothing }, inspect env tokenPayload )
 
         ReceiveInspectQrCode result ->
             case result of
-                Ok (inspection :: _) ->
-                    ( { model | inspection = Debug.toString inspection }
+                Ok [] ->
+                    ( { model | inspection = NotLoaded }
                     , Cmd.none
                     )
 
-                Ok [] ->
-                    ( { model | inspection = "No inspection results" }
+                Ok inspection ->
+                    ( { model | inspection = Loaded <| checkInspection inspection }
                     , Cmd.none
                     )
 
                 Err err ->
-                    ( { model | inspection = Debug.toString err }, Cmd.none )
+                    ( { model | inspection = Failed "Failed to perform inspection" }, Cmd.none )
 
         UpdateFirstName value ->
             ( { model | firstName = value }, Cmd.none )
@@ -365,11 +366,7 @@ view env _ model _ =
 
                   else
                     H.ol [] <| List.map (viewToken model.tokenPayloads) model.tokens
-                , if model.inspection /= "" then
-                    H.div [] [ H.text <| "Inspection: " ++ model.inspection ]
-
-                  else
-                    H.text ""
+                , viewInspection model.inspection
                 , H.h3 [] [ H.text "Add QR token" ]
                 , H.button
                     [ E.onClick AddQrCode ]
@@ -416,6 +413,75 @@ viewTicket fareContract =
         [ H.div [] [ H.text <| "Id: " ++ fareContract.id ]
         , H.div [] [ H.text <| "State: " ++ Debug.toString fareContract.state ]
         ]
+
+
+viewInspection : Status InspectionResult -> Html msg
+viewInspection inspection =
+    case inspection of
+        NotLoaded ->
+            H.text ""
+
+        Loading _ ->
+            H.div [] [ H.text "Inspection: Starting inspection..." ]
+
+        Loaded result ->
+            H.div [] [ H.text ("Inspection: " ++ inspectionToString result) ]
+
+        Failed error ->
+            H.div [] [ H.text ("Inspection: Error - " ++ error) ]
+
+
+inspectionToString : InspectionResult -> String
+inspectionToString inspection =
+    case inspection of
+        InspectionGreen ->
+            "Green"
+
+        InspectionYellow ->
+            "Yellow"
+
+        InspectionRed reason ->
+            "Red - " ++ rejectionToString reason
+
+
+rejectionToString : RejectionReason -> String
+rejectionToString rejection =
+    case rejection of
+        RejectionReasonNoActiveFareContracts ->
+            "No active fare contracts"
+
+        RejectionReasonNoFareContracts ->
+            "No fare contracts"
+
+        RejectionReasonFareContractNotActivated ->
+            "Fare contract not activated"
+
+        RejectionReasonValidityParametersInvalid ->
+            "Validity parameters are invalid"
+
+        RejectionReasonTokenMarkedInactive ->
+            "Token marked as inactive"
+
+        RejectionReasonTokenValidityNotStarted ->
+            "Token is not valid yet"
+
+        RejectionReasonTokenValidityEnded ->
+            "Token is no longer valid"
+
+        RejectionReasonTokenSignatureInvalid ->
+            "Token signature is invalid"
+
+        RejectionReasonTokenNotFound ->
+            "Token was not found"
+
+        RejectionReasonDifferentTokenType ->
+            "Different token type"
+
+        RejectionReasonTokenIdMismatch ->
+            "Token id mismatch"
+
+        RejectionReasonTokenActionsMismatch ->
+            "Token actions mismatch"
 
 
 viewProfile : Maybe Profile -> Html msg
@@ -579,3 +645,36 @@ fetchUserProfiles env =
     WebshopService.getUserProfiles env
         |> Http.toTask
         |> Task.attempt ReceiveUserProfiles
+
+
+checkInspection : List InspectionResult -> InspectionResult
+checkInspection results =
+    let
+        greens =
+            List.filter ((==) InspectionGreen) results
+
+        yellows =
+            List.filter ((==) InspectionYellow) results
+
+        reds =
+            List.filter
+                (\result ->
+                    case result of
+                        InspectionRed _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+                results
+    in
+        if List.length greens > 0 then
+            InspectionGreen
+
+        else if List.length yellows > 0 then
+            InspectionYellow
+
+        else
+            Maybe.withDefault
+                (InspectionRed RejectionReasonNoActiveFareContracts)
+                (List.head reds)
