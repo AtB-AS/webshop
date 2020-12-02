@@ -1,4 +1,10 @@
-module Service.Ticket exposing (capture, getTicketList, receipt, reserve, search)
+module Service.Ticket exposing
+    ( capture
+    , getTicketList
+    , receipt
+    , reserve
+    , search
+    )
 
 import Data.Ticket exposing (Offer, Price, Reservation, Ticket)
 import Environment exposing (Environment)

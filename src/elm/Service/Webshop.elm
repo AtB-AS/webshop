@@ -1,4 +1,11 @@
-module Service.Webshop exposing (addTravelCard, getProfile, getToken, getTokens, hello, updateProfile)
+module Service.Webshop exposing
+    ( addTravelCard
+    , getProfile
+    , getToken
+    , getTokens
+    , hello
+    , updateProfile
+    )
 
 import Data.Webshop exposing (Profile, Token, TokenAction(..), TokenStatus(..), TokenType(..))
 import Environment exposing (Environment)

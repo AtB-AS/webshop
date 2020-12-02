@@ -1,4 +1,9 @@
-module Data.Ticket exposing (Offer, Price, Reservation, Ticket)
+module Data.Ticket exposing
+    ( Offer
+    , Price
+    , Reservation
+    , Ticket
+    )
 
 
 type alias Ticket =
