@@ -14,6 +14,7 @@ import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
 import Page.Home as HomePage
 import Page.Settings as SettingsPage
+import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
 import Svg as S
@@ -154,6 +155,16 @@ update msg model =
                 GA.ShowNotification notification ->
                     ( { model | notifications = notification :: model.notifications }, Cmd.none )
 
+                GA.SetCustomerNumber number ->
+                    let
+                        oldEnvironment =
+                            model.environment
+
+                        newEnvironment =
+                            { oldEnvironment | customerNumber = number }
+                    in
+                        ( { model | environment = newEnvironment }, Cmd.none )
+
         SetRoute route ->
             setRoute route model
 
@@ -192,13 +203,9 @@ update msg model =
                 )
 
         SettingsMsg subMsg ->
-            let
-                ( newModel, newCmd ) =
-                    SettingsPage.update subMsg model.environment model.settings
-            in
-                ( { model | settings = newModel }
-                , Cmd.map SettingsMsg newCmd
-                )
+            SettingsPage.update subMsg model.environment model.settings
+                |> PageUpdater.map (\newModel -> { model | settings = newModel }) SettingsMsg
+                |> doPageUpdate
 
         LogIn ->
             ( model, FirebaseAuth.signIn () )
@@ -232,7 +239,10 @@ update msg model =
                             }
                     in
                         ( { model | userData = Just value, environment = newEnvironment }
-                        , TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
+                        , Cmd.batch
+                            [ TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
+                            , TaskUtil.doTask (SettingsMsg SettingsPage.GetProfile)
+                            ]
                         )
 
                 Err error ->
@@ -396,3 +406,16 @@ userDataDecoder =
                 )
                 Decode.string
             )
+
+
+
+--
+
+
+doPageUpdate : PageUpdater Model Msg -> ( Model, Cmd Msg )
+doPageUpdate pageUpdater =
+    let
+        ( newModel, cmd ) =
+            pageUpdater.update
+    in
+        ( newModel, Cmd.batch (cmd :: List.map (GlobalAction >> TaskUtil.doTask) pageUpdater.globalActions) )

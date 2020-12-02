@@ -10,6 +10,7 @@ import Route as Route
 type GlobalAction msg
     = RouteTo Route.Route
     | ShowNotification (Notification msg)
+    | SetCustomerNumber Int
 
 
 map : (a -> msg) -> GlobalAction a -> GlobalAction msg
@@ -20,3 +21,6 @@ map f ga =
 
         ShowNotification notification ->
             ShowNotification <| Notification.map f notification
+
+        SetCustomerNumber number ->
+            SetCustomerNumber number

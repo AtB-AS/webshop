@@ -27,12 +27,6 @@ type Msg
     | BuyOffers PaymentType
     | ReceiveBuyOffers (Result Http.Error Reservation)
     | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
-    | GetProfile
-    | ReceiveProfile (Result Http.Error Profile)
-    | UpdateFirstName String
-    | UpdateLastName String
-    | UpdateProfile
-    | ReceiveUpdateProfile (Result Http.Error ())
     | GetTokens
     | ReceiveTokens (Result Http.Error (List Token))
     | UpdateTravelCardId String
@@ -53,12 +47,9 @@ type alias Model =
     { tickets : List FareContract
     , offers : List Offer
     , reservation : Maybe Reservation
-    , profile : Maybe Profile
     , tokens : List Token
     , tokenPayloads : List ( String, String )
     , travelCardId : String
-    , firstName : String
-    , lastName : String
     , inspection : Status InspectionResult
     , tariffZones : List TariffZone
     , fareProducts : List FareProduct
@@ -71,12 +62,9 @@ init =
     ( { tickets = []
       , offers = []
       , reservation = Nothing
-      , profile = Nothing
       , tokens = []
       , tokenPayloads = []
       , travelCardId = ""
-      , firstName = ""
-      , lastName = ""
       , inspection = NotLoaded
       , tariffZones = []
       , fareProducts = []
@@ -102,12 +90,12 @@ update msg env model =
 
         BuyOffers paymentType ->
             ( model
-            , case model.profile of
-                Just profile ->
-                    buyOffers env profile.customerNumber paymentType model.offers
-
-                Nothing ->
+            , case env.customerNumber of
+                0 ->
                     Cmd.none
+
+                customerNumber ->
+                    buyOffers env customerNumber paymentType model.offers
             )
 
         ReceiveBuyOffers result ->
@@ -156,23 +144,6 @@ update msg env model =
                 Err err ->
                     ( model, Cmd.none )
 
-        GetProfile ->
-            ( model, fetchProfile env )
-
-        ReceiveProfile result ->
-            case result of
-                Ok profile ->
-                    ( { model
-                        | profile = Just profile
-                        , firstName = profile.firstName
-                        , lastName = profile.lastName
-                      }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
         Inspect tokenPayload ->
             ( { model | inspection = Loading Nothing }, inspect env tokenPayload )
 
@@ -190,23 +161,6 @@ update msg env model =
 
                 Err err ->
                     ( { model | inspection = Failed "Failed to perform inspection" }, Cmd.none )
-
-        UpdateFirstName value ->
-            ( { model | firstName = value }, Cmd.none )
-
-        UpdateLastName value ->
-            ( { model | lastName = value }, Cmd.none )
-
-        UpdateProfile ->
-            ( model, updateProfile env model.firstName model.lastName )
-
-        ReceiveUpdateProfile result ->
-            case result of
-                Ok () ->
-                    ( model, fetchProfile env )
-
-                Err _ ->
-                    ( model, Cmd.none )
 
         GetTokens ->
             ( model, fetchTokens env )
@@ -247,8 +201,7 @@ update msg env model =
         LoadAccount ->
             ( model
             , Cmd.batch
-                [ TaskUtil.doTask GetProfile
-                , TaskUtil.doTask GetTokens
+                [ TaskUtil.doTask GetTokens
                 , TaskUtil.doTask FetchTickets
                 , fetchTariffZones env
                 , fetchFareProducts env
@@ -314,33 +267,6 @@ view env _ model _ =
                 , H.h2 [] [ H.text "Tickets" ]
                 , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
                 , H.ol [] <| List.map viewTicket model.tickets
-                , H.h2 [] [ H.text "Profile" ]
-                , H.button [ E.onClick GetProfile ] [ H.text "Refresh" ]
-                , H.div [] [ viewProfile model.profile ]
-                , H.h2 [] [ H.text "Update profile" ]
-                , H.div []
-                    [ H.text "First name: "
-                    , H.input
-                        [ A.value model.firstName
-                        , E.onInput UpdateFirstName
-                        , A.placeholder "First name"
-                        ]
-                        []
-                    ]
-                , H.div []
-                    [ H.text "Last name: "
-                    , H.input
-                        [ A.value model.lastName
-                        , E.onInput UpdateLastName
-                        , A.placeholder "Last name"
-                        ]
-                        []
-                    ]
-                , H.button
-                    [ A.disabled (String.trim model.firstName == "" || String.trim model.lastName == "")
-                    , E.onClick UpdateProfile
-                    ]
-                    [ H.text "Update" ]
                 , H.h2 [] [ H.text "Tokens" ]
                 , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
                 , if List.length model.tokens == 0 then
@@ -485,19 +411,6 @@ rejectionToString rejection =
             "Token actions mismatch"
 
 
-viewProfile : Maybe Profile -> Html msg
-viewProfile maybeProfile =
-    case maybeProfile of
-        Just profile ->
-            H.ul []
-                [ H.li [] [ H.text ("First name: " ++ profile.firstName) ]
-                , H.li [] [ H.text ("Last name: " ++ profile.lastName) ]
-                ]
-
-        Nothing ->
-            H.p [] [ H.text "No profile." ]
-
-
 viewToken : List ( String, String ) -> Token -> Html Msg
 viewToken payloads token =
     let
@@ -581,20 +494,6 @@ fetchOffers env =
     TicketService.search env
         |> Http.toTask
         |> Task.attempt ReceiveOffers
-
-
-fetchProfile : Environment -> Cmd Msg
-fetchProfile env =
-    WebshopService.getProfile env
-        |> Http.toTask
-        |> Task.attempt ReceiveProfile
-
-
-updateProfile : Environment -> String -> String -> Cmd Msg
-updateProfile env firstName lastName =
-    WebshopService.updateProfile env firstName lastName
-        |> Http.toTask
-        |> Task.attempt ReceiveUpdateProfile
 
 
 fetchTokens : Environment -> Cmd Msg
