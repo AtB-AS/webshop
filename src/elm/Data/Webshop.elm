@@ -13,6 +13,7 @@ type alias Profile =
     { email : String
     , firstName : String
     , lastName : String
+    , customerNumber : Int
     }
 
 

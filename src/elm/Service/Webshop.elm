@@ -125,6 +125,7 @@ profileDecoder =
         |> DecodeP.hardcoded ""
         |> DecodeP.required "firstName" Decode.string
         |> DecodeP.required "surname" Decode.string
+        |> DecodeP.required "enturCustomerNumber" Decode.int
 
 
 tokenDecoder : Decoder Token

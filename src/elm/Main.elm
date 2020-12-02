@@ -101,6 +101,7 @@ init flags url navKey =
             , language = English
             , installId = flags.installId
             , customerId = Nothing
+            , customerNumber = 0
             , token = ""
             }
 

@@ -23,5 +23,6 @@ type alias Environment =
     , language : Language
     , installId : String
     , customerId : Maybe String
+    , customerNumber : Int
     , token : String
     }
