@@ -1,5 +1,6 @@
 module Service.Webshop exposing
-    ( addTravelCard
+    ( addQrCode
+    , addTravelCard
     , getProfile
     , getToken
     , getTokens
@@ -68,6 +69,11 @@ addTravelCard env id =
             Encode.object [ ( "travelCardId", Encode.string id ) ]
     in
         HttpUtil.post env "/api/v1/tokens/travelcard" (Http.jsonBody payload) (Decode.succeed ())
+
+
+addQrCode : Environment -> Http.Request ()
+addQrCode env =
+    HttpUtil.post env "/api/v1/tokens/qrcode" Http.emptyBody (Decode.succeed ())
 
 
 

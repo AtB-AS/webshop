@@ -32,6 +32,8 @@ type Msg
     | UpdateTravelCardId String
     | AddTravelCard
     | ReceiveAddTravelCard (Result Http.Error ())
+    | AddQrCode
+    | ReceiveAddQrCode (Result Http.Error ())
 
 
 type alias Model =
@@ -160,6 +162,17 @@ update msg env model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        AddQrCode ->
+            ( model, addQrCode env )
+
+        ReceiveAddQrCode result ->
+            case result of
+                Ok () ->
+                    ( model, fetchTokens env )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
 view env _ model _ =
@@ -209,7 +222,11 @@ view env _ model _ =
 
                   else
                     H.ol [] <| List.map viewToken model.tokens
-                , H.h2 [] [ H.text "Add travel card" ]
+                , H.h3 [] [ H.text "Add QR token" ]
+                , H.button
+                    [ E.onClick AddQrCode ]
+                    [ H.text "Add" ]
+                , H.h3 [] [ H.text "Add travel card" ]
                 , H.input
                     [ A.value model.travelCardId
                     , E.onInput UpdateTravelCardId
@@ -327,3 +344,10 @@ addTravelCard env id =
     WebshopService.addTravelCard env id
         |> Http.toTask
         |> Task.attempt ReceiveAddTravelCard
+
+
+addQrCode : Environment -> Cmd Msg
+addQrCode env =
+    WebshopService.addQrCode env
+        |> Http.toTask
+        |> Task.attempt ReceiveAddQrCode
