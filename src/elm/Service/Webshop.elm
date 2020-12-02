@@ -121,8 +121,7 @@ fareContractDecoder =
 profileDecoder : Decoder Profile
 profileDecoder =
     Decode.succeed Profile
-        --|> DecodeP.required "email" Decode.string
-        |> DecodeP.hardcoded ""
+        |> DecodeP.optional "email" Decode.string ""
         |> DecodeP.required "firstName" Decode.string
         |> DecodeP.required "surname" Decode.string
         |> DecodeP.required "enturCustomerNumber" Decode.int
