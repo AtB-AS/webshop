@@ -221,7 +221,6 @@ view env _ model _ =
                     , E.onClick AddTravelCard
                     ]
                     [ H.text "Add" ]
-                , H.ol [] <| List.map viewToken model.tokens
                 ]
 
         Nothing ->
