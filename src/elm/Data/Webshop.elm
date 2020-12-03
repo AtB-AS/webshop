@@ -69,7 +69,10 @@ type FareContractState
 
 type alias FareContract =
     { id : String
+    , validity : ( Int, Int )
     , state : FareContractState
+    , userProfiles : List String
+    , fareProducts : List String
     }
 
 

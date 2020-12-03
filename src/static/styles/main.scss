@@ -127,3 +127,13 @@ dl dd {
     margin: 0;
     padding: 0;
 }
+
+table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+
+    th, td {
+        padding: 0.5rem;
+        border: 1px solid #345d63;
+    }
+}

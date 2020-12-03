@@ -261,34 +261,44 @@ rejectionReasonDecoder =
         Decode.int
 
 
+fareContractStateDecoder : Decoder FareContractState
+fareContractStateDecoder =
+    Decode.andThen
+        (\value ->
+            case value of
+                0 ->
+                    Decode.succeed FareContractStateUnspecified
+
+                1 ->
+                    Decode.succeed FareContractStateNotActivated
+
+                2 ->
+                    Decode.succeed FareContractStateActivated
+
+                3 ->
+                    Decode.succeed FareContractStateCancelled
+
+                4 ->
+                    Decode.succeed FareContractStateRefunded
+
+                _ ->
+                    Decode.fail "Invalid fare contract state"
+        )
+        Decode.int
+
+
 fareContractDecoder : Decoder FareContract
 fareContractDecoder =
     Decode.succeed FareContract
         |> DecodeP.required "id" Decode.string
-        |> DecodeP.required "state"
-            (Decode.andThen
-                (\value ->
-                    case value of
-                        0 ->
-                            Decode.succeed FareContractStateUnspecified
-
-                        1 ->
-                            Decode.succeed FareContractStateNotActivated
-
-                        2 ->
-                            Decode.succeed FareContractStateActivated
-
-                        3 ->
-                            Decode.succeed FareContractStateCancelled
-
-                        4 ->
-                            Decode.succeed FareContractStateRefunded
-
-                        _ ->
-                            Decode.fail "Invalid fare contract state"
-                )
-                Decode.int
+        |> DecodeP.custom
+            (Decode.succeed Tuple.pair
+                |> DecodeP.required "validFrom" Decode.int
+                |> DecodeP.required "validTo" Decode.int
             )
+        |> DecodeP.required "state" fareContractStateDecoder
+        |> DecodeP.optional "userProfileRefs" (Decode.list Decode.string) []
+        |> DecodeP.optional "fareProductRefs" (Decode.list Decode.string) []
 
 
 profileDecoder : Decoder Profile

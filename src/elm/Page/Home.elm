@@ -1,7 +1,7 @@
 module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, Inspection(..), Profile, Rejection(..), TariffZone, Token, TokenType(..), UserProfile)
+import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, Inspection(..), LangString(..), Profile, Rejection(..), TariffZone, Token, TokenType(..), UserProfile)
 import Environment exposing (Environment)
 import GlobalActions as GA
 import Html as H exposing (Html)
@@ -14,6 +14,7 @@ import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Webshop as WebshopService
 import Task
+import Time
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 
@@ -36,6 +37,7 @@ type Msg
     | ReceiveFareProducts (Result Http.Error (List FareProduct))
     | ReceiveUserProfiles (Result Http.Error (List UserProfile))
     | OpenShop
+    | UpdateTime Time.Posix
 
 
 type alias Model =
@@ -47,6 +49,7 @@ type alias Model =
     , tariffZones : List TariffZone
     , fareProducts : List FareProduct
     , userProfiles : List UserProfile
+    , currentTime : Time.Posix
     }
 
 
@@ -60,6 +63,7 @@ init =
       , tariffZones = []
       , fareProducts = []
       , userProfiles = []
+      , currentTime = Time.millisToPosix 0
       }
     , Cmd.none
     )
@@ -182,6 +186,9 @@ update msg env model =
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.OpenShop
 
+        UpdateTime posixTime ->
+            PageUpdater.init { model | currentTime = posixTime }
+
 
 view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
 view env _ model _ =
@@ -191,7 +198,22 @@ view env _ model _ =
                 [ H.h2 [] [ H.text "Tickets" ]
                 , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
                 , H.button [ E.onClick OpenShop ] [ H.text "Buy" ]
-                , H.ol [] <| List.map viewTicket model.tickets
+                , if List.isEmpty model.tickets then
+                    H.div [] [ H.text "No tickets" ]
+
+                  else
+                    H.table []
+                        [ H.thead []
+                            [ H.tr []
+                                [ H.th [] [ H.text "Id" ]
+                                , H.th [] [ H.text "State" ]
+                                , H.th [] [ H.text "Validity" ]
+                                , H.th [] [ H.text "User" ]
+                                , H.th [] [ H.text "Product" ]
+                                ]
+                            ]
+                        , H.tbody [] <| List.map (viewTicket model) model.tickets
+                        ]
                 , H.h2 [] [ H.text "Tokens" ]
                 , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
                 , if List.length model.tokens == 0 then
@@ -231,12 +253,59 @@ view env _ model _ =
                 ]
 
 
-viewTicket : FareContract -> Html msg
-viewTicket fareContract =
-    H.li []
-        [ H.div [] [ H.text <| "Id: " ++ fareContract.id ]
-        , H.div [] [ H.text <| "State: " ++ fareContractStateToString fareContract.state ]
-        ]
+viewTicket : Model -> FareContract -> Html msg
+viewTicket model fareContract =
+    let
+        ( _, to ) =
+            fareContract.validity
+
+        now =
+            Time.posixToMillis model.currentTime // 1000
+    in
+        H.tr []
+            [ H.td [] [ H.text fareContract.id ]
+            , H.td [] [ H.text <| fareContractStateToString fareContract.state ]
+            , H.td []
+                [ if now > to then
+                    H.span [ A.style "color" "#f00" ] [ H.text "Expired" ]
+
+                  else
+                    H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ String.fromInt (to - now) ++ " seconds left" ]
+                ]
+            , H.td [] [ H.div [] <| List.map (viewUserProfile model) fareContract.userProfiles ]
+            , H.td [] [ H.div [] <| List.map (viewFareProduct model) fareContract.fareProducts ]
+            ]
+
+
+langString : LangString -> String
+langString (LangString _ value) =
+    value
+
+
+viewUserProfile : Model -> String -> Html msg
+viewUserProfile model userProfile =
+    model.userProfiles
+        |> List.filter
+            (\entry ->
+                entry.id == userProfile
+            )
+        |> List.map (.name >> langString)
+        |> List.head
+        |> Maybe.withDefault ""
+        |> H.text
+
+
+viewFareProduct : Model -> String -> Html msg
+viewFareProduct model fareProduct =
+    model.fareProducts
+        |> List.filter
+            (\entry ->
+                entry.id == fareProduct
+            )
+        |> List.map (.name >> langString)
+        |> List.head
+        |> Maybe.withDefault ""
+        |> H.text
 
 
 fareContractStateToString : FareContractState -> String
@@ -381,7 +450,10 @@ tokenTypeToString type_ =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    MiscService.receiveTokens (Decode.decodeValue tokenPayloadsDecoder >> ReceiveTokenPayloads)
+    Sub.batch
+        [ MiscService.receiveTokens (Decode.decodeValue tokenPayloadsDecoder >> ReceiveTokenPayloads)
+        , Time.every 1000 UpdateTime
+        ]
 
 
 
