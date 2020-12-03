@@ -59,6 +59,7 @@ type alias Model =
 type alias Flags =
     { isDevelopment : Bool
     , baseUrl : String
+    , ticketUrl : String
     , version : String
     , commit : String
     , installId : String
@@ -102,6 +103,7 @@ init flags url navKey =
         environment =
             { distributionEnv = distributionEnv
             , baseUrl = flags.baseUrl
+            , ticketUrl = flags.ticketUrl
             , language = English
             , installId = flags.installId
             , customerId = Nothing

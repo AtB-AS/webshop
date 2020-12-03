@@ -22,7 +22,7 @@ search : Environment -> Http.Request (List Offer)
 search env =
     let
         url =
-            Url.Builder.absolute
+            Url.Builder.crossOrigin env.ticketUrl
                 [ "ticket", "v1", "search" ]
                 []
 
@@ -50,7 +50,7 @@ reserve : Environment -> Int -> PaymentType -> List ( String, Int ) -> Http.Requ
 reserve env customerNumber paymentType offers =
     let
         url =
-            Url.Builder.absolute
+            Url.Builder.crossOrigin env.ticketUrl
                 [ "ticket", "v1", "reserve" ]
                 []
 
@@ -80,8 +80,8 @@ capture : Environment -> Int -> Int -> Http.Request ()
 capture env paymentId transactionId =
     let
         url =
-            Url.Builder.absolute
-                [ "api", "ticket", "v1", "capture" ]
+            Url.Builder.crossOrigin env.ticketUrl
+                [ "ticket", "v1", "capture" ]
                 []
 
         body =
@@ -107,7 +107,7 @@ receipt : Environment -> String -> String -> Http.Request ()
 receipt env emailAddress orderId =
     let
         url =
-            Url.Builder.absolute
+            Url.Builder.crossOrigin env.ticketUrl
                 [ "ticket", "v1", "receipt" ]
                 []
 
@@ -135,7 +135,7 @@ getTicketList : Environment -> String -> Http.Request (List Ticket)
 getTicketList env customerId =
     let
         url =
-            Url.Builder.absolute
+            Url.Builder.crossOrigin env.ticketUrl
                 [ "ticket", "v1", "ticket", env.installId ]
                 []
     in
@@ -154,7 +154,7 @@ getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
 getPaymentStatus env paymentId =
     let
         url =
-            Url.Builder.absolute
+            Url.Builder.crossOrigin env.ticketUrl
                 [ "ticket", "v1", "payments", String.fromInt paymentId ]
                 []
     in

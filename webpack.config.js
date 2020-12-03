@@ -51,6 +51,7 @@ const outputPath = path.join(__dirname, 'dist');
 // Options:
 //
 // --baseUrl=<url>     Set the base URL for service calls, etc.
+// --ticketUrl=<url>   Set the base URL for ticket service calls.
 // --production        Set the target environment to production.
 // --development       Set the target environment to development.
 // --languageSwitcher  Set if the languageSwitcher will be shown.
@@ -145,6 +146,36 @@ function getBaseUrl(config) {
         } else if (isDevelopment) {
             if (typeof config.baseUrl.development === 'string' && config.baseUrl.development.length > 0) {
                 return config.baseUrl.development;
+            }
+        }
+    }
+
+    // Use root of current server as default backend. This won't work for
+    // development as the dev server only serves frontend code. It's just
+    // a semi-sane default.
+    return '/';
+}
+
+// Get base URL from command line or config file.
+function getTicketUrl(config) {
+    const wantedTicketUrl = getOption('ticketUrl', true, null);
+
+    if (typeof wantedTicketUrl === 'string' && wantedTicketUrl.length > 0) {
+        return wantedTicketUrl;
+    }
+
+    if (typeof config.ticketUrl === 'string' && config.ticketUrl.length > 0) {
+        return config.ticketUrl;
+    }
+
+    if (typeof config.ticketUrl === 'object') {
+        if (isProduction || isDebug) {
+            if (typeof config.ticketUrl.production === 'string' && config.ticketUrl.production.length > 0) {
+                return config.ticketUrl.production;
+            }
+        } else if (isDevelopment) {
+            if (typeof config.ticketUrl.development === 'string' && config.ticketUrl.development.length > 0) {
+                return config.ticketUrl.development;
             }
         }
     }
@@ -263,6 +294,7 @@ const commonConfig = {
             elmFlags: JSON.stringify({
                 isDevelopment: isDevelopment,
                 baseUrl: getBaseUrl(localConfig),
+                ticketUrl: getTicketUrl(localConfig),
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
                 commit: gitCommitHash()
