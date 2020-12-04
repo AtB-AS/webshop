@@ -40,12 +40,12 @@ updateProfile env firstName lastName =
 
 getTokens : Environment -> Http.Request (List Token)
 getTokens env =
-    HttpUtil.get env "/api/v1/tokens" (Decode.list tokenDecoder)
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens") (Decode.list tokenDecoder)
 
 
 getToken : Environment -> String -> Http.Request Token
 getToken env id =
-    HttpUtil.get env ("/api/v1/tokens/" ++ id) tokenDecoder
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens/" ++ id) tokenDecoder
 
 
 addTravelCard : Environment -> String -> Http.Request ()
@@ -54,12 +54,12 @@ addTravelCard env id =
         payload =
             Encode.object [ ( "travelCardId", Encode.string id ) ]
     in
-        HttpUtil.post env "/api/v1/tokens/travelcard" (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/travelcard") (Http.jsonBody payload) (Decode.succeed ())
 
 
 addQrCode : Environment -> Http.Request ()
 addQrCode env =
-    HttpUtil.post env "/api/v1/tokens/qrcode" Http.emptyBody (Decode.succeed ())
+    HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/qrcode") Http.emptyBody (Decode.succeed ())
 
 
 inspectQrCode : Environment -> String -> Http.Request (List Inspection)
@@ -68,7 +68,7 @@ inspectQrCode env tokenPayload =
         payload =
             Encode.object [ ( "token", Encode.string tokenPayload ) ]
     in
-        HttpUtil.post env "/api/v1/inspection/qrcode" (Http.jsonBody payload) (Decode.list inspectionDecoder)
+        HttpUtil.post env (env.baseUrl ++ "/api/v1/inspection/qrcode") (Http.jsonBody payload) (Decode.list inspectionDecoder)
 
 
 {-| Get list of tickets.
