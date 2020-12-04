@@ -1,7 +1,5 @@
 module Service.Ticket exposing
-    ( capture
-    , getPaymentStatus
-    , getTicketList
+    ( getPaymentStatus
     , receipt
     , reserve
     , search
@@ -59,33 +57,6 @@ reserve env customerNumber paymentType offers =
         HttpUtil.post env url (Http.jsonBody body) reservationDecoder
 
 
-{-| Capture an order.
--}
-capture : Environment -> Int -> Int -> Http.Request ()
-capture env paymentId transactionId =
-    let
-        url =
-            Url.Builder.crossOrigin env.ticketUrl
-                [ "ticket", "v1", "capture" ]
-                []
-
-        body =
-            Encode.object
-                [ ( "payment_id", Encode.int paymentId )
-                , ( "transaction_id", Encode.int transactionId )
-                ]
-    in
-        Http.request
-            { method = "PUT"
-            , headers = [ Http.header "Atb-Install-Id" env.installId ]
-            , url = url
-            , body = Http.jsonBody body
-            , expect = Http.expectStringResponse (\_ -> Ok ())
-            , timeout = Nothing
-            , withCredentials = False
-            }
-
-
 {-| Get a receipt for an order.
 -}
 receipt : Environment -> String -> String -> Http.Request ()
@@ -114,19 +85,6 @@ receipt env emailAddress orderId =
             }
 
 
-{-| Get list of tickets.
--}
-getTicketList : Environment -> String -> Http.Request (List Ticket)
-getTicketList env customerId =
-    let
-        url =
-            Url.Builder.crossOrigin env.ticketUrl
-                [ "ticket", "v1", "ticket", env.installId ]
-                []
-    in
-        HttpUtil.get env url ticketListDecoder
-
-
 getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
 getPaymentStatus env paymentId =
     let
@@ -148,23 +106,6 @@ paymentStatusDecoder =
         |> DecodeP.required "order_id" Decode.string
         |> DecodeP.required "status" Decode.string
         |> DecodeP.required "payment_type" Decode.string
-
-
-ticketDecoder : Decoder Ticket
-ticketDecoder =
-    Decode.succeed Ticket
-        |> DecodeP.required "duration" Decode.int
-        |> DecodeP.required "order_id" Decode.string
-        |> DecodeP.required "order_version" Decode.string
-        |> DecodeP.required "product_name" Decode.string
-        |> DecodeP.required "usage_valid_from" Decode.int
-        |> DecodeP.required "usage_valid_to" Decode.int
-        |> DecodeP.required "user_profiles" (Decode.list Decode.string)
-
-
-ticketListDecoder : Decoder (List Ticket)
-ticketListDecoder =
-    Decode.field "fare_contracts" (Decode.list ticketDecoder)
 
 
 encodeTraveller : Int -> Value
