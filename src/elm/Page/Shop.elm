@@ -3,6 +3,7 @@ module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
 import Base exposing (AppInfo)
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
 import Environment exposing (Environment)
+import Fragment.Button as Button
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -14,6 +15,7 @@ import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Task
+import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 
 
@@ -27,15 +29,15 @@ type Msg
 
 
 type alias Model =
-    { offers : List Offer
-    , reservation : Maybe Reservation
+    { offers : Status (List Offer)
+    , reservation : Status Reservation
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { offers = []
-      , reservation = Nothing
+    ( { offers = NotLoaded
+      , reservation = NotLoaded
       }
     , TaskUtil.doTask FetchOffers
     )
@@ -45,29 +47,38 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         FetchOffers ->
-            PageUpdater.fromPair ( model, fetchOffers env )
+            PageUpdater.fromPair
+                ( { model | offers = Loading Nothing, reservation = NotLoaded }
+                , fetchOffers env
+                )
 
         ReceiveOffers result ->
             case result of
                 Ok offers ->
-                    PageUpdater.init { model | offers = offers }
+                    PageUpdater.init { model | offers = Loaded offers }
 
                 Err err ->
-                    PageUpdater.init model
+                    PageUpdater.init { model | offers = Failed "Unable to load offers" }
 
         BuyOffers paymentType ->
-            case env.customerNumber of
-                0 ->
+            case ( env.customerNumber, model.offers ) of
+                ( 0, _ ) ->
                     PageUpdater.init model
 
-                customerNumber ->
-                    PageUpdater.fromPair ( model, buyOffers env customerNumber paymentType model.offers )
+                ( customerNumber, Loaded offers ) ->
+                    PageUpdater.fromPair
+                        ( { model | reservation = Loading Nothing }
+                        , buyOffers env customerNumber paymentType offers
+                        )
+
+                _ ->
+                    PageUpdater.init model
 
         ReceiveBuyOffers result ->
             case result of
                 Ok reservation ->
                     PageUpdater.fromPair
-                        ( { model | reservation = Just reservation }
+                        ( { model | reservation = Loaded reservation }
                         , Cmd.batch
                             [ MiscService.openWindow reservation.url
                             , fetchPaymentStatus env reservation.paymentId
@@ -75,25 +86,25 @@ update msg env model =
                         )
 
                 Err _ ->
-                    PageUpdater.init model
+                    PageUpdater.init { model | reservation = Failed "Unable to reserve offers" }
 
         ReceivePaymentStatus paymentId result ->
             case result of
                 Ok paymentStatus ->
                     case paymentStatus.status of
                         "CAPTURE" ->
-                            PageUpdater.init { model | reservation = Nothing, offers = [] }
+                            PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
                                 |> PageUpdater.addGlobalAction GA.RefreshTickets
                                 |> PageUpdater.addGlobalAction GA.CloseShop
 
                         "CANCEL" ->
-                            PageUpdater.init { model | reservation = Nothing }
+                            PageUpdater.init { model | reservation = NotLoaded }
 
                         _ ->
                             PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
 
                 Err _ ->
-                    PageUpdater.init { model | reservation = Nothing }
+                    PageUpdater.init { model | reservation = NotLoaded }
 
         CloseShop ->
             PageUpdater.init model
@@ -106,21 +117,60 @@ view _ _ model _ =
         [ H.h2 [] [ H.text "Shop" ]
         , H.button [ E.onClick FetchOffers ] [ H.text "Search" ]
         , H.button [ E.onClick CloseShop ] [ H.text "Close" ]
-        , H.ol [] <| List.map viewOffer model.offers
-        , if List.length model.offers > 0 then
-            H.div []
-                [ H.button [ E.onClick <| BuyOffers Nets ] [ H.text "Buy with Nets" ]
-                , H.button [ E.onClick <| BuyOffers Vipps ] [ H.text "Buy with Vipps" ]
-                ]
-
-          else
-            H.text ""
-        , case model.reservation of
-            Just reservation ->
-                H.p [] [ H.text <| "Waiting for NETS with order" ++ reservation.orderId ]
-
-            Nothing ->
+        , case model.offers of
+            NotLoaded ->
                 H.text ""
+
+            Loading _ ->
+                H.div [ A.style "padding" "20px" ] [ Button.loading ]
+
+            Loaded offers ->
+                let
+                    disableButtons =
+                        case model.reservation of
+                            Loading _ ->
+                                True
+
+                            Loaded _ ->
+                                True
+
+                            _ ->
+                                False
+                in
+                    H.div []
+                        [ if List.isEmpty offers then
+                            H.div [] [ H.text "No offers" ]
+
+                          else
+                            H.ol [] <| List.map viewOffer offers
+                        , H.div []
+                            [ H.button
+                                [ E.onClick <| BuyOffers Nets
+                                , A.disabled disableButtons
+                                ]
+                                [ H.text "Buy with Nets" ]
+                            , H.button
+                                [ E.onClick <| BuyOffers Vipps
+                                , A.disabled disableButtons
+                                ]
+                                [ H.text "Buy with Vipps" ]
+                            ]
+                        ]
+
+            Failed error ->
+                H.div [] [ H.text error ]
+        , case model.reservation of
+            NotLoaded ->
+                H.text ""
+
+            Loading _ ->
+                H.p [] [ H.text "Reserving offers..." ]
+
+            Loaded reservation ->
+                H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
+
+            Failed error ->
+                H.p [] [ H.text error ]
         ]
 
 
