@@ -50,7 +50,7 @@ reserve env customerNumber paymentType offers =
                 , ( "customer_number", Encode.int customerNumber )
                 , ( "offers", Encode.list encodeOffer offers )
                 , ( "payment_type", encodePaymentType paymentType )
-                , ( "payment_redirect_url", Encode.string "http://127.0.0.1:8080/thanks" )
+                , ( "payment_redirect_url", Encode.string (env.ticketUrl ++ "/thanks") )
                 ]
     in
         HttpUtil.post env url (Http.jsonBody body) reservationDecoder
