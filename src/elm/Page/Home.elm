@@ -83,7 +83,7 @@ update msg env model =
         ReceiveTickets result ->
             case result of
                 Ok tickets ->
-                    PageUpdater.init { model | tickets = tickets }
+                    PageUpdater.init { model | tickets = tickets |> List.sortBy .validity |> List.reverse }
 
                 Err err ->
                     PageUpdater.init model
