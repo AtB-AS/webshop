@@ -14,6 +14,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode exposing (Value)
 import Url.Builder
+import Util.Http as HttpUtil
 
 
 {-| Search for offers.
@@ -33,15 +34,7 @@ search env =
                 , ( "zones", Encode.list Encode.string [ "ATB:TariffZone:1" ] )
                 ]
     in
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "Atb-Install-Id" env.installId ]
-            , url = url
-            , body = Http.jsonBody body
-            , expect = Http.expectJson (Decode.list offerDecoder)
-            , timeout = Nothing
-            , withCredentials = False
-            }
+        HttpUtil.post env url (Http.jsonBody body) (Decode.list offerDecoder)
 
 
 {-| Reserve offers.
@@ -63,15 +56,7 @@ reserve env customerNumber paymentType offers =
                 , ( "payment_redirect_url", Encode.string "http://127.0.0.1:8080/thanks" )
                 ]
     in
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "Atb-Install-Id" env.installId ]
-            , url = url
-            , body = Http.jsonBody body
-            , expect = Http.expectJson reservationDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
+        HttpUtil.post env url (Http.jsonBody body) reservationDecoder
 
 
 {-| Capture an order.
@@ -139,15 +124,7 @@ getTicketList env customerId =
                 [ "ticket", "v1", "ticket", env.installId ]
                 []
     in
-        Http.request
-            { method = "GET"
-            , headers = [ Http.header "Atb-Install-Id" env.installId ]
-            , url = url
-            , body = Http.emptyBody
-            , expect = Http.expectJson ticketListDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
+        HttpUtil.get env url ticketListDecoder
 
 
 getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
@@ -158,15 +135,7 @@ getPaymentStatus env paymentId =
                 [ "ticket", "v1", "payments", String.fromInt paymentId ]
                 []
     in
-        Http.request
-            { method = "GET"
-            , headers = [ Http.header "Atb-Install-Id" env.installId ]
-            , url = url
-            , body = Http.emptyBody
-            , expect = Http.expectJson paymentStatusDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
+        HttpUtil.get env url paymentStatusDecoder
 
 
 
