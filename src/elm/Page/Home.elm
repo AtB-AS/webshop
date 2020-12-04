@@ -2,6 +2,7 @@ module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, Inspection(..), LangString(..), Profile, Rejection(..), TariffZone, Token, TokenType(..), UserProfile)
+import Dict exposing (Dict)
 import Environment exposing (Environment)
 import GlobalActions as GA
 import Html as H exposing (Html)
@@ -258,6 +259,15 @@ timeAgo time =
         "just now"
 
 
+frequency : List comparable -> Dict comparable Int
+frequency =
+    List.foldl
+        (\item ->
+            Dict.update item (Maybe.map ((+) 1) >> Maybe.withDefault 1 >> Just)
+        )
+        Dict.empty
+
+
 viewTicket : Shared -> Model -> FareContract -> Html msg
 viewTicket shared model fareContract =
     let
@@ -277,8 +287,22 @@ viewTicket shared model fareContract =
                   else
                     H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
                 ]
-            , H.td [] [ H.div [] <| List.map (viewUserProfile shared) fareContract.userProfiles ]
-            , H.td [] [ H.div [] <| List.map (viewFareProduct shared) fareContract.fareProducts ]
+            , H.td []
+                [ fareContract.userProfiles
+                    |> frequency
+                    |> Dict.map (viewUserProfile shared)
+                    |> Dict.values
+                    |> String.join ", "
+                    |> H.text
+                ]
+            , H.td []
+                [ fareContract.fareProducts
+                    |> frequency
+                    |> Dict.map (viewFareProduct shared)
+                    |> Dict.values
+                    |> String.join ", "
+                    |> H.text
+                ]
             ]
 
 
@@ -287,8 +311,20 @@ langString (LangString _ value) =
     value
 
 
-viewUserProfile : Shared -> String -> Html msg
-viewUserProfile shared userProfile =
+multiString : Int -> String -> String
+multiString count str =
+    if String.isEmpty str || count < 1 then
+        ""
+
+    else if count == 1 then
+        str
+
+    else
+        String.fromInt count ++ "× " ++ str
+
+
+viewUserProfile : Shared -> String -> Int -> String
+viewUserProfile shared userProfile count =
     shared.userProfiles
         |> List.filter
             (\entry ->
@@ -297,11 +333,11 @@ viewUserProfile shared userProfile =
         |> List.map (.name >> langString)
         |> List.head
         |> Maybe.withDefault ""
-        |> H.text
+        |> multiString count
 
 
-viewFareProduct : Shared -> String -> Html msg
-viewFareProduct shared fareProduct =
+viewFareProduct : Shared -> String -> Int -> String
+viewFareProduct shared fareProduct _ =
     shared.fareProducts
         |> List.filter
             (\entry ->
@@ -310,7 +346,7 @@ viewFareProduct shared fareProduct =
         |> List.map (.name >> langString)
         |> List.head
         |> Maybe.withDefault ""
-        |> H.text
+        |> multiString 1
 
 
 fareContractStateToString : FareContractState -> String
