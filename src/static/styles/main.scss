@@ -137,3 +137,14 @@ table {
         border: 1px solid #345d63;
     }
 }
+
+.shop-user button {
+    min-width: 1rem;
+}
+
+.shop-user tr td:nth-child(1),
+.shop-user tr td:nth-child(2),
+.shop-user tr td:nth-child(3) {
+    width: 3rem;
+    text-align: center;
+}

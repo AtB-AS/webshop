@@ -12,6 +12,7 @@ import Http
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Webshop as WebshopService
+import Shared exposing (Shared)
 import Task
 
 
@@ -85,8 +86,8 @@ update msg env model =
                     PageUpdater.init { model | updating = False }
 
 
-view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
-view _ _ model _ =
+view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
+view _ _ _ model _ =
     H.div [ A.class "box" ]
         [ H.h2 [] [ H.text "Profile" ]
         , H.button [ E.onClick GetProfile ] [ H.text "Refresh" ]

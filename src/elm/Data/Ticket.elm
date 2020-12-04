@@ -7,6 +7,8 @@ module Data.Ticket exposing
     , Ticket
     )
 
+import Data.Webshop exposing (UserType)
+
 
 type alias Ticket =
     { duration : Int
@@ -28,6 +30,7 @@ type alias Price =
 
 type alias Offer =
     { offerId : String
+    , userType : UserType
     , prices : List Price
     , travellerId : String
     }

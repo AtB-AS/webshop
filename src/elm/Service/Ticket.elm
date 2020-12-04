@@ -6,6 +6,7 @@ module Service.Ticket exposing
     )
 
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation, Ticket)
+import Data.Webshop exposing (UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -17,19 +18,17 @@ import Util.Http as HttpUtil
 
 {-| Search for offers.
 -}
-search : Environment -> Http.Request (List Offer)
-search env =
+search : Environment -> String -> List ( UserType, Int ) -> List String -> Http.Request (List Offer)
+search env product travellers zones =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl
-                [ "ticket", "v1", "search" ]
-                []
+            Url.Builder.crossOrigin env.ticketUrl [ "ticket", "v1", "search" ] []
 
         body =
             Encode.object
-                [ ( "products", Encode.list Encode.string [ "ATB:PreassignedFareProduct:61be5f93" ] )
-                , ( "travellers", Encode.list encodeTraveller [ 1 ] )
-                , ( "zones", Encode.list Encode.string [ "ATB:TariffZone:1" ] )
+                [ ( "products", Encode.list Encode.string [ product ] )
+                , ( "travellers", Encode.list encodeTraveller travellers )
+                , ( "zones", Encode.list Encode.string zones )
                 ]
     in
         HttpUtil.post env url (Http.jsonBody body) (Decode.list offerDecoder)
@@ -108,13 +107,63 @@ paymentStatusDecoder =
         |> DecodeP.required "payment_type" Decode.string
 
 
-encodeTraveller : Int -> Value
-encodeTraveller count =
-    Encode.object
-        [ ( "count", Encode.int count )
-        , ( "id", Encode.string "adult" )
-        , ( "user_type", Encode.string "ADULT" )
-        ]
+encodeTraveller : ( UserType, Int ) -> Value
+encodeTraveller ( userType, count ) =
+    let
+        userTypeStr =
+            case userType of
+                UserTypeAdult ->
+                    "ADULT"
+
+                UserTypeChild ->
+                    "CHILD"
+
+                UserTypeInfant ->
+                    "INFANT"
+
+                UserTypeSenior ->
+                    "SENIOR"
+
+                UserTypeStudent ->
+                    "STUDENT"
+
+                UserTypeYoungPerson ->
+                    "YOUTH"
+
+                UserTypeSchoolPupil ->
+                    -- No mapping
+                    "STUDENT"
+
+                UserTypeMilitary ->
+                    "MILITARY"
+
+                UserTypeDisabled ->
+                    -- No mapping
+                    "ADULT"
+
+                UserTypeDisabledCompanion ->
+                    -- Not sure?
+                    "GUIDE_DOG"
+
+                UserTypeJobSeeker ->
+                    -- No mapping
+                    "ADULT"
+
+                UserTypeEmployee ->
+                    -- No mapping
+                    "ADULT"
+
+                UserTypeAnimal ->
+                    "ANIMAL"
+
+                UserTypeAnyone ->
+                    "ANYONE"
+    in
+        Encode.object
+            [ ( "count", Encode.int count )
+            , ( "id", Encode.string userTypeStr )
+            , ( "user_type", Encode.string userTypeStr )
+            ]
 
 
 priceDecoder : Decoder Price
@@ -129,8 +178,50 @@ offerDecoder : Decoder Offer
 offerDecoder =
     Decode.succeed Offer
         |> DecodeP.required "offer_id" Decode.string
+        |> DecodeP.required "traveller_id" decodeUserType
         |> DecodeP.required "prices" (Decode.list priceDecoder)
         |> DecodeP.required "traveller_id" Decode.string
+
+
+decodeUserType : Decoder UserType
+decodeUserType =
+    Decode.andThen
+        (\value ->
+            case value of
+                "ADULT" ->
+                    Decode.succeed UserTypeAdult
+
+                "CHILD" ->
+                    Decode.succeed UserTypeChild
+
+                "INFANT" ->
+                    Decode.succeed UserTypeInfant
+
+                "SENIOR" ->
+                    Decode.succeed UserTypeSenior
+
+                "STUDENT" ->
+                    Decode.succeed UserTypeStudent
+
+                "YOUTH" ->
+                    Decode.succeed UserTypeYoungPerson
+
+                "MILITARY" ->
+                    Decode.succeed UserTypeMilitary
+
+                "GUIDE_DOG" ->
+                    Decode.succeed UserTypeDisabledCompanion
+
+                "ANIMAL" ->
+                    Decode.succeed UserTypeAnimal
+
+                "ANYONE" ->
+                    Decode.succeed UserTypeAnyone
+
+                _ ->
+                    Decode.fail "Invalid user type"
+        )
+        Decode.string
 
 
 encodeOffer : ( String, Int ) -> Value

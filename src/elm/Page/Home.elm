@@ -13,6 +13,7 @@ import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Webshop as WebshopService
+import Shared exposing (Shared)
 import Task
 import Time
 import Util.Status exposing (Status(..))
@@ -33,9 +34,6 @@ type Msg
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | Inspect String
     | ReceiveInspectQrCode (Result Http.Error (List Inspection))
-    | ReceiveTariffZones (Result Http.Error (List TariffZone))
-    | ReceiveFareProducts (Result Http.Error (List FareProduct))
-    | ReceiveUserProfiles (Result Http.Error (List UserProfile))
     | OpenShop
     | UpdateTime Time.Posix
 
@@ -46,9 +44,6 @@ type alias Model =
     , tokenPayloads : List ( String, String )
     , travelCardId : String
     , inspection : Status Inspection
-    , tariffZones : List TariffZone
-    , fareProducts : List FareProduct
-    , userProfiles : List UserProfile
     , currentTime : Time.Posix
     }
 
@@ -60,9 +55,6 @@ init =
       , tokenPayloads = []
       , travelCardId = ""
       , inspection = NotLoaded
-      , tariffZones = []
-      , fareProducts = []
-      , userProfiles = []
       , currentTime = Time.millisToPosix 0
       }
     , Cmd.none
@@ -144,9 +136,6 @@ update msg env model =
                 , Cmd.batch
                     [ TaskUtil.doTask GetTokens
                     , TaskUtil.doTask FetchTickets
-                    , fetchTariffZones env
-                    , fetchFareProducts env
-                    , fetchUserProfiles env
                     ]
                 )
 
@@ -158,30 +147,6 @@ update msg env model =
                 Err _ ->
                     PageUpdater.init { model | tokenPayloads = [] }
 
-        ReceiveTariffZones result ->
-            case result of
-                Ok value ->
-                    PageUpdater.init { model | tariffZones = value }
-
-                Err _ ->
-                    PageUpdater.init model
-
-        ReceiveFareProducts result ->
-            case result of
-                Ok value ->
-                    PageUpdater.init { model | fareProducts = value }
-
-                Err _ ->
-                    PageUpdater.init model
-
-        ReceiveUserProfiles result ->
-            case result of
-                Ok value ->
-                    PageUpdater.init { model | userProfiles = value }
-
-                Err _ ->
-                    PageUpdater.init model
-
         OpenShop ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.OpenShop
@@ -190,8 +155,8 @@ update msg env model =
             PageUpdater.init { model | currentTime = posixTime }
 
 
-view : Environment -> AppInfo -> Model -> Maybe Route -> Html Msg
-view env _ model _ =
+view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
+view env _ shared model _ =
     case env.customerId of
         Just _ ->
             H.div [ A.class "box" ]
@@ -212,7 +177,7 @@ view env _ model _ =
                                 , H.th [] [ H.text "Product" ]
                                 ]
                             ]
-                        , H.tbody [] <| List.map (viewTicket model) model.tickets
+                        , H.tbody [] <| List.map (viewTicket shared model) model.tickets
                         ]
                 , H.h2 [] [ H.text "Tokens" ]
                 , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
@@ -293,8 +258,8 @@ timeAgo time =
         "just now"
 
 
-viewTicket : Model -> FareContract -> Html msg
-viewTicket model fareContract =
+viewTicket : Shared -> Model -> FareContract -> Html msg
+viewTicket shared model fareContract =
     let
         ( _, to ) =
             fareContract.validity
@@ -312,8 +277,8 @@ viewTicket model fareContract =
                   else
                     H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
                 ]
-            , H.td [] [ H.div [] <| List.map (viewUserProfile model) fareContract.userProfiles ]
-            , H.td [] [ H.div [] <| List.map (viewFareProduct model) fareContract.fareProducts ]
+            , H.td [] [ H.div [] <| List.map (viewUserProfile shared) fareContract.userProfiles ]
+            , H.td [] [ H.div [] <| List.map (viewFareProduct shared) fareContract.fareProducts ]
             ]
 
 
@@ -322,9 +287,9 @@ langString (LangString _ value) =
     value
 
 
-viewUserProfile : Model -> String -> Html msg
-viewUserProfile model userProfile =
-    model.userProfiles
+viewUserProfile : Shared -> String -> Html msg
+viewUserProfile shared userProfile =
+    shared.userProfiles
         |> List.filter
             (\entry ->
                 entry.id == userProfile
@@ -335,9 +300,9 @@ viewUserProfile model userProfile =
         |> H.text
 
 
-viewFareProduct : Model -> String -> Html msg
-viewFareProduct model fareProduct =
-    model.fareProducts
+viewFareProduct : Shared -> String -> Html msg
+viewFareProduct shared fareProduct =
+    shared.fareProducts
         |> List.filter
             (\entry ->
                 entry.id == fareProduct
@@ -543,27 +508,6 @@ inspect env tokenPayload =
     WebshopService.inspectQrCode env tokenPayload
         |> Http.toTask
         |> Task.attempt ReceiveInspectQrCode
-
-
-fetchTariffZones : Environment -> Cmd Msg
-fetchTariffZones env =
-    WebshopService.getTariffZones env
-        |> Http.toTask
-        |> Task.attempt ReceiveTariffZones
-
-
-fetchFareProducts : Environment -> Cmd Msg
-fetchFareProducts env =
-    WebshopService.getFareProducts env
-        |> Http.toTask
-        |> Task.attempt ReceiveFareProducts
-
-
-fetchUserProfiles : Environment -> Cmd Msg
-fetchUserProfiles env =
-    WebshopService.getUserProfiles env
-        |> Http.toTask
-        |> Task.attempt ReceiveUserProfiles
 
 
 checkInspection : List Inspection -> Inspection

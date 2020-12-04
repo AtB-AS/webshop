@@ -18,6 +18,7 @@ import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
+import Shared exposing (Shared)
 import Svg as S
 import Svg.Attributes as SA
 import Time
@@ -35,6 +36,7 @@ type Msg
     | HomeMsg HomePage.Msg
     | ShopMsg ShopPage.Msg
     | SettingsMsg SettingsPage.Msg
+    | SharedMsg Shared.Msg
     | LogIn
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
@@ -47,6 +49,7 @@ type alias Model =
     , home : HomePage.Model
     , shop : Maybe ShopPage.Model
     , settings : SettingsPage.Model
+    , shared : Shared
     , route : Maybe Route.Route
     , errors : List Error
     , notifications : List (Notification Msg)
@@ -133,6 +136,7 @@ init flags url navKey =
                 , home = homeModel
                 , shop = Nothing
                 , settings = settingsModel
+                , shared = Shared.init
                 , route = route
                 , errors = []
                 , notifications = []
@@ -174,7 +178,7 @@ update msg model =
                 GA.OpenShop ->
                     let
                         ( initModel, initCmd ) =
-                            ShopPage.init
+                            ShopPage.init model.shared
                     in
                         ( { model | shop = Just initModel }
                         , Cmd.batch
@@ -237,6 +241,9 @@ update msg model =
                 |> PageUpdater.map (\newModel -> { model | settings = newModel }) SettingsMsg
                 |> doPageUpdate
 
+        SharedMsg subMsg ->
+            ( { model | shared = Shared.update subMsg model.shared }, Cmd.none )
+
         LogIn ->
             ( model, FirebaseAuth.signIn () )
 
@@ -272,6 +279,7 @@ update msg model =
                         , Cmd.batch
                             [ TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
                             , TaskUtil.doTask (SettingsMsg SettingsPage.GetProfile)
+                            , Cmd.map SharedMsg <| Shared.load model.environment
                             ]
                         )
 
@@ -368,23 +376,26 @@ viewPage model =
     let
         env =
             model.environment
+
+        shared =
+            model.shared
     in
         case model.route of
             Just Route.Home ->
-                HomePage.view env model.appInfo model.home model.route
+                HomePage.view env model.appInfo shared model.home model.route
                     |> H.map HomeMsg
 
             Just Route.Shop ->
                 case model.shop of
                     Just shop ->
-                        ShopPage.view env model.appInfo shop model.route
+                        ShopPage.view env model.appInfo shared shop model.route
                             |> H.map ShopMsg
 
                     Nothing ->
                         H.text ""
 
             Just Route.Settings ->
-                SettingsPage.view env model.appInfo model.settings model.route
+                SettingsPage.view env model.appInfo shared model.settings model.route
                     |> H.map SettingsMsg
 
             Just Route.NotFound ->
