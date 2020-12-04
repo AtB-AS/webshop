@@ -472,11 +472,11 @@ tokenTypeToString type_ =
         TokenTypeQrSmartphone ->
             "QR (smartphone)"
 
-        TokenTypeQrPaper ->
+        TokenTypeQrPaper _ ->
             "QR (paper)"
 
-        TokenTypeTravelCard ->
-            "Travel card"
+        TokenTypeTravelCard travelCardId ->
+            "Travel card - " ++ travelCardId
 
         TokenTypeReferenceCode ->
             "Reference code"

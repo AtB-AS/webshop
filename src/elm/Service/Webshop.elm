@@ -316,7 +316,7 @@ tokenDecoder =
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "allowedActions" (Decode.list tokenActionDecoder)
         |> DecodeP.optional "status" tokenStatusDecoder TokenStatusUnspecified
-        |> DecodeP.required "type" tokenTypeDecoder
+        |> DecodeP.custom tokenTypeDecoder
 
 
 tokenActionDecoder : Decoder TokenAction
@@ -387,9 +387,11 @@ tokenTypeDecoder =
 
                 2 ->
                     Decode.succeed TokenTypeQrPaper
+                        |> DecodeP.required "content" Decode.string
 
                 3 ->
                     Decode.succeed TokenTypeTravelCard
+                        |> DecodeP.required "content" Decode.string
 
                 4 ->
                     Decode.succeed TokenTypeReferenceCode
@@ -403,4 +405,4 @@ tokenTypeDecoder =
                 _ ->
                     Decode.fail "Invalid token type"
         )
-        Decode.int
+        (Decode.field "type" Decode.int)

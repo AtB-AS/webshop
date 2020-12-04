@@ -27,8 +27,8 @@ type alias Profile =
 type TokenType
     = TokenTypeUnspecified
     | TokenTypeQrSmartphone
-    | TokenTypeQrPaper
-    | TokenTypeTravelCard
+    | TokenTypeQrPaper String
+    | TokenTypeTravelCard String
     | TokenTypeReferenceCode
     | TokenTypePlainUnsigned
     | TokenTypeExternal
