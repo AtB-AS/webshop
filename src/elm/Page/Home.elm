@@ -253,6 +253,46 @@ view env _ model _ =
                 ]
 
 
+timeLeft : Int -> String
+timeLeft time =
+    let
+        hr =
+            time // 3600
+
+        min =
+            (time - hr * 3600) // 60
+
+        sec =
+            time - hr * 3600 - min * 60
+
+        toStr v suffix =
+            if v > 0 then
+                String.fromInt v ++ suffix
+
+            else
+                ""
+    in
+        String.join " " [ toStr hr "h", toStr min "m", toStr sec "s" ]
+
+
+timeAgo : Int -> String
+timeAgo time =
+    if time >= 86400 then
+        String.fromInt (time // 86400) ++ "d"
+
+    else if time >= 3600 then
+        String.fromInt (time // 3600) ++ "h"
+
+    else if time >= 60 then
+        String.fromInt (time // 60) ++ "m"
+
+    else if time >= 1 then
+        String.fromInt time ++ "s"
+
+    else
+        "just now"
+
+
 viewTicket : Model -> FareContract -> Html msg
 viewTicket model fareContract =
     let
@@ -267,10 +307,10 @@ viewTicket model fareContract =
             , H.td [] [ H.text <| fareContractStateToString fareContract.state ]
             , H.td []
                 [ if now > to then
-                    H.span [ A.style "color" "#f00" ] [ H.text "Expired" ]
+                    H.span [ A.style "color" "#f00" ] [ H.text <| "Expired " ++ timeAgo (now - to) ++ " ago" ]
 
                   else
-                    H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ String.fromInt (to - now) ++ " seconds left" ]
+                    H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
                 ]
             , H.td [] [ H.div [] <| List.map (viewUserProfile model) fareContract.userProfiles ]
             , H.td [] [ H.div [] <| List.map (viewFareProduct model) fareContract.fareProducts ]
