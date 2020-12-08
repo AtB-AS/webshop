@@ -40,7 +40,14 @@ firebase.initializeApp(firebaseConfig);
 
 const provider = new firebase.auth.GoogleAuthProvider();
 const db = firebase.firestore();
-const app = Elm.Main.init({flags: Object.assign({installId}, elmFlags)});
+const app = Elm.Main.init({
+    flags: Object.assign({
+            installId: installId,
+            loggedIn: localStorage["loggedIn"] === 'loggedIn'
+        },
+        elmFlags
+    )
+});
 
 app.ports.signIn.subscribe(() => {
     firebase
@@ -58,6 +65,7 @@ app.ports.signIn.subscribe(() => {
 });
 
 app.ports.signOut.subscribe(() => {
+    localStorage["loggedIn"] = '';
     firebase.auth().signOut();
 });
 
@@ -82,6 +90,8 @@ function fetchAuthInfo(user) {
                     email: user.email,
                     uid: accountId
                 });
+
+                localStorage["loggedIn"] = 'loggedIn';
 
                 const path = `users/${accountId}/tokens`;
 

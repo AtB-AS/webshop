@@ -23,6 +23,7 @@ import Svg as S
 import Svg.Attributes as SA
 import Time
 import Url exposing (Url)
+import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 
 
@@ -53,7 +54,7 @@ type alias Model =
     , route : Maybe Route.Route
     , errors : List Error
     , notifications : List (Notification Msg)
-    , userData : Maybe UserData
+    , userData : Status UserData
     , authError : AuthError
     , navKey : Nav.Key
     }
@@ -66,6 +67,7 @@ type alias Flags =
     , version : String
     , commit : String
     , installId : String
+    , loggedIn : Bool
     }
 
 
@@ -129,6 +131,13 @@ init flags url navKey =
         route =
             Route.fromUrl url
 
+        userData =
+            if flags.loggedIn then
+                Loading Nothing
+
+            else
+                NotLoaded
+
         ( routeModel, routeCmd ) =
             setRoute route
                 { environment = environment
@@ -140,7 +149,7 @@ init flags url navKey =
                 , route = route
                 , errors = []
                 , notifications = []
-                , userData = Nothing
+                , userData = userData
                 , authError = AuthErrorNone
                 , navKey = navKey
                 }
@@ -258,7 +267,7 @@ update msg model =
                         , token = ""
                     }
             in
-                ( { model | userData = Nothing, environment = newEnvironment, authError = AuthErrorNone }
+                ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
                 , FirebaseAuth.signOut ()
                 )
 
@@ -275,7 +284,7 @@ update msg model =
                                 , token = value.token
                             }
                     in
-                        ( { model | userData = Just value, environment = newEnvironment }
+                        ( { model | userData = Loaded value, environment = newEnvironment }
                         , Cmd.batch
                             [ TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
                             , TaskUtil.doTask (SettingsMsg SettingsPage.GetProfile)
@@ -297,7 +306,19 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    Browser.Document model.appInfo.title [ viewInternal model ]
+    Browser.Document model.appInfo.title
+        [ case model.userData of
+            Loading _ ->
+                H.ul [ A.class "waiting-room" ]
+                    [ H.li [] []
+                    , H.li [] []
+                    , H.li [] []
+                    , H.li [] []
+                    ]
+
+            _ ->
+                viewInternal model
+        ]
 
 
 viewInternal : Model -> Html Msg
@@ -305,7 +326,7 @@ viewInternal model =
     H.div []
         [ header model
         , case model.userData of
-            Just _ ->
+            Loaded _ ->
                 H.div [ A.class "tab-bar" ]
                     [ H.a
                         [ A.href "#/"
@@ -341,7 +362,7 @@ viewInternal model =
                         [ H.text "Settings" ]
                     ]
 
-            Nothing ->
+            _ ->
                 H.text ""
         , viewPage model
         ]
@@ -357,7 +378,7 @@ header model =
             ]
         , H.span [] []
         , case model.userData of
-            Just userData ->
+            Loaded userData ->
                 H.div []
                     [ H.text userData.email
                     , H.text " | "
@@ -366,7 +387,7 @@ header model =
                     , H.button [ E.onClick LogOut ] [ H.text "Log out" ]
                     ]
 
-            Nothing ->
+            _ ->
                 H.div [] [ H.button [ E.onClick LogIn ] [ H.text "Log in" ] ]
         ]
 

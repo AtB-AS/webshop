@@ -1,0 +1,72 @@
+ul.waiting-room {
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    padding: 0;
+    list-style: none;
+    background-color: #69c;
+
+    li {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border-radius: 5px;
+        background: #547d83;
+        opacity: 0.8;
+    }
+
+    li:nth-child(2) {
+        animation: waiting-rot1 3s infinite;
+    }
+
+    li:nth-child(3) {
+        animation: waiting-rot2 3s infinite;
+        animation-delay: 0.2s;
+    }
+
+    li:nth-child(4) {
+        animation: waiting-rot3 3s infinite;
+        animation-delay: 0.4s;
+    }
+}
+
+@keyframes waiting-rot1 {
+    from {
+        transform: rotate(-360deg);
+    }
+    30%, 60% {
+        transform: rotate(20deg);
+    }
+    80% {
+        transform: rotate(0);
+    }
+}
+
+@keyframes waiting-rot2 {
+    from {
+        transform: rotate(-360deg);
+    }
+    30%, 60% {
+        transform: rotate(45deg);
+    }
+    80% {
+        transform: rotate(0);
+    }
+}
+
+@keyframes waiting-rot3 {
+    from {
+        transform: rotate(-360deg);
+    }
+    30%, 60% {
+        transform: rotate(75deg);
+    }
+    80% {
+        transform: rotate(0);
+    }
+}
