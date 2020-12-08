@@ -34,6 +34,10 @@
     &.icon-token-card {
         background-image: url(../images/token-card.svg);
     }
+
+    &.icon-ticket {
+        background-image: url(../images/bus-ticket.svg);
+    }
 }
 
 .card-content {
@@ -94,6 +98,23 @@
             background-color: #d30;
         }
     }
+}
+
+.card-id, .card-extra {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.card-id {
+    top: 1rem;
+    font-family: monospace;
+}
+
+.card-extra {
+    top: 130px;
 }
 
 .card:hover {

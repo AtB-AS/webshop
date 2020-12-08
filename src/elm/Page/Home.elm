@@ -40,6 +40,12 @@ type Msg
     | ReceiveInspectQrCode (Result Http.Error (List Inspection))
     | OpenShop
     | UpdateTime Time.Posix
+    | ToggleTicketView
+
+
+type TicketView
+    = TicketTable
+    | TicketCards
 
 
 type alias Model =
@@ -49,6 +55,7 @@ type alias Model =
     , travelCardId : String
     , inspection : Status Inspection
     , currentTime : Time.Posix
+    , ticketView : TicketView
     }
 
 
@@ -60,6 +67,7 @@ init =
       , travelCardId = ""
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
+      , ticketView = TicketCards
       }
     , Cmd.none
     )
@@ -169,6 +177,18 @@ update msg env model =
         UpdateTime posixTime ->
             PageUpdater.init { model | currentTime = posixTime }
 
+        ToggleTicketView ->
+            PageUpdater.init
+                { model
+                    | ticketView =
+                        case model.ticketView of
+                            TicketCards ->
+                                TicketTable
+
+                            TicketTable ->
+                                TicketCards
+                }
+
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view env _ shared model _ =
@@ -178,8 +198,12 @@ view env _ shared model _ =
                 [ H.h2 [] [ H.text "Tickets" ]
                 , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
                 , H.button [ E.onClick OpenShop ] [ H.text "Buy" ]
+                , H.button [ E.onClick ToggleTicketView ] [ H.text "Toggle view" ]
                 , if List.isEmpty model.tickets then
                     H.div [] [ H.text "No tickets" ]
+
+                  else if model.ticketView == TicketCards then
+                    viewTicketCards shared model
 
                   else
                     viewTicketTable shared model
@@ -220,6 +244,11 @@ view env _ shared model _ =
                 [ H.h2 [] [ H.text "Not logged in" ]
                 , H.p [] [ H.text "You need to log in." ]
                 ]
+
+
+viewTicketCards : Shared -> Model -> Html msg
+viewTicketCards shared model =
+    H.div [ A.class "cards" ] <| List.map (viewTicketCard shared model) model.tickets
 
 
 viewTicketTable : Shared -> Model -> Html msg
@@ -322,6 +351,65 @@ viewTicket shared model fareContract =
                     |> String.join ", "
                     |> H.text
                 ]
+            ]
+
+
+viewTicketCard : Shared -> Model -> FareContract -> Html msg
+viewTicketCard shared model fareContract =
+    let
+        ( _, to ) =
+            fareContract.validity
+
+        now =
+            Time.posixToMillis model.currentTime // 1000
+
+        userProfiles =
+            fareContract.userProfiles
+                |> frequency
+                |> Dict.map (viewUserProfile shared)
+                |> Dict.values
+
+        userInfo =
+            case userProfiles of
+                [ userProfile ] ->
+                    userProfile
+
+                [ _, _ ] ->
+                    String.join ", " userProfiles
+
+                _ ->
+                    String.fromInt (List.length userProfiles) ++ " tickets"
+
+        fareProduct =
+            fareContract.fareProducts
+                |> frequency
+                |> Dict.map (viewFareProduct shared)
+                |> Dict.values
+                |> String.join ", "
+                |> H.text
+
+        fareContractId =
+            case String.split ":" fareContract.id of
+                [ "ATB", "FareContract", id ] ->
+                    id
+
+                _ ->
+                    "Unknown"
+    in
+        H.div [ A.class "card" ]
+            [ H.div [ A.class "card-content" ]
+                [ H.div [ A.class "card-icon icon-ticket" ] []
+                , H.h5 [ A.class "card-name" ] [ fareProduct ]
+                , H.h6 [ A.class "card-info" ]
+                    [ if now > to then
+                        H.span [ A.style "color" "#f00" ] [ H.text <| "Expired " ++ timeAgo (now - to) ++ " ago" ]
+
+                      else
+                        H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
+                    ]
+                ]
+            , H.div [ A.class "card-id" ] [ H.text fareContractId ]
+            , H.div [ A.class "card-extra" ] [ H.text userInfo ]
             ]
 
 
