@@ -1,4 +1,4 @@
-module Util.Http exposing (get, post, put, request)
+module Util.Http exposing (delete, get, post, put, request)
 
 import Environment exposing (Environment)
 import Http exposing (Body, Request)
@@ -34,3 +34,8 @@ post env url body decoder =
 put : Environment -> String -> Body -> Decoder a -> Request a
 put env url body decoder =
     request env "PUT" url body decoder
+
+
+delete : Environment -> String -> Body -> Decoder a -> Request a
+delete env url body decoder =
+    request env "DELETE" url body decoder

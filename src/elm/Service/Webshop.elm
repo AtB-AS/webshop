@@ -1,6 +1,7 @@
 module Service.Webshop exposing
     ( addQrCode
     , addTravelCard
+    , deleteToken
     , getFareContracts
     , getFareProducts
     , getProfile
@@ -55,6 +56,22 @@ addTravelCard env id =
             Encode.object [ ( "travelCardId", Encode.string id ) ]
     in
         HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/travelcard") (Http.jsonBody payload) (Decode.succeed ())
+
+
+deleteToken : Environment -> String -> Http.Request ()
+deleteToken env tokenId =
+    Http.request
+        { method = "DELETE"
+        , headers =
+            [ Http.header "Atb-Install-Id" env.installId
+            , Http.header "Authorization" ("Bearer " ++ env.token)
+            ]
+        , url = env.baseUrl ++ "/api/v1/tokens/" ++ tokenId
+        , body = Http.emptyBody
+        , expect = Http.expectStringResponse (\_ -> Ok ())
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
 addQrCode : Environment -> Http.Request ()

@@ -29,6 +29,8 @@ type Msg
     | UpdateTravelCardId String
     | AddTravelCard
     | ReceiveAddTravelCard (Result Http.Error ())
+    | DeleteToken String
+    | ReceiveDeleteToken (Result Http.Error ())
     | AddQrCode
     | ReceiveAddQrCode (Result Http.Error ())
     | LoadAccount
@@ -113,6 +115,17 @@ update msg env model =
             PageUpdater.fromPair ( model, addTravelCard env model.travelCardId )
 
         ReceiveAddTravelCard result ->
+            case result of
+                Ok () ->
+                    PageUpdater.fromPair ( { model | travelCardId = "" }, fetchTokens env )
+
+                Err _ ->
+                    PageUpdater.init model
+
+        DeleteToken tokenId ->
+            PageUpdater.fromPair ( model, deleteToken env tokenId )
+
+        ReceiveDeleteToken result ->
             case result of
                 Ok () ->
                     PageUpdater.fromPair ( model, fetchTokens env )
@@ -456,11 +469,14 @@ viewToken payloads token =
         H.li []
             [ H.div [] [ H.text <| "Id: " ++ token.id ]
             , H.div [] [ H.text <| "Type: " ++ tokenTypeToString token.type_ ]
-            , if payload /= "" then
-                H.div [] [ H.button [ E.onClick (Inspect payload) ] [ H.text "Inspect" ] ]
+            , H.div []
+                [ if payload /= "" then
+                    H.button [ E.onClick (Inspect payload) ] [ H.text "Inspect" ]
 
-              else
-                H.text ""
+                  else
+                    H.text ""
+                , H.button [ E.onClick (DeleteToken token.id) ] [ H.text "Delete" ]
+                ]
             ]
 
 
@@ -530,6 +546,13 @@ addTravelCard env id =
     WebshopService.addTravelCard env id
         |> Http.toTask
         |> Task.attempt ReceiveAddTravelCard
+
+
+deleteToken : Environment -> String -> Cmd Msg
+deleteToken env tokenId =
+    WebshopService.deleteToken env tokenId
+        |> Http.toTask
+        |> Task.attempt ReceiveDeleteToken
 
 
 addQrCode : Environment -> Cmd Msg
