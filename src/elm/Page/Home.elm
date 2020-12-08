@@ -10,6 +10,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Http
 import Json.Decode as Decode exposing (Decoder)
+import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
@@ -199,7 +200,7 @@ view env _ shared model _ =
                     H.p [] [ H.text "No tokens." ]
 
                   else
-                    H.ol [] <| List.map (viewToken model.tokenPayloads) model.tokens
+                    H.div [ A.class "cards" ] <| List.map (viewToken model.tokenPayloads) model.tokens
                 , viewInspection model.inspection
                 , if List.isEmpty model.tokens then
                     H.div []
@@ -465,17 +466,41 @@ viewToken payloads token =
                     )
                 |> List.head
                 |> Maybe.withDefault ""
-    in
-        H.li []
-            [ H.div [] [ H.text <| "Id: " ++ token.id ]
-            , H.div [] [ H.text <| "Type: " ++ tokenTypeToString token.type_ ]
-            , H.div []
-                [ if payload /= "" then
-                    H.button [ E.onClick (Inspect payload) ] [ H.text "Inspect" ]
 
-                  else
-                    H.text ""
-                , H.button [ E.onClick (DeleteToken token.id) ] [ H.text "Delete" ]
+        ( name, icon, info ) =
+            case token.type_ of
+                TokenTypeQrPaper _ ->
+                    ( "QR token", "icon-token-paper", "" )
+
+                TokenTypeTravelCard cardId ->
+                    ( "Travel card"
+                    , "icon-token-card"
+                    , cardId
+                        |> String.toList
+                        |> List.map String.fromChar
+                        |> List.Extra.groupsOf 4
+                        |> List.map (String.join "")
+                        |> String.join " "
+                    )
+
+                type_ ->
+                    ( tokenTypeToString type_, "", "" )
+    in
+        H.div [ A.class "card" ]
+            [ H.div [ A.class "card-content" ]
+                [ H.div [ A.class ("card-icon " ++ icon) ] []
+                , H.h5 [ A.class "card-name" ] [ H.text name ]
+                , H.h6 [ A.class "card-info" ] [ H.text info ]
+                ]
+            , H.div [ A.class "card-actions" ]
+                [ H.div [ A.class "action-content" ]
+                    [ H.button [ A.class "btn btn-replace" ] [ H.text "Replace" ]
+                    , if payload /= "" then
+                        H.button [ A.class "btn btn-inspect", E.onClick (Inspect payload) ] [ H.text "Inspect" ]
+
+                      else
+                        H.button [ A.class "btn btn-delete", E.onClick (DeleteToken token.id) ] [ H.text "Delete" ]
+                    ]
                 ]
             ]
 

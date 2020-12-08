@@ -1,0 +1,112 @@
+.card {
+    background: #205058;
+    width: 10rem;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 10px 20px 10px 0;
+    padding: 15px;
+    position: relative;
+    overflow: hidden;
+
+    h5 {
+        margin: 0 0 5px 0;
+    }
+
+    h6 {
+        margin: 0;
+        height: 1rem;
+        font-size: 14px;
+        font-weight: normal;
+    }
+}
+
+.card-icon {
+    margin: 20px auto;
+    height: 120px;
+    width: 120px;
+    text-align: center;
+    background-size: cover;
+
+    &.icon-token-paper {
+        background-image: url(../images/token-paper.svg);
+    }
+
+    &.icon-token-card {
+        background-image: url(../images/token-card.svg);
+    }
+}
+
+.card-content {
+    text-align: center;
+}
+
+.card-name {
+    color: #ffffff;
+    font-size: 1.1em;
+    font-weight: 400;
+    margin-top: 0;
+}
+
+.card-actions.expired {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.card-actions {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .action-content {
+        text-align: center;
+        position: absolute;
+        height: 120px;
+        overflow: hidden;
+        transition: all 0.5s ease;
+        opacity: 0;
+    }
+
+    .action-content .btn {
+        text-align: center;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 25px;
+        display: block;
+        color: #fff;
+        min-width: 120px;
+        margin: 5px;
+        cursor: pointer;
+    }
+
+    .action-content .btn.btn-delete {
+        background: #c30;
+
+        &:hover {
+            background-color: #d30;
+        }
+    }
+}
+
+.card:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+
+    .card-actions {
+        background: rgba(20, 30, 40, 0.4);
+        transition: background 0.5s ease;
+
+        .action-content {
+            opacity: 1;
+            margin-top: 20px;
+            transition: margin-top 0.5s ease;
+        }
+    }
+}
