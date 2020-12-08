@@ -182,18 +182,7 @@ view env _ shared model _ =
                     H.div [] [ H.text "No tickets" ]
 
                   else
-                    H.table []
-                        [ H.thead []
-                            [ H.tr []
-                                [ H.th [] [ H.text "Id" ]
-                                , H.th [] [ H.text "State" ]
-                                , H.th [] [ H.text "Validity" ]
-                                , H.th [] [ H.text "User" ]
-                                , H.th [] [ H.text "Product" ]
-                                ]
-                            ]
-                        , H.tbody [] <| List.map (viewTicket shared model) model.tickets
-                        ]
+                    viewTicketTable shared model
                 , H.h2 [] [ H.text "Tokens" ]
                 , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
                 , if List.length model.tokens == 0 then
@@ -231,6 +220,22 @@ view env _ shared model _ =
                 [ H.h2 [] [ H.text "Not logged in" ]
                 , H.p [] [ H.text "You need to log in." ]
                 ]
+
+
+viewTicketTable : Shared -> Model -> Html msg
+viewTicketTable shared model =
+    H.table []
+        [ H.thead []
+            [ H.tr []
+                [ H.th [] [ H.text "Id" ]
+                , H.th [] [ H.text "State" ]
+                , H.th [] [ H.text "Validity" ]
+                , H.th [] [ H.text "User" ]
+                , H.th [] [ H.text "Product" ]
+                ]
+            ]
+        , H.tbody [] <| List.map (viewTicket shared model) model.tickets
+        ]
 
 
 timeLeft : Int -> String
