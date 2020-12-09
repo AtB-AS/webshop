@@ -378,7 +378,7 @@ viewTicketCard shared model fareContract =
                     String.join ", " userProfiles
 
                 _ ->
-                    String.fromInt (List.length userProfiles) ++ " tickets"
+                    String.fromInt (List.length fareContract.userProfiles) ++ " tickets"
 
         fareProduct =
             fareContract.fareProducts
