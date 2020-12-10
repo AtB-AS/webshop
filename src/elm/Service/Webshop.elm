@@ -334,6 +334,11 @@ tokenDecoder =
         |> DecodeP.required "allowedActions" (Decode.list tokenActionDecoder)
         |> DecodeP.optional "status" tokenStatusDecoder TokenStatusUnspecified
         |> DecodeP.custom tokenTypeDecoder
+        |> DecodeP.custom
+            (Decode.succeed Tuple.pair
+                |> DecodeP.required "validityStart" Decode.int
+                |> DecodeP.required "validityEnd" Decode.int
+            )
 
 
 tokenActionDecoder : Decoder TokenAction

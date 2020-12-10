@@ -213,7 +213,7 @@ view env _ shared model _ =
                     H.p [] [ H.text "No tokens." ]
 
                   else
-                    H.div [ A.class "cards" ] <| List.map (viewToken model.tokenPayloads) model.tokens
+                    H.div [ A.class "cards" ] <| List.map (viewToken model.tokenPayloads model.currentTime) model.tokens
                 , viewInspection model.inspection
                 , if List.isEmpty model.tokens then
                     H.div []
@@ -354,15 +354,22 @@ viewTicket shared model fareContract =
             ]
 
 
+viewValidity : ( Int, Int ) -> Time.Posix -> Html msg
+viewValidity ( to, _ ) posixNow =
+    let
+        now =
+            Time.posixToMillis posixNow // 1000
+    in
+        if now > to then
+            H.span [ A.style "color" "#f00" ] [ H.text <| "Expired " ++ timeAgo (now - to) ++ " ago" ]
+
+        else
+            H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
+
+
 viewTicketCard : Shared -> Model -> FareContract -> Html msg
 viewTicketCard shared model fareContract =
     let
-        ( _, to ) =
-            fareContract.validity
-
-        now =
-            Time.posixToMillis model.currentTime // 1000
-
         userProfiles =
             fareContract.userProfiles
                 |> frequency
@@ -400,13 +407,7 @@ viewTicketCard shared model fareContract =
             [ H.div [ A.class "card-content" ]
                 [ H.div [ A.class "card-icon icon-ticket" ] []
                 , H.h5 [ A.class "card-name" ] [ fareProduct ]
-                , H.h6 [ A.class "card-info" ]
-                    [ if now > to then
-                        H.span [ A.style "color" "#f00" ] [ H.text <| "Expired " ++ timeAgo (now - to) ++ " ago" ]
-
-                      else
-                        H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
-                    ]
+                , H.h6 [ A.class "card-info" ] [ viewValidity fareContract.validity model.currentTime ]
                 ]
             , H.div [ A.class "card-id" ] [ H.text fareContractId ]
             , H.div [ A.class "card-extra" ] [ H.text userInfo ]
@@ -544,8 +545,8 @@ rejectionToString rejection =
             "Token actions mismatch"
 
 
-viewToken : List ( String, String ) -> Token -> Html Msg
-viewToken payloads token =
+viewToken : List ( String, String ) -> Time.Posix -> Token -> Html Msg
+viewToken payloads currentTime token =
     let
         payload =
             payloads
@@ -583,7 +584,7 @@ viewToken payloads token =
             [ H.div [ A.class "card-content" ]
                 [ H.div [ A.class ("card-icon " ++ icon) ] []
                 , H.h5 [ A.class "card-name" ] [ H.text name ]
-                , H.h6 [ A.class "card-info" ] [ H.text info ]
+                , H.h6 [ A.class "card-info" ] [ viewValidity token.validity currentTime ]
                 ]
             , H.div [ A.class "card-actions" ]
                 [ H.div [ A.class "action-content" ]

@@ -56,6 +56,7 @@ type alias Token =
     , allowedAction : List TokenAction
     , status : TokenStatus
     , type_ : TokenType
+    , validity : ( Int, Int )
     }
 
 
