@@ -123,8 +123,8 @@ getUserProfiles env =
 langStringDecoder : Decoder LangString
 langStringDecoder =
     Decode.succeed LangString
-        |> DecodeP.required "lang" Decode.string
-        |> DecodeP.required "value" Decode.string
+        |> DecodeP.optional "lang" Decode.string ""
+        |> DecodeP.optional "value" Decode.string ""
 
 
 tariffZoneDecoder : Decoder TariffZone
@@ -153,7 +153,7 @@ userProfileDecoder =
         |> DecodeP.custom
             (Decode.succeed Tuple.pair
                 |> DecodeP.optional "minAge" Decode.int 0
-                |> DecodeP.required "maxAge" Decode.int
+                |> DecodeP.optional "maxAge" Decode.int 999
             )
         |> DecodeP.required "userType" userTypeDecoder
 

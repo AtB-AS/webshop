@@ -393,11 +393,10 @@ viewTicketCard shared model fareContract =
                 |> Dict.map (viewFareProduct shared)
                 |> Dict.values
                 |> String.join ", "
-                |> H.text
 
         fareContractId =
             case String.split ":" fareContract.id of
-                [ "ATB", "FareContract", id ] ->
+                [ _, "FareContract", id ] ->
                     id
 
                 _ ->
@@ -406,7 +405,13 @@ viewTicketCard shared model fareContract =
         H.div [ A.class "card" ]
             [ H.div [ A.class "card-content" ]
                 [ H.div [ A.class "card-icon icon-ticket" ] []
-                , H.h5 [ A.class "card-name" ] [ fareProduct ]
+                , H.h5 [ A.class "card-name" ]
+                    [ if fareProduct == "" then
+                        H.text "Unknown product"
+
+                      else
+                        H.text fareProduct
+                    ]
                 , H.h6 [ A.class "card-info" ] [ viewValidity fareContract.validity model.currentTime ]
                 ]
             , H.div [ A.class "card-id" ] [ H.text fareContractId ]
