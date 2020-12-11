@@ -25,5 +25,6 @@ type alias Environment =
     , installId : String
     , customerId : Maybe String
     , customerNumber : Int
+    , customerEmail : String
     , token : String
     }

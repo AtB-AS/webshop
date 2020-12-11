@@ -113,6 +113,7 @@ init flags url navKey =
             , installId = flags.installId
             , customerId = Nothing
             , customerNumber = 0
+            , customerEmail = ""
             , token = ""
             }
 
@@ -281,6 +282,7 @@ update msg model =
                         newEnvironment =
                             { oldEnvironment
                                 | customerId = Just value.customerId
+                                , customerEmail = value.email
                                 , token = value.token
                             }
                     in
