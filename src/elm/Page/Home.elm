@@ -14,6 +14,7 @@ import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
+import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
@@ -34,6 +35,8 @@ type Msg
     | ReceiveDeleteToken (Result Http.Error ())
     | AddQrCode
     | ReceiveAddQrCode (Result Http.Error ())
+    | Receipt String
+    | ReceiveReceipt (Result Http.Error ())
     | LoadAccount
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | Inspect String
@@ -153,6 +156,17 @@ update msg env model =
                 Err _ ->
                     PageUpdater.init model
 
+        Receipt orderId ->
+            PageUpdater.fromPair ( model, sendReceipt env orderId )
+
+        ReceiveReceipt result ->
+            case result of
+                Ok () ->
+                    PageUpdater.init model
+
+                Err err ->
+                    PageUpdater.init model
+
         LoadAccount ->
             PageUpdater.fromPair
                 ( model
@@ -246,7 +260,7 @@ view env _ shared model _ =
                 ]
 
 
-viewTicketCards : Shared -> Model -> Html msg
+viewTicketCards : Shared -> Model -> Html Msg
 viewTicketCards shared model =
     H.div [ A.class "cards" ] <| List.map (viewTicketCard shared model) model.tickets
 
@@ -367,7 +381,7 @@ viewValidity ( _, to ) posixNow =
             H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
 
 
-viewTicketCard : Shared -> Model -> FareContract -> Html msg
+viewTicketCard : Shared -> Model -> FareContract -> Html Msg
 viewTicketCard shared model fareContract =
     let
         userProfiles =
@@ -416,6 +430,15 @@ viewTicketCard shared model fareContract =
                 ]
             , H.div [ A.class "card-id" ] [ H.text fareContractId ]
             , H.div [ A.class "card-extra" ] [ H.text userInfo ]
+            , H.div [ A.class "card-actions" ]
+                [ H.div [ A.class "action-content" ]
+                    [ H.button
+                        [ A.class "btn btn-receipt"
+                        , E.onClick (Receipt fareContractId)
+                        ]
+                        [ H.text "Receipt" ]
+                    ]
+                ]
             ]
 
 
@@ -724,3 +747,14 @@ checkInspection results =
             Maybe.withDefault
                 (InspectionRed RejectionNoActiveFareContracts)
                 (List.head reds)
+
+
+sendReceipt : Environment -> String -> Cmd Msg
+sendReceipt env orderId =
+    if env.customerEmail == "" then
+        Cmd.none
+
+    else
+        TicketService.receipt env env.customerEmail orderId
+            |> Http.toTask
+            |> Task.attempt ReceiveReceipt
