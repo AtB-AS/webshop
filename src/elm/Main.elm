@@ -105,6 +105,7 @@ init flags url navKey =
             else
                 Production
 
+        environment : Environment
         environment =
             { distributionEnv = distributionEnv
             , baseUrl = flags.baseUrl
