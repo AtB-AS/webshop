@@ -355,7 +355,7 @@ viewTicket shared model fareContract =
 
 
 viewValidity : ( Int, Int ) -> Time.Posix -> Html msg
-viewValidity ( to, _ ) posixNow =
+viewValidity ( _, to ) posixNow =
     let
         now =
             Time.posixToMillis posixNow // 1000
