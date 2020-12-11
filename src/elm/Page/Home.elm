@@ -420,11 +420,13 @@ viewTicketCard shared model fareContract =
             [ H.div [ A.class "card-content" ]
                 [ H.div [ A.class "card-icon icon-ticket" ] []
                 , H.h5 [ A.class "card-name" ]
-                    [ if fareProduct == "" then
-                        H.text "Unknown product"
+                    [ H.span []
+                        [ if fareProduct == "" then
+                            H.text "Unknown product"
 
-                      else
-                        H.text fareProduct
+                          else
+                            H.text fareProduct
+                        ]
                     ]
                 , H.h6 [ A.class "card-info" ] [ viewValidity fareContract.validity model.currentTime ]
                 ]

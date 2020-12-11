@@ -49,6 +49,12 @@
     font-size: 1.1em;
     font-weight: 400;
     margin-top: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    > span {
+        white-space: nowrap;
+    }
 }
 
 .card-actions.expired {
