@@ -21,6 +21,7 @@ type alias Environment =
     { distributionEnv : DistributionEnvironment
     , baseUrl : String
     , ticketUrl : String
+    , refDataUrl : String
     , language : Language
     , installId : String
     , customerId : Maybe String

@@ -12,21 +12,21 @@ import Util.Http as HttpUtil
 -}
 getTariffZones : Environment -> Http.Request (List TariffZone)
 getTariffZones env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/reference-data/ATB/tariff-zones") (Decode.list tariffZoneDecoder)
+    HttpUtil.get env (env.refDataUrl ++ "/reference-data/v1/ATB/tariff-zones") (Decode.list tariffZoneDecoder)
 
 
 {-| Get list of fare products.
 -}
 getFareProducts : Environment -> Http.Request (List FareProduct)
 getFareProducts env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/reference-data/ATB/preassigned-fare-products") (Decode.list fareProductDecoder)
+    HttpUtil.get env (env.refDataUrl ++ "/reference-data/v1/ATB/preassigned-fare-products") (Decode.list fareProductDecoder)
 
 
 {-| Get list of user profiles.
 -}
 getUserProfiles : Environment -> Http.Request (List UserProfile)
 getUserProfiles env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/reference-data/ATB/user-profiles") (Decode.list userProfileDecoder)
+    HttpUtil.get env (env.refDataUrl ++ "/reference-data/v1/ATB/user-profiles") (Decode.list userProfileDecoder)
 
 
 

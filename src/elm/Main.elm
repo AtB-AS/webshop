@@ -64,6 +64,7 @@ type alias Flags =
     { isDevelopment : Bool
     , baseUrl : String
     , ticketUrl : String
+    , refDataUrl : String
     , version : String
     , commit : String
     , installId : String
@@ -110,6 +111,7 @@ init flags url navKey =
             { distributionEnv = distributionEnv
             , baseUrl = flags.baseUrl
             , ticketUrl = flags.ticketUrl
+            , refDataUrl = flags.refDataUrl
             , language = English
             , installId = flags.installId
             , customerId = Nothing

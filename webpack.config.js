@@ -127,55 +127,25 @@ function getTargetEnv() {
 }
 
 // Get base URL from command line or config file.
-function getBaseUrl(config) {
-    const wantedBaseUrl = getOption('baseUrl', true, null);
+function getBaseUrl(config, name) {
+    const wantedBaseUrl = getOption(name, true, null);
 
-    if (typeof wantedBaseUrl === 'string' && wantedBaseUrl.length > 0) {
+    if (typeof wantedBaseUrl === 'string') {
         return wantedBaseUrl;
     }
 
-    if (typeof config.baseUrl === 'string' && config.baseUrl.length > 0) {
-        return config.baseUrl;
+    if (typeof config[name] === 'string') {
+        return config[name];
     }
 
-    if (typeof config.baseUrl === 'object') {
+    if (typeof config[name] === 'object') {
         if (isProduction || isDebug) {
-            if (typeof config.baseUrl.production === 'string' && config.baseUrl.production.length > 0) {
-                return config.baseUrl.production;
+            if (typeof config[name].production === 'string' && config[name].production.length > 0) {
+                return config[name].production;
             }
         } else if (isDevelopment) {
-            if (typeof config.baseUrl.development === 'string' && config.baseUrl.development.length > 0) {
-                return config.baseUrl.development;
-            }
-        }
-    }
-
-    // Use root of current server as default backend. This won't work for
-    // development as the dev server only serves frontend code. It's just
-    // a semi-sane default.
-    return '/';
-}
-
-// Get base URL from command line or config file.
-function getTicketUrl(config) {
-    const wantedTicketUrl = getOption('ticketUrl', true, null);
-
-    if (typeof wantedTicketUrl === 'string' && wantedTicketUrl.length > 0) {
-        return wantedTicketUrl;
-    }
-
-    if (typeof config.ticketUrl === 'string' && config.ticketUrl.length > 0) {
-        return config.ticketUrl;
-    }
-
-    if (typeof config.ticketUrl === 'object') {
-        if (isProduction || isDebug) {
-            if (typeof config.ticketUrl.production === 'string' && config.ticketUrl.production.length > 0) {
-                return config.ticketUrl.production;
-            }
-        } else if (isDevelopment) {
-            if (typeof config.ticketUrl.development === 'string' && config.ticketUrl.development.length > 0) {
-                return config.ticketUrl.development;
+            if (typeof config[name].development === 'string' && config[name].development.length > 0) {
+                return config[name].development;
             }
         }
     }
@@ -293,8 +263,9 @@ const commonConfig = {
         new webpack.DefinePlugin({
             elmFlags: JSON.stringify({
                 isDevelopment: isDevelopment,
-                baseUrl: getBaseUrl(localConfig),
-                ticketUrl: getTicketUrl(localConfig),
+                baseUrl: getBaseUrl(localConfig, 'baseUrl'),
+                ticketUrl: getBaseUrl(localConfig, 'ticketUrl'),
+                refDataUrl: getBaseUrl(localConfig, 'refDataUrl'),
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
                 commit: gitCommitHash()
