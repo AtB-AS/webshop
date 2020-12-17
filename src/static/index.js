@@ -84,10 +84,11 @@ function fetchAuthInfo(user) {
                 setTimeout(() => fetchAuthInfo(user), 500);
             } else {
                 const accountId = idToken.claims["abt_id"];
+                const email = user.email || '';
 
                 app.ports.signInInfo.send({
                     token: idToken.token,
-                    email: user.email,
+                    email: email,
                     uid: accountId
                 });
 
