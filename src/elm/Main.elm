@@ -38,7 +38,7 @@ type Msg
     | ShopMsg ShopPage.Msg
     | SettingsMsg SettingsPage.Msg
     | SharedMsg Shared.Msg
-    | LogIn
+    | LogIn FirebaseAuth.Provider
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
     | LoggedInError (Result Decode.Error AuthError)
@@ -255,8 +255,8 @@ update msg model =
         SharedMsg subMsg ->
             ( { model | shared = Shared.update subMsg model.shared }, Cmd.none )
 
-        LogIn ->
-            ( model, FirebaseAuth.signIn () )
+        LogIn provider ->
+            ( model, FirebaseAuth.signIn provider )
 
         LogOut ->
             let
@@ -270,7 +270,7 @@ update msg model =
                     }
             in
                 ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-                , FirebaseAuth.signOut ()
+                , FirebaseAuth.signOut
                 )
 
         LoggedInData result ->
@@ -391,7 +391,10 @@ header model =
                     ]
 
             _ ->
-                H.div [] [ H.button [ E.onClick LogIn ] [ H.text "Log in" ] ]
+                H.div []
+                    [ H.button [ E.onClick (LogIn FirebaseAuth.Anonymous) ] [ H.text "Log in anonymously" ]
+                    , H.button [ E.onClick (LogIn FirebaseAuth.Google) ] [ H.text "Log in with Google" ]
+                    ]
         ]
 
 
@@ -475,6 +478,7 @@ type alias UserData =
     , email : String
     , userId : String
     , customerId : String
+    , provider : FirebaseAuth.Provider
     }
 
 
@@ -496,6 +500,7 @@ userDataDecoder =
                 )
                 Decode.string
             )
+        |> DecodeP.required "provider" FirebaseAuth.providerDecoder
 
 
 

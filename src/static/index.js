@@ -38,7 +38,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const provider = new firebase.auth.GoogleAuthProvider();
+let tokenSnapshotCallback = null;
 const db = firebase.firestore();
 const app = Elm.Main.init({
     flags: Object.assign({
@@ -49,10 +49,20 @@ const app = Elm.Main.init({
     )
 });
 
-app.ports.signIn.subscribe(() => {
-    firebase
-        .auth()
-        .signInWithPopup(provider)
+app.ports.signInHandler.subscribe((provider_id) => {
+    const auth = firebase.auth();
+    let provider;
+
+    if (provider_id === 'google.com') {
+        provider = auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    } else if (provider_id === 'anonymous') {
+        provider = auth.signInAnonymously();
+    } else {
+        console.log("Tried to sign in with unknown provider", provider_id);
+        return;
+    }
+
+    provider
         .then(result => {
             fetchAuthInfo(result.user);
         })
@@ -64,8 +74,14 @@ app.ports.signIn.subscribe(() => {
         });
 });
 
-app.ports.signOut.subscribe(() => {
+app.ports.signOutHandler.subscribe(() => {
     localStorage["loggedIn"] = '';
+
+    if (typeof tokenSnapshotCallback === 'function') {
+        tokenSnapshotCallback();
+        tokenSnapshotCallback = null;
+    }
+
     firebase.auth().signOut();
 });
 
@@ -85,11 +101,13 @@ function fetchAuthInfo(user) {
             } else {
                 const accountId = idToken.claims["abt_id"];
                 const email = user.email || '';
+                const provider = idToken.signInProvider || '';
 
                 app.ports.signInInfo.send({
                     token: idToken.token,
                     email: email,
-                    uid: accountId
+                    uid: accountId,
+                    provider: provider
                 });
 
                 localStorage["loggedIn"] = 'loggedIn';
@@ -97,12 +115,14 @@ function fetchAuthInfo(user) {
                 const path = `users/${accountId}/tokens`;
 
                 try {
-                    db.collection(path).onSnapshot(docs => {
+                    tokenSnapshotCallback = db.collection(path).onSnapshot(docs => {
                         const tokens = [];
 
                         docs.forEach(doc => {
-                            if (doc.data().payload) {
-                                tokens.push([doc.id, doc.data().payload.toBase64()]);
+                            const payload = doc.data().payload;
+
+                            if (payload && payload.toBase64) {
+                                tokens.push([doc.id, payload.toBase64()]);
                             }
                         });
 
