@@ -1,7 +1,8 @@
 module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.Webshop exposing (FareContract, FareContractState(..), FareProduct, Inspection(..), LangString(..), Profile, Rejection(..), TariffZone, Token, TokenType(..), UserProfile)
+import Data.RefData exposing (LangString(..))
+import Data.Webshop exposing (FareContract, FareContractState(..), Inspection(..), Profile, Rejection(..), Token, TokenType(..))
 import Dict exposing (Dict)
 import Environment exposing (Environment)
 import GlobalActions as GA

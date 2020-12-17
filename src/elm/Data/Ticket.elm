@@ -7,7 +7,7 @@ module Data.Ticket exposing
     , Ticket
     )
 
-import Data.Webshop exposing (UserType)
+import Data.RefData exposing (UserType)
 
 
 type alias Ticket =

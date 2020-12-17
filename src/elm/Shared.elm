@@ -1,9 +1,9 @@
 module Shared exposing (Msg, Shared, init, load, update)
 
-import Data.Webshop exposing (FareProduct, TariffZone, UserProfile)
+import Data.RefData exposing (FareProduct, TariffZone, UserProfile)
 import Environment exposing (Environment)
 import Http
-import Service.Webshop as WebshopService
+import Service.RefData as RefDataService
 import Task
 
 
@@ -67,20 +67,20 @@ load env =
 
 fetchTariffZones : Environment -> Cmd Msg
 fetchTariffZones env =
-    WebshopService.getTariffZones env
+    RefDataService.getTariffZones env
         |> Http.toTask
         |> Task.attempt ReceiveTariffZones
 
 
 fetchFareProducts : Environment -> Cmd Msg
 fetchFareProducts env =
-    WebshopService.getFareProducts env
+    RefDataService.getFareProducts env
         |> Http.toTask
         |> Task.attempt ReceiveFareProducts
 
 
 fetchUserProfiles : Environment -> Cmd Msg
 fetchUserProfiles env =
-    WebshopService.getUserProfiles env
+    RefDataService.getUserProfiles env
         |> Http.toTask
         |> Task.attempt ReceiveUserProfiles

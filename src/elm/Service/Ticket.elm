@@ -5,8 +5,8 @@ module Service.Ticket exposing
     , search
     )
 
+import Data.RefData exposing (UserType(..))
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation, Ticket)
-import Data.Webshop exposing (UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)

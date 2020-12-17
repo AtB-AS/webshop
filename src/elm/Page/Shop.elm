@@ -1,8 +1,8 @@
 module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
+import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
-import Data.Webshop exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Fragment.Button as Button
 import GlobalActions as GA
