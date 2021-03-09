@@ -47,7 +47,7 @@ reserve env customerNumber paymentType offers =
     let
         url =
             Url.Builder.crossOrigin env.ticketUrl
-                [ "ticket", "v1", "reserve" ]
+                [ "ticket", "v2", "reserve" ]
                 []
 
         body =
