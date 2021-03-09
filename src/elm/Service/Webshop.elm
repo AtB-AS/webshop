@@ -222,7 +222,7 @@ tokenDecoder =
         |> DecodeP.custom
             (Decode.succeed Tuple.pair
                 |> DecodeP.required "validityStart" Decode.int
-                |> DecodeP.required "validityEnd" Decode.int
+                |> DecodeP.optional "validityEnd" Decode.int 0
             )
 
 
