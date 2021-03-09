@@ -18,6 +18,8 @@ import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
+import Svg as S
+import Svg.Attributes as SA
 import Task
 import Time
 import Util.Status exposing (Status(..))
@@ -43,13 +45,13 @@ type Msg
     | Inspect String
     | ReceiveInspectQrCode (Result Http.Error (List Inspection))
     | OpenShop
+    | ToggleHistory
     | UpdateTime Time.Posix
-    | ToggleTicketView
 
 
-type TicketView
-    = TicketTable
-    | TicketCards
+type MainView
+    = CurrentTickets
+    | ExpiredTickets
 
 
 type alias Model =
@@ -59,7 +61,7 @@ type alias Model =
     , travelCardId : String
     , inspection : Status Inspection
     , currentTime : Time.Posix
-    , ticketView : TicketView
+    , mainView : MainView
     }
 
 
@@ -71,7 +73,7 @@ init =
       , travelCardId = ""
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
-      , ticketView = TicketCards
+      , mainView = CurrentTickets
       }
     , Cmd.none
     )
@@ -93,7 +95,7 @@ update msg env model =
                 Ok tickets ->
                     PageUpdater.init { model | tickets = tickets |> List.sortBy .validity |> List.reverse }
 
-                Err err ->
+                Err _ ->
                     PageUpdater.init model
 
         Inspect tokenPayload ->
@@ -107,7 +109,7 @@ update msg env model =
                 Ok inspection ->
                     PageUpdater.init { model | inspection = Loaded <| checkInspection inspection }
 
-                Err err ->
+                Err _ ->
                     PageUpdater.init { model | inspection = Failed "Failed to perform inspection" }
 
         GetTokens ->
@@ -189,69 +191,28 @@ update msg env model =
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.OpenShop
 
-        UpdateTime posixTime ->
-            PageUpdater.init { model | currentTime = posixTime }
-
-        ToggleTicketView ->
+        ToggleHistory ->
             PageUpdater.init
                 { model
-                    | ticketView =
-                        case model.ticketView of
-                            TicketCards ->
-                                TicketTable
+                    | mainView =
+                        if model.mainView == CurrentTickets then
+                            ExpiredTickets
 
-                            TicketTable ->
-                                TicketCards
+                        else
+                            CurrentTickets
                 }
+
+        UpdateTime posixTime ->
+            PageUpdater.init { model | currentTime = posixTime }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view env _ shared model _ =
     case env.customerId of
         Just _ ->
-            H.div [ A.class "box" ]
-                [ H.h2 [] [ H.text "Tickets" ]
-                , H.button [ E.onClick FetchTickets ] [ H.text "Refresh" ]
-                , H.button [ E.onClick OpenShop ] [ H.text "Buy" ]
-                , H.button [ E.onClick ToggleTicketView ] [ H.text "Toggle view" ]
-                , if List.isEmpty model.tickets then
-                    H.div [] [ H.text "No tickets" ]
-
-                  else if model.ticketView == TicketCards then
-                    viewTicketCards shared model
-
-                  else
-                    viewTicketTable shared model
-                , H.h2 [] [ H.text "Tokens" ]
-                , H.button [ E.onClick GetTokens ] [ H.text "Refresh" ]
-                , if List.length model.tokens == 0 then
-                    H.p [] [ H.text "No tokens." ]
-
-                  else
-                    H.div [ A.class "cards" ] <| List.map (viewToken model.tokenPayloads model.currentTime) model.tokens
-                , viewInspection model.inspection
-                , if List.isEmpty model.tokens then
-                    H.div []
-                        [ H.h3 [] [ H.text "Add QR token" ]
-                        , H.button
-                            [ E.onClick AddQrCode ]
-                            [ H.text "Add" ]
-                        ]
-
-                  else
-                    H.text ""
-                , H.h3 [] [ H.text "Add travel card" ]
-                , H.input
-                    [ A.value model.travelCardId
-                    , E.onInput UpdateTravelCardId
-                    , A.placeholder "Travel card id"
-                    ]
-                    []
-                , H.button
-                    [ A.disabled (String.trim model.travelCardId == "")
-                    , E.onClick AddTravelCard
-                    ]
-                    [ H.text "Add" ]
+            H.div [ A.class "overview" ]
+                [ viewSidebar shared model
+                , viewMain shared model
                 ]
 
         Nothing ->
@@ -261,38 +222,94 @@ view env _ shared model _ =
                 ]
 
 
-viewTicketCards : Shared -> Model -> Html Msg
-viewTicketCards shared model =
-    H.div [ A.class "cards" ] <| List.map (viewTicketCard shared model) model.tickets
-
-
-viewTicketTable : Shared -> Model -> Html msg
-viewTicketTable shared model =
-    H.table []
-        [ H.thead []
-            [ H.tr []
-                [ H.th [] [ H.text "Id" ]
-                , H.th [] [ H.text "State" ]
-                , H.th [] [ H.text "Validity" ]
-                , H.th [] [ H.text "User" ]
-                , H.th [] [ H.text "Product" ]
-                ]
-            ]
-        , H.tbody [] <| List.map (viewTicket shared model) model.tickets
+viewSidebar : Shared -> Model -> Html Msg
+viewSidebar shared model =
+    H.div [ A.class "sidebar" ]
+        [ viewAccountInfo model
+        , viewActions model
         ]
+
+
+viewAccountInfo : Model -> Html Msg
+viewAccountInfo model =
+    H.div [ A.class "section-box" ]
+        (H.div [] [ H.text "Ola Nordmann" ]
+            :: (if List.length model.tokens == 0 then
+                    [ H.div [] [ H.text "No tokens." ] ]
+
+                else
+                    List.map (viewToken model.tokenPayloads model.currentTime) model.tokens
+               )
+        )
+
+
+viewActions : Model -> Html Msg
+viewActions model =
+    H.div [ A.class "section-box" ]
+        [ actionButton OpenShop "Kjøp ny billett"
+        , actionButton ToggleHistory "Kjøpshistorikk"
+        , actionButton FetchTickets "Gi tilbakemelding til utviklerne"
+        , actionButton FetchTickets "Debug: Refresh"
+        ]
+
+
+actionButton : msg -> String -> Html msg
+actionButton action title =
+    H.div [] [ H.button [ A.class "action-button", E.onClick action ] [ H.text title ] ]
+
+
+{-| TODO: Fix empty check
+-}
+viewMain : Shared -> Model -> Html Msg
+viewMain shared model =
+    H.div [ A.class "main" ]
+        [ if List.isEmpty model.tickets then
+            H.div [] [ H.text "No tickets" ]
+
+          else
+            H.div [] (viewTicketInfo model :: viewTicketCards shared model)
+        ]
+
+
+viewTicketInfo : Model -> Html msg
+viewTicketInfo model =
+    case model.mainView of
+        CurrentTickets ->
+            H.div [ A.class "info-box" ]
+                [ infoIcon
+                , H.span [] [ H.text "For å ha gyldig billett i billettkontroll må du vise t:kort. Denne siden er ikke gyldig i billettkontroll." ]
+                ]
+
+        ExpiredTickets ->
+            H.text ""
+
+
+viewTicketCards : Shared -> Model -> List (Html Msg)
+viewTicketCards shared model =
+    List.map (viewTicketCard shared model)
+        (case model.mainView of
+            CurrentTickets ->
+                List.filter (\{ validity } -> isValid validity model.currentTime) model.tickets
+
+            ExpiredTickets ->
+                List.filter (\{ validity } -> isValid validity model.currentTime |> not) model.tickets
+        )
 
 
 timeLeft : Int -> String
 timeLeft time =
     let
+        days =
+            time // 86400
+
         hr =
-            time // 3600
+            (time - days * 86400) // 3600
 
         min =
-            (time - hr * 3600) // 60
+            (time - days * 86400 - hr * 3600) // 60
 
         sec =
-            time - hr * 3600 - min * 60
+            time - days * 86400 - hr * 3600 - min * 60
 
         toStr v suffix =
             if v > 0 then
@@ -301,7 +318,7 @@ timeLeft time =
             else
                 ""
     in
-        String.join " " [ toStr hr "h", toStr min "m", toStr sec "s" ]
+        String.join " " [ toStr days "d", toStr hr "h", toStr min "m", toStr sec "s" ]
 
 
 timeAgo : Int -> String
@@ -322,6 +339,46 @@ timeAgo time =
         "just now"
 
 
+pluralFormat : Int -> String -> String -> String
+pluralFormat value singular plural =
+    String.fromInt value
+        ++ " "
+        ++ (if value == 1 then
+                singular
+
+            else
+                plural
+           )
+
+
+timeFormat : Int -> String -> String -> String
+timeFormat time suffix fallback =
+    if time >= 86400 then
+        pluralFormat (time // 86400) "dag" "dager" ++ " " ++ suffix
+
+    else if time >= 7200 then
+        pluralFormat (time // 3600) "time" "timer" ++ " " ++ suffix
+
+    else if time >= 120 then
+        pluralFormat (time // 60) "minutt" "minutter" ++ " " ++ suffix
+
+    else if time >= 1 then
+        pluralFormat time "sekund" "sekunder" ++ " " ++ suffix
+
+    else
+        fallback
+
+
+timeLeftFormat : Int -> String
+timeLeftFormat time =
+    timeFormat time "igjen" "utløper straks"
+
+
+timeAgoFormat : Int -> String
+timeAgoFormat time =
+    timeFormat time "siden" "nå nettopp"
+
+
 frequency : List comparable -> Dict comparable Int
 frequency =
     List.foldl
@@ -331,44 +388,6 @@ frequency =
         Dict.empty
 
 
-viewTicket : Shared -> Model -> FareContract -> Html msg
-viewTicket shared model fareContract =
-    let
-        ( _, to ) =
-            fareContract.validity
-
-        now =
-            Time.posixToMillis model.currentTime // 1000
-    in
-        H.tr []
-            [ H.td [] [ H.text fareContract.id ]
-            , H.td [] [ H.text <| fareContractStateToString fareContract.state ]
-            , H.td []
-                [ if now > to then
-                    H.span [ A.style "color" "#f00" ] [ H.text <| "Expired " ++ timeAgo (now - to) ++ " ago" ]
-
-                  else
-                    H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
-                ]
-            , H.td []
-                [ fareContract.userProfiles
-                    |> frequency
-                    |> Dict.map (viewUserProfile shared)
-                    |> Dict.values
-                    |> String.join ", "
-                    |> H.text
-                ]
-            , H.td []
-                [ fareContract.fareProducts
-                    |> frequency
-                    |> Dict.map (viewFareProduct shared)
-                    |> Dict.values
-                    |> String.join ", "
-                    |> H.text
-                ]
-            ]
-
-
 viewValidity : ( Int, Int ) -> Time.Posix -> Html msg
 viewValidity ( _, to ) posixNow =
     let
@@ -376,10 +395,30 @@ viewValidity ( _, to ) posixNow =
             Time.posixToMillis posixNow // 1000
     in
         if now > to then
-            H.span [ A.style "color" "#f00" ] [ H.text <| "Expired " ++ timeAgo (now - to) ++ " ago" ]
+            H.text <| timeAgoFormat (now - to)
 
         else
-            H.span [ A.style "color" "#0f0" ] [ H.text <| "Valid - " ++ timeLeft (to - now) ++ " left" ]
+            H.text <| timeLeftFormat (to - now)
+
+
+isValid : ( Int, Int ) -> Time.Posix -> Bool
+isValid ( _, to ) posixNow =
+    to >= (Time.posixToMillis posixNow // 1000)
+
+
+infoIcon : Html msg
+infoIcon =
+    S.svg [ SA.width "40", SA.height "40", SA.viewBox "0 0 40 40", SA.fill "none" ]
+        [ S.path [ SA.d "M22 12V16H18V12H22Z", SA.fill "black" ] []
+        , S.path [ SA.d "M18 18V28H22V18H18Z", SA.fill "black" ] []
+        , S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M2 20C2 10.0589 10.0589 2 20 2C29.9411 2 38 10.0589 38 20C38 29.9411 29.9411 38 20 38C10.0589 38 2 29.9411 2 20ZM20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z"
+            , SA.fill "black"
+            ]
+            []
+        ]
 
 
 viewTicketCard : Shared -> Model -> FareContract -> Html Msg
@@ -407,7 +446,11 @@ viewTicketCard shared model fareContract =
                 |> frequency
                 |> Dict.map (viewFareProduct shared)
                 |> Dict.values
+                |> List.filter ((/=) "")
                 |> String.join ", "
+
+        zone =
+            "Sone A"
 
         fareContractId =
             case String.split ":" fareContract.id of
@@ -417,19 +460,26 @@ viewTicketCard shared model fareContract =
                 _ ->
                     "Unknown"
     in
-        H.div [ A.class "card" ]
-            [ H.div [ A.class "card-content" ]
-                [ H.div [ A.class "card-icon icon-ticket" ] []
-                , H.h5 [ A.class "card-name" ]
-                    [ H.span []
-                        [ if fareProduct == "" then
-                            H.text "Unknown product"
+        H.div [ A.class "ticket" ]
+            [ H.div [ A.class "ticket-header" ]
+                [ H.div [ A.class "product-name" ]
+                    [ if fareProduct == "" then
+                        H.text "Unknown product"
 
-                          else
-                            H.text fareProduct
-                        ]
+                      else
+                        H.text fareProduct
                     ]
-                , H.h6 [ A.class "card-info" ] [ viewValidity fareContract.validity model.currentTime ]
+                , H.div [ A.class "zone-name" ] [ H.text zone ]
+                ]
+            , if isValid fareContract.validity model.currentTime then
+                H.div [ A.class "ticket-progress" ] []
+
+              else
+                H.text ""
+            , H.div [ A.class "card-content" ]
+                [ H.div [ A.class "card-icon icon-ticket" ] []
+                , H.h5 [ A.class "card-name" ] [ H.span [] [] ]
+                , H.div [ A.class "ticket-info" ] [ viewValidity fareContract.validity model.currentTime ]
                 ]
             , H.div [ A.class "card-id" ] [ H.text fareContractId ]
             , H.div [ A.class "card-extra" ] [ H.text userInfo ]
@@ -611,22 +661,9 @@ viewToken payloads currentTime token =
                 type_ ->
                     ( tokenTypeToString type_, "", "" )
     in
-        H.div [ A.class "card" ]
-            [ H.div [ A.class "card-content" ]
-                [ H.div [ A.class ("card-icon " ++ icon) ] []
-                , H.h5 [ A.class "card-name" ] [ H.text name ]
-                , H.h6 [ A.class "card-info" ] [ viewValidity token.validity currentTime ]
-                ]
-            , H.div [ A.class "card-actions" ]
-                [ H.div [ A.class "action-content" ]
-                    [ H.button [ A.class "btn btn-replace" ] [ H.text "Replace" ]
-                    , if payload /= "" then
-                        H.button [ A.class "btn btn-inspect", E.onClick (Inspect payload) ] [ H.text "Inspect" ]
-
-                      else
-                        H.button [ A.class "btn btn-delete", E.onClick (DeleteToken token.id) ] [ H.text "Delete" ]
-                    ]
-                ]
+        H.div []
+            [ H.span [ A.class "token-name" ] [ H.text name ]
+            , H.span [ A.class "token-id" ] [ H.text info ]
             ]
 
 
