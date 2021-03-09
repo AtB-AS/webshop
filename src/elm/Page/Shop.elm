@@ -33,6 +33,22 @@ type Msg
     | SetFromZone String
     | SetToZone String
     | ModUser UserType Int
+    | SetUser UserType
+    | ShowTravelers
+    | ShowDuration
+    | ShowStart
+    | ShowZones
+    | SetTime String
+    | SetDate String
+    | SetNow
+    | GetIsoTime String
+
+
+type MainView
+    = Travelers
+    | Duration
+    | Start
+    | Zones
 
 
 type alias Model =
@@ -42,6 +58,11 @@ type alias Model =
     , users : List ( UserType, Int )
     , offers : Status (List Offer)
     , reservation : Status Reservation
+    , mainView : MainView
+    , now : Bool
+    , travelDate : String
+    , travelTime : String
+    , isoTime : Maybe String
     }
 
 
@@ -67,9 +88,14 @@ init shared =
                     |> Maybe.withDefault ""
           , fromZone = firstZone
           , toZone = firstZone
-          , users = []
+          , users = [ ( UserTypeAdult, 1 ) ]
           , offers = NotLoaded
           , reservation = NotLoaded
+          , mainView = Travelers
+          , now = True
+          , travelDate = ""
+          , travelTime = "00:00"
+          , isoTime = Nothing
           }
         , TaskUtil.doTask FetchOffers
         )
@@ -79,13 +105,28 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         SetProduct product ->
-            PageUpdater.init { model | product = product }
+            PageUpdater.fromPair
+                ( { model | product = product }
+                , TaskUtil.doTask FetchOffers
+                )
 
         SetFromZone zone ->
-            PageUpdater.init { model | fromZone = zone }
+            PageUpdater.fromPair
+                ( { model | fromZone = zone }
+                , TaskUtil.doTask FetchOffers
+                )
 
         SetToZone zone ->
-            PageUpdater.init { model | toZone = zone }
+            PageUpdater.fromPair
+                ( { model | toZone = zone }
+                , TaskUtil.doTask FetchOffers
+                )
+
+        SetUser userType ->
+            PageUpdater.fromPair
+                ( { model | users = [ ( userType, 1 ) ] }
+                , TaskUtil.doTask FetchOffers
+                )
 
         ModUser userType change ->
             let
@@ -135,7 +176,17 @@ update msg env model =
                 in
                     PageUpdater.fromPair
                         ( { model | offers = Loading oldOffers, reservation = NotLoaded }
-                        , fetchOffers env model.product model.fromZone model.toZone model.users
+                        , fetchOffers env
+                            model.product
+                            model.fromZone
+                            model.toZone
+                            model.users
+                            (if model.now then
+                                Nothing
+
+                             else
+                                model.isoTime
+                            )
                         )
 
         ReceiveOffers result ->
@@ -207,53 +258,129 @@ update msg env model =
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.CloseShop
 
+        ShowTravelers ->
+            PageUpdater.init { model | mainView = Travelers }
+
+        ShowDuration ->
+            PageUpdater.init { model | mainView = Duration }
+
+        ShowStart ->
+            PageUpdater.init { model | mainView = Start }
+
+        ShowZones ->
+            PageUpdater.init { model | mainView = Zones }
+
+        SetNow ->
+            PageUpdater.init { model | now = not model.now }
+
+        SetDate date ->
+            PageUpdater.fromPair
+                ( { model | travelDate = date, isoTime = Nothing }
+                , MiscService.convertTime ( date, model.travelTime )
+                )
+
+        SetTime time ->
+            PageUpdater.fromPair
+                ( { model | travelTime = time, isoTime = Nothing }
+                , MiscService.convertTime ( model.travelDate, time )
+                )
+
+        GetIsoTime isoTime ->
+            PageUpdater.fromPair
+                ( { model | isoTime = Just isoTime, now = False }
+                , TaskUtil.doTask FetchOffers
+                )
+
+
+actionButton : Bool -> msg -> String -> Html msg
+actionButton active action title =
+    H.div [ A.class "pseudo-button", A.classList [ ( "active", active ) ], E.onClick action ]
+        [ H.button [ A.class "action-button" ] [ H.text title ] ]
+
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div [ A.class "box" ]
-        [ H.h2 [] [ H.text "Shop" ]
-        , H.button [ E.onClick FetchOffers ] [ H.text "Search" ]
-        , H.button [ E.onClick CloseShop ] [ H.text "Close" ]
-        , H.div [] [ viewProducts model shared.fareProducts ]
-        , H.div [] [ viewZones model shared.tariffZones ]
-        , H.div [] [ viewUserProfiles model shared.userProfiles ]
-        , case model.offers of
-            NotLoaded ->
-                H.text ""
+    H.div [ A.class "shop" ]
+        [ H.div [ A.class "left" ]
+            [ H.div [ A.class "section-box" ]
+                [ H.div [] [ H.div [ A.class "disabled-button" ] [ H.text "Reisetype" ] ]
+                , actionButton (model.mainView == Travelers) ShowTravelers "Reisende"
+                , actionButton (model.mainView == Duration) ShowDuration "Varighet"
+                , actionButton (model.mainView == Start) ShowStart "Gyldig fra og med"
+                , actionButton (model.mainView == Zones) ShowZones "Soner"
+                ]
+            ]
+        , H.div [ A.class "middle" ]
+            [ case model.mainView of
+                Travelers ->
+                    H.div [] [ viewUserProfiles model shared.userProfiles ]
 
-            Loading _ ->
-                H.div [ A.style "padding" "20px" ] [ Button.loading ]
+                Duration ->
+                    H.div [] [ viewProducts model shared.fareProducts ]
 
-            Loaded offers ->
-                let
-                    disableButtons =
-                        case model.reservation of
-                            Loading _ ->
-                                True
+                Start ->
+                    H.div [] [ viewStart model ]
 
-                            Loaded _ ->
-                                True
+                Zones ->
+                    H.div [] [ viewZones model shared.tariffZones ]
+            ]
+        , H.div [ A.class "right" ]
+            (case model.offers of
+                NotLoaded ->
+                    [ H.text "" ]
 
-                            _ ->
-                                False
-                in
-                    H.div []
-                        [ H.div []
-                            [ H.button
-                                [ E.onClick <| BuyOffers Nets
-                                , A.disabled disableButtons
+                Loading _ ->
+                    [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
+
+                Loaded offers ->
+                    let
+                        disableButtons =
+                            case model.reservation of
+                                Loading _ ->
+                                    True
+
+                                Loaded _ ->
+                                    True
+
+                                _ ->
+                                    False
+
+                        totalPrice =
+                            List.map
+                                (.prices >> List.map .amountFloat >> List.head >> Maybe.withDefault 0.0)
+                                offers
+                                |> List.sum
+                                |> round
+                                |> String.fromInt
+                    in
+                        [ H.div [ A.class "section-box" ]
+                            [ H.div [ A.class "section-header" ] [ H.text "Oppsummering" ]
+                            , H.div [ A.class "summary-price" ]
+                                [ H.text ("kr " ++ totalPrice ++ ",00")
                                 ]
-                                [ H.text "Buy with Nets" ]
-                            , H.button
-                                [ E.onClick <| BuyOffers Vipps
-                                , A.disabled disableButtons
+                            ]
+                        , H.div [ A.class "section-box" ]
+                            [ H.div [ A.class "buy-button" ]
+                                [ H.button
+                                    [ E.onClick <| BuyOffers Nets
+                                    , A.disabled disableButtons
+                                    ]
+                                    [ H.text "Betal med bankkort" ]
                                 ]
-                                [ H.text "Buy with Vipps" ]
+                            , H.div [ A.class "buy-button" ]
+                                [ H.button
+                                    [ E.onClick <| BuyOffers Vipps
+                                    , A.disabled disableButtons
+                                    ]
+                                    [ H.text "Betal med Vipps" ]
+                                ]
+                            , actionButton False CloseShop "Avbryt"
                             ]
                         ]
 
-            Failed error ->
-                H.div [] [ H.text error ]
+                Failed error ->
+                    [ H.div [] [ H.text error ] ]
+            )
         , case model.reservation of
             NotLoaded ->
                 H.text ""
@@ -274,21 +401,52 @@ langString (LangString _ value) =
     value
 
 
+viewStart : Model -> Html Msg
+viewStart model =
+    H.div [ A.class "section-box" ]
+        [ H.div [ A.class "section-header" ] [ H.text "Velg starttidspunkt" ]
+        , actionButton False SetNow "Nå"
+        , H.div [ A.class "section-block" ]
+            [ H.input
+                [ E.onInput SetTime
+                , A.type_ "time"
+                , A.value model.travelTime
+                ]
+                []
+            ]
+        , H.div [ A.class "section-block" ]
+            [ H.input
+                [ E.onInput SetDate
+                , A.type_ "date"
+                , A.value model.travelDate
+                ]
+                []
+            ]
+        ]
+
+
 viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
-    H.p []
-        [ H.text "Choose product: "
-        , H.select [ E.onInput SetProduct ] <| List.map (viewProduct model) products
-        ]
+    H.div [ A.class "section-box" ]
+        (H.div [ A.class "section-header" ] [ H.text "Velg varighet" ]
+            :: List.map (viewProduct model) products
+        )
 
 
-viewProduct : Model -> FareProduct -> Html msg
+viewProduct : Model -> FareProduct -> Html Msg
 viewProduct model product =
-    H.option
-        [ A.value product.id
-        , A.selected (model.product == product.id)
-        ]
-        [ H.text <| langString product.name ]
+    let
+        isCurrent =
+            model.product == product.id
+
+        extraText =
+            if isCurrent then
+                " <- "
+
+            else
+                ""
+    in
+        actionButton False (SetProduct product.id) (langString product.name ++ extraText)
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -303,11 +461,11 @@ viewZones model zones =
                 )
                 zones
     in
-        H.p []
-            [ H.text "From "
-            , H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones
-            , H.text " to "
-            , H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones
+        H.div [ A.class "section-box" ]
+            [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
+            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
+            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
+            , H.div [ A.class "section-block" ] [ H.text "mapbox" ]
             ]
 
 
@@ -322,72 +480,29 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    H.div []
-        [ userProfiles
-            |> List.filter (.userType >> (/=) UserTypeAnyone)
-            |> List.map (viewUserProfile model)
-            |> H.table [ A.class "shop-user" ]
-        ]
+    H.div [ A.class "section-box" ]
+        (H.div [ A.class "section-header" ] [ H.text "Velg reisende" ]
+            :: (userProfiles
+                    |> List.filter (.userType >> (/=) UserTypeAnyone)
+                    |> List.map (viewUserProfile model)
+               )
+        )
 
 
 viewUserProfile : Model -> UserProfile -> Html Msg
 viewUserProfile model userProfile =
     let
-        value =
-            model.users
-                |> List.filter (Tuple.first >> (==) userProfile.userType)
-                |> List.head
-                |> Maybe.map Tuple.second
-                |> Maybe.withDefault 0
+        isCurrent =
+            List.any (Tuple.first >> (==) userProfile.userType) model.users
 
-        offer =
-            case model.offers of
-                Loaded offers ->
-                    offers
-                        |> List.filter (.userType >> (==) userProfile.userType)
-                        |> List.head
+        extraText =
+            if isCurrent then
+                " <- "
 
-                Loading (Just offers) ->
-                    offers
-                        |> List.filter (.userType >> (==) userProfile.userType)
-                        |> List.head
-
-                _ ->
-                    Nothing
-
-        onClick change =
-            E.onClick <| ModUser userProfile.userType change
+            else
+                ""
     in
-        H.tr []
-            [ H.td []
-                [ if value > 0 then
-                    H.button [ onClick -1 ] [ H.text "-" ]
-
-                  else
-                    H.text ""
-                ]
-            , H.td []
-                [ H.text <|
-                    if value > 0 then
-                        String.fromInt value
-
-                    else
-                        ""
-                ]
-            , H.td [] [ H.button [ onClick 1 ] [ H.text "+" ] ]
-            , H.td [] [ H.text <| langString userProfile.name ]
-            , H.td []
-                [ offer
-                    |> Maybe.andThen
-                        (\{ prices } ->
-                            prices
-                                |> List.head
-                                |> Maybe.map (\{ amountFloat } -> String.fromInt (round amountFloat * value) ++ ",-")
-                        )
-                    |> Maybe.withDefault ""
-                    |> H.text
-                ]
-            ]
+        actionButton False (SetUser userProfile.userType) (langString userProfile.name ++ extraText)
 
 
 viewOffer : Offer -> Html msg
@@ -407,19 +522,19 @@ viewOffer offer =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    MiscService.convertedTime GetIsoTime
 
 
 
 -- INTERNAL
 
 
-fetchOffers : Environment -> String -> String -> String -> List ( UserType, Int ) -> Cmd Msg
-fetchOffers env product fromZone toZone users =
+fetchOffers : Environment -> String -> String -> String -> List ( UserType, Int ) -> Maybe String -> Cmd Msg
+fetchOffers env product fromZone toZone users travelDate =
     [ fromZone, toZone ]
         |> Set.fromList
         |> Set.toList
-        |> TicketService.search env product users
+        |> TicketService.search env travelDate product users
         |> Http.toTask
         |> Task.attempt ReceiveOffers
 
