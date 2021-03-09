@@ -18,20 +18,26 @@ import Util.Http as HttpUtil
 
 {-| Search for offers.
 -}
-search : Environment -> String -> List ( UserType, Int ) -> List String -> Http.Request (List Offer)
-search env product travellers zones =
+search : Environment -> Maybe String -> String -> List ( UserType, Int ) -> List String -> Http.Request (List Offer)
+search env travelDate product travellers zones =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl [ "ticket", "v1", "search" ] []
+            Url.Builder.crossOrigin env.ticketUrl [ "ticket", "v1", "search", "zones" ] []
 
         body =
-            Encode.object
-                [ ( "products", Encode.list Encode.string [ product ] )
-                , ( "travellers", Encode.list encodeTraveller travellers )
-                , ( "zones", Encode.list Encode.string zones )
-                ]
+            [ ( "products", Encode.list Encode.string [ product ] )
+            , ( "travellers", Encode.list encodeTraveller travellers )
+            , ( "zones", Encode.list Encode.string zones )
+            ]
+                ++ (case travelDate of
+                        Just dateTime ->
+                            [ ( "travel_date", Encode.string dateTime ) ]
+
+                        Nothing ->
+                            []
+                   )
     in
-        HttpUtil.post env url (Http.jsonBody body) (Decode.list offerDecoder)
+        HttpUtil.post env url (Http.jsonBody <| Encode.object body) (Decode.list offerDecoder)
 
 
 {-| Reserve offers.
