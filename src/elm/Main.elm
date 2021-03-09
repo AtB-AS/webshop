@@ -329,54 +329,10 @@ view model =
                     ]
 
             _ ->
-                viewInternal model
-        ]
-
-
-viewInternal : Model -> Html Msg
-viewInternal model =
-    H.div []
-        [ header model
-        , case model.userData of
-            Loaded _ ->
-                H.div [ A.class "tab-bar" ]
-                    [ H.a
-                        [ A.href "#/"
-                        , if model.route == Just Route.Home then
-                            A.class "selected-tab"
-
-                          else
-                            A.class ""
-                        ]
-                        [ H.text "Home"
-                        ]
-                    , if model.shop /= Nothing then
-                        H.a
-                            [ A.href "#/shop"
-                            , if model.route == Just Route.Shop then
-                                A.class "selected-tab"
-
-                              else
-                                A.class ""
-                            ]
-                            [ H.text "Shop" ]
-
-                      else
-                        H.text ""
-                    , H.a
-                        [ A.href "#/settings"
-                        , if model.route == Just Route.Settings then
-                            A.class "selected-tab"
-
-                          else
-                            A.class ""
-                        ]
-                        [ H.text "Settings" ]
+                H.div []
+                    [ header model
+                    , H.main_ [] [ viewPage model ]
                     ]
-
-            _ ->
-                H.text ""
-        , viewPage model
         ]
 
 
