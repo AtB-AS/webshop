@@ -3,6 +3,7 @@ require('./styles/main.scss');
 import * as firebase from "firebase/app";
 import "firebase/firebase-auth";
 import "firebase/firebase-firestore";
+import "firebase/firebase-remote-config";
 
 import {Elm} from '../elm/Main';
 
@@ -40,6 +41,7 @@ firebase.initializeApp(firebaseConfig);
 
 let tokenSnapshotCallback = null;
 const db = firebase.firestore();
+const remoteConfig = firebase.remoteConfig();
 const app = Elm.Main.init({
     flags: Object.assign({
             installId: installId,
@@ -48,6 +50,22 @@ const app = Elm.Main.init({
         elmFlags
     )
 });
+
+// NOTE: Only change this for testing.
+remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
+//remoteConfig.settings.minimumFetchIntervalMillis = 60000;
+remoteConfig.fetchAndActivate()
+    .then(() => {
+        // ...
+        app.ports.remoteConfigFareProducts.send(JSON.parse(remoteConfig.getString('preassigned_fare_products')));
+        app.ports.remoteConfigUserProfiles.send(JSON.parse(remoteConfig.getString('user_profiles')));
+        app.ports.remoteConfigTariffZones.send(JSON.parse(remoteConfig.getString('tariff_zones')));
+        //app.ports.remoteConfigSalesPackages.send(JSON.parse(remoteConfig.getString('sales_packages')));
+    })
+    .catch((err) => {
+        // ...
+        console.log('[ERROR] remoteConfig.fetchAndActivate:', err);
+    });
 
 app.ports.signInHandler.subscribe((provider_id) => {
     const auth = firebase.auth();

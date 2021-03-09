@@ -457,6 +457,8 @@ subs model =
             |> Maybe.withDefault Sub.none
         , SettingsPage.subscriptions model.settings
             |> Sub.map SettingsMsg
+        , Shared.subscriptions
+            |> Sub.map SharedMsg
         , model.notifications
             |> List.head
             |> Maybe.map (\_ -> Time.every 1000 CloseNotification)
