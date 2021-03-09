@@ -159,3 +159,16 @@ function fetchAuthInfo(user) {
 app.ports.openWindow.subscribe((url) => {
     window.open(url);
 });
+
+if (app.ports.convertTime) {
+    app.ports.convertTime.subscribe(([date, time]) => {
+        try {
+            let dt = new Date(date + 'T' + time);
+
+            if (app.ports.convertedTime && dt !== null && typeof dt !== 'undefined') {
+                app.ports.convertedTime.send((dt.toISOString().replace(/\.[0-9]*/, '')));
+            }
+        } catch {
+        }
+    });
+}
