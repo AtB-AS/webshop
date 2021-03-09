@@ -88,6 +88,13 @@ setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     ( { model | route = maybeRoute }
     , case maybeRoute of
+        Just Route.Shop ->
+            if model.shop == Nothing then
+                TaskUtil.doTask <| RouteTo Route.Home
+
+            else
+                Cmd.none
+
         Just _ ->
             Cmd.none
 
