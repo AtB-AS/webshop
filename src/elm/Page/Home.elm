@@ -5,6 +5,7 @@ import Data.RefData exposing (LangString(..))
 import Data.Webshop exposing (FareContract, FareContractState(..), Inspection(..), Profile, Rejection(..), Token, TokenType(..))
 import Dict exposing (Dict)
 import Environment exposing (Environment)
+import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -18,8 +19,6 @@ import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
-import Svg as S
-import Svg.Attributes as SA
 import Task
 import Time
 import Util.Status exposing (Status(..))
@@ -276,7 +275,7 @@ viewTicketInfo model =
     case model.mainView of
         CurrentTickets ->
             H.div [ A.class "info-box" ]
-                [ infoIcon
+                [ Icon.info
                 , H.span [] [ H.text "For å ha gyldig billett i billettkontroll må du vise t:kort. Denne siden er ikke gyldig i billettkontroll." ]
                 ]
 
@@ -404,21 +403,6 @@ viewValidity ( _, to ) posixNow =
 isValid : ( Int, Int ) -> Time.Posix -> Bool
 isValid ( _, to ) posixNow =
     to >= (Time.posixToMillis posixNow // 1000)
-
-
-infoIcon : Html msg
-infoIcon =
-    S.svg [ SA.width "40", SA.height "40", SA.viewBox "0 0 40 40", SA.fill "none" ]
-        [ S.path [ SA.d "M22 12V16H18V12H22Z", SA.fill "black" ] []
-        , S.path [ SA.d "M18 18V28H22V18H18Z", SA.fill "black" ] []
-        , S.path
-            [ SA.fillRule "evenodd"
-            , SA.clipRule "evenodd"
-            , SA.d "M2 20C2 10.0589 10.0589 2 20 2C29.9411 2 38 10.0589 38 20C38 29.9411 29.9411 38 20 38C10.0589 38 2 29.9411 2 20ZM20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z"
-            , SA.fill "black"
-            ]
-            []
-        ]
 
 
 viewTicketCard : Shared -> Model -> FareContract -> Html Msg
