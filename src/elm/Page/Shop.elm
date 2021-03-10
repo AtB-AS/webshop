@@ -5,6 +5,7 @@ import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfi
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Button as Button
+import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -298,6 +299,12 @@ actionButton active action title =
         [ H.button [ A.class "action-button" ] [ H.text title ] ]
 
 
+richActionButton : Bool -> msg -> Html msg -> Html msg
+richActionButton active action content =
+    H.div [ A.class "pseudo-button", A.classList [ ( "active", active ) ], E.onClick action ]
+        [ content ]
+
+
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
     H.div [ A.class "shop" ]
@@ -405,7 +412,17 @@ viewStart : Model -> Html Msg
 viewStart model =
     H.div [ A.class "section-box" ]
         [ H.div [ A.class "section-header" ] [ H.text "Velg starttidspunkt" ]
-        , actionButton False SetNow "Nå"
+        , richActionButton False
+            SetNow
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text "Nå" ]
+                , if model.now then
+                    Icon.checkmark
+
+                  else
+                    H.text ""
+                ]
+            )
         , H.div [ A.class "section-block" ]
             [ H.input
                 [ E.onInput SetTime
@@ -439,14 +456,20 @@ viewProduct model product =
         isCurrent =
             model.product == product.id
 
-        extraText =
+        extraHtml =
             if isCurrent then
-                " <- "
+                H.span [ A.style "float" "right" ] [ Icon.checkmark ]
 
             else
-                ""
+                H.text ""
     in
-        actionButton False (SetProduct product.id) (langString product.name ++ extraText)
+        richActionButton False
+            (SetProduct product.id)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString product.name ]
+                , extraHtml
+                ]
+            )
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -495,14 +518,20 @@ viewUserProfile model userProfile =
         isCurrent =
             List.any (Tuple.first >> (==) userProfile.userType) model.users
 
-        extraText =
+        extraHtml =
             if isCurrent then
-                " <- "
+                Icon.checkmark
 
             else
-                ""
+                H.text ""
     in
-        actionButton False (SetUser userProfile.userType) (langString userProfile.name ++ extraText)
+        richActionButton False
+            (SetUser userProfile.userType)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString userProfile.name ]
+                , extraHtml
+                ]
+            )
 
 
 viewOffer : Offer -> Html msg
