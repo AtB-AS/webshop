@@ -377,6 +377,7 @@ viewPage model =
                     Just shop ->
                         ShopPage.view env model.appInfo shared shop model.route
                             |> H.map ShopMsg
+                            |> wrapSubPage "Kjøp ny billett"
 
                     Nothing ->
                         H.text ""
@@ -384,6 +385,7 @@ viewPage model =
             Just Route.Settings ->
                 SettingsPage.view env model.appInfo shared model.settings model.route
                     |> H.map SettingsMsg
+                    |> wrapSubPage "Kontoinformasjon"
 
             Just Route.NotFound ->
                 H.div
@@ -403,6 +405,17 @@ viewPage model =
                         , H.h3 [] [ H.a [ A.href "#/settings" ] [ H.text "Go to settings" ] ]
                         ]
                     ]
+
+
+wrapSubPage : String -> Html msg -> Html msg
+wrapSubPage title children =
+    H.div []
+        [ H.div [ A.class "title-bar" ]
+            [ H.div [ A.class "go-back" ] [ H.a [ A.href "#/" ] [ Icon.leftArrow, H.text " Oversikt" ] ]
+            , H.div [] [ H.text title ]
+            ]
+        , children
+        ]
 
 
 subs : Model -> Sub Msg

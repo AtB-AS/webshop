@@ -23,6 +23,25 @@ body {
     background-color: var(--background);
 }
 
+.title-bar {
+    padding: 24px;
+    position: relative;
+    text-align: center;
+    font-weight: 500;
+
+    .go-back {
+        position: absolute;
+        left: 24px;
+        top: 24px;
+
+        a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 400;
+        }
+    }
+}
+
 a:link,
 a:active,
 a:visited {
