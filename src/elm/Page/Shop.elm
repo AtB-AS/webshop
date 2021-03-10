@@ -311,10 +311,54 @@ view _ _ shared model _ =
         [ H.div [ A.class "left" ]
             [ H.div [ A.class "section-box" ]
                 [ H.div [] [ H.div [ A.class "disabled-button" ] [ H.text "Reisetype" ] ]
-                , actionButton (model.mainView == Travelers) ShowTravelers "Reisende"
-                , actionButton (model.mainView == Duration) ShowDuration "Varighet"
-                , actionButton (model.mainView == Start) ShowStart "Gyldig fra og med"
-                , actionButton (model.mainView == Zones) ShowZones "Soner"
+                , richActionButton (model.mainView == Travelers)
+                    ShowTravelers
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.traveler
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisende" ]
+                        , if model.mainView == Travelers then
+                            H.text ""
+
+                          else
+                            Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Duration)
+                    ShowDuration
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.duration
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Varighet" ]
+                        , if model.mainView == Duration then
+                            H.text ""
+
+                          else
+                            Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Start)
+                    ShowStart
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.ticket
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gyldig fra og med" ]
+                        , if model.mainView == Start then
+                            H.text ""
+
+                          else
+                            Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Zones)
+                    ShowZones
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.ticket
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Soner" ]
+                        , if model.mainView == Zones then
+                            H.text ""
+
+                          else
+                            Icon.edit
+                        ]
+                    )
                 ]
             ]
         , H.div [ A.class "middle" ]
