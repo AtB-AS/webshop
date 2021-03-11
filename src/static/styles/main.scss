@@ -221,6 +221,10 @@ main {
     cursor: pointer;
 }
 
+.pseudo-button-disabled {
+    opacity: 0.5;
+}
+
 .buy-button-new {
     background-color: #37424A;
     color: #fff;

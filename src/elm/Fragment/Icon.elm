@@ -21,11 +21,26 @@ module Fragment.Icon exposing
     , traveler
     , upArrow
     , vipps
+    , wrapper
     )
 
-import Html exposing (Html)
+import Html as H exposing (Html)
+import Html.Attributes as A
 import Svg as S
 import Svg.Attributes as SA
+
+
+{-| Wrap the SVG icon in the given square size.
+-}
+wrapper : Int -> Html msg -> Html msg
+wrapper size iconHtml =
+    H.div
+        [ A.style "width" (String.fromInt size ++ "px")
+        , A.style "height" (String.fromInt size ++ "px")
+        , A.style "display" "grid"
+        , A.style "place-items" "center"
+        ]
+        [ iconHtml ]
 
 
 checkmark : Html msg

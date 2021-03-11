@@ -299,10 +299,26 @@ actionButton active action title =
         [ H.button [ A.class "action-button" ] [ H.text title ] ]
 
 
-richActionButton : Bool -> msg -> Html msg -> Html msg
-richActionButton active action content =
-    H.div [ A.class "pseudo-button", A.classList [ ( "active", active ) ], E.onClick action ]
-        [ content ]
+richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
+richActionButton active maybeAction content =
+    let
+        baseAttributes =
+            [ A.classList
+                [ ( "active", active )
+                , ( "pseudo-button", maybeAction /= Nothing )
+                , ( "pseudo-button-disabled", maybeAction == Nothing )
+                ]
+            ]
+
+        attributes =
+            case maybeAction of
+                Just action ->
+                    E.onClick action :: baseAttributes
+
+                Nothing ->
+                    baseAttributes
+    in
+        H.div attributes [ content ]
 
 
 richBuyButton : Bool -> msg -> Html msg -> Html msg
@@ -324,11 +340,18 @@ view _ _ shared model _ =
     H.div [ A.class "shop" ]
         [ H.div [ A.class "left" ]
             [ H.div [ A.class "section-box" ]
-                [ H.div [] [ H.div [ A.class "disabled-button" ] [ H.text "Reisetype" ] ]
-                , richActionButton (model.mainView == Travelers)
-                    ShowTravelers
+                [ richActionButton False
+                    Nothing
                     (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.traveler
+                        [ Icon.wrapper 18 Icon.bus
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisetype" ]
+                        , Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Travelers)
+                    (Just ShowTravelers)
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.wrapper 18 Icon.traveler
                         , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisende" ]
                         , if model.mainView == Travelers then
                             H.text ""
@@ -338,9 +361,9 @@ view _ _ shared model _ =
                         ]
                     )
                 , richActionButton (model.mainView == Duration)
-                    ShowDuration
+                    (Just ShowDuration)
                     (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.duration
+                        [ Icon.wrapper 18 Icon.duration
                         , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Varighet" ]
                         , if model.mainView == Duration then
                             H.text ""
@@ -350,9 +373,9 @@ view _ _ shared model _ =
                         ]
                     )
                 , richActionButton (model.mainView == Start)
-                    ShowStart
+                    (Just ShowStart)
                     (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.ticket
+                        [ Icon.wrapper 18 Icon.ticket
                         , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gyldig fra og med" ]
                         , if model.mainView == Start then
                             H.text ""
@@ -362,9 +385,9 @@ view _ _ shared model _ =
                         ]
                     )
                 , richActionButton (model.mainView == Zones)
-                    ShowZones
+                    (Just ShowZones)
                     (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.ticket
+                        [ Icon.wrapper 18 Icon.ticket
                         , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Soner" ]
                         , if model.mainView == Zones then
                             H.text ""
@@ -448,7 +471,7 @@ view _ _ shared model _ =
                                     ]
                                 )
                             , richActionButton False
-                                CloseShop
+                                (Just CloseShop)
                                 (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                                     [ H.span
                                         [ A.style "flex-grow" "1"
@@ -489,7 +512,7 @@ viewStart model =
     H.div [ A.class "section-box" ]
         [ H.div [ A.class "section-header" ] [ H.text "Velg starttidspunkt" ]
         , richActionButton False
-            SetNow
+            (Just SetNow)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1" ] [ H.text "Nå" ]
                 , if model.now then
@@ -540,7 +563,7 @@ viewProduct model product =
                 H.text ""
     in
         richActionButton False
-            (SetProduct product.id)
+            (Just <| SetProduct product.id)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString product.name ]
                 , extraHtml
@@ -602,7 +625,7 @@ viewUserProfile model userProfile =
                 H.text ""
     in
         richActionButton False
-            (SetUser userProfile.userType)
+            (Just <| SetUser userProfile.userType)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString userProfile.name ]
                 , extraHtml
