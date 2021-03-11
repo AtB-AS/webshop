@@ -192,6 +192,9 @@ main {
             align-self: center;
         }
 
+        .disabled-button {
+            opacity: 0.5;
+        }
     }
 
     .disabled-button {
@@ -216,6 +219,15 @@ main {
 
 .pseudo-button {
     cursor: pointer;
+}
+
+.buy-button-new {
+    background-color: #37424A;
+    color: #fff;
+
+    &.disabled-button-new > * {
+        opacity: 0.5;
+    }
 }
 
 .ticket {

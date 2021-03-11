@@ -305,6 +305,20 @@ richActionButton active action content =
         [ content ]
 
 
+richBuyButton : Bool -> msg -> Html msg -> Html msg
+richBuyButton disabled action content =
+    let
+        onClick =
+            if disabled then
+                [ A.class "disabled-button-new" ]
+
+            else
+                [ E.onClick action ]
+    in
+        H.div (A.class "pseudo-button buy-button-new" :: onClick)
+            [ content ]
+
+
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
     H.div [ A.class "shop" ]
@@ -411,21 +425,39 @@ view _ _ shared model _ =
                                 ]
                             ]
                         , H.div [ A.class "section-box" ]
-                            [ H.div [ A.class "buy-button" ]
-                                [ H.button
-                                    [ E.onClick <| BuyOffers Nets
-                                    , A.disabled disableButtons
+                            [ richBuyButton disableButtons
+                                (BuyOffers Nets)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
+                                    , Icon.creditcard
                                     ]
-                                    [ H.text "Betal med bankkort" ]
-                                ]
-                            , H.div [ A.class "buy-button" ]
-                                [ H.button
-                                    [ E.onClick <| BuyOffers Vipps
-                                    , A.disabled disableButtons
+                                )
+                            , richBuyButton disableButtons
+                                (BuyOffers Vipps)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
+                                    , H.div
+                                        [ A.style "width" "18px"
+                                        , A.style "height" "12px"
+                                        , A.style "background-color" "#FF5B24"
+                                        , A.style "text-align" "center"
+                                        , A.style "display" "grid"
+                                        , A.style "place-items" "center"
+                                        ]
+                                        [ Icon.vipps ]
                                     ]
-                                    [ H.text "Betal med Vipps" ]
-                                ]
-                            , actionButton False CloseShop "Avbryt"
+                                )
+                            , richActionButton False
+                                CloseShop
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span
+                                        [ A.style "flex-grow" "1"
+                                        , A.style "font-weight" "500"
+                                        ]
+                                        [ H.text "Avbryt" ]
+                                    , Icon.cross
+                                    ]
+                                )
                             ]
                         ]
 
