@@ -44,6 +44,7 @@ type Msg
     | Inspect String
     | ReceiveInspectQrCode (Result Http.Error (List Inspection))
     | OpenShop
+    | OpenSettings
     | ToggleHistory
     | UpdateTime Time.Posix
 
@@ -190,6 +191,10 @@ update msg env model =
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.OpenShop
 
+        OpenSettings ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Settings)
+
         ToggleHistory ->
             PageUpdater.init
                 { model
@@ -232,7 +237,13 @@ viewSidebar shared model =
 viewAccountInfo : Model -> Html Msg
 viewAccountInfo model =
     H.div [ A.class "section-box" ]
-        (H.div [] [ H.text "Ola Nordmann" ]
+        (richActionButton False
+            (Just OpenSettings)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Ola Nordmann" ]
+                , Icon.traveler
+                ]
+            )
             :: (if List.length model.tokens == 0 then
                     [ H.div [] [ H.text "No tokens." ] ]
 
