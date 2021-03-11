@@ -245,16 +245,62 @@ viewAccountInfo model =
 viewActions : Model -> Html Msg
 viewActions model =
     H.div [ A.class "section-box" ]
-        [ actionButton OpenShop "Kjøp ny billett"
-        , actionButton ToggleHistory "Kjøpshistorikk"
-        , actionButton FetchTickets "Gi tilbakemelding til utviklerne"
-        , actionButton FetchTickets "Debug: Refresh"
+        [ richActionButton False
+            (Just OpenShop)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Kjøp ny billett" ]
+                , Icon.ticketAdd
+                ]
+            )
+        , richActionButton (model.mainView == ExpiredTickets)
+            (Just ToggleHistory)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Kjøpshistorikk" ]
+                , Icon.tickets
+                ]
+            )
+        , richActionButton False
+            (Just FetchTickets)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gi tilbakemelding til utviklerne" ]
+                , Icon.chat
+                ]
+            )
+        , richActionButton False
+            (Just FetchTickets)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Debug: Refresh" ]
+                , Icon.duration
+                ]
+            )
         ]
 
 
 actionButton : msg -> String -> Html msg
 actionButton action title =
     H.div [] [ H.button [ A.class "action-button", E.onClick action ] [ H.text title ] ]
+
+
+richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
+richActionButton active maybeAction content =
+    let
+        baseAttributes =
+            [ A.classList
+                [ ( "active", active )
+                , ( "pseudo-button", maybeAction /= Nothing )
+                , ( "pseudo-button-disabled", maybeAction == Nothing )
+                ]
+            ]
+
+        attributes =
+            case maybeAction of
+                Just action ->
+                    E.onClick action :: baseAttributes
+
+                Nothing ->
+                    baseAttributes
+    in
+        H.div attributes [ content ]
 
 
 {-| TODO: Fix empty check
