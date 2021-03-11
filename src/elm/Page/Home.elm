@@ -678,7 +678,7 @@ viewToken payloads currentTime token =
                     ( "QR token", "icon-token-paper", "" )
 
                 TokenTypeTravelCard cardId ->
-                    ( "Travel card"
+                    ( "Mitt t:kort"
                     , "icon-token-card"
                     , cardId
                         |> String.toList
