@@ -138,6 +138,18 @@ main {
     }
 }
 
+.settings {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 1fr 320px;
+
+    .sidebar {
+        width: 320px;
+    }
+
+    .main {
+    }
+}
 
 .section-box {
     margin-bottom: 24px;

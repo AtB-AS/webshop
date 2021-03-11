@@ -4,6 +4,7 @@ import Base exposing (AppInfo)
 import Data.Webshop exposing (Profile)
 import Environment exposing (Environment)
 import Fragment.Button as Button
+import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -23,6 +24,10 @@ type Msg
     | UpdateLastName String
     | UpdateProfile
     | ReceiveUpdateProfile (Result Http.Error ())
+    | EditName
+    | EditPhoneNumber
+    | RemoveTravelCard
+    | DeleteAccount
 
 
 type alias Model =
@@ -85,60 +90,113 @@ update msg env model =
                 Err _ ->
                     PageUpdater.init { model | updating = False }
 
+        EditName ->
+            PageUpdater.init model
+
+        EditPhoneNumber ->
+            PageUpdater.init model
+
+        RemoveTravelCard ->
+            PageUpdater.init model
+
+        DeleteAccount ->
+            PageUpdater.init model
+
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ _ model _ =
-    H.div [ A.class "box" ]
-        [ H.h2 [] [ H.text "Profile" ]
-        , H.button [ E.onClick GetProfile ] [ H.text "Refresh" ]
-        , H.div [] [ viewProfile model.profile ]
-        , H.h2 [] [ H.text "Update profile" ]
-        , H.dl []
-            [ H.dt [] [ H.text "First name: " ]
-            , H.dd []
-                [ H.input
-                    [ A.value model.firstName
-                    , E.onInput UpdateFirstName
-                    , A.placeholder "First name"
-                    , A.disabled model.updating
-                    ]
-                    []
-                ]
-            , H.dt [] [ H.text "Last name: " ]
-            , H.dd []
-                [ H.input
-                    [ A.value model.lastName
-                    , E.onInput UpdateLastName
-                    , A.placeholder "Last name"
-                    , A.disabled model.updating
-                    ]
-                    []
-                ]
-            ]
-        , H.button
-            [ A.disabled (String.trim model.firstName == "" || String.trim model.lastName == "" || model.updating)
-            , E.onClick UpdateProfile
-            ]
-            [ if model.updating then
-                Button.loading
-
-              else
-                H.text "Update"
-            ]
+    H.div [ A.class "settings" ]
+        [ viewMain model
+        , viewSidebar model
         ]
 
 
-viewProfile : Maybe Profile -> Html msg
-viewProfile maybeProfile =
-    case maybeProfile of
-        Just profile ->
-            H.ul []
-                [ H.li [] [ H.text ("First name: " ++ profile.firstName) ]
-                , H.li [] [ H.text ("Last name: " ++ profile.lastName) ]
+richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
+richActionButton active maybeAction content =
+    let
+        baseAttributes =
+            [ A.classList
+                [ ( "active", active )
+                , ( "pseudo-button", maybeAction /= Nothing )
+                , ( "pseudo-button-disabled", maybeAction == Nothing )
                 ]
+            ]
 
-        Nothing ->
-            H.p [] [ H.text "No profile." ]
+        attributes =
+            case maybeAction of
+                Just action ->
+                    E.onClick action :: baseAttributes
+
+                Nothing ->
+                    baseAttributes
+    in
+        H.div attributes [ content ]
+
+
+viewSidebar : Model -> Html Msg
+viewSidebar model =
+    H.div [ A.class "section-box" ]
+        [ richActionButton False
+            (Just EditName)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Endre navn" ]
+                , Icon.rightArrow
+                ]
+            )
+        , richActionButton False
+            (Just EditPhoneNumber)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Endre telefonnummer" ]
+                , Icon.rightArrow
+                ]
+            )
+        , richActionButton False
+            (Just RemoveTravelCard)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Fjern t:kort" ]
+                , Icon.ticketRemove
+                ]
+            )
+        , richActionButton False
+            (Just DeleteAccount)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Slett konto" ]
+                , Icon.delete
+                ]
+            )
+        ]
+
+
+viewMain : Model -> Html Msg
+viewMain model =
+    H.div [ A.class "main" ]
+        [ H.div [ A.class "section-box" ]
+            (case model.profile of
+                Just profile ->
+                    [ viewProfile profile
+                    , viewTravelCard profile
+                    , viewAccountMetadata profile
+                    ]
+
+                Nothing ->
+                    [ H.p [] [ H.text "No profile." ] ]
+            )
+        ]
+
+
+viewProfile : Profile -> Html msg
+viewProfile profile =
+    H.div [] [ H.text <| profile.firstName ++ " " ++ profile.lastName ]
+
+
+viewTravelCard : Profile -> Html msg
+viewTravelCard profile =
+    H.div [] [ H.text <| profile.email ]
+
+
+viewAccountMetadata : Profile -> Html msg
+viewAccountMetadata _ =
+    H.div [] [ H.text "01.01.2021" ]
 
 
 subscriptions : Model -> Sub Msg
