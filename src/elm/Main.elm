@@ -315,11 +315,7 @@ update msg model =
                             }
                     in
                         ( { model | userData = Loaded value, environment = newEnvironment }
-                        , Cmd.batch
-                            [ TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
-                            , TaskUtil.doTask (SettingsMsg SettingsPage.GetProfile)
-                            , Cmd.map SharedMsg <| Shared.load model.environment
-                            ]
+                        , Cmd.none
                         )
 
                 Err error ->

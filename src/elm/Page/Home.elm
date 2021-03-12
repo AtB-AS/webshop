@@ -22,7 +22,6 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Util.Status exposing (Status(..))
-import Util.Task as TaskUtil
 
 
 type Msg
@@ -39,7 +38,6 @@ type Msg
     | ReceiveAddQrCode (Result Http.Error ())
     | Receipt String
     | ReceiveReceipt (Result Http.Error ())
-    | LoadAccount
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | Inspect String
     | ReceiveInspectQrCode (Result Http.Error (List Inspection))
@@ -169,15 +167,6 @@ update msg env model =
 
                 Err err ->
                     PageUpdater.init model
-
-        LoadAccount ->
-            PageUpdater.fromPair
-                ( model
-                , Cmd.batch
-                    [ TaskUtil.doTask GetTokens
-                    , TaskUtil.doTask FetchTickets
-                    ]
-                )
 
         ReceiveTokenPayloads result ->
             case result of
