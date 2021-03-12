@@ -27,14 +27,12 @@ if (!installId) {
 console.log('Atb-Install-Id:', installId);
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB6zTnl8jKhw8o8rNrd_GEojlHVVAcFn0s",
-    authDomain: "pilot-travelcard-webshop.firebaseapp.com",
-    databaseURL: "https://pilot-travelcard-webshop.firebaseio.com",
-    projectId: "pilot-travelcard-webshop",
-    storageBucket: "pilot-travelcard-webshop.appspot.com",
-    messagingSenderId: "598155505788",
-    appId: "1:598155505788:web:ccddf3940a3e8e41aed9f9",
-    measurementId: "G-Y6RSP82WY0"
+    apiKey: "AIzaSyDoat8ob5tewAXaPEhqbZKzx8e7LC5nuzQ",
+    authDomain: "atb-mobility-platform-staging.firebaseapp.com",
+    projectId: "atb-mobility-platform-staging",
+    storageBucket: "atb-mobility-platform-staging.appspot.com",
+    messagingSenderId: "939812594010",
+    appId: "1:939812594010:web:0308b2a9cdc80b0d069363"
 };
 
 firebase.initializeApp(firebaseConfig);
