@@ -12,6 +12,7 @@ import Html.Events as E
 import Http
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
+import Service.Misc as MiscService
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
@@ -28,12 +29,14 @@ type Msg
     | EditPhoneNumber
     | RemoveTravelCard
     | DeleteAccount
+    | ProfileChange (Maybe MiscService.Profile)
 
 
 type alias Model =
     { firstName : String
     , lastName : String
     , profile : Maybe Profile
+    , fireProfile : Maybe MiscService.Profile
     , updating : Bool
     }
 
@@ -43,6 +46,7 @@ init =
     ( { firstName = ""
       , lastName = ""
       , profile = Nothing
+      , fireProfile = Nothing
       , updating = False
       }
     , Cmd.none
@@ -101,6 +105,24 @@ update msg env model =
 
         DeleteAccount ->
             PageUpdater.init model
+
+        ProfileChange (Just profile) ->
+            PageUpdater.init
+                { model
+                    | fireProfile = Just profile
+                    , firstName = profile.firstName
+                    , lastName = profile.lastName
+                    , profile =
+                        Just
+                            { email = profile.email
+                            , firstName = profile.firstName
+                            , lastName = profile.lastName
+                            , customerNumber = 123
+                            }
+                }
+
+        ProfileChange Nothing ->
+            PageUpdater.init { model | fireProfile = Nothing }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -201,7 +223,7 @@ viewAccountMetadata _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    MiscService.onProfileChange ProfileChange
 
 
 
