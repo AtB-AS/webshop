@@ -50,16 +50,35 @@ const app = Elm.Main.init({
     )
 });
 
+function fetchRemoteConfigData(port, key) {
+    if (!port) {
+        return;
+    }
+
+    const value = remoteConfig.getString(key);
+
+    if (typeof value !== 'string' || value.length < 1) {
+        return;
+    }
+
+    const data = JSON.parse(value);
+
+    if (typeof data !== 'object' || data === null) {
+        return;
+    }
+
+    port.send(data);
+}
+
 // NOTE: Only change this for testing.
 remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
 //remoteConfig.settings.minimumFetchIntervalMillis = 60000;
 remoteConfig.fetchAndActivate()
     .then(() => {
-        // ...
-        app.ports.remoteConfigFareProducts.send(JSON.parse(remoteConfig.getString('preassigned_fare_products')));
-        app.ports.remoteConfigUserProfiles.send(JSON.parse(remoteConfig.getString('user_profiles')));
-        app.ports.remoteConfigTariffZones.send(JSON.parse(remoteConfig.getString('tariff_zones')));
-        //app.ports.remoteConfigSalesPackages.send(JSON.parse(remoteConfig.getString('sales_packages')));
+        fetchRemoteConfigData(app.ports.remoteConfigFareProducts, 'preassigned_fare_products');
+        fetchRemoteConfigData(app.ports.remoteConfigUserProfiles, 'user_profiles');
+        fetchRemoteConfigData(app.ports.remoteConfigTariffZones, 'tariff_zones');
+        //fetchRemoteConfigData(app.ports.remoteConfigSalesPackages, 'sales_packages');
     })
     .catch((err) => {
         // ...
