@@ -42,8 +42,8 @@ search env travelDate product travellers zones =
 
 {-| Reserve offers.
 -}
-reserve : Environment -> Int -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
-reserve env customerNumber paymentType offers =
+reserve : Environment -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
+reserve env paymentType offers =
     let
         url =
             Url.Builder.crossOrigin env.ticketUrl
@@ -52,9 +52,7 @@ reserve env customerNumber paymentType offers =
 
         body =
             Encode.object
-                [ ( "customer_id", Encode.string env.installId )
-                , ( "customer_number", Encode.int customerNumber )
-                , ( "offers", Encode.list encodeOffer offers )
+                [ ( "offers", Encode.list encodeOffer offers )
                 , ( "payment_type", encodePaymentType paymentType )
                 , ( "payment_redirect_url", Encode.string (env.ticketUrl ++ "/thanks") )
                 ]

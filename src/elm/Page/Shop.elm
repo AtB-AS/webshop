@@ -199,11 +199,8 @@ update msg env model =
                     PageUpdater.init { model | offers = Failed "Unable to load offers" }
 
         BuyOffers paymentType ->
-            case ( env.customerNumber, model.offers ) of
-                ( 0, _ ) ->
-                    PageUpdater.init model
-
-                ( customerNumber, Loaded offers ) ->
+            case model.offers of
+                Loaded offers ->
                     let
                         offerCounts =
                             List.filterMap
@@ -217,7 +214,7 @@ update msg env model =
                     in
                         PageUpdater.fromPair
                             ( { model | reservation = Loading Nothing }
-                            , buyOffers env customerNumber paymentType offerCounts
+                            , buyOffers env paymentType offerCounts
                             )
 
                 _ ->
@@ -667,10 +664,10 @@ fetchOffers env product fromZone toZone users travelDate =
         |> Task.attempt ReceiveOffers
 
 
-buyOffers : Environment -> Int -> PaymentType -> List ( String, Int ) -> Cmd Msg
-buyOffers env customerNumber paymentType offerCounts =
+buyOffers : Environment -> PaymentType -> List ( String, Int ) -> Cmd Msg
+buyOffers env paymentType offerCounts =
     offerCounts
-        |> TicketService.reserve env customerNumber paymentType
+        |> TicketService.reserve env paymentType
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
 
