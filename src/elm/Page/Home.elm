@@ -42,14 +42,9 @@ type Msg
     | Inspect String
     | ReceiveInspectQrCode (Result Http.Error (List Inspection))
     | OpenShop
+    | OpenHistory
     | OpenSettings
-    | ToggleHistory
     | UpdateTime Time.Posix
-
-
-type MainView
-    = CurrentTickets
-    | ExpiredTickets
 
 
 type alias Model =
@@ -59,7 +54,6 @@ type alias Model =
     , travelCardId : String
     , inspection : Status Inspection
     , currentTime : Time.Posix
-    , mainView : MainView
     }
 
 
@@ -71,7 +65,6 @@ init =
       , travelCardId = ""
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
-      , mainView = CurrentTickets
       }
     , Cmd.none
     )
@@ -180,20 +173,13 @@ update msg env model =
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.OpenShop
 
+        OpenHistory ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction (GA.RouteTo Route.History)
+
         OpenSettings ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction (GA.RouteTo Route.Settings)
-
-        ToggleHistory ->
-            PageUpdater.init
-                { model
-                    | mainView =
-                        if model.mainView == CurrentTickets then
-                            ExpiredTickets
-
-                        else
-                            CurrentTickets
-                }
 
         UpdateTime posixTime ->
             PageUpdater.init { model | currentTime = posixTime }
@@ -249,8 +235,8 @@ viewActions model =
                 , Icon.ticketAdd
                 ]
             )
-        , richActionButton (model.mainView == ExpiredTickets)
-            (Just ToggleHistory)
+        , richActionButton False
+            (Just OpenHistory)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Kjøpshistorikk" ]
                 , Icon.tickets
@@ -306,36 +292,26 @@ viewMain : Shared -> Model -> Html Msg
 viewMain shared model =
     H.div [ A.class "main" ]
         [ if List.isEmpty model.tickets then
-            H.div [] [ H.text "No tickets" ]
+            H.div [] [ H.text "Ingen billetter er tilknyttet din konto." ]
 
           else
-            H.div [] (viewTicketInfo model :: viewTicketCards shared model)
+            H.div [] (viewTicketInfo :: viewTicketCards shared model)
         ]
 
 
-viewTicketInfo : Model -> Html msg
-viewTicketInfo model =
-    case model.mainView of
-        CurrentTickets ->
-            H.div [ A.class "info-box" ]
-                [ Icon.info
-                , H.span [] [ H.text "For å ha gyldig billett i billettkontroll må du vise t:kort. Denne siden er ikke gyldig i billettkontroll." ]
-                ]
-
-        ExpiredTickets ->
-            H.text ""
+viewTicketInfo : Html msg
+viewTicketInfo =
+    H.div [ A.class "info-box" ]
+        [ Icon.info
+        , H.span [] [ H.text "For å ha gyldig billett i billettkontroll må du vise t:kort. Denne siden er ikke gyldig i billettkontroll." ]
+        ]
 
 
 viewTicketCards : Shared -> Model -> List (Html Msg)
 viewTicketCards shared model =
-    List.map (viewTicketCard shared model)
-        (case model.mainView of
-            CurrentTickets ->
-                List.filter (\{ validity } -> isValid validity model.currentTime) model.tickets
-
-            ExpiredTickets ->
-                List.filter (\{ validity } -> isValid validity model.currentTime |> not) model.tickets
-        )
+    model.tickets
+        |> List.filter (\{ validity } -> isValid validity model.currentTime)
+        |> List.map (viewTicketCard shared model)
 
 
 timeLeft : Int -> String

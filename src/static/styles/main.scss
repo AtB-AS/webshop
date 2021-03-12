@@ -120,6 +120,39 @@ main {
     }
 }
 
+.page-history {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 320px 1fr;
+
+    .sidebar {
+        width: 320px;
+
+        input {
+            border: none;
+            outline: none;
+            background: inherit;
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    .main {
+        .order-header {
+            display: flex;
+            font-weight: 500;
+            cursor: pointer;
+
+            > div {
+
+                &:first-child {
+                    flex-grow: 1;
+                }
+            }
+        }
+    }
+}
+
 .shop {
     display: grid;
     grid-gap: 24px;
@@ -202,10 +235,17 @@ main {
 
     > div {
         border-bottom: 1px solid var(--background);
-        min-height: 88px;
+        min-height: 68px;
         padding: 24px;
         display: grid;
         place-items: center start;
+
+        label {
+            font-weight: 400;
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: rgba(0, 0, 0, 0.6);
+        }
 
         &:last-child {
             border-bottom: none;
@@ -270,6 +310,20 @@ main {
         line-height: 1em;
         align-self: center;
     }
+}
+
+.metadata-list {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 12px;
+}
+
+.ticket-list {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-gap: 12px;
 }
 
 .pseudo-button {

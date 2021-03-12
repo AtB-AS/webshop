@@ -13,6 +13,7 @@ import Html.Events as E
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
+import Page.History as HistoryPage
 import Page.Home as HomePage
 import Page.Onboarding as OnboardingPage
 import Page.Settings as SettingsPage
@@ -37,6 +38,7 @@ type Msg
     | CloseNotification Time.Posix
     | HomeMsg HomePage.Msg
     | ShopMsg ShopPage.Msg
+    | HistoryMsg HistoryPage.Msg
     | SettingsMsg SettingsPage.Msg
     | OnboardingMsg OnboardingPage.Msg
     | SharedMsg Shared.Msg
@@ -52,6 +54,7 @@ type alias Model =
     , appInfo : AppInfo
     , home : HomePage.Model
     , shop : Maybe ShopPage.Model
+    , history : HistoryPage.Model
     , settings : SettingsPage.Model
     , shared : Shared
     , onboarding : Maybe OnboardingPage.Model
@@ -143,6 +146,9 @@ init flags url navKey =
         ( settingsModel, settingsCmd ) =
             SettingsPage.init
 
+        historyModel =
+            HistoryPage.init
+
         route =
             Route.fromUrl url
 
@@ -159,6 +165,7 @@ init flags url navKey =
                 , appInfo = appInfo
                 , home = homeModel
                 , shop = Nothing
+                , history = historyModel
                 , settings = settingsModel
                 , shared = Shared.init
                 , onboarding = Nothing
@@ -260,6 +267,11 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        HistoryMsg subMsg ->
+            HistoryPage.update subMsg model.environment model.history
+                |> PageUpdater.map (\newModel -> { model | history = newModel }) HistoryMsg
+                |> doPageUpdate
 
         SettingsMsg subMsg ->
             SettingsPage.update subMsg model.environment model.settings
@@ -412,6 +424,11 @@ viewPage model =
 
                     Nothing ->
                         H.text ""
+
+            Just Route.History ->
+                HistoryPage.view env model.appInfo shared model.history model.route
+                    |> H.map HistoryMsg
+                    |> wrapSubPage "Kjøpshistorikk"
 
             Just Route.Settings ->
                 SettingsPage.view env model.appInfo shared model.settings model.route
