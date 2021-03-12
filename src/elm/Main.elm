@@ -14,11 +14,13 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
 import Page.Home as HomePage
+import Page.Onboarding as OnboardingPage
 import Page.Settings as SettingsPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
+import Service.Misc as MiscService
 import Shared exposing (Shared)
 import Time
 import Url exposing (Url)
@@ -36,7 +38,9 @@ type Msg
     | HomeMsg HomePage.Msg
     | ShopMsg ShopPage.Msg
     | SettingsMsg SettingsPage.Msg
+    | OnboardingMsg OnboardingPage.Msg
     | SharedMsg Shared.Msg
+    | StartOnboarding String
     | LogIn FirebaseAuth.Provider
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
@@ -50,6 +54,7 @@ type alias Model =
     , shop : Maybe ShopPage.Model
     , settings : SettingsPage.Model
     , shared : Shared
+    , onboarding : Maybe OnboardingPage.Model
     , route : Maybe Route.Route
     , errors : List Error
     , notifications : List (Notification Msg)
@@ -156,6 +161,7 @@ init flags url navKey =
                 , shop = Nothing
                 , settings = settingsModel
                 , shared = Shared.init
+                , onboarding = Nothing
                 , route = route
                 , errors = []
                 , notifications = []
@@ -260,8 +266,21 @@ update msg model =
                 |> PageUpdater.map (\newModel -> { model | settings = newModel }) SettingsMsg
                 |> doPageUpdate
 
+        OnboardingMsg subMsg ->
+            case model.onboarding of
+                Just onboarding ->
+                    OnboardingPage.update subMsg model.environment onboarding
+                        |> PageUpdater.map (\newModel -> { model | onboarding = Just newModel }) OnboardingMsg
+                        |> doPageUpdate
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         SharedMsg subMsg ->
             ( { model | shared = Shared.update subMsg model.shared }, Cmd.none )
+
+        StartOnboarding token ->
+            ( { model | onboarding = Just <| OnboardingPage.init token }, Cmd.none )
 
         LogIn provider ->
             ( model, FirebaseAuth.signIn provider )
@@ -330,9 +349,25 @@ view model =
             _ ->
                 H.div []
                     [ header model
-                    , H.main_ [] [ viewPage model ]
+                    , case model.environment.customerId of
+                        Just _ ->
+                            H.main_ [] [ viewPage model ]
+
+                        Nothing ->
+                            case model.onboarding of
+                                Just onboarding ->
+                                    OnboardingPage.view model.environment onboarding
+                                        |> H.map OnboardingMsg
+
+                                Nothing ->
+                                    viewLogin model
                     ]
         ]
+
+
+viewLogin : Model -> Html msg
+viewLogin _ =
+    H.div [] [ H.text "login" ]
 
 
 header : Model -> Html Msg
@@ -436,6 +471,7 @@ subs model =
             |> Maybe.withDefault Sub.none
         , FirebaseAuth.signInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userDataDecoder >> LoggedInData)
+        , MiscService.onboardingStart StartOnboarding
         ]
 
 
@@ -462,19 +498,12 @@ userDataDecoder =
     Decode.succeed UserData
         |> DecodeP.required "token" Decode.string
         |> DecodeP.required "email" Decode.string
-        |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "uid"
-            (Decode.andThen
-                (\uid ->
-                    case String.split ":" uid of
-                        [ "ATB", "CustomerAccount", customerId ] ->
-                            Decode.succeed customerId
-
-                        _ ->
-                            Decode.fail "Invalid customer id"
-                )
+            (Decode.map
+                (\uid -> "ATB:CustomerAccount:" ++ uid)
                 Decode.string
             )
+        |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
 
 

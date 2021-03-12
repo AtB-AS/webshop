@@ -7,6 +7,7 @@ module Service.Webshop exposing
     , getToken
     , getTokens
     , inspectQrCode
+    , register
     , updateProfile
     )
 
@@ -90,6 +91,23 @@ inspectQrCode env tokenPayload =
 getFareContracts : Environment -> Http.Request (List FareContract)
 getFareContracts env =
     HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
+
+
+register : Environment -> String -> String -> String -> String -> Http.Request ()
+register env firstName lastName phone email =
+    let
+        payload =
+            Encode.object
+                [ ( "firstName", Encode.string firstName )
+                , ( "surname", Encode.string lastName )
+                , ( "phone", Encode.string phone )
+                , ( "email", Encode.string email )
+                ]
+    in
+        HttpUtil.post env
+            (env.baseUrl ++ "/webshop/v1/register")
+            (Http.jsonBody payload)
+            (Decode.succeed ())
 
 
 

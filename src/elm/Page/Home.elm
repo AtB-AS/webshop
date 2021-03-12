@@ -220,10 +220,7 @@ view env _ shared model _ =
                 ]
 
         Nothing ->
-            H.div [ A.class "box" ]
-                [ H.h2 [] [ H.text "Not logged in" ]
-                , H.p [] [ H.text "You need to log in." ]
-                ]
+            H.text ""
 
 
 viewSidebar : Shared -> Model -> Html Msg

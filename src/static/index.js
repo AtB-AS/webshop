@@ -40,6 +40,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 let tokenSnapshotCallback = null;
+let onboardingUser = null;
 const db = firebase.firestore();
 const remoteConfig = firebase.remoteConfig();
 const app = Elm.Main.init({
@@ -103,7 +104,10 @@ app.ports.signOutHandler.subscribe(() => {
     firebase.auth().signOut();
 });
 
-//  Observer on user info
+// Use device language
+firebase.auth().useDeviceLanguage();
+
+// Observer on user info
 firebase.auth().onAuthStateChanged(user => {
     if (user) {
         fetchAuthInfo(user);
@@ -114,10 +118,12 @@ function fetchAuthInfo(user) {
     user
         .getIdTokenResult(true)
         .then(idToken => {
-            if (!idToken || !idToken.claims || !idToken.claims["abt_id"] || typeof idToken.claims["abt_id"] !== 'string') {
-                setTimeout(() => fetchAuthInfo(user), 500);
+            if (!idToken || !idToken.claims || !idToken.claims["sub"] || typeof idToken.claims["sub"] !== 'string') {
+                // Start onboarding process
+                onboardingUser = user;
+                app.ports.onboardingStart.send(idToken.token);
             } else {
-                const accountId = idToken.claims["abt_id"];
+                const accountId = idToken.claims["sub"];
                 const email = user.email || '';
                 const provider = idToken.signInProvider || '';
 
@@ -130,10 +136,16 @@ function fetchAuthInfo(user) {
 
                 localStorage["loggedIn"] = 'loggedIn';
 
-                const path = `users/${accountId}/tokens`;
+                const basePath = `customers/${accountId}`;
+                const tokenPath = `${basePath}/tokens`;
+
+                db.collection('customers').doc(accountId).onSnapshot(doc => {
+                    console.log('profile', doc.data());
+                    app.ports.firestoreReadProfile.send(doc.data());
+                });
 
                 try {
-                    tokenSnapshotCallback = db.collection(path).onSnapshot(docs => {
+                    tokenSnapshotCallback = db.collection(tokenPath).onSnapshot(docs => {
                         const tokens = [];
 
                         docs.forEach(doc => {
@@ -155,6 +167,10 @@ function fetchAuthInfo(user) {
             console.log("Error when retrieving cached user", error);
         });
 }
+
+app.ports.onboardingDone.subscribe(() => {
+    setTimeout(() => fetchAuthInfo(onboardingUser), 500);
+});
 
 app.ports.openWindow.subscribe((url) => {
     window.open(url);
