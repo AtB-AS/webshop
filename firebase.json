@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "pilot-travelcard-webshop",
+    "site": "atb-webshop-staging",
     "public": "dist",
     "rewrites": [
       {
