@@ -19,6 +19,8 @@ module Fragment.Icon exposing
     , ticketAdd
     , ticketRemove
     , tickets
+    , toggleOff
+    , toggleOn
     , traveler
     , upArrow
     , vipps
@@ -402,6 +404,34 @@ duration =
             , SA.clipRule "evenodd"
             , SA.d "M9 0C4.02944 0 0 4.02944 0 9C0 13.9706 4.02944 18 9 18C13.9706 18 18 13.9706 18 9C18 4.02944 13.9706 0 9 0ZM2 9C2 5.13401 5.13401 2 9 2C12.866 2 16 5.13401 16 9C16 12.866 12.866 16 9 16C5.13401 16 2 12.866 2 9Z"
             , SA.fill "black"
+            ]
+            []
+        ]
+
+
+toggleOff : Html msg
+toggleOff =
+    S.svg [ SA.width "36", SA.height "20", SA.viewBox "0 0 36 20", SA.fill "none" ]
+        [ S.rect [ SA.width "36", SA.height "20", SA.rx "10", SA.fill "#878e92" ] []
+        , S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z"
+            , SA.fill "white"
+            ]
+            []
+        ]
+
+
+toggleOn : Html msg
+toggleOn =
+    S.svg [ SA.width "36", SA.height "20", SA.viewBox "0 0 36 20", SA.fill "none" ]
+        [ S.rect [ SA.width "36", SA.height "20", SA.rx "10", SA.fill "#a2ad00" ] []
+        , S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M26 18C30.4183 18 34 14.4183 34 10C34 5.58172 30.4183 2 26 2C21.5817 2 18 5.58172 18 10C18 14.4183 21.5817 18 26 18Z"
+            , SA.fill "white"
             ]
             []
         ]
