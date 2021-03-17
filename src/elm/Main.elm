@@ -223,7 +223,7 @@ update msg model =
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
                 GA.RefreshTickets ->
-                    ( model, TaskUtil.doTask (HomeMsg HomePage.FetchTickets) )
+                    ( model, Cmd.none )
 
         SetRoute route ->
             setRoute route model
@@ -347,12 +347,18 @@ view model =
     Browser.Document model.appInfo.title
         [ case model.userData of
             Loading _ ->
-                H.ul [ A.class "waiting-room" ]
-                    [ H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    ]
+                case model.onboarding of
+                    Just onboarding ->
+                        OnboardingPage.view model.environment onboarding
+                            |> H.map OnboardingMsg
+
+                    Nothing ->
+                        H.ul [ A.class "waiting-room" ]
+                            [ H.li [] []
+                            , H.li [] []
+                            , H.li [] []
+                            , H.li [] []
+                            ]
 
             _ ->
                 H.div []
@@ -474,6 +480,8 @@ subs model =
         , model.shop
             |> Maybe.map (ShopPage.subscriptions >> Sub.map ShopMsg)
             |> Maybe.withDefault Sub.none
+        , HistoryPage.subscriptions model.history
+            |> Sub.map HistoryMsg
         , SettingsPage.subscriptions model.settings
             |> Sub.map SettingsMsg
         , Shared.subscriptions

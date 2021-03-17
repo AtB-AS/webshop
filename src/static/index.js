@@ -37,7 +37,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-let tokenSnapshotCallback = null;
+let fareContractSnapshotCallback = null;
 let onboardingUser = null;
 const db = firebase.firestore();
 const remoteConfig = firebase.remoteConfig();
@@ -113,9 +113,9 @@ app.ports.signInHandler.subscribe((provider_id) => {
 app.ports.signOutHandler.subscribe(() => {
     localStorage["loggedIn"] = '';
 
-    if (typeof tokenSnapshotCallback === 'function') {
-        tokenSnapshotCallback();
-        tokenSnapshotCallback = null;
+    if (typeof fareContractSnapshotCallback === 'function') {
+        fareContractSnapshotCallback();
+        fareContractSnapshotCallback = null;
     }
 
     firebase.auth().signOut();
@@ -144,45 +144,89 @@ function fetchAuthInfo(user) {
                 const email = user.email || '';
                 const provider = idToken.signInProvider || '';
 
-                app.ports.signInInfo.send({
-                    token: idToken.token,
-                    email: email,
-                    uid: accountId,
-                    provider: provider
-                });
-
                 localStorage["loggedIn"] = 'loggedIn';
 
-                const basePath = `customers/${accountId}`;
-                const tokenPath = `${basePath}/tokens`;
-
                 db.collection('customers').doc(accountId).onSnapshot(doc => {
-                    console.log('profile', doc.data());
-                    app.ports.firestoreReadProfile.send(doc.data());
-                });
+                    const profile = doc.data();
 
-                try {
-                    tokenSnapshotCallback = db.collection(tokenPath).onSnapshot(docs => {
-                        const tokens = [];
-
-                        docs.forEach(doc => {
-                            const payload = doc.data().payload;
-
-                            if (payload && payload.toBase64) {
-                                tokens.push([doc.id, payload.toBase64()]);
-                            }
+                    if (!profile)
+                    {
+                        onboardingUser = user;
+                        app.ports.onboardingStart.send(idToken.token);
+                    }
+                    else
+                    {
+                        app.ports.signInInfo.send({
+                            token: idToken.token,
+                            email: email,
+                            uid: accountId,
+                            provider: provider
                         });
 
-                        app.ports.receiveTokens.send(tokens);
-                    });
-                } catch (e) {
-                    console.error("Error when retrieving user", e);
-                }
+                        app.ports.firestoreReadProfile.send(profile);
+
+                        loadFareContracts(accountId);
+                    }
+                });
             }
         })
         .catch(error => {
             console.log("Error when retrieving cached user", error);
         });
+}
+
+// Convert a Firebase Time type to something that's easier to work with.
+function convert_time(firebaseTime) {
+    const timestamp = parseInt(firebaseTime.toMillis(), 10);
+    const date = new Date(timestamp);
+    const parts = [];
+
+    parts.push(date.getFullYear());
+    parts.push(date.getMonth() + 1);
+    parts.push(date.getDate());
+    parts.push(date.getHours());
+    parts.push(date.getMinutes());
+    parts.push(date.getSeconds());
+
+    return {
+        timestamp,
+        parts,
+    };
+}
+
+// TODO: Load tokens?
+// TODO: Handle being logged out
+function loadFareContracts(accountId) {
+    const basePath = `customers/${accountId}`;
+    const tokenPath = `${basePath}/fareContracts`;
+
+    try {
+        fareContractSnapshotCallback = db.collection(tokenPath).onSnapshot(docs => {
+            const fareContracts = [];
+
+            docs.forEach(doc => {
+                const payload = doc.data();
+
+                if (payload) {
+                    // Transform firebase time fields to something we can use
+                    payload.created = convert_time(payload.created);
+                    payload.travelRights = payload.travelRights.map(right => {
+                        right.startDateTime = convert_time(right.startDateTime);
+                        right.endDateTime = convert_time(right.endDateTime);
+                        return right;
+                    });
+                    payload.validFrom = Math.min(payload.travelRights.map(x => x.startDateTime.timestamp)) || 0;
+                    payload.validTo = Math.max(payload.travelRights.map(x => x.endDateTime.timestamp)) || 0;
+
+                    fareContracts.push(payload);
+                }
+            });
+
+            app.ports.receiveFareContracts.send(fareContracts);
+        });
+    } catch (e) {
+        console.error("Error when retrieving fare contracts for user", e);
+    }
 }
 
 app.ports.onboardingDone.subscribe(() => {

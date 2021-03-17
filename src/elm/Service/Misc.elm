@@ -2,14 +2,17 @@ port module Service.Misc exposing
     ( Profile
     , convertTime
     , convertedTime
+    , fareContractDecoder
     , onProfileChange
     , onboardingDone
     , onboardingStart
     , openWindow
+    , receiveFareContracts
     , receiveTokens
     , saveProfile
     )
 
+import Data.FareContract exposing (FareContract, FareContractState(..), FareTime, TravelRight(..), TravelRightBase, TravelRightFull)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
@@ -19,6 +22,9 @@ port openWindow : String -> Cmd msg
 
 
 port receiveTokens : (Encode.Value -> msg) -> Sub msg
+
+
+port receiveFareContracts : (Encode.Value -> msg) -> Sub msg
 
 
 port convertTime : ( String, String ) -> Cmd msg
@@ -92,3 +98,102 @@ onProfileChange msg =
 saveProfile : Profile -> Cmd msg
 saveProfile =
     encodeProfile >> firestoreWriteProfile
+
+
+{-| Decode a fare contract from Firestore.
+-}
+fareContractDecoder : Decoder FareContract
+fareContractDecoder =
+    Decode.succeed FareContract
+        |> DecodeP.required "created" timestampDecoder
+        |> DecodeP.required "version" Decode.string
+        |> DecodeP.required "orderId" Decode.string
+        |> DecodeP.required "minimumSecurityLevel" Decode.int
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "travelRights" (Decode.list travelRightDecoder)
+        |> DecodeP.required "state" fareContractStateDecoder
+        |> DecodeP.optional "qrCode" (Decode.nullable Decode.string) Nothing
+        |> DecodeP.required "validFrom" Decode.int
+        |> DecodeP.required "validTo" Decode.int
+
+
+
+-- INTERNAL
+
+
+fareContractStateDecoder : Decoder FareContractState
+fareContractStateDecoder =
+    Decode.andThen
+        (\value ->
+            case value of
+                0 ->
+                    Decode.succeed FareContractStateUnspecified
+
+                1 ->
+                    Decode.succeed FareContractStateNotActivated
+
+                2 ->
+                    Decode.succeed FareContractStateActivated
+
+                3 ->
+                    Decode.succeed FareContractStateCancelled
+
+                4 ->
+                    Decode.succeed FareContractStateRefunded
+
+                _ ->
+                    Decode.fail "Invalid fare contract state"
+        )
+        Decode.int
+
+
+timestampDecoder : Decoder FareTime
+timestampDecoder =
+    Decode.andThen
+        (\timestamp ->
+            Decode.andThen
+                (\parts ->
+                    case parts of
+                        [ year, month, day, hour, minute, second ] ->
+                            Decode.succeed <| FareTime timestamp year month day hour minute second
+
+                        _ ->
+                            Decode.fail "Invalid time parts"
+                )
+                (Decode.field "parts" (Decode.list Decode.int))
+        )
+        (Decode.field "timestamp" Decode.int)
+
+
+travelRightDecoder : Decoder TravelRight
+travelRightDecoder =
+    Decode.andThen
+        (\type_ ->
+            case type_ of
+                "PreActivatedPeriodTicket" ->
+                    Decode.map PeriodTicket fullTravelRightDecoder
+
+                "PreActivatedSingleTicket" ->
+                    Decode.map SingleTicket fullTravelRightDecoder
+
+                _ ->
+                    Decode.succeed TravelRightBase
+                        |> DecodeP.required "id" Decode.string
+                        |> DecodeP.required "status" Decode.int
+                        |> Decode.map UnknownTicket
+        )
+        (Decode.field "type" Decode.string)
+
+
+fullTravelRightDecoder : Decoder TravelRightFull
+fullTravelRightDecoder =
+    Decode.succeed TravelRightFull
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "status" Decode.int
+        |> DecodeP.required "fareProductRef" Decode.string
+        |> DecodeP.required "startDateTime" timestampDecoder
+        |> DecodeP.required "endDateTime" timestampDecoder
+        |> DecodeP.required "usageValidityPeriodRef" Decode.string
+        |> DecodeP.required "userProfileRef" Decode.string
+        |> DecodeP.required "authorityRef" Decode.string
+        |> DecodeP.required "tariffZoneRefs" (Decode.list Decode.string)

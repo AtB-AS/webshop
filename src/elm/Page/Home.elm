@@ -1,8 +1,9 @@
 module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
+import Data.FareContract exposing (FareContract, TravelRight(..))
 import Data.RefData exposing (LangString(..))
-import Data.Webshop exposing (FareContract, FareContractState(..), Inspection(..), Profile, Rejection(..), Token, TokenType(..))
+import Data.Webshop exposing (Inspection, Token)
 import Dict exposing (Dict)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -12,7 +13,6 @@ import Html.Attributes as A
 import Html.Events as E
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
@@ -25,8 +25,7 @@ import Util.Status exposing (Status(..))
 
 
 type Msg
-    = FetchTickets
-    | ReceiveTickets (Result Http.Error (List FareContract))
+    = ReceiveFareContracts (Result Decode.Error (List FareContract))
     | GetTokens
     | ReceiveTokens (Result Http.Error (List Token))
     | UpdateTravelCardId String
@@ -39,8 +38,6 @@ type Msg
     | Receipt String
     | ReceiveReceipt (Result Http.Error ())
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
-    | Inspect String
-    | ReceiveInspectQrCode (Result Http.Error (List Inspection))
     | OpenShop
     | OpenHistory
     | OpenSettings
@@ -73,35 +70,19 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
-        FetchTickets ->
-            PageUpdater.fromPair
-                ( model
-                , env.customerId
-                    |> Maybe.map (fetchTickets env)
-                    |> Maybe.withDefault Cmd.none
-                )
-
-        ReceiveTickets result ->
+        ReceiveFareContracts result ->
             case result of
-                Ok tickets ->
-                    PageUpdater.init { model | tickets = tickets |> List.sortBy .validity |> List.reverse }
+                Ok fareContracts ->
+                    PageUpdater.init
+                        { model
+                            | tickets =
+                                fareContracts
+                                    |> List.sortBy (.created >> .timestamp)
+                                    |> List.reverse
+                        }
 
                 Err _ ->
                     PageUpdater.init model
-
-        Inspect tokenPayload ->
-            PageUpdater.fromPair ( { model | inspection = Loading Nothing }, inspect env tokenPayload )
-
-        ReceiveInspectQrCode result ->
-            case result of
-                Ok [] ->
-                    PageUpdater.init { model | inspection = NotLoaded }
-
-                Ok inspection ->
-                    PageUpdater.init { model | inspection = Loaded <| checkInspection inspection }
-
-                Err _ ->
-                    PageUpdater.init { model | inspection = Failed "Failed to perform inspection" }
 
         GetTokens ->
             PageUpdater.fromPair ( model, fetchTokens env )
@@ -216,12 +197,7 @@ viewAccountInfo model =
                 , Icon.traveler
                 ]
             )
-            :: (if List.length model.tokens == 0 then
-                    [ H.div [] [ H.text "No tokens." ] ]
-
-                else
-                    List.map (viewToken model.tokenPayloads model.currentTime) model.tokens
-               )
+            :: [ H.div [] [ H.text "No tokens." ] ]
         )
 
 
@@ -243,14 +219,14 @@ viewActions model =
                 ]
             )
         , richActionButton False
-            (Just FetchTickets)
+            (Just OpenHistory)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gi tilbakemelding til utviklerne" ]
                 , Icon.chat
                 ]
             )
         , richActionButton False
-            (Just FetchTickets)
+            (Just OpenHistory)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Debug: Refresh" ]
                 , Icon.duration
@@ -310,7 +286,7 @@ viewTicketInfo =
 viewTicketCards : Shared -> Model -> List (Html Msg)
 viewTicketCards shared model =
     model.tickets
-        |> List.filter (\{ validity } -> isValid validity model.currentTime)
+        |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
         |> List.map (viewTicketCard shared model)
 
 
@@ -406,11 +382,11 @@ frequency =
         Dict.empty
 
 
-viewValidity : ( Int, Int ) -> Time.Posix -> Html msg
-viewValidity ( _, to ) posixNow =
+viewValidity : Int -> Time.Posix -> Html msg
+viewValidity to posixNow =
     let
         now =
-            Time.posixToMillis posixNow // 1000
+            Time.posixToMillis posixNow
     in
         if now > to then
             H.text <| timeAgoFormat (now - to)
@@ -419,16 +395,31 @@ viewValidity ( _, to ) posixNow =
             H.text <| timeLeftFormat (to - now)
 
 
-isValid : ( Int, Int ) -> Time.Posix -> Bool
-isValid ( _, to ) posixNow =
-    to >= (Time.posixToMillis posixNow // 1000)
+isValid : Int -> Time.Posix -> Bool
+isValid to posixNow =
+    to >= Time.posixToMillis posixNow
 
 
 viewTicketCard : Shared -> Model -> FareContract -> Html Msg
 viewTicketCard shared model fareContract =
     let
+        userProfilesList =
+            fareContract.travelRights
+                |> List.filterMap
+                    (\type_ ->
+                        case type_ of
+                            SingleTicket ticket ->
+                                Just ticket.userProfileRef
+
+                            PeriodTicket ticket ->
+                                Just ticket.userProfileRef
+
+                            UnknownTicket _ ->
+                                Nothing
+                    )
+
         userProfiles =
-            fareContract.userProfiles
+            userProfilesList
                 |> frequency
                 |> Dict.map (viewUserProfile shared)
                 |> Dict.values
@@ -442,10 +433,22 @@ viewTicketCard shared model fareContract =
                     String.join ", " userProfiles
 
                 _ ->
-                    String.fromInt (List.length fareContract.userProfiles) ++ " tickets"
+                    String.fromInt (List.length userProfilesList) ++ " tickets"
 
         fareProduct =
-            fareContract.fareProducts
+            fareContract.travelRights
+                |> List.filterMap
+                    (\type_ ->
+                        case type_ of
+                            SingleTicket ticket ->
+                                Just ticket.fareProductRef
+
+                            PeriodTicket ticket ->
+                                Just ticket.fareProductRef
+
+                            UnknownTicket _ ->
+                                Nothing
+                    )
                 |> frequency
                 |> Dict.map (viewFareProduct shared)
                 |> Dict.values
@@ -453,7 +456,25 @@ viewTicketCard shared model fareContract =
                 |> String.join ", "
 
         zone =
-            "Sone A"
+            fareContract.travelRights
+                |> List.filterMap
+                    (\type_ ->
+                        case type_ of
+                            SingleTicket ticket ->
+                                Just ticket.tariffZoneRefs
+
+                            PeriodTicket ticket ->
+                                Just ticket.tariffZoneRefs
+
+                            UnknownTicket _ ->
+                                Nothing
+                    )
+                |> List.concat
+                |> frequency
+                |> Dict.map (viewFareProduct shared)
+                |> Dict.values
+                |> List.filter ((/=) "")
+                |> String.join ", "
 
         fareContractId =
             case String.split ":" fareContract.id of
@@ -474,7 +495,7 @@ viewTicketCard shared model fareContract =
                     ]
                 , H.div [ A.class "zone-name" ] [ H.text zone ]
                 ]
-            , if isValid fareContract.validity model.currentTime then
+            , if isValid fareContract.validTo model.currentTime then
                 H.div [ A.class "ticket-progress" ] []
 
               else
@@ -482,7 +503,7 @@ viewTicketCard shared model fareContract =
             , H.div [ A.class "card-content" ]
                 [ H.div [ A.class "card-icon icon-ticket" ] []
                 , H.h5 [ A.class "card-name" ] [ H.span [] [] ]
-                , H.div [ A.class "ticket-info" ] [ viewValidity fareContract.validity model.currentTime ]
+                , H.div [ A.class "ticket-info" ] [ viewValidity fareContract.validTo model.currentTime ]
                 ]
             , H.div [ A.class "card-id" ] [ H.text fareContractId ]
             , H.div [ A.class "card-extra" ] [ H.text userInfo ]
@@ -541,164 +562,20 @@ viewFareProduct shared fareProduct _ =
         |> multiString 1
 
 
-fareContractStateToString : FareContractState -> String
-fareContractStateToString state =
-    case state of
-        FareContractStateUnspecified ->
-            "Unspecified"
-
-        FareContractStateNotActivated ->
-            "Not activated"
-
-        FareContractStateActivated ->
-            "Activated"
-
-        FareContractStateCancelled ->
-            "Cancelled"
-
-        FareContractStateRefunded ->
-            "Refunded"
-
-
-viewInspection : Status Inspection -> Html msg
-viewInspection inspection =
-    case inspection of
-        NotLoaded ->
-            H.text ""
-
-        Loading _ ->
-            H.div [] [ H.text "Inspection: Starting inspection..." ]
-
-        Loaded result ->
-            H.div [] [ H.text ("Inspection: " ++ inspectionToString result) ]
-
-        Failed error ->
-            H.div [] [ H.text ("Inspection: Error - " ++ error) ]
-
-
-inspectionToString : Inspection -> String
-inspectionToString inspection =
-    case inspection of
-        InspectionGreen ->
-            "Green"
-
-        InspectionYellow ->
-            "Yellow"
-
-        InspectionRed reason ->
-            "Red - " ++ rejectionToString reason
-
-
-rejectionToString : Rejection -> String
-rejectionToString rejection =
-    case rejection of
-        RejectionNoActiveFareContracts ->
-            "No active fare contracts"
-
-        RejectionNoFareContracts ->
-            "No fare contracts"
-
-        RejectionFareContractNotActivated ->
-            "Fare contract not activated"
-
-        RejectionValidityParametersInvalid ->
-            "Validity parameters are invalid"
-
-        RejectionTokenMarkedInactive ->
-            "Token marked as inactive"
-
-        RejectionTokenValidityNotStarted ->
-            "Token is not valid yet"
-
-        RejectionTokenValidityEnded ->
-            "Token is no longer valid"
-
-        RejectionTokenSignatureInvalid ->
-            "Token signature is invalid"
-
-        RejectionTokenNotFound ->
-            "Token was not found"
-
-        RejectionDifferentTokenType ->
-            "Different token type"
-
-        RejectionTokenIdMismatch ->
-            "Token id mismatch"
-
-        RejectionTokenActionsMismatch ->
-            "Token actions mismatch"
-
-
-viewToken : List ( String, String ) -> Time.Posix -> Token -> Html Msg
-viewToken payloads currentTime token =
-    let
-        payload =
-            payloads
-                |> List.filterMap
-                    (\( id, value ) ->
-                        if id == token.id then
-                            Just value
-
-                        else
-                            Nothing
-                    )
-                |> List.head
-                |> Maybe.withDefault ""
-
-        ( name, icon, info ) =
-            case token.type_ of
-                TokenTypeQrPaper _ ->
-                    ( "QR token", "icon-token-paper", "" )
-
-                TokenTypeTravelCard cardId ->
-                    ( "Mitt t:kort"
-                    , "icon-token-card"
-                    , cardId
-                        |> String.toList
-                        |> List.map String.fromChar
-                        |> List.Extra.groupsOf 4
-                        |> List.map (String.join "")
-                        |> String.join " "
-                    )
-
-                type_ ->
-                    ( tokenTypeToString type_, "", "" )
-    in
-        H.div []
-            [ H.span [ A.class "token-name" ] [ H.text name ]
-            , H.span [ A.class "token-id" ] [ H.text info ]
-            ]
-
-
-tokenTypeToString : TokenType -> String
-tokenTypeToString type_ =
-    case type_ of
-        TokenTypeUnspecified ->
-            "Unspecified"
-
-        TokenTypeQrSmartphone ->
-            "QR (smartphone)"
-
-        TokenTypeQrPaper _ ->
-            "QR (paper)"
-
-        TokenTypeTravelCard travelCardId ->
-            "Travel card - " ++ travelCardId
-
-        TokenTypeReferenceCode ->
-            "Reference code"
-
-        TokenTypePlainUnsigned ->
-            "Plain unsigned"
-
-        TokenTypeExternal ->
-            "External"
+type alias TravelCard =
+    { id : String
+    , expiry : String
+    }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ MiscService.receiveTokens (Decode.decodeValue tokenPayloadsDecoder >> ReceiveTokenPayloads)
+        , MiscService.receiveFareContracts
+            (Decode.decodeValue (Decode.list MiscService.fareContractDecoder)
+                >> ReceiveFareContracts
+            )
         , Time.every 1000 UpdateTime
         ]
 
@@ -715,13 +592,6 @@ tokenPayloadDecoder =
 tokenPayloadsDecoder : Decoder (List ( String, String ))
 tokenPayloadsDecoder =
     Decode.list tokenPayloadDecoder
-
-
-fetchTickets : Environment -> String -> Cmd Msg
-fetchTickets env customerId =
-    WebshopService.getFareContracts env
-        |> Http.toTask
-        |> Task.attempt ReceiveTickets
 
 
 fetchTokens : Environment -> Cmd Msg
@@ -750,46 +620,6 @@ addQrCode env =
     WebshopService.addQrCode env
         |> Http.toTask
         |> Task.attempt ReceiveAddQrCode
-
-
-inspect : Environment -> String -> Cmd Msg
-inspect env tokenPayload =
-    WebshopService.inspectQrCode env tokenPayload
-        |> Http.toTask
-        |> Task.attempt ReceiveInspectQrCode
-
-
-checkInspection : List Inspection -> Inspection
-checkInspection results =
-    let
-        greens =
-            List.filter ((==) InspectionGreen) results
-
-        yellows =
-            List.filter ((==) InspectionYellow) results
-
-        reds =
-            List.filter
-                (\result ->
-                    case result of
-                        InspectionRed _ ->
-                            True
-
-                        _ ->
-                            False
-                )
-                results
-    in
-        if List.length greens > 0 then
-            InspectionGreen
-
-        else if List.length yellows > 0 then
-            InspectionYellow
-
-        else
-            Maybe.withDefault
-                (InspectionRed RejectionNoActiveFareContracts)
-                (List.head reds)
 
 
 sendReceipt : Environment -> String -> Cmd Msg

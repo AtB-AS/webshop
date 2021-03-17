@@ -93,7 +93,7 @@ getFareContracts env =
     HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
 
 
-register : Environment -> String -> String -> String -> String -> Http.Request ()
+register : Environment -> String -> String -> String -> Maybe String -> Http.Request ()
 register env firstName lastName phone email =
     let
         payload =
@@ -101,7 +101,14 @@ register env firstName lastName phone email =
                 [ ( "firstName", Encode.string firstName )
                 , ( "surname", Encode.string lastName )
                 , ( "phone", Encode.string phone )
-                , ( "email", Encode.string email )
+                , ( "email"
+                  , case email of
+                        Just justEmail ->
+                            Encode.string justEmail
+
+                        Nothing ->
+                            Encode.null
+                  )
                 ]
     in
         HttpUtil.post env

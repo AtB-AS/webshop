@@ -234,14 +234,14 @@ subscriptions _ =
 
 register : Environment -> String -> String -> String -> String -> Cmd Msg
 register env firstName lastName phone email =
-    WebshopService.register env firstName lastName phone email
+    WebshopService.register env firstName lastName phone (Just email)
         |> Http.toTask
         |> Task.attempt ReceiveRegister
 
 
 skipRegister : Environment -> Cmd Msg
 skipRegister env =
-    WebshopService.register env "" "" "12345678" ""
+    WebshopService.register env "_" "_" "12345678" Nothing
         |> Http.toTask
         |> Task.attempt ReceiveRegister
 
