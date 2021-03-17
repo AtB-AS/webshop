@@ -431,9 +431,8 @@ view _ _ shared model _ =
                                     False
 
                         totalPrice =
-                            List.map
-                                (.prices >> List.map .amountFloat >> List.head >> Maybe.withDefault 0.0)
-                                offers
+                            offers
+                                |> List.map (calculateOfferPrice model.users)
                                 |> List.sum
                                 |> round
                                 |> String.fromInt
@@ -681,3 +680,28 @@ fetchPaymentStatus env paymentId =
                     |> Http.toTask
             )
         |> Task.attempt (ReceivePaymentStatus paymentId)
+
+
+calculateOfferPrice : List ( UserType, Int ) -> Offer -> Float
+calculateOfferPrice users offer =
+    let
+        price =
+            offer.prices
+                |> List.map .amountFloat
+                |> List.head
+                |> Maybe.withDefault 0.0
+
+        count =
+            users
+                |> List.filterMap
+                    (\( userType, userCount ) ->
+                        if userType == offer.userType then
+                            Just userCount
+
+                        else
+                            Nothing
+                    )
+                |> List.head
+                |> Maybe.withDefault 0
+    in
+        price * toFloat count
