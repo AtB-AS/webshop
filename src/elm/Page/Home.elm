@@ -455,7 +455,7 @@ viewTicketCard shared model fareContract =
                 |> List.filter ((/=) "")
                 |> String.join ", "
 
-        zone =
+        zones =
             fareContract.travelRights
                 |> List.filterMap
                     (\type_ ->
@@ -471,10 +471,16 @@ viewTicketCard shared model fareContract =
                     )
                 |> List.concat
                 |> frequency
-                |> Dict.map (viewFareProduct shared)
+                |> Dict.map
+                    (\ref _ ->
+                        shared.tariffZones
+                            |> List.filter (.id >> (==) ref)
+                            |> List.head
+                            |> Maybe.map (\zone -> "Sone " ++ langString zone.name)
+                            |> Maybe.withDefault ""
+                    )
                 |> Dict.values
                 |> List.filter ((/=) "")
-                |> String.join ", "
 
         fareContractId =
             case String.split ":" fareContract.id of
@@ -486,14 +492,25 @@ viewTicketCard shared model fareContract =
     in
         H.div [ A.class "ticket" ]
             [ H.div [ A.class "ticket-header" ]
-                [ H.div [ A.class "product-name" ]
+                [ Icon.wrapper 20 Icon.bus
+                , H.div [ A.class "product-name" ]
                     [ if fareProduct == "" then
-                        H.text "Unknown product"
+                        H.text "Ukjent produkt"
 
                       else
                         H.text fareProduct
                     ]
-                , H.div [ A.class "zone-name" ] [ H.text zone ]
+                , H.div [ A.class "zone-name" ]
+                    [ case zones of
+                        [] ->
+                            H.text "Ingen soner"
+
+                        [ zone ] ->
+                            H.text zone
+
+                        _ ->
+                            H.text <| String.fromInt (List.length zones) ++ " soner"
+                    ]
                 ]
             , if isValid fareContract.validTo model.currentTime then
                 H.div [ A.class "ticket-progress" ] []
