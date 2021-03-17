@@ -235,12 +235,12 @@ update msg env model =
                     PageUpdater.init { model | reservation = Failed "Unable to reserve offers" }
 
         ReceivePaymentStatus paymentId result ->
-            case result of
-                Ok paymentStatus ->
+            case ( model.reservation, result ) of
+                ( Loaded { orderId }, Ok paymentStatus ) ->
                     case paymentStatus.status of
                         "CAPTURE" ->
                             PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
-                                |> PageUpdater.addGlobalAction GA.RefreshTickets
+                                |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
                                 |> PageUpdater.addGlobalAction GA.CloseShop
 
                         "CANCEL" ->
@@ -249,7 +249,9 @@ update msg env model =
                         _ ->
                             PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
 
-                Err _ ->
+                _ ->
+                    -- Either there was no longer a reservation, or the payment failed. We treat this
+                    -- as if the payment was cancelled so the user can try again.
                     PageUpdater.init { model | reservation = NotLoaded }
 
         CloseShop ->

@@ -118,17 +118,11 @@ main {
     .main {
         .ticket-header {
             display: flex;
-            font-weight: 500;
 
-            > div {
-                &:nth-child(2) {
-                    flex-grow: 1;
-                    padding-left: 12px;
-                }
-
-                &:last-child {
-                    font-weight: 400;
-                }
+            > div.product-name {
+                font-weight: 500;
+                flex-grow: 1;
+                padding-left: 12px;
             }
         }
 
@@ -148,6 +142,17 @@ main {
             line-height: 40px;
             margin: 0;
             padding: 0;
+        }
+
+        .ticket-waiting {
+            display: grid;
+            place-items: center;
+
+            svg {
+                fill: var(--primary-2);
+                height: 30px;
+                width: 120px;
+            }
         }
     }
 }

@@ -222,8 +222,10 @@ update msg model =
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
-                GA.RefreshTickets ->
-                    ( model, Cmd.none )
+                GA.SetPendingOrder orderId ->
+                    ( model
+                    , TaskUtil.doTask <| HomeMsg <| HomePage.SetPendingOrder orderId
+                    )
 
         SetRoute route ->
             setRoute route model

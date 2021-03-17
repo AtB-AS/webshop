@@ -6,6 +6,7 @@ import Data.RefData exposing (LangString(..))
 import Data.Webshop exposing (Inspection, Token)
 import Dict exposing (Dict)
 import Environment exposing (Environment)
+import Fragment.Button as Button
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
@@ -44,6 +45,7 @@ type Msg
     | OpenSettings
     | UpdateTime Time.Posix
     | ToggleTicket String
+    | SetPendingOrder String
 
 
 type alias Model =
@@ -54,6 +56,7 @@ type alias Model =
     , inspection : Status Inspection
     , currentTime : Time.Posix
     , expanded : Maybe String
+    , pending : Maybe String
     }
 
 
@@ -66,6 +69,7 @@ init =
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
       , expanded = Nothing
+      , pending = Nothing
       }
     , Cmd.none
     )
@@ -84,8 +88,21 @@ update msg env model =
                                 |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
                                 |> List.sortBy (.created >> .timestamp)
                                 |> List.reverse
+
+                        pendingDone =
+                            fareContracts
+                                |> List.filter (\{ orderId } -> model.pending == Just orderId)
+                                |> List.isEmpty
+                                |> not
+
+                        newPending =
+                            if pendingDone then
+                                Nothing
+
+                            else
+                                model.pending
                     in
-                        PageUpdater.init { model | tickets = tickets }
+                        PageUpdater.init { model | tickets = tickets, pending = newPending }
 
                 Err _ ->
                     PageUpdater.init model
@@ -181,6 +198,9 @@ update msg env model =
                         else
                             Just id
                 }
+
+        SetPendingOrder orderId ->
+            PageUpdater.init { model | pending = Just orderId }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -288,12 +308,29 @@ viewMain shared model =
                 model.tickets
     in
         H.div [ A.class "main" ]
-            [ if List.isEmpty tickets then
+            [ if List.isEmpty tickets && model.pending == Nothing then
                 H.div [] [ H.text "Ingen billetter er tilknyttet din konto." ]
 
               else
-                H.div [] (viewTicketInfo :: viewTicketCards shared model)
+                H.div [] (viewTicketInfo :: viewPending model :: viewTicketCards shared model)
             ]
+
+
+viewPending : Model -> Html msg
+viewPending model =
+    case model.pending of
+        Just _ ->
+            H.div [ A.class "section-box" ]
+                [ H.div [ A.class "ticket-header" ]
+                    [ Icon.wrapper 20 Icon.bus
+                    , H.div [ A.class "product-name" ] [ H.text "Utsteder billett..." ]
+                    ]
+                , H.div [ A.class "ticket-progress" ] []
+                , H.div [ A.class "ticket-waiting" ] [ Button.loading ]
+                ]
+
+        Nothing ->
+            H.text ""
 
 
 viewTicketInfo : Html msg
