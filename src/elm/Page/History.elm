@@ -13,6 +13,7 @@ import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Shared exposing (Shared)
+import Util.Format as Format exposing (date)
 
 
 type Msg
@@ -181,7 +182,7 @@ viewOrder shared model order =
     in
         H.div [ A.class "section-box" ]
             (H.div [ A.class "order-header", E.onClick (ToggleOrder order.id) ]
-                [ H.div [] [ H.text <| formatDate order.created ++ " - " ++ fareProduct ++ travellers ]
+                [ H.div [] [ H.text <| Format.date order.created ++ " - " ++ fareProduct ++ travellers ]
                 , H.div [ A.style "display" "flex" ] <|
                     if expanded then
                         [ H.span [ A.style "margin-right" "12px" ] [ H.text "Skjul" ]
@@ -198,7 +199,7 @@ viewOrder shared model order =
                             [ [ H.div []
                                     [ H.label [] [ H.text "Kjøpsinformasjon" ]
                                     , H.div [ A.class "metadata-list" ]
-                                        [ H.div [] [ H.text <| "Kjøpt " ++ formatDateTime order.created ]
+                                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
                                         , H.div [] [ H.text "Totalt kr ??,00" ]
                                         , H.div [] [ H.text "Betalt med ???" ]
                                         , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
@@ -260,42 +261,6 @@ viewTravelRight shared total num travelRight =
                 , H.div [] [ H.text tariffZone ]
                 ]
             ]
-
-
-padZero : Int -> String -> String
-padZero n =
-    String.padLeft n '0'
-
-
-{-| Formats a FareTime as 12.03.2021
--}
-formatDate : FareTime -> String
-formatDate time =
-    String.join ""
-        [ padZero 2 <| String.fromInt time.day
-        , "."
-        , padZero 2 <| String.fromInt time.month
-        , "."
-        , padZero 4 <| String.fromInt time.year
-        ]
-
-
-{-| Formats a FareTime as 09:41
--}
-formatTime : FareTime -> String
-formatTime time =
-    String.join ""
-        [ padZero 2 <| String.fromInt time.hour
-        , ":"
-        , padZero 2 <| String.fromInt time.minute
-        ]
-
-
-{-| Formats a FareTime as 12.03.2021 - 09:41
--}
-formatDateTime : FareTime -> String
-formatDateTime time =
-    formatDate time ++ " - " ++ formatTime time
 
 
 subscriptions : Model -> Sub Msg

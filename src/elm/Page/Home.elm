@@ -21,6 +21,7 @@ import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
 import Time
+import Util.Format as Format
 import Util.Status exposing (Status(..))
 
 
@@ -42,6 +43,7 @@ type Msg
     | OpenHistory
     | OpenSettings
     | UpdateTime Time.Posix
+    | ToggleTicket String
 
 
 type alias Model =
@@ -51,6 +53,7 @@ type alias Model =
     , travelCardId : String
     , inspection : Status Inspection
     , currentTime : Time.Posix
+    , expanded : Maybe String
     }
 
 
@@ -62,6 +65,7 @@ init =
       , travelCardId = ""
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
+      , expanded = Nothing
       }
     , Cmd.none
     )
@@ -166,6 +170,17 @@ update msg env model =
 
         UpdateTime posixTime ->
             PageUpdater.init { model | currentTime = posixTime }
+
+        ToggleTicket id ->
+            PageUpdater.init
+                { model
+                    | expanded =
+                        if model.expanded == Just id then
+                            Nothing
+
+                        else
+                            Just id
+                }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -409,6 +424,9 @@ isValid to posixNow =
 viewTicketCard : Shared -> Model -> FareContract -> Html Msg
 viewTicketCard shared model fareContract =
     let
+        expanded =
+            model.expanded == Just fareContract.orderId
+
         userProfilesList =
             fareContract.travelRights
                 |> List.filterMap
@@ -487,16 +505,8 @@ viewTicketCard shared model fareContract =
                     )
                 |> Dict.values
                 |> List.filter ((/=) "")
-
-        fareContractId =
-            case String.split ":" fareContract.id of
-                [ _, "FareContract", id ] ->
-                    id
-
-                _ ->
-                    "Unknown"
     in
-        H.div [ A.class "ticket" ]
+        H.div [ A.class "section-box" ]
             [ H.div [ A.class "ticket-header" ]
                 [ Icon.wrapper 20 Icon.bus
                 , H.div [ A.class "product-name" ]
@@ -524,21 +534,44 @@ viewTicketCard shared model fareContract =
               else
                 H.text ""
             , H.div [ A.class "card-content" ]
-                [ H.div [ A.class "card-icon icon-ticket" ] []
-                , H.h5 [ A.class "card-name" ] [ H.span [] [] ]
-                , H.div [ A.class "ticket-info" ] [ viewValidity fareContract.validTo model.currentTime ]
+                [ H.div
+                    [ A.class "ticket-info" ]
+                    [ viewValidity fareContract.validTo model.currentTime ]
                 ]
-            , H.div [ A.class "card-id" ] [ H.text fareContractId ]
-            , H.div [ A.class "card-extra" ] [ H.text userInfo ]
-            , H.div [ A.class "card-actions" ]
-                [ H.div [ A.class "action-content" ]
-                    [ H.button
-                        [ A.class "btn btn-receipt"
-                        , E.onClick (Receipt fareContractId)
+            , if expanded then
+                H.div []
+                    [ H.label [] [ H.text "Kjøpsinformasjon" ]
+                    , H.div [ A.class "metadata-list" ]
+                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime fareContract.created ]
+                        , H.div [] [ H.text "Totalt kr ??,00" ]
+                        , H.div [] [ H.text "Betalt med ???" ]
+                        , H.div [] [ H.text <| "Ordre-ID: " ++ fareContract.orderId ]
                         ]
-                        [ H.text "Receipt" ]
                     ]
+
+              else
+                H.text ""
+            , H.div
+                [ A.style "display" "flex"
+                , A.style "cursor" "pointer"
+                , E.onClick (ToggleTicket fareContract.orderId)
                 ]
+                (H.div
+                    [ A.style "flex-grow" "1"
+                    , A.style "font-weight" "500"
+                    ]
+                    [ H.text "Detaljer" ]
+                    :: (if expanded then
+                            [ H.span [ A.style "margin-right" "12px" ] [ H.text "Skjul" ]
+                            , Icon.wrapper 20 Icon.upArrow
+                            ]
+
+                        else
+                            [ H.span [ A.style "margin-right" "12px" ] [ H.text "Vis" ]
+                            , Icon.wrapper 20 Icon.downArrow
+                            ]
+                       )
+                )
             ]
 
 

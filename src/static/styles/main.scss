@@ -116,7 +116,39 @@ main {
     }
 
     .main {
+        .ticket-header {
+            display: flex;
+            font-weight: 500;
 
+            > div {
+                &:nth-child(2) {
+                    flex-grow: 1;
+                    padding-left: 12px;
+                }
+
+                &:last-child {
+                    font-weight: 400;
+                }
+            }
+        }
+
+        .ticket-progress {
+            height: 8px;
+            min-height: 8px;
+            background-color: #A2AD00;
+            background-image: linear-gradient( -45deg, transparent 12px, rgba(0, 0, 0, .6) 12px, rgba(0, 0, 0, .6) 20px, transparent 20px, transparent );
+            background-size: 60px 8px;
+            animation: ticket-progress-move 2s linear infinite;
+            margin: 0;
+            padding: 0;
+        }
+
+        .ticket-info {
+            font-size: 32px;
+            line-height: 40px;
+            margin: 0;
+            padding: 0;
+        }
     }
 }
 
@@ -340,42 +372,6 @@ main {
 
     &.disabled-button-new > * {
         opacity: 0.5;
-    }
-}
-
-.ticket {
-    width: 100%;
-    background: var(--section-background);
-    padding: 0;
-    border-radius: 12px;
-    margin: 0 0 24px;
-
-
-    .ticket-header {
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid var(--background);
-        height: 68px; // 20 + 24x2
-        margin: 0 12px 0 12px;
-    }
-
-    .product-name {
-        font-weight: bold;
-        flex-grow: 1;
-    }
-
-    .ticket-progress {
-        height: 8px;
-        background-color: #A2AD00;
-        background-image: linear-gradient( -45deg, transparent 12px, rgba(0, 0, 0, .6) 12px, rgba(0, 0, 0, .6) 20px, transparent 20px, transparent );
-        background-size: 60px 8px;
-        animation: ticket-progress-move 2s linear infinite;
-    }
-
-    .ticket-info {
-        font-size: 32px;
-        margin: 0;
-        padding: 0 20px 20px;
     }
 }
 
