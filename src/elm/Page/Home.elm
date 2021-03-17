@@ -73,13 +73,15 @@ update msg env model =
         ReceiveFareContracts result ->
             case result of
                 Ok fareContracts ->
-                    PageUpdater.init
-                        { model
-                            | tickets =
-                                fareContracts
-                                    |> List.sortBy (.created >> .timestamp)
-                                    |> List.reverse
-                        }
+                    let
+                        -- Only store tickets that are valid into the future.
+                        tickets =
+                            fareContracts
+                                |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
+                                |> List.sortBy (.created >> .timestamp)
+                                |> List.reverse
+                    in
+                        PageUpdater.init { model | tickets = tickets }
 
                 Err _ ->
                     PageUpdater.init model
@@ -262,17 +264,21 @@ richActionButton active maybeAction content =
         H.div attributes [ content ]
 
 
-{-| TODO: Fix empty check
--}
 viewMain : Shared -> Model -> Html Msg
 viewMain shared model =
-    H.div [ A.class "main" ]
-        [ if List.isEmpty model.tickets then
-            H.div [] [ H.text "Ingen billetter er tilknyttet din konto." ]
+    let
+        tickets =
+            List.filter
+                (\{ validTo } -> isValid validTo model.currentTime)
+                model.tickets
+    in
+        H.div [ A.class "main" ]
+            [ if List.isEmpty tickets then
+                H.div [] [ H.text "Ingen billetter er tilknyttet din konto." ]
 
-          else
-            H.div [] (viewTicketInfo :: viewTicketCards shared model)
-        ]
+              else
+                H.div [] (viewTicketInfo :: viewTicketCards shared model)
+            ]
 
 
 viewTicketInfo : Html msg

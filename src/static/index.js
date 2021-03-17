@@ -215,8 +215,8 @@ function loadFareContracts(accountId) {
                         right.endDateTime = convert_time(right.endDateTime);
                         return right;
                     });
-                    payload.validFrom = Math.min(payload.travelRights.map(x => x.startDateTime.timestamp)) || 0;
-                    payload.validTo = Math.max(payload.travelRights.map(x => x.endDateTime.timestamp)) || 0;
+                    payload.validFrom = Math.min.apply(null, payload.travelRights.map(x => x.startDateTime.timestamp)) || 0;
+                    payload.validTo = Math.max.apply(null, payload.travelRights.map(x => x.endDateTime.timestamp)) || 0;
 
                     fareContracts.push(payload);
                 }
