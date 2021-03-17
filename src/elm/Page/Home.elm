@@ -389,10 +389,10 @@ viewValidity to posixNow =
             Time.posixToMillis posixNow
     in
         if now > to then
-            H.text <| timeAgoFormat (now - to)
+            H.text <| timeAgoFormat <| (now - to) // 1000
 
         else
-            H.text <| timeLeftFormat (to - now)
+            H.text <| timeLeftFormat <| (to - now) // 1000
 
 
 isValid : Int -> Time.Posix -> Bool
