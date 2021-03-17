@@ -52,7 +52,7 @@ fareProductDecoder =
     Decode.succeed FareProduct
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "name" langStringDecoder
-        |> DecodeP.required "description" langStringDecoder
+        |> DecodeP.optional "description" langStringDecoder (LangString "" "")
         |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
 
 
