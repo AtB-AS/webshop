@@ -39,13 +39,19 @@ port onboardingStart : (String -> msg) -> Sub msg
 port onboardingDone : () -> Cmd msg
 
 
+type alias TravelCard =
+    { id : Int
+    , expires : FareTime
+    }
+
+
 type alias Profile =
     { id : String
     , firstName : String
     , lastName : String
     , phone : String
     , email : String
-    , travelCard : Maybe String
+    , travelCard : Maybe TravelCard
     }
 
 
@@ -63,7 +69,14 @@ profileDecoder =
         |> DecodeP.required "surname" Decode.string
         |> DecodeP.required "phone" Decode.string
         |> DecodeP.required "email" Decode.string
-        |> DecodeP.optional "travelcard" (Decode.map Just Decode.string) Nothing
+        |> DecodeP.optional "travelcard" (Decode.map Just travelCardDecoder) Nothing
+
+
+travelCardDecoder : Decoder TravelCard
+travelCardDecoder =
+    Decode.succeed TravelCard
+        |> DecodeP.required "id" Decode.int
+        |> DecodeP.required "expires" timestampDecoder
 
 
 encodeProfile : Profile -> Encode.Value
@@ -76,9 +89,17 @@ encodeProfile profile =
         , ( "email", Encode.string profile.email )
         , ( "travelcard"
           , profile.travelCard
-                |> Maybe.map Encode.string
+                |> Maybe.map encodeTravelCard
                 |> Maybe.withDefault Encode.null
           )
+        ]
+
+
+encodeTravelCard : TravelCard -> Encode.Value
+encodeTravelCard travelCard =
+    Encode.object
+        [ ( "id", Encode.int travelCard.id )
+        , ( "expires", Encode.int travelCard.expires.timestamp )
         ]
 
 

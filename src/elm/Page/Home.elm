@@ -234,7 +234,7 @@ viewAccountInfo model =
                 , Icon.traveler
                 ]
             )
-            :: [ H.div [] [ H.text "No tokens." ] ]
+            :: [ H.div [] [ H.text "Ingen reisekort." ] ]
         )
 
 

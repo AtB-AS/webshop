@@ -163,6 +163,10 @@ function fetchAuthInfo(user) {
                             provider: provider
                         });
 
+                        if (typeof profile.travelcard === 'object' && profile.travelcard !== null) {
+                            profile.travelcard.expires = convert_time(profile.travelcard.expires);
+                        }
+
                         app.ports.firestoreReadProfile.send(profile);
 
                         loadFareContracts(accountId);
