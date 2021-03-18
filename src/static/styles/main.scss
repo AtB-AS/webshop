@@ -206,6 +206,13 @@ main {
     .right {
         width: 320px;
     }
+
+    input[type="time"], input[type="date"] {
+        box-shadow: none;
+        outline: none;
+        border: none;
+        background: inherit;
+    }
 }
 
 .settings {

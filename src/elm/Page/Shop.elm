@@ -19,8 +19,10 @@ import Service.Ticket as TicketService
 import Set
 import Shared exposing (Shared)
 import Task
+import Time
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
+import Util.Time as TimeUtil
 
 
 type Msg
@@ -41,7 +43,10 @@ type Msg
     | ShowZones
     | SetTime String
     | SetDate String
-    | SetNow
+    | ToggleNow
+    | SetNow Bool
+    | UpdateNow Time.Posix
+    | UpdateZone Time.Zone
     | GetIsoTime String
 
 
@@ -61,8 +66,11 @@ type alias Model =
     , reservation : Status Reservation
     , mainView : MainView
     , now : Bool
+    , nowDate : String
+    , nowTime : String
     , travelDate : String
     , travelTime : String
+    , zone : Time.Zone
     , isoTime : Maybe String
     }
 
@@ -94,11 +102,17 @@ init shared =
           , reservation = NotLoaded
           , mainView = Travelers
           , now = True
+          , nowDate = ""
+          , nowTime = "00:00"
           , travelDate = ""
           , travelTime = "00:00"
+          , zone = Time.utc
           , isoTime = Nothing
           }
-        , TaskUtil.doTask FetchOffers
+        , Cmd.batch
+            [ TaskUtil.doTask FetchOffers
+            , Task.perform UpdateZone Time.here
+            ]
         )
 
 
@@ -270,8 +284,15 @@ update msg env model =
         ShowZones ->
             PageUpdater.init { model | mainView = Zones }
 
-        SetNow ->
-            PageUpdater.init { model | now = not model.now }
+        ToggleNow ->
+            model
+                |> updateNow (not model.now)
+                |> PageUpdater.init
+
+        SetNow now ->
+            model
+                |> updateNow now
+                |> PageUpdater.init
 
         SetDate date ->
             PageUpdater.fromPair
@@ -285,11 +306,48 @@ update msg env model =
                 , MiscService.convertTime ( model.travelDate, time )
                 )
 
+        UpdateNow time ->
+            if model.now then
+                model
+                    |> updateNowDateTime time
+                    |> updateTravelDateTime
+                    |> PageUpdater.init
+
+            else
+                model
+                    |> updateNowDateTime time
+                    |> PageUpdater.init
+
+        UpdateZone zone ->
+            PageUpdater.init { model | zone = zone }
+
         GetIsoTime isoTime ->
             PageUpdater.fromPair
                 ( { model | isoTime = Just isoTime, now = False }
                 , TaskUtil.doTask FetchOffers
                 )
+
+
+updateNowDateTime : Time.Posix -> Model -> Model
+updateNowDateTime time model =
+    { model
+        | nowDate = TimeUtil.toIsoDate model.zone time
+        , nowTime = TimeUtil.toIsoTime model.zone time
+    }
+
+
+updateTravelDateTime : Model -> Model
+updateTravelDateTime model =
+    { model | travelDate = model.nowDate, travelTime = model.nowTime }
+
+
+updateNow : Bool -> Model -> Model
+updateNow now model =
+    if now then
+        { model | now = now, travelDate = model.nowDate, travelTime = model.nowTime }
+
+    else
+        { model | now = now }
 
 
 actionButton : Bool -> msg -> String -> Html msg
@@ -510,7 +568,7 @@ viewStart model =
     H.div [ A.class "section-box" ]
         [ H.div [ A.class "section-header" ] [ H.text "Velg starttidspunkt" ]
         , richActionButton False
-            (Just SetNow)
+            (Just ToggleNow)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1" ] [ H.text "Nå" ]
                 , if model.now then
@@ -523,16 +581,26 @@ viewStart model =
         , H.div [ A.class "section-block" ]
             [ H.input
                 [ E.onInput SetTime
+                , E.onFocus (SetNow False)
                 , A.type_ "time"
                 , A.value model.travelTime
+                , A.min
+                    (if model.travelDate == model.nowDate then
+                        model.nowTime
+
+                     else
+                        "00:00:00"
+                    )
                 ]
                 []
             ]
         , H.div [ A.class "section-block" ]
             [ H.input
                 [ E.onInput SetDate
+                , E.onFocus (SetNow False)
                 , A.type_ "date"
                 , A.value model.travelDate
+                , A.min model.nowDate
                 ]
                 []
             ]
@@ -648,7 +716,10 @@ viewOffer offer =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    MiscService.convertedTime GetIsoTime
+    Sub.batch
+        [ MiscService.convertedTime GetIsoTime
+        , Time.every 1000 UpdateNow
+        ]
 
 
 
