@@ -3,13 +3,6 @@
     "site": "atb-webshop-staging",
     "public": "dist",
     "rewrites": [
-      {
-        "source": "/api/**",
-        "run": {
-          "serviceId": "gateway",
-          "region": "europe-west1"
-        }
-      }
     ],
     "headers": [
       {
