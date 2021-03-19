@@ -519,5 +519,37 @@ table {
     }
 }
 
+.login {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .button, .no-button {
+        padding: 24px;
+        font-weight: 500;
+        display: flex;
+        cursor: pointer;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button {
+        background-color: #71D6E0;
+        border-radius: 12px;
+    }
+}
+
 @import "waiting";
 //@import "card";

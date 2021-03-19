@@ -17,6 +17,7 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
+import Util.Encode as EncodeUtil
 import Util.Http as HttpUtil
 
 
@@ -93,22 +94,15 @@ getFareContracts env =
     HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
 
 
-register : Environment -> String -> String -> String -> Maybe String -> Http.Request ()
+register : Environment -> String -> String -> Maybe String -> Maybe String -> Http.Request ()
 register env firstName lastName phone email =
     let
         payload =
             Encode.object
                 [ ( "firstName", Encode.string firstName )
                 , ( "surname", Encode.string lastName )
-                , ( "phone", Encode.string phone )
-                , ( "email"
-                  , case email of
-                        Just justEmail ->
-                            Encode.string justEmail
-
-                        Nothing ->
-                            Encode.null
-                  )
+                , ( "phone", EncodeUtil.maybe phone Encode.string )
+                , ( "email", EncodeUtil.maybe email Encode.string )
                 ]
     in
         HttpUtil.post env

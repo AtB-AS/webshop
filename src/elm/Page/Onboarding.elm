@@ -29,18 +29,20 @@ type alias Model =
     , firstName : String
     , lastName : String
     , email : String
+    , phone : String
     , consent1 : Bool
     , consent2 : Bool
     , error : Maybe String
     }
 
 
-init : String -> Model
-init token =
+init : String -> String -> String -> Model
+init token email phone =
     { token = token
     , firstName = ""
     , lastName = ""
-    , email = ""
+    , email = email
+    , phone = phone
     , consent1 = False
     , consent2 = False
     , error = Nothing
@@ -71,7 +73,7 @@ update msg env model =
                 , register { env | token = model.token }
                     model.firstName
                     model.lastName
-                    "12345678"
+                    model.phone
                     model.email
                 )
 
@@ -119,10 +121,6 @@ getError error =
 
         _ ->
             Nothing
-
-
-
--- myId : BzPU0TCqPJNn93XJeEWYxPSCTO62
 
 
 view : Environment -> Model -> Html Msg
@@ -234,14 +232,14 @@ subscriptions _ =
 
 register : Environment -> String -> String -> String -> String -> Cmd Msg
 register env firstName lastName phone email =
-    WebshopService.register env firstName lastName phone (Just email)
+    WebshopService.register env firstName lastName (Just phone) (Just email)
         |> Http.toTask
         |> Task.attempt ReceiveRegister
 
 
 skipRegister : Environment -> Cmd Msg
 skipRegister env =
-    WebshopService.register env "_" "_" "12345678" Nothing
+    WebshopService.register env "_" "_" Nothing Nothing
         |> Http.toTask
         |> Task.attempt ReceiveRegister
 

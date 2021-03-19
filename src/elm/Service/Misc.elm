@@ -33,7 +33,7 @@ port convertTime : ( String, String ) -> Cmd msg
 port convertedTime : (String -> msg) -> Sub msg
 
 
-port onboardingStart : (String -> msg) -> Sub msg
+port onboardingStart : (( String, String, String ) -> msg) -> Sub msg
 
 
 port onboardingDone : () -> Cmd msg

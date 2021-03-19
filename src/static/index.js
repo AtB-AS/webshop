@@ -142,6 +142,7 @@ function fetchAuthInfo(user) {
             } else {
                 const accountId = idToken.claims["sub"];
                 const email = user.email || '';
+                const phone = user.phoneNumber || '';
                 const provider = idToken.signInProvider || '';
 
                 localStorage["loggedIn"] = 'loggedIn';
@@ -149,16 +150,14 @@ function fetchAuthInfo(user) {
                 db.collection('customers').doc(accountId).onSnapshot(doc => {
                     const profile = doc.data();
 
-                    if (!profile)
-                    {
+                    if (!profile) {
                         onboardingUser = user;
-                        app.ports.onboardingStart.send(idToken.token);
-                    }
-                    else
-                    {
+                        app.ports.onboardingStart.send([idToken.token, email, phone]);
+                    } else {
                         app.ports.signInInfo.send({
                             token: idToken.token,
                             email: email,
+                            phone: phone,
                             uid: accountId,
                             provider: provider
                         });
@@ -253,3 +252,77 @@ if (app.ports.convertTime) {
         }
     });
 }
+
+// Component that integrates with the ReCaptcha mechanism of Firebase Auth.
+window.customElements.define('atb-login-recaptcha',
+    class extends HTMLElement {
+        constructor() {
+            super();
+
+            const recaptcha = document.createElement('div');
+            recaptcha.setAttribute('id', 'atb-login-recaptcha');
+            this.appendChild(recaptcha);
+        }
+
+        // Callbacks
+
+        connectedCallback() {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('atb-login-recaptcha', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    console.log('[debug] ReCaptcha response', response);
+                }
+            });
+        }
+
+        attributeChangedCallback() {
+        }
+
+        static get observedAttributes() {
+            return [];
+        }
+    }
+);
+
+app.ports.phoneLogin.subscribe((phone) => {
+    if (!phone) {
+        return;
+    }
+
+    firebase
+        .auth()
+        .signInWithPhoneNumber(phone, window.recaptchaVerifier)
+        .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+            app.ports.phoneRequestCode.send();
+        })
+        .catch((error) => {
+            console.log('[debug] phone login error', error);
+            console.log('[debug] phone login error json', JSON.stringify(error));
+
+            if (error && error.code === 'auth/invalid-phone-number') {
+                app.ports.phoneError.send("Ugyldig telefonnummer.");
+            } else {
+                app.ports.phoneError.send("En ukjent feil oppstod.");
+            }
+        });
+});
+
+app.ports.phoneConfirm.subscribe((code) => {
+    if (!code) {
+        return;
+    }
+
+    window.confirmationResult.confirm(code).then((result) => {
+        fetchAuthInfo(result.user);
+    }).catch((error) => {
+        console.log('[debug] phone confirm error', error);
+        console.log('[debug] phone confirm error json', JSON.stringify(error));
+
+        if (error && error.code === 'auth/invalid-phone-number') {
+            app.ports.phoneError.send("Ugyldig telefonnummer.");
+        } else {
+            app.ports.phoneError.send("En ukjent feil oppstod.");
+        }
+    });
+})

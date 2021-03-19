@@ -15,6 +15,7 @@ import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
 import Page.History as HistoryPage
 import Page.Home as HomePage
+import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
 import Page.Settings as SettingsPage
 import Page.Shop as ShopPage
@@ -40,9 +41,10 @@ type Msg
     | ShopMsg ShopPage.Msg
     | HistoryMsg HistoryPage.Msg
     | SettingsMsg SettingsPage.Msg
+    | LoginMsg LoginPage.Msg
     | OnboardingMsg OnboardingPage.Msg
     | SharedMsg Shared.Msg
-    | StartOnboarding String
+    | StartOnboarding ( String, String, String )
     | LogIn FirebaseAuth.Provider
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
@@ -57,6 +59,7 @@ type alias Model =
     , history : HistoryPage.Model
     , settings : SettingsPage.Model
     , shared : Shared
+    , login : LoginPage.Model
     , onboarding : Maybe OnboardingPage.Model
     , route : Maybe Route.Route
     , errors : List Error
@@ -168,6 +171,7 @@ init flags url navKey =
                 , history = historyModel
                 , settings = settingsModel
                 , shared = Shared.init
+                , login = LoginPage.init
                 , onboarding = Nothing
                 , route = route
                 , errors = []
@@ -280,6 +284,11 @@ update msg model =
                 |> PageUpdater.map (\newModel -> { model | settings = newModel }) SettingsMsg
                 |> doPageUpdate
 
+        LoginMsg subMsg ->
+            LoginPage.update subMsg model.environment model.login
+                |> PageUpdater.map (\newModel -> { model | login = newModel }) LoginMsg
+                |> doPageUpdate
+
         OnboardingMsg subMsg ->
             case model.onboarding of
                 Just onboarding ->
@@ -293,8 +302,8 @@ update msg model =
         SharedMsg subMsg ->
             ( { model | shared = Shared.update subMsg model.shared }, Cmd.none )
 
-        StartOnboarding token ->
-            ( { model | onboarding = Just <| OnboardingPage.init token }, Cmd.none )
+        StartOnboarding ( token, email, phone ) ->
+            ( { model | onboarding = Just <| OnboardingPage.init token email phone }, Cmd.none )
 
         LogIn provider ->
             ( model, FirebaseAuth.signIn provider )
@@ -376,14 +385,10 @@ view model =
                                         |> H.map OnboardingMsg
 
                                 Nothing ->
-                                    viewLogin model
+                                    LoginPage.view model.environment model.login
+                                        |> H.map LoginMsg
                     ]
         ]
-
-
-viewLogin : Model -> Html msg
-viewLogin _ =
-    H.div [] [ H.text "login" ]
 
 
 header : Model -> Html Msg
@@ -486,6 +491,8 @@ subs model =
             |> Sub.map HistoryMsg
         , SettingsPage.subscriptions model.settings
             |> Sub.map SettingsMsg
+        , LoginPage.subscriptions model.login
+            |> Sub.map LoginMsg
         , Shared.subscriptions
             |> Sub.map SharedMsg
         , model.notifications
