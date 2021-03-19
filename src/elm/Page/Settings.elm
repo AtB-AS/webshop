@@ -180,7 +180,7 @@ viewSidebar model =
                 ]
             )
         , richActionButton False
-            (Just DeleteAccount)
+            Nothing
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Slett konto" ]
                 , Icon.delete
