@@ -13,6 +13,7 @@ module Fragment.Icon exposing
     , info
     , leftArrow
     , leftCaret
+    , logout
     , rightArrow
     , rightCaret
     , ticket
@@ -432,6 +433,22 @@ toggleOn =
             , SA.clipRule "evenodd"
             , SA.d "M26 18C30.4183 18 34 14.4183 34 10C34 5.58172 30.4183 2 26 2C21.5817 2 18 5.58172 18 10C18 14.4183 21.5817 18 26 18Z"
             , SA.fill "white"
+            ]
+            []
+        ]
+
+
+logout : Html msg
+logout =
+    S.svg [ SA.width "17", SA.height "16", SA.viewBox "0 0 16 16", SA.fill "none" ]
+        [ S.path
+            [ SA.d "M6 3C6 1.34315 7.34315 0 9 0H14C15.6569 0 17 1.34315 17 3V13C17 14.6569 15.6569 16 14 16H9C7.34315 16 6 14.6569 6 13V11H8V13C8 13.5523 8.44772 14 9 14H14C14.5523 14 15 13.5523 15 13V3C15 2.44772 14.5523 2 14 2H9C8.44772 2 8 2.44772 8 3V5H6V3Z"
+            , SA.fill "black"
+            ]
+            []
+        , S.path
+            [ SA.d "M3.79289 3.79289L0.292893 7.29289C-0.0976311 7.68342 -0.0976311 8.31658 0.292893 8.70711L3.79289 12.2071L5.20711 10.7929L3.41421 9H11.5V7H3.41421L5.20711 5.20711L3.79289 3.79289Z"
+            , SA.fill "black"
             ]
             []
         ]

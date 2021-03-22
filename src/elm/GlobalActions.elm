@@ -14,6 +14,7 @@ type GlobalAction msg
     | OpenShop
     | CloseShop
     | SetPendingOrder String
+    | Logout
 
 
 map : (a -> msg) -> GlobalAction a -> GlobalAction msg
@@ -36,3 +37,6 @@ map f ga =
 
         SetPendingOrder orderId ->
             SetPendingOrder orderId
+
+        Logout ->
+            Logout

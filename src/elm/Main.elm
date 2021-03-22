@@ -231,6 +231,21 @@ update msg model =
                     , TaskUtil.doTask <| HomeMsg <| HomePage.SetPendingOrder orderId
                     )
 
+                GA.Logout ->
+                    let
+                        oldEnvironment =
+                            model.environment
+
+                        newEnvironment =
+                            { oldEnvironment
+                                | customerId = Nothing
+                                , token = ""
+                            }
+                    in
+                        ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                        , FirebaseAuth.signOut
+                        )
+
         SetRoute route ->
             setRoute route model
 

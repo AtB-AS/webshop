@@ -46,6 +46,7 @@ type Msg
     | UpdateTime Time.Posix
     | ToggleTicket String
     | SetPendingOrder String
+    | Logout
 
 
 type alias Model =
@@ -202,6 +203,10 @@ update msg env model =
         SetPendingOrder orderId ->
             PageUpdater.init { model | pending = Just orderId }
 
+        Logout ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction GA.Logout
+
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view env _ shared model _ =
@@ -267,6 +272,13 @@ viewActions model =
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Debug: Refresh" ]
                 , Icon.duration
+                ]
+            )
+        , richActionButton False
+            (Just Logout)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Logg ut" ]
+                , Icon.logout
                 ]
             )
         ]
