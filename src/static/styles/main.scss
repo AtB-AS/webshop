@@ -287,7 +287,8 @@ main {
         label {
             font-weight: 400;
             font-size: 12px;
-            margin-bottom: 10px;
+            line-height: 16px;
+            margin-bottom: 2px;
             color: rgba(0, 0, 0, 0.6);
         }
 
@@ -297,6 +298,24 @@ main {
 
         &.active {
             background-color: #CFD2D3;
+        }
+    }
+
+    > div.two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        > div {
+            display: grid;
+            place-items: center start;
+
+            > label {
+                font-weight: 400;
+                font-size: 12px;
+                line-height: 16px;
+                margin-bottom: 2px;
+                color: rgba(0, 0, 0, 0.6);
+            }
         }
     }
 

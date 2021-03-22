@@ -1,27 +1,22 @@
 module Page.Settings exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.Webshop exposing (Profile)
 import Environment exposing (Environment)
-import Fragment.Button as Button
 import Fragment.Icon as Icon
-import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Http
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
-import Service.Misc as MiscService
+import Service.Misc as MiscService exposing (Profile)
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
 
 
 type Msg
-    = GetProfile
-    | ReceiveProfile (Result Http.Error Profile)
-    | UpdateFirstName String
+    = UpdateFirstName String
     | UpdateLastName String
     | UpdateProfile
     | ReceiveUpdateProfile (Result Http.Error ())
@@ -29,14 +24,13 @@ type Msg
     | EditPhoneNumber
     | RemoveTravelCard
     | DeleteAccount
-    | ProfileChange (Maybe MiscService.Profile)
+    | ProfileChange (Maybe Profile)
 
 
 type alias Model =
     { firstName : String
     , lastName : String
     , profile : Maybe Profile
-    , fireProfile : Maybe MiscService.Profile
     , updating : Bool
     }
 
@@ -46,7 +40,6 @@ init =
     ( { firstName = ""
       , lastName = ""
       , profile = Nothing
-      , fireProfile = Nothing
       , updating = False
       }
     , Cmd.none
@@ -56,24 +49,6 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
-        GetProfile ->
-            PageUpdater.fromPair ( model, fetchProfile env )
-
-        ReceiveProfile result ->
-            case result of
-                Ok profile ->
-                    PageUpdater.init
-                        { model
-                            | profile = Just profile
-                            , firstName = profile.firstName
-                            , lastName = profile.lastName
-                            , updating = False
-                        }
-                        |> PageUpdater.addGlobalAction (GA.SetCustomerNumber profile.customerNumber)
-
-                Err _ ->
-                    PageUpdater.init model
-
         UpdateFirstName value ->
             PageUpdater.init { model | firstName = value }
 
@@ -89,7 +64,7 @@ update msg env model =
         ReceiveUpdateProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.fromPair ( model, fetchProfile env )
+                    PageUpdater.init { model | updating = False }
 
                 Err _ ->
                     PageUpdater.init { model | updating = False }
@@ -109,27 +84,20 @@ update msg env model =
         ProfileChange (Just profile) ->
             PageUpdater.init
                 { model
-                    | fireProfile = Just profile
+                    | profile = Just profile
                     , firstName = profile.firstName
                     , lastName = profile.lastName
-                    , profile =
-                        Just
-                            { email = profile.email
-                            , firstName = profile.firstName
-                            , lastName = profile.lastName
-                            , customerNumber = 123
-                            }
                 }
 
         ProfileChange Nothing ->
-            PageUpdater.init { model | fireProfile = Nothing }
+            PageUpdater.init { model | profile = Nothing }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ _ model _ =
     H.div [ A.class "settings" ]
         [ viewMain model
-        , viewSidebar model
+        , H.div [] [ viewSidebar model ]
         ]
 
 
@@ -195,9 +163,11 @@ viewMain model =
         [ H.div [ A.class "section-box" ]
             (case model.profile of
                 Just profile ->
-                    [ viewProfile profile
+                    [ H.div [ A.class "section-header" ] [ H.text "Min konto" ]
+                    , viewProfile profile
                     , viewTravelCard profile
-                    , viewAccountMetadata profile
+                    , viewPhoneNumber profile
+                    , viewEmailAddress profile
                     ]
 
                 Nothing ->
@@ -208,17 +178,57 @@ viewMain model =
 
 viewProfile : Profile -> Html msg
 viewProfile profile =
-    H.div [] [ H.text <| profile.firstName ++ " " ++ profile.lastName ]
+    if hasField profile.firstName || hasField profile.lastName then
+        H.div [ A.class "two-col" ]
+            [ H.div []
+                [ H.label [] [ H.text "Fornavn" ]
+                , viewField profile.firstName
+                ]
+            , H.div []
+                [ H.label [] [ H.text "Etternavn" ]
+                , viewField profile.lastName
+                ]
+            ]
+
+    else
+        H.text ""
+
+
+viewPhoneNumber : Profile -> Html msg
+viewPhoneNumber profile =
+    if hasField profile.phone then
+        H.div []
+            [ H.label [] [ H.text "Telefonnummer" ]
+            , viewField profile.phone
+            ]
+
+    else
+        H.text ""
+
+
+viewEmailAddress : Profile -> Html msg
+viewEmailAddress profile =
+    if hasField profile.email then
+        H.div []
+            [ H.label [] [ H.text "E-postadresse" ]
+            , viewField profile.email
+            ]
+
+    else
+        H.text ""
 
 
 viewTravelCard : Profile -> Html msg
 viewTravelCard profile =
-    H.div [] [ H.text <| profile.email ]
+    case profile.travelCard of
+        Just travelCard ->
+            H.div []
+                [ H.label [] [ H.text "t:kort" ]
+                , viewField <| String.fromInt <| travelCard.id
+                ]
 
-
-viewAccountMetadata : Profile -> Html msg
-viewAccountMetadata _ =
-    H.div [] [ H.text "01.01.2021" ]
+        Nothing ->
+            H.text ""
 
 
 subscriptions : Model -> Sub Msg
@@ -230,11 +240,26 @@ subscriptions _ =
 -- INTERNAL
 
 
-fetchProfile : Environment -> Cmd Msg
-fetchProfile env =
-    WebshopService.getProfile env
-        |> Http.toTask
-        |> Task.attempt ReceiveProfile
+{-| Field is valid if it is neither an empty string or an underscore.
+-}
+hasField : String -> Bool
+hasField x =
+    x /= "" && x /= "_"
+
+
+{-| Show the field as normal if it is valid, otherwise say that it's not filled out.
+-}
+viewField : String -> Html msg
+viewField x =
+    if hasField x then
+        H.span [] [ H.text x ]
+
+    else
+        H.span
+            [ A.style "opacity" "0.5"
+            , A.style "font-style" "italic"
+            ]
+            [ H.text "(ikke utfylt)" ]
 
 
 updateProfile : Environment -> String -> String -> Cmd Msg
