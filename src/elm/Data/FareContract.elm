@@ -55,6 +55,8 @@ type alias FareContract =
     , qrCode : Maybe String
     , validFrom : Int
     , validTo : Int
+    , totalAmount : Maybe String
+    , paymentType : List String
     }
 
 

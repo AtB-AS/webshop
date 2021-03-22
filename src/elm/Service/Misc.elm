@@ -136,6 +136,8 @@ fareContractDecoder =
         |> DecodeP.optional "qrCode" (Decode.nullable Decode.string) Nothing
         |> DecodeP.required "validFrom" Decode.int
         |> DecodeP.required "validTo" Decode.int
+        |> DecodeP.optional "totalAmount" (Decode.map Just Decode.string) Nothing
+        |> DecodeP.optional "paymentType" (Decode.list Decode.string) []
 
 
 

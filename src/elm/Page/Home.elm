@@ -580,8 +580,8 @@ viewTicketCard shared model fareContract =
                     [ H.label [] [ H.text "Kjøpsinformasjon" ]
                     , H.div [ A.class "metadata-list" ]
                         [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime fareContract.created ]
-                        , H.div [] [ H.text "Totalt kr ??,00" ]
-                        , H.div [] [ H.text "Betalt med ???" ]
+                        , H.div [] [ H.text <| "Totalt kr " ++ formatTotal fareContract.totalAmount ]
+                        , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType fareContract.paymentType ]
                         , H.div [] [ H.text <| "Ordre-ID: " ++ fareContract.orderId ]
                         ]
                     ]
@@ -610,6 +610,32 @@ viewTicketCard shared model fareContract =
                        )
                 )
             ]
+
+
+formatTotal : Maybe String -> String
+formatTotal value =
+    case Maybe.andThen String.toFloat value of
+        Just floatValue ->
+            Format.float floatValue 2
+
+        Nothing ->
+            "??"
+
+
+formatPaymentType : List String -> String
+formatPaymentType types =
+    case types of
+        [] ->
+            "??"
+
+        [ "VIPPS" ] ->
+            "Vipps"
+
+        [ "VISA" ] ->
+            "bankkort"
+
+        _ ->
+            "??"
 
 
 langString : LangString -> String

@@ -200,8 +200,8 @@ viewOrder shared model order =
                                     [ H.label [] [ H.text "Kjøpsinformasjon" ]
                                     , H.div [ A.class "metadata-list" ]
                                         [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                                        , H.div [] [ H.text "Totalt kr ??,00" ]
-                                        , H.div [] [ H.text "Betalt med ???" ]
+                                        , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
+                                        , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
                                         , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
                                         ]
                                     ]
@@ -308,3 +308,29 @@ fareContractStateToString state =
 
         FareContractStateRefunded ->
             "Refunded"
+
+
+formatTotal : Maybe String -> String
+formatTotal value =
+    case Maybe.andThen String.toFloat value of
+        Just floatValue ->
+            Format.float floatValue 2
+
+        Nothing ->
+            "??"
+
+
+formatPaymentType : List String -> String
+formatPaymentType types =
+    case types of
+        [] ->
+            "??"
+
+        [ "VIPPS" ] ->
+            "Vipps"
+
+        [ "VISA" ] ->
+            "bankkort"
+
+        _ ->
+            "??"
