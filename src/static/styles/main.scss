@@ -560,6 +560,14 @@ table {
     margin-left: auto;
     margin-right: auto;
 
+    > div:first-child {
+        margin: 24px auto;
+
+        svg path {
+            fill: black;
+        }
+    }
+
     input {
         border: none;
         outline: none;

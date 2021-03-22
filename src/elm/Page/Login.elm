@@ -83,7 +83,8 @@ view env model =
 viewLogin : Environment -> Model -> Html Msg
 viewLogin env model =
     H.div [ A.class "login" ]
-        [ H.div [ A.class "section-box", A.style "width" "320px" ]
+        [ Icon.wrapper 80 Icon.atb
+        , H.div [ A.class "section-box", A.style "width" "320px" ]
             [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
                 [ H.text "Logg inn i AtB nettbutikk" ]
             , textInput model.phone
