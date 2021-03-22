@@ -325,4 +325,29 @@ app.ports.phoneConfirm.subscribe((code) => {
             app.ports.phoneError.send("En ukjent feil oppstod.");
         }
     });
-})
+});
+
+// Component to show maps from MapBox
+window.customElements.define('atb-map',
+    class extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        // Callbacks
+
+        connectedCallback() {
+            this.innerText = 'Map';
+        }
+
+        disconnectedCallback() {
+        }
+
+        attributeChangedCallback() {
+        }
+
+        static get observedAttributes() {
+            return [];
+        }
+    }
+);

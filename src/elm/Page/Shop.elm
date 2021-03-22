@@ -653,7 +653,7 @@ viewZones model zones =
             [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
             , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
             , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
-            , H.div [ A.class "section-block" ] [ H.text "mapbox" ]
+            , H.div [ A.class "section-block" ] [ H.node "atb-map" [] [] ]
             ]
 
 
