@@ -15,6 +15,8 @@ import Json.Encode
 
 type Provider
     = Google
+    | Microsoft
+    | Phone
     | Anonymous
     | Unknown String
 
@@ -61,6 +63,12 @@ providerFromString provider =
         "google.com" ->
             Google
 
+        "microsoft.com" ->
+            Microsoft
+
+        "phone" ->
+            Phone
+
         "anonymous" ->
             Anonymous
 
@@ -82,6 +90,12 @@ providerToString provider =
     case provider of
         Google ->
             "google.com"
+
+        Microsoft ->
+            "microsoft.com"
+
+        Phone ->
+            "phone"
 
         Anonymous ->
             "anonymous"
