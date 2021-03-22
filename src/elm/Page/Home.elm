@@ -235,7 +235,7 @@ viewAccountInfo model =
         (richActionButton False
             (Just OpenSettings)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Ola Nordmann" ]
+                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Min konto" ]
                 , Icon.traveler
                 ]
             )
