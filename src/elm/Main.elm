@@ -407,26 +407,8 @@ view model =
 
 
 header : Model -> Html Msg
-header model =
-    H.header []
-        [ Icon.atb
-        , H.span [] []
-        , case model.userData of
-            Loaded userData ->
-                H.div []
-                    [ H.text userData.email
-                    , H.text " | "
-                    , H.text userData.userId
-                    , H.text " | "
-                    , H.button [ E.onClick LogOut ] [ H.text "Log out" ]
-                    ]
-
-            _ ->
-                H.div []
-                    [ H.button [ E.onClick (LogIn FirebaseAuth.Anonymous) ] [ H.text "Log in anonymously" ]
-                    , H.button [ E.onClick (LogIn FirebaseAuth.Google) ] [ H.text "Log in with Google" ]
-                    ]
-        ]
+header _ =
+    H.header [] [ Icon.atb ]
 
 
 viewPage : Model -> Html Msg
