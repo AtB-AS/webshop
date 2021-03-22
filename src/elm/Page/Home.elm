@@ -268,13 +268,6 @@ viewActions model =
                 ]
             )
         , richActionButton False
-            (Just OpenHistory)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Debug: Refresh" ]
-                , Icon.duration
-                ]
-            )
-        , richActionButton False
             (Just Logout)
             (H.div [ A.style "display" "flex", A.style "width" "100%" ]
                 [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Logg ut" ]
