@@ -24,6 +24,7 @@ type alias Model =
     , code : String
     , step : Step
     , error : Maybe String
+    , loading : Bool
     }
 
 
@@ -38,6 +39,7 @@ init =
     , code = ""
     , step = StepLogin
     , error = Nothing
+    , loading = False
     }
 
 
@@ -59,16 +61,28 @@ update msg env model =
                     else
                         "+47" ++ model.phone
             in
-                PageUpdater.fromPair ( model, PhoneService.phoneLogin fullPhone )
+                PageUpdater.fromPair
+                    ( { model | loading = True }
+                    , PhoneService.phoneLogin fullPhone
+                    )
 
         Confirm ->
-            PageUpdater.fromPair ( model, PhoneService.phoneConfirm model.code )
+            PageUpdater.fromPair
+                ( { model | loading = True }
+                , PhoneService.phoneConfirm model.code
+                )
 
         RequestCode ->
-            PageUpdater.init { model | step = StepConfirm, code = "", error = Nothing }
+            PageUpdater.init
+                { model
+                    | step = StepConfirm
+                    , code = ""
+                    , error = Nothing
+                    , loading = False
+                }
 
         HandleError error ->
-            PageUpdater.init { model | error = Just error }
+            PageUpdater.init { model | error = Just error, loading = False }
 
 
 view : Environment -> Model -> Html Msg
@@ -95,7 +109,7 @@ viewLogin env model =
                 "Logg inn med telefonnummeret ditt"
             ]
         , H.node "atb-login-recaptcha" [] []
-        , button True Login "Logg inn"
+        , button True Login "Logg inn" model.loading
         , case model.error of
             Just error ->
                 H.div [] [ H.text error ]
@@ -118,7 +132,7 @@ viewConfirm env model =
                 "Skriv inn engangspassordet"
             ]
         , H.node "atb-login-recaptcha" [] []
-        , button True Confirm "Logg inn"
+        , button True Confirm "Logg inn" model.loading
         , case model.error of
             Just error ->
                 H.div [] [ H.text error ]
@@ -128,17 +142,26 @@ viewConfirm env model =
         ]
 
 
-button : Bool -> msg -> String -> Html msg
-button primary action title =
+button : Bool -> msg -> String -> Bool -> Html msg
+button primary action title loading =
     H.div
-        [ A.classList
+        (A.classList
             [ ( "button", primary )
             , ( "no-button", not primary )
             ]
-        , E.onClick action
-        ]
+            :: (if loading then
+                    []
+
+                else
+                    [ E.onClick action ]
+               )
+        )
         [ H.div [] [ H.text title ]
-        , Icon.rightArrow
+        , if loading then
+            H.span [ A.class "button-loading" ] []
+
+          else
+            Icon.rightArrow
         ]
 
 

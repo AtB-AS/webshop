@@ -591,6 +591,25 @@ table {
     .button {
         background-color: #71D6E0;
         border-radius: 12px;
+
+        .button-loading {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            border: 5px solid rgba(0, 0, 0, 0.4);
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: rotation 1s infinite linear;
+        }
+    }
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(359deg);
     }
 }
 
