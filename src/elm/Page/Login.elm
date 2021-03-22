@@ -7,6 +7,7 @@ import Html.Attributes as A
 import Html.Events as E
 import PageUpdater exposing (PageUpdater)
 import Service.Phone as PhoneService
+import Util.Event as EventUtil
 
 
 type Msg
@@ -89,6 +90,7 @@ viewLogin env model =
                 [ H.text "Logg inn i AtB nettbutikk" ]
             , textInput model.phone
                 InputPhone
+                Login
                 "Telefonnummer"
                 "Logg inn med telefonnummeret ditt"
             ]
@@ -111,6 +113,7 @@ viewConfirm env model =
                 [ H.text <| "Vi har sendt et engangspassord til " ++ model.phone ++ ", vennligst skriv det inn nedenfor." ]
             , textInput model.code
                 InputCode
+                Confirm
                 "Engangspassord"
                 "Skriv inn engangspassordet"
             ]
@@ -139,8 +142,8 @@ button primary action title =
         ]
 
 
-textInput : String -> (String -> msg) -> String -> String -> Html msg
-textInput value action title placeholder =
+textInput : String -> (String -> msg) -> msg -> String -> String -> Html msg
+textInput value action enterAction title placeholder =
     H.div []
         [ H.div
             [ A.style "font-weight" "400"
@@ -153,6 +156,7 @@ textInput value action title placeholder =
                 [ A.type_ "text"
                 , A.placeholder placeholder
                 , E.onInput action
+                , EventUtil.onEnter enterAction
                 , A.value value
                 ]
                 []
