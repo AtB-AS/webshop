@@ -570,11 +570,6 @@ viewTicketCard shared model fareContract =
                             H.text <| String.fromInt (List.length zones) ++ " soner"
                     ]
                 ]
-            , if isValid fareContract.validTo model.currentTime then
-                H.div [ A.class "ticket-progress" ] []
-
-              else
-                H.text ""
             , H.div [ A.class "card-content" ]
                 [ H.div
                     [ A.class "ticket-info" ]
