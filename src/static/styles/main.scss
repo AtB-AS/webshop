@@ -267,6 +267,22 @@ main {
     }
 }
 
+@media (max-width: 768px) {
+    main {
+        width: inherit;
+        margin-left: 24px;
+        margin-right: 24px;
+    }
+
+    .overview, .page-history, .shop, .settings {
+        grid-template-columns: 1fr;
+    }
+
+    .overview .sidebar, .shop .left, .shop .middle, .shop .right, .page-history .sidebar {
+        width: inherit;
+    }
+}
+
 .toggle {
     cursor: pointer;
 }
