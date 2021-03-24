@@ -94,7 +94,107 @@ main {
     margin-right: auto;
 }
 
-.overview {
+// Page layouts
+
+.page-login {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+
+    > div:first-child {
+        margin: 24px auto;
+
+        svg path {
+            fill: black;
+        }
+    }
+
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .button, .no-button {
+        padding: 24px;
+        font-weight: 500;
+        display: flex;
+        cursor: pointer;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button {
+        background-color: #71D6E0;
+        border-radius: 12px;
+
+        .button-loading {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            border: 5px solid rgba(0, 0, 0, 0.4);
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: rotation 1s infinite linear;
+        }
+    }
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+.page-onboarding {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+    }
+
+    .consent {
+        display: flex;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button, .no-button {
+        padding: 24px;
+        font-weight: 500;
+        display: flex;
+        cursor: pointer;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button {
+        background-color: #71D6E0;
+        border-radius: 12px;
+    }
+}
+
+.page-overview {
     display: grid;
     grid-gap: 24px;
     grid-template-columns: 320px 1fr;
@@ -190,7 +290,7 @@ main {
     }
 }
 
-.shop {
+.page-shop {
     display: grid;
     grid-gap: 24px;
     grid-template-columns: 320px 320px 320px;
@@ -215,7 +315,7 @@ main {
     }
 }
 
-.settings {
+.page-account {
     display: grid;
     grid-gap: 24px;
     grid-template-columns: 1fr 320px;
@@ -228,44 +328,7 @@ main {
     }
 }
 
-.onboarding {
-    margin-top: 96px;
-    width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-
-    input {
-        border: none;
-        outline: none;
-        background: inherit;
-        margin: 0;
-        padding: 0;
-    }
-
-    .consent {
-        display: flex;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button, .no-button {
-        padding: 24px;
-        font-weight: 500;
-        display: flex;
-        cursor: pointer;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button {
-        background-color: #71D6E0;
-        border-radius: 12px;
-    }
-}
+// Basic responsiveness for pages
 
 @media (max-width: 768px) {
     main {
@@ -274,14 +337,16 @@ main {
         margin-right: 24px;
     }
 
-    .overview, .page-history, .shop, .settings {
+    .page-overview, .page-history, .page-shop, .page-account {
         grid-template-columns: 1fr;
     }
 
-    .overview .sidebar, .shop .left, .shop .middle, .shop .right, .page-history .sidebar {
+    .page-overview .sidebar, .page-shop .left, .page-shop .middle, .page-shop .right, .page-history .sidebar {
         width: inherit;
     }
 }
+
+// Components
 
 .toggle {
     cursor: pointer;
@@ -554,64 +619,4 @@ table {
     }
 }
 
-.login {
-    margin-top: 96px;
-    width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-
-    > div:first-child {
-        margin: 24px auto;
-
-        svg path {
-            fill: black;
-        }
-    }
-
-    input {
-        border: none;
-        outline: none;
-        background: inherit;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-    }
-
-    .button, .no-button {
-        padding: 24px;
-        font-weight: 500;
-        display: flex;
-        cursor: pointer;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button {
-        background-color: #71D6E0;
-        border-radius: 12px;
-
-        .button-loading {
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-            border: 5px solid rgba(0, 0, 0, 0.4);
-            border-right-color: transparent;
-            border-radius: 50%;
-            animation: rotation 1s infinite linear;
-        }
-    }
-}
-
-@keyframes rotation {
-    0% {
-        transform: rotate(0);
-    }
-    100% {
-        transform: rotate(359deg);
-    }
-}
-
 @import "waiting";
-//@import "card";

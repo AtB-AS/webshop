@@ -95,7 +95,7 @@ update msg env model =
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ _ model _ =
-    H.div [ A.class "settings" ]
+    H.div [ A.class "page-account" ]
         [ viewMain model
         , H.div [] [ viewSidebar model ]
         ]

@@ -394,7 +394,7 @@ richBuyButton disabled action content =
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div [ A.class "shop" ]
+    H.div [ A.class "page-shop" ]
         [ H.div [ A.class "left" ]
             [ H.div [ A.class "section-box" ]
                 [ richActionButton False

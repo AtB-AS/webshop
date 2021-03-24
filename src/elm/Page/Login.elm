@@ -87,59 +87,58 @@ update msg env model =
 
 view : Environment -> Model -> Html Msg
 view env model =
-    case model.step of
-        StepLogin ->
-            viewLogin env model
+    H.div [ A.class "page-login" ] <|
+        case model.step of
+            StepLogin ->
+                viewLogin env model
 
-        StepConfirm ->
-            viewConfirm env model
+            StepConfirm ->
+                viewConfirm env model
 
 
-viewLogin : Environment -> Model -> Html Msg
+viewLogin : Environment -> Model -> List (Html Msg)
 viewLogin env model =
-    H.div [ A.class "login" ]
-        [ Icon.wrapper 80 Icon.atb
-        , H.div [ A.class "section-box", A.style "width" "320px" ]
-            [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
-                [ H.text "Logg inn i AtB nettbutikk" ]
-            , textInput model.phone
-                InputPhone
-                Login
-                "Telefonnummer"
-                "Logg inn med telefonnummeret ditt"
-            ]
-        , H.node "atb-login-recaptcha" [] []
-        , button True Login "Logg inn" model.loading
-        , case model.error of
-            Just error ->
-                H.div [] [ H.text error ]
-
-            Nothing ->
-                H.text ""
+    [ Icon.wrapper 80 Icon.atb
+    , H.div [ A.class "section-box", A.style "width" "320px" ]
+        [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
+            [ H.text "Logg inn i AtB nettbutikk" ]
+        , textInput model.phone
+            InputPhone
+            Login
+            "Telefonnummer"
+            "Logg inn med telefonnummeret ditt"
         ]
+    , H.node "atb-login-recaptcha" [] []
+    , button True Login "Logg inn" model.loading
+    , case model.error of
+        Just error ->
+            H.div [] [ H.text error ]
+
+        Nothing ->
+            H.text ""
+    ]
 
 
-viewConfirm : Environment -> Model -> Html Msg
+viewConfirm : Environment -> Model -> List (Html Msg)
 viewConfirm env model =
-    H.div [ A.class "login" ]
-        [ H.div [ A.class "section-box", A.style "width" "320px" ]
-            [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
-                [ H.text <| "Vi har sendt et engangspassord til " ++ model.phone ++ ", vennligst skriv det inn nedenfor." ]
-            , textInput model.code
-                InputCode
-                Confirm
-                "Engangspassord"
-                "Skriv inn engangspassordet"
-            ]
-        , H.node "atb-login-recaptcha" [] []
-        , button True Confirm "Logg inn" model.loading
-        , case model.error of
-            Just error ->
-                H.div [] [ H.text error ]
-
-            Nothing ->
-                H.text ""
+    [ H.div [ A.class "section-box", A.style "width" "320px" ]
+        [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
+            [ H.text <| "Vi har sendt et engangspassord til " ++ model.phone ++ ", vennligst skriv det inn nedenfor." ]
+        , textInput model.code
+            InputCode
+            Confirm
+            "Engangspassord"
+            "Skriv inn engangspassordet"
         ]
+    , H.node "atb-login-recaptcha" [] []
+    , button True Confirm "Logg inn" model.loading
+    , case model.error of
+        Just error ->
+            H.div [] [ H.text error ]
+
+        Nothing ->
+            H.text ""
+    ]
 
 
 button : Bool -> msg -> String -> Bool -> Html msg

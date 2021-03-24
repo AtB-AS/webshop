@@ -125,7 +125,7 @@ getError error =
 
 view : Environment -> Model -> Html Msg
 view env model =
-    H.div [ A.class "onboarding" ]
+    H.div [ A.class "page-onboarding" ]
         [ H.div [ A.class "section-box", A.style "width" "320px" ]
             [ H.div []
                 [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ] [ H.text "Samtykker" ]
