@@ -7,6 +7,7 @@ module Service.Webshop exposing
     , getToken
     , getTokens
     , inspectQrCode
+    , register
     , updateProfile
     )
 
@@ -16,6 +17,7 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
+import Util.Encode as EncodeUtil
 import Util.Http as HttpUtil
 
 
@@ -90,6 +92,23 @@ inspectQrCode env tokenPayload =
 getFareContracts : Environment -> Http.Request (List FareContract)
 getFareContracts env =
     HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
+
+
+register : Environment -> String -> String -> Maybe String -> Maybe String -> Http.Request ()
+register env firstName lastName phone email =
+    let
+        payload =
+            Encode.object
+                [ ( "firstName", Encode.string firstName )
+                , ( "surname", Encode.string lastName )
+                , ( "phone", EncodeUtil.maybe phone Encode.string )
+                , ( "email", EncodeUtil.maybe email Encode.string )
+                ]
+    in
+        HttpUtil.post env
+            (env.baseUrl ++ "/webshop/v1/register")
+            (Http.jsonBody payload)
+            (Decode.succeed ())
 
 
 
@@ -222,7 +241,7 @@ tokenDecoder =
         |> DecodeP.custom
             (Decode.succeed Tuple.pair
                 |> DecodeP.required "validityStart" Decode.int
-                |> DecodeP.required "validityEnd" Decode.int
+                |> DecodeP.optional "validityEnd" Decode.int 0
             )
 
 

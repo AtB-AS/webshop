@@ -5,22 +5,24 @@ import Browser
 import Browser.Navigation as Nav
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
+import Fragment.Icon as Icon
 import GlobalActions as GA exposing (GlobalAction)
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Events as E
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
-import Page.Home as HomePage
-import Page.Settings as SettingsPage
+import Page.Account as AccountPage
+import Page.History as HistoryPage
+import Page.Login as LoginPage
+import Page.Onboarding as OnboardingPage
+import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
+import Service.Misc as MiscService
 import Shared exposing (Shared)
-import Svg as S
-import Svg.Attributes as SA
 import Time
 import Url exposing (Url)
 import Util.Status exposing (Status(..))
@@ -34,10 +36,14 @@ type Msg
     | UrlChanged Url
     | UrlRequested Browser.UrlRequest
     | CloseNotification Time.Posix
-    | HomeMsg HomePage.Msg
+    | OverviewMsg OverviewPage.Msg
     | ShopMsg ShopPage.Msg
-    | SettingsMsg SettingsPage.Msg
+    | HistoryMsg HistoryPage.Msg
+    | AccountMsg AccountPage.Msg
+    | LoginMsg LoginPage.Msg
+    | OnboardingMsg OnboardingPage.Msg
     | SharedMsg Shared.Msg
+    | StartOnboarding ( String, String, String )
     | LogIn FirebaseAuth.Provider
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
@@ -47,10 +53,13 @@ type Msg
 type alias Model =
     { environment : Environment
     , appInfo : AppInfo
-    , home : HomePage.Model
+    , overview : OverviewPage.Model
     , shop : Maybe ShopPage.Model
-    , settings : SettingsPage.Model
+    , history : HistoryPage.Model
+    , account : AccountPage.Model
     , shared : Shared
+    , login : LoginPage.Model
+    , onboarding : Maybe OnboardingPage.Model
     , route : Maybe Route.Route
     , errors : List Error
     , notifications : List (Notification Msg)
@@ -88,6 +97,13 @@ setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     ( { model | route = maybeRoute }
     , case maybeRoute of
+        Just Route.Shop ->
+            if model.shop == Nothing then
+                TaskUtil.doTask <| RouteTo Route.Home
+
+            else
+                Cmd.none
+
         Just _ ->
             Cmd.none
 
@@ -126,11 +142,11 @@ init flags url navKey =
             , commit = flags.commit
             }
 
-        ( homeModel, homeCmd ) =
-            HomePage.init
+        ( overviewModel, overviewCmd ) =
+            OverviewPage.init
 
-        ( settingsModel, settingsCmd ) =
-            SettingsPage.init
+        ( accountModel, accountCmd ) =
+            AccountPage.init
 
         route =
             Route.fromUrl url
@@ -146,10 +162,13 @@ init flags url navKey =
             setRoute route
                 { environment = environment
                 , appInfo = appInfo
-                , home = homeModel
+                , overview = overviewModel
                 , shop = Nothing
-                , settings = settingsModel
+                , history = HistoryPage.init
+                , account = accountModel
                 , shared = Shared.init
+                , login = LoginPage.init
+                , onboarding = Nothing
                 , route = route
                 , errors = []
                 , notifications = []
@@ -160,8 +179,8 @@ init flags url navKey =
     in
         ( routeModel
         , Cmd.batch
-            [ Cmd.map HomeMsg homeCmd
-            , Cmd.map SettingsMsg settingsCmd
+            [ Cmd.map OverviewMsg overviewCmd
+            , Cmd.map AccountMsg accountCmd
             , routeCmd
             ]
         )
@@ -203,8 +222,25 @@ update msg model =
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
-                GA.RefreshTickets ->
-                    ( model, TaskUtil.doTask (HomeMsg HomePage.FetchTickets) )
+                GA.SetPendingOrder orderId ->
+                    ( model
+                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.SetPendingOrder orderId
+                    )
+
+                GA.Logout ->
+                    let
+                        oldEnvironment =
+                            model.environment
+
+                        newEnvironment =
+                            { oldEnvironment
+                                | customerId = Nothing
+                                , token = ""
+                            }
+                    in
+                        ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                        , FirebaseAuth.signOut
+                        )
 
         SetRoute route ->
             setRoute route model
@@ -234,9 +270,9 @@ update msg model =
             in
                 ( { model | notifications = newNotifications }, Cmd.none )
 
-        HomeMsg subMsg ->
-            HomePage.update subMsg model.environment model.home
-                |> PageUpdater.map (\newModel -> { model | home = newModel }) HomeMsg
+        OverviewMsg subMsg ->
+            OverviewPage.update subMsg model.environment model.overview
+                |> PageUpdater.map (\newModel -> { model | overview = newModel }) OverviewMsg
                 |> doPageUpdate
 
         ShopMsg subMsg ->
@@ -249,13 +285,36 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        SettingsMsg subMsg ->
-            SettingsPage.update subMsg model.environment model.settings
-                |> PageUpdater.map (\newModel -> { model | settings = newModel }) SettingsMsg
+        HistoryMsg subMsg ->
+            HistoryPage.update subMsg model.environment model.history
+                |> PageUpdater.map (\newModel -> { model | history = newModel }) HistoryMsg
                 |> doPageUpdate
+
+        AccountMsg subMsg ->
+            AccountPage.update subMsg model.environment model.account
+                |> PageUpdater.map (\newModel -> { model | account = newModel }) AccountMsg
+                |> doPageUpdate
+
+        LoginMsg subMsg ->
+            LoginPage.update subMsg model.environment model.login
+                |> PageUpdater.map (\newModel -> { model | login = newModel }) LoginMsg
+                |> doPageUpdate
+
+        OnboardingMsg subMsg ->
+            case model.onboarding of
+                Just onboarding ->
+                    OnboardingPage.update subMsg model.environment onboarding
+                        |> PageUpdater.map (\newModel -> { model | onboarding = Just newModel }) OnboardingMsg
+                        |> doPageUpdate
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         SharedMsg subMsg ->
             ( { model | shared = Shared.update subMsg model.shared }, Cmd.none )
+
+        StartOnboarding ( token, email, phone ) ->
+            ( { model | onboarding = Just <| OnboardingPage.init token email phone }, Cmd.none )
 
         LogIn provider ->
             ( model, FirebaseAuth.signIn provider )
@@ -290,11 +349,7 @@ update msg model =
                             }
                     in
                         ( { model | userData = Loaded value, environment = newEnvironment }
-                        , Cmd.batch
-                            [ TaskUtil.doTask (HomeMsg HomePage.LoadAccount)
-                            , TaskUtil.doTask (SettingsMsg SettingsPage.GetProfile)
-                            , Cmd.map SharedMsg <| Shared.load model.environment
-                            ]
+                        , Cmd.none
                         )
 
                 Err error ->
@@ -314,90 +369,42 @@ view model =
     Browser.Document model.appInfo.title
         [ case model.userData of
             Loading _ ->
-                H.ul [ A.class "waiting-room" ]
-                    [ H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    ]
+                case model.onboarding of
+                    Just onboarding ->
+                        OnboardingPage.view model.environment onboarding
+                            |> H.map OnboardingMsg
 
-            _ ->
-                viewInternal model
-        ]
-
-
-viewInternal : Model -> Html Msg
-viewInternal model =
-    H.div []
-        [ header model
-        , case model.userData of
-            Loaded _ ->
-                H.div [ A.class "tab-bar" ]
-                    [ H.a
-                        [ A.href "#/"
-                        , if model.route == Just Route.Home then
-                            A.class "selected-tab"
-
-                          else
-                            A.class ""
-                        ]
-                        [ H.text "Home"
-                        ]
-                    , if model.shop /= Nothing then
-                        H.a
-                            [ A.href "#/shop"
-                            , if model.route == Just Route.Shop then
-                                A.class "selected-tab"
-
-                              else
-                                A.class ""
+                    Nothing ->
+                        H.ul [ A.class "waiting-room" ]
+                            [ H.li [] []
+                            , H.li [] []
+                            , H.li [] []
+                            , H.li [] []
                             ]
-                            [ H.text "Shop" ]
-
-                      else
-                        H.text ""
-                    , H.a
-                        [ A.href "#/settings"
-                        , if model.route == Just Route.Settings then
-                            A.class "selected-tab"
-
-                          else
-                            A.class ""
-                        ]
-                        [ H.text "Settings" ]
-                    ]
 
             _ ->
-                H.text ""
-        , viewPage model
+                H.div []
+                    [ header model
+                    , case model.environment.customerId of
+                        Just _ ->
+                            H.main_ [] [ viewPage model ]
+
+                        Nothing ->
+                            case model.onboarding of
+                                Just onboarding ->
+                                    OnboardingPage.view model.environment onboarding
+                                        |> H.map OnboardingMsg
+
+                                Nothing ->
+                                    LoginPage.view model.environment model.login
+                                        |> H.map LoginMsg
+                    ]
         ]
 
 
 header : Model -> Html Msg
-header model =
-    H.header []
-        [ S.svg [ SA.id "logo_atb_graa", SA.viewBox "0 0 383.764 383.657" ]
-            [ S.defs [] [ S.style [] [ S.text ".atb-logo-cls-1{fill:#fff;}" ] ]
-            , S.path [ SA.id "logo_atb_graa_ramme", SA.class "atb-logo-cls-1", SA.d "M357.187,0h-.009L105.66.11A105.787,105.787,0,0,0,0,105.779l.105,251.31A26.6,26.6,0,0,0,26.68,383.657H357.187a26.607,26.607,0,0,0,26.577-26.577V26.577A26.607,26.607,0,0,0,357.187,0ZM105.669,21.037l251.518-.11a5.619,5.619,0,0,1,3.334,1.095c-7.73,20.742-24.879,35.236-49.262,46.711l-1.871.97C267.95,86.443,218.4,94.728,184.125,98.732c-7.754.906-15.41,1.72-22.821,2.508-35.986,3.828-69.979,7.445-99.445,19.355a140.171,140.171,0,0,0-26.77,14.175l-.809.533q-6.677,4.248-13.337,9.336l-.016-38.86A84.742,84.742,0,0,1,105.669,21.037ZM357.187,362.731H26.68a5.649,5.649,0,0,1-5.648-5.651l-.069-166.018c8.4-8.381,19.625-18.368,32.184-26.342l1.294-.85.228-.154A105.821,105.821,0,0,1,74.951,153c24.933-10.078,56.564-13.443,90.056-17.007,7.493-.8,15.241-1.62,23.174-2.547,36.407-4.252,89.255-13.14,134.3-31.338a178.442,178.442,0,0,0,40.357-22.514V357.08A5.651,5.651,0,0,1,357.187,362.731Z" ] []
-            , S.path [ SA.id "logo_atb_graa_tekst", SA.class "atb-logo-cls-1", SA.d "M196.082,331.462c-8.551,0-13.115-1.731-15.562-3.586a15.775,15.775,0,0,1-5.362-8.24,50.139,50.139,0,0,1-1.686-14.394V248.061h-30.1l20.366,83.389H124.431l-3.773-24.819H91.272L87.5,331.45H48.786L82.735,189.687H129.2l8.416,34.349h35.861v-31.57h35.739v31.57h14.1v24.025h-14.1v51.225q0,4.571,2.085,6.452t6.452,1.886h16.086l-.057-117.937h55.645q19.849,0,29.285,9.629t9.432,25.711a45.4,45.4,0,0,1-1.29,10.821,32.191,32.191,0,0,1-3.974,9.531,25.4,25.4,0,0,1-6.848,7.247A25.975,25.975,0,0,1,305.9,256.8v.395a26.633,26.633,0,0,1,11.913,3.673,27.425,27.425,0,0,1,8.14,7.644,32.426,32.426,0,0,1,4.666,10.027,41.727,41.727,0,0,1,1.489,11.02,57.2,57.2,0,0,1-2.382,16.878,34.528,34.528,0,0,1-7.446,13.3,33.532,33.532,0,0,1-13.2,8.638q-8.143,3.078-19.655,3.076H232.929ZM105.768,218.675l-10.126,60.16h20.649l-10.125-60.16Zm173.725,26.6a9.968,9.968,0,0,0,8.737-4.269,17.061,17.061,0,0,0,2.978-10.024,17.881,17.881,0,0,0-2.978-10.326,9.907,9.907,0,0,0-8.737-4.367h-8.934v28.986Zm1.391,59.566a12.153,12.153,0,0,0,9.132-4.269q3.972-4.266,3.971-13.2,0-8.34-3.971-12.709a12.056,12.056,0,0,0-9.132-4.367H270.559v34.548Z" ] []
-            ]
-        , H.span [] []
-        , case model.userData of
-            Loaded userData ->
-                H.div []
-                    [ H.text userData.email
-                    , H.text " | "
-                    , H.text userData.userId
-                    , H.text " | "
-                    , H.button [ E.onClick LogOut ] [ H.text "Log out" ]
-                    ]
-
-            _ ->
-                H.div []
-                    [ H.button [ E.onClick (LogIn FirebaseAuth.Anonymous) ] [ H.text "Log in anonymously" ]
-                    , H.button [ E.onClick (LogIn FirebaseAuth.Google) ] [ H.text "Log in with Google" ]
-                    ]
-        ]
+header _ =
+    H.header [] [ Icon.atb ]
 
 
 viewPage : Model -> Html Msg
@@ -411,21 +418,28 @@ viewPage model =
     in
         case model.route of
             Just Route.Home ->
-                HomePage.view env model.appInfo shared model.home model.route
-                    |> H.map HomeMsg
+                OverviewPage.view env model.appInfo shared model.overview model.route
+                    |> H.map OverviewMsg
 
             Just Route.Shop ->
                 case model.shop of
                     Just shop ->
                         ShopPage.view env model.appInfo shared shop model.route
                             |> H.map ShopMsg
+                            |> wrapSubPage "Kjøp ny billett"
 
                     Nothing ->
                         H.text ""
 
+            Just Route.History ->
+                HistoryPage.view env model.appInfo shared model.history model.route
+                    |> H.map HistoryMsg
+                    |> wrapSubPage "Kjøpshistorikk"
+
             Just Route.Settings ->
-                SettingsPage.view env model.appInfo shared model.settings model.route
-                    |> H.map SettingsMsg
+                AccountPage.view env model.appInfo shared model.account model.route
+                    |> H.map AccountMsg
+                    |> wrapSubPage "Kontoinformasjon"
 
             Just Route.NotFound ->
                 H.div
@@ -447,22 +461,40 @@ viewPage model =
                     ]
 
 
+wrapSubPage : String -> Html msg -> Html msg
+wrapSubPage title children =
+    H.div []
+        [ H.div [ A.class "title-bar" ]
+            [ H.div [ A.class "go-back" ] [ H.a [ A.href "#/" ] [ Icon.leftArrow, H.text " Oversikt" ] ]
+            , H.div [] [ H.text title ]
+            ]
+        , children
+        ]
+
+
 subs : Model -> Sub Msg
 subs model =
     Sub.batch
-        [ HomePage.subscriptions model.home
-            |> Sub.map HomeMsg
+        [ OverviewPage.subscriptions model.overview
+            |> Sub.map OverviewMsg
         , model.shop
             |> Maybe.map (ShopPage.subscriptions >> Sub.map ShopMsg)
             |> Maybe.withDefault Sub.none
-        , SettingsPage.subscriptions model.settings
-            |> Sub.map SettingsMsg
+        , HistoryPage.subscriptions model.history
+            |> Sub.map HistoryMsg
+        , AccountPage.subscriptions model.account
+            |> Sub.map AccountMsg
+        , LoginPage.subscriptions model.login
+            |> Sub.map LoginMsg
+        , Shared.subscriptions
+            |> Sub.map SharedMsg
         , model.notifications
             |> List.head
             |> Maybe.map (\_ -> Time.every 1000 CloseNotification)
             |> Maybe.withDefault Sub.none
         , FirebaseAuth.signInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userDataDecoder >> LoggedInData)
+        , MiscService.onboardingStart StartOnboarding
         ]
 
 
@@ -489,19 +521,12 @@ userDataDecoder =
     Decode.succeed UserData
         |> DecodeP.required "token" Decode.string
         |> DecodeP.required "email" Decode.string
-        |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "uid"
-            (Decode.andThen
-                (\uid ->
-                    case String.split ":" uid of
-                        [ "ATB", "CustomerAccount", customerId ] ->
-                            Decode.succeed customerId
-
-                        _ ->
-                            Decode.fail "Invalid customer id"
-                )
+            (Decode.map
+                (\uid -> "ATB:CustomerAccount:" ++ uid)
                 Decode.string
             )
+        |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
 
 

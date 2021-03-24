@@ -17,6 +17,7 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 type Route
     = Home
     | Shop
+    | History
     | Settings
     | NotFound
 
@@ -26,6 +27,7 @@ parser =
     oneOf
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
+        , Parser.map History <| s "history"
         , Parser.map Settings <| s "settings"
         ]
 
@@ -40,6 +42,9 @@ routeToString page =
 
                 Shop ->
                     [ "shop" ]
+
+                History ->
+                    [ "history" ]
 
                 Settings ->
                     [ "settings" ]

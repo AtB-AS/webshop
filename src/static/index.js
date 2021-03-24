@@ -3,6 +3,7 @@ require('./styles/main.scss');
 import * as firebase from "firebase/app";
 import "firebase/firebase-auth";
 import "firebase/firebase-firestore";
+import "firebase/firebase-remote-config";
 
 import {Elm} from '../elm/Main';
 
@@ -26,20 +27,20 @@ if (!installId) {
 console.log('Atb-Install-Id:', installId);
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB6zTnl8jKhw8o8rNrd_GEojlHVVAcFn0s",
-    authDomain: "pilot-travelcard-webshop.firebaseapp.com",
-    databaseURL: "https://pilot-travelcard-webshop.firebaseio.com",
-    projectId: "pilot-travelcard-webshop",
-    storageBucket: "pilot-travelcard-webshop.appspot.com",
-    messagingSenderId: "598155505788",
-    appId: "1:598155505788:web:ccddf3940a3e8e41aed9f9",
-    measurementId: "G-Y6RSP82WY0"
+    apiKey: "AIzaSyDoat8ob5tewAXaPEhqbZKzx8e7LC5nuzQ",
+    authDomain: "atb-mobility-platform-staging.firebaseapp.com",
+    projectId: "atb-mobility-platform-staging",
+    storageBucket: "atb-mobility-platform-staging.appspot.com",
+    messagingSenderId: "939812594010",
+    appId: "1:939812594010:web:0308b2a9cdc80b0d069363"
 };
 
 firebase.initializeApp(firebaseConfig);
 
-let tokenSnapshotCallback = null;
+let fareContractSnapshotCallback = null;
+let onboardingUser = null;
 const db = firebase.firestore();
+const remoteConfig = firebase.remoteConfig();
 const app = Elm.Main.init({
     flags: Object.assign({
             installId: installId,
@@ -48,6 +49,41 @@ const app = Elm.Main.init({
         elmFlags
     )
 });
+
+function fetchRemoteConfigData(port, key) {
+    if (!port) {
+        return;
+    }
+
+    const value = remoteConfig.getString(key);
+
+    if (typeof value !== 'string' || value.length < 1) {
+        return;
+    }
+
+    const data = JSON.parse(value);
+
+    if (typeof data !== 'object' || data === null) {
+        return;
+    }
+
+    port.send(data);
+}
+
+// NOTE: Only change this for testing.
+remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
+//remoteConfig.settings.minimumFetchIntervalMillis = 60000;
+remoteConfig.fetchAndActivate()
+    .then(() => {
+        fetchRemoteConfigData(app.ports.remoteConfigFareProducts, 'preassigned_fare_products');
+        fetchRemoteConfigData(app.ports.remoteConfigUserProfiles, 'user_profiles');
+        fetchRemoteConfigData(app.ports.remoteConfigTariffZones, 'tariff_zones');
+        //fetchRemoteConfigData(app.ports.remoteConfigSalesPackages, 'sales_packages');
+    })
+    .catch((err) => {
+        // ...
+        console.log('[ERROR] remoteConfig.fetchAndActivate:', err);
+    });
 
 app.ports.signInHandler.subscribe((provider_id) => {
     const auth = firebase.auth();
@@ -77,15 +113,18 @@ app.ports.signInHandler.subscribe((provider_id) => {
 app.ports.signOutHandler.subscribe(() => {
     localStorage["loggedIn"] = '';
 
-    if (typeof tokenSnapshotCallback === 'function') {
-        tokenSnapshotCallback();
-        tokenSnapshotCallback = null;
+    if (typeof fareContractSnapshotCallback === 'function') {
+        fareContractSnapshotCallback();
+        fareContractSnapshotCallback = null;
     }
 
     firebase.auth().signOut();
 });
 
-//  Observer on user info
+// Use device language
+firebase.auth().useDeviceLanguage();
+
+// Observer on user info
 firebase.auth().onAuthStateChanged(user => {
     if (user) {
         fetchAuthInfo(user);
@@ -96,41 +135,42 @@ function fetchAuthInfo(user) {
     user
         .getIdTokenResult(true)
         .then(idToken => {
-            if (!idToken || !idToken.claims || !idToken.claims["abt_id"] || typeof idToken.claims["abt_id"] !== 'string') {
-                setTimeout(() => fetchAuthInfo(user), 500);
+            if (!idToken || !idToken.claims || !idToken.claims["sub"] || typeof idToken.claims["sub"] !== 'string') {
+                // Start onboarding process
+                onboardingUser = user;
+                app.ports.onboardingStart.send(idToken.token);
             } else {
-                const accountId = idToken.claims["abt_id"];
+                const accountId = idToken.claims["sub"];
                 const email = user.email || '';
+                const phone = user.phoneNumber || '';
                 const provider = idToken.signInProvider || '';
-
-                app.ports.signInInfo.send({
-                    token: idToken.token,
-                    email: email,
-                    uid: accountId,
-                    provider: provider
-                });
 
                 localStorage["loggedIn"] = 'loggedIn';
 
-                const path = `users/${accountId}/tokens`;
+                db.collection('customers').doc(accountId).onSnapshot(doc => {
+                    const profile = doc.data();
 
-                try {
-                    tokenSnapshotCallback = db.collection(path).onSnapshot(docs => {
-                        const tokens = [];
-
-                        docs.forEach(doc => {
-                            const payload = doc.data().payload;
-
-                            if (payload && payload.toBase64) {
-                                tokens.push([doc.id, payload.toBase64()]);
-                            }
+                    if (!profile) {
+                        onboardingUser = user;
+                        app.ports.onboardingStart.send([idToken.token, email, phone]);
+                    } else {
+                        app.ports.signInInfo.send({
+                            token: idToken.token,
+                            email: email,
+                            phone: phone,
+                            uid: accountId,
+                            provider: provider
                         });
 
-                        app.ports.receiveTokens.send(tokens);
-                    });
-                } catch (e) {
-                    console.error("Error when retrieving user", e);
-                }
+                        if (typeof profile.travelcard === 'object' && profile.travelcard !== null) {
+                            profile.travelcard.expires = convert_time(profile.travelcard.expires);
+                        }
+
+                        app.ports.firestoreReadProfile.send(profile);
+
+                        loadFareContracts(accountId);
+                    }
+                });
             }
         })
         .catch(error => {
@@ -138,6 +178,176 @@ function fetchAuthInfo(user) {
         });
 }
 
+// Convert a Firebase Time type to something that's easier to work with.
+function convert_time(firebaseTime) {
+    const timestamp = parseInt(firebaseTime.toMillis(), 10);
+    const date = new Date(timestamp);
+    const parts = [];
+
+    parts.push(date.getFullYear());
+    parts.push(date.getMonth() + 1);
+    parts.push(date.getDate());
+    parts.push(date.getHours());
+    parts.push(date.getMinutes());
+    parts.push(date.getSeconds());
+
+    return {
+        timestamp,
+        parts,
+    };
+}
+
+// TODO: Load tokens?
+// TODO: Handle being logged out
+function loadFareContracts(accountId) {
+    const basePath = `customers/${accountId}`;
+    const tokenPath = `${basePath}/fareContracts`;
+
+    try {
+        fareContractSnapshotCallback = db.collection(tokenPath).onSnapshot(docs => {
+            const fareContracts = [];
+
+            docs.forEach(doc => {
+                const payload = doc.data();
+
+                if (payload) {
+                    // Transform firebase time fields to something we can use
+                    payload.created = convert_time(payload.created);
+                    payload.travelRights = payload.travelRights.map(right => {
+                        right.startDateTime = convert_time(right.startDateTime);
+                        right.endDateTime = convert_time(right.endDateTime);
+                        return right;
+                    });
+                    payload.validFrom = Math.min.apply(null, payload.travelRights.map(x => x.startDateTime.timestamp)) || 0;
+                    payload.validTo = Math.max.apply(null, payload.travelRights.map(x => x.endDateTime.timestamp)) || 0;
+
+                    fareContracts.push(payload);
+                }
+            });
+
+            app.ports.receiveFareContracts.send(fareContracts);
+        });
+    } catch (e) {
+        console.error("Error when retrieving fare contracts for user", e);
+    }
+}
+
+app.ports.onboardingDone.subscribe(() => {
+    setTimeout(() => fetchAuthInfo(onboardingUser), 500);
+});
+
 app.ports.openWindow.subscribe((url) => {
     window.open(url);
 });
+
+if (app.ports.convertTime) {
+    app.ports.convertTime.subscribe(([date, time]) => {
+        try {
+            let dt = new Date(date + 'T' + time);
+
+            if (app.ports.convertedTime && dt !== null && typeof dt !== 'undefined') {
+                app.ports.convertedTime.send((dt.toISOString().replace(/\.[0-9]*/, '')));
+            }
+        } catch {
+        }
+    });
+}
+
+// Component that integrates with the ReCaptcha mechanism of Firebase Auth.
+window.customElements.define('atb-login-recaptcha',
+    class extends HTMLElement {
+        constructor() {
+            super();
+
+            const recaptcha = document.createElement('div');
+            recaptcha.setAttribute('id', 'atb-login-recaptcha');
+            this.appendChild(recaptcha);
+        }
+
+        // Callbacks
+
+        connectedCallback() {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('atb-login-recaptcha', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    console.log('[debug] ReCaptcha response', response);
+                }
+            });
+        }
+
+        attributeChangedCallback() {
+        }
+
+        static get observedAttributes() {
+            return [];
+        }
+    }
+);
+
+app.ports.phoneLogin.subscribe((phone) => {
+    if (!phone) {
+        return;
+    }
+
+    firebase
+        .auth()
+        .signInWithPhoneNumber(phone, window.recaptchaVerifier)
+        .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+            app.ports.phoneRequestCode.send();
+        })
+        .catch((error) => {
+            console.log('[debug] phone login error', error);
+            console.log('[debug] phone login error json', JSON.stringify(error));
+
+            if (error && error.code === 'auth/invalid-phone-number') {
+                app.ports.phoneError.send("Ugyldig telefonnummer.");
+            } else {
+                app.ports.phoneError.send("En ukjent feil oppstod.");
+            }
+        });
+});
+
+app.ports.phoneConfirm.subscribe((code) => {
+    if (!code) {
+        return;
+    }
+
+    window.confirmationResult.confirm(code).then((result) => {
+        fetchAuthInfo(result.user);
+    }).catch((error) => {
+        console.log('[debug] phone confirm error', error);
+        console.log('[debug] phone confirm error json', JSON.stringify(error));
+
+        if (error && error.code === 'auth/invalid-phone-number') {
+            app.ports.phoneError.send("Ugyldig telefonnummer.");
+        } else {
+            app.ports.phoneError.send("En ukjent feil oppstod.");
+        }
+    });
+});
+
+// Component to show maps from MapBox
+window.customElements.define('atb-map',
+    class extends HTMLElement {
+        constructor() {
+            super();
+        }
+
+        // Callbacks
+
+        connectedCallback() {
+            this.innerText = 'Map';
+        }
+
+        disconnectedCallback() {
+        }
+
+        attributeChangedCallback() {
+        }
+
+        static get observedAttributes() {
+            return [];
+        }
+    }
+);

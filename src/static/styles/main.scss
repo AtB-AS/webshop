@@ -1,5 +1,13 @@
 * {
-    box-sizing: content-box;
+    box-sizing: border-box;
+}
+
+:root {
+    --background: #E7E8E9;
+    --primary-2: #71D6E0;
+    --primary-2-hover: rgba(113, 214, 224, 0.8);
+    --primary: #000;
+    --section-background: #fff;
 }
 
 html, body {
@@ -7,12 +15,31 @@ html, body {
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Roboto, Arial, Helvetica, sans-serif;
     font-size: 16px;
     line-height: 1.2em;
-    color: #3c505e;
+    color: var(--primary);
     margin: 0;
-    background-color: #00252c;
+    background-color: var(--background);
+}
+
+.title-bar {
+    padding: 24px;
+    position: relative;
+    text-align: center;
+    font-weight: 500;
+
+    .go-back {
+        position: absolute;
+        left: 24px;
+        top: 24px;
+
+        a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 400;
+        }
+    }
 }
 
 a:link,
@@ -26,16 +53,21 @@ a:hover {
 }
 
 .box {
-    background-color: #00323a;
-    color: #fff;
+    background-color: transparent;
+    color: var(--primary);
     padding: 2rem;
     margin: 1rem;
     border-radius: 8px;
 }
 
 header {
-    margin: 1rem;
-    padding: 8px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 48px;
+    background-color: var(--primary-2);
+
     display: flex;
     flex: 1;
     color: white;
@@ -44,9 +76,429 @@ header {
         flex-grow: 1;
     }
 
+    div {
+        align-self: center;
+    }
+
     svg {
-        width: 50px;
-        height: 50px;
+        width: 32px;
+        height: 32px;
+        margin: 8px 0 8px 1rem;
+    }
+}
+
+main {
+    margin-top: 96px;
+    width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+// Page layouts
+
+.page-login {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+
+    > div:first-child {
+        margin: 24px auto;
+
+        svg path {
+            fill: black;
+        }
+    }
+
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .button, .no-button {
+        padding: 24px;
+        font-weight: 500;
+        display: flex;
+        cursor: pointer;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button {
+        background-color: #71D6E0;
+        border-radius: 12px;
+
+        .button-loading {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            border: 5px solid rgba(0, 0, 0, 0.4);
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: rotation 1s infinite linear;
+        }
+    }
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+.page-onboarding {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+    }
+
+    .consent {
+        display: flex;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button, .no-button {
+        padding: 24px;
+        font-weight: 500;
+        display: flex;
+        cursor: pointer;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    .button {
+        background-color: #71D6E0;
+        border-radius: 12px;
+    }
+}
+
+.page-overview {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 320px 1fr;
+
+    .sidebar {
+        width: 320px;
+
+        .token-name {
+            font-weight: 500;
+            display: block;
+        }
+
+        .token-id {
+            font-weight: normal;
+            display: block;
+        }
+
+
+    }
+
+    .main {
+        .ticket-header {
+            display: flex;
+
+            > div.product-name {
+                font-weight: 500;
+                flex-grow: 1;
+                padding-left: 12px;
+            }
+        }
+
+        .ticket-progress {
+            height: 8px;
+            min-height: 8px;
+            background-color: #A2AD00;
+            background-image: linear-gradient( -45deg, transparent 12px, rgba(0, 0, 0, .6) 12px, rgba(0, 0, 0, .6) 20px, transparent 20px, transparent );
+            background-size: 60px 8px;
+            animation: ticket-progress-move 2s linear infinite;
+            margin: 0;
+            padding: 0;
+        }
+
+        .ticket-info {
+            font-size: 32px;
+            line-height: 40px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .ticket-waiting {
+            display: grid;
+            place-items: center;
+
+            svg {
+                fill: var(--primary-2);
+                height: 30px;
+                width: 120px;
+            }
+        }
+    }
+}
+
+.page-history {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 320px 1fr;
+
+    .sidebar {
+        width: 320px;
+
+        input {
+            border: none;
+            outline: none;
+            background: inherit;
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    .main {
+        .order-header {
+            display: flex;
+            font-weight: 500;
+            cursor: pointer;
+
+            > div {
+
+                &:first-child {
+                    flex-grow: 1;
+                }
+            }
+        }
+    }
+}
+
+.page-shop {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 320px 320px 320px;
+
+    .left {
+        width: 320px;
+    }
+
+    .middle {
+        width: 320px;
+    }
+
+    .right {
+        width: 320px;
+    }
+
+    input[type="time"], input[type="date"] {
+        box-shadow: none;
+        outline: none;
+        border: none;
+        background: inherit;
+    }
+}
+
+.page-account {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 1fr 320px;
+
+    .sidebar {
+        width: 320px;
+    }
+
+    .main {
+    }
+}
+
+// Basic responsiveness for pages
+
+@media (max-width: 768px) {
+    main {
+        width: inherit;
+        margin-left: 24px;
+        margin-right: 24px;
+    }
+
+    .page-overview, .page-history, .page-shop, .page-account {
+        grid-template-columns: 1fr;
+    }
+
+    .page-overview .sidebar, .page-shop .left, .page-shop .middle, .page-shop .right, .page-history .sidebar {
+        width: inherit;
+    }
+}
+
+// Components
+
+.toggle {
+    cursor: pointer;
+}
+
+.section-box {
+    margin-bottom: 24px;
+    border-radius: 12px;
+    background: var(--section-background);
+    overflow: hidden;
+
+    > div {
+        border-bottom: 1px solid var(--background);
+        min-height: 68px;
+        padding: 24px;
+        display: grid;
+        place-items: center start;
+
+        label {
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 16px;
+            margin-bottom: 2px;
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &.active {
+            background-color: #CFD2D3;
+        }
+    }
+
+    > div.two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        > div {
+            display: grid;
+            place-items: center start;
+
+            > label {
+                font-weight: 400;
+                font-size: 12px;
+                line-height: 16px;
+                margin-bottom: 2px;
+                color: rgba(0, 0, 0, 0.6);
+            }
+        }
+    }
+
+    .action-button {
+        background: inherit;
+        border: none;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        line-height: 1em;
+        align-self: center;
+    }
+
+    .buy-button {
+        border: none;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        line-height: 1em;
+        align-self: center;
+        background-color: #37424A;
+        color: #fff;
+
+        > button {
+            background: inherit;
+            color: inherit;
+            border: none;
+            font-weight: bold;
+            margin: 0;
+            padding: 0 1rem;
+            line-height: 1em;
+            align-self: center;
+        }
+
+        .disabled-button {
+            opacity: 0.5;
+        }
+    }
+
+    .disabled-button {
+        background: inherit;
+        border: none;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        line-height: 1em;
+        align-self: center;
+        opacity: 0.5;
+    }
+
+    .section-header {
+        font-weight: 500;
+        margin: 0;
+        padding: 0 1.5rem;
+        line-height: 1em;
+        align-self: center;
+    }
+}
+
+.metadata-list {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 12px;
+}
+
+.ticket-list {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-gap: 12px;
+}
+
+.pseudo-button {
+    cursor: pointer;
+}
+
+.pseudo-button-disabled {
+    opacity: 0.5;
+}
+
+.buy-button-new {
+    background-color: #37424A;
+    color: #fff;
+
+    &.disabled-button-new > * {
+        opacity: 0.5;
+    }
+}
+
+.summary-price {
+    text-align: right;
+    font-size: 32px;
+    place-items: center end;
+}
+
+@keyframes ticket-progress-move {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 60px 0;
     }
 }
 
@@ -76,14 +528,14 @@ button {
     appearance: none;
     font-size: 1rem;
     height: 1.75rem;
-    border: 1px solid #104048;
-    color: #fff;
-    background-color: #345d63;
+    border: 0;
+    color: var(--primary);
+    background-color: var(--primary-2);
     cursor: pointer;
     min-width: 4rem;
 
     &:hover {
-        background-color: #446d73;
+        background-color: var(--primary-2-hover);
     }
 }
 
@@ -149,5 +601,22 @@ table {
     text-align: center;
 }
 
+.info-box {
+    background-color: #007C92;
+    color: #fff;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+
+    svg {
+        width: 20px;
+        height: 20px;
+
+        path {
+            fill: #fff;
+        }
+    }
+}
+
 @import "waiting";
-@import "card";

@@ -13,7 +13,8 @@ type GlobalAction msg
     | SetCustomerNumber Int
     | OpenShop
     | CloseShop
-    | RefreshTickets
+    | SetPendingOrder String
+    | Logout
 
 
 map : (a -> msg) -> GlobalAction a -> GlobalAction msg
@@ -34,5 +35,8 @@ map f ga =
         CloseShop ->
             CloseShop
 
-        RefreshTickets ->
-            RefreshTickets
+        SetPendingOrder orderId ->
+            SetPendingOrder orderId
+
+        Logout ->
+            Logout

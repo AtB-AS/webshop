@@ -5,6 +5,7 @@ import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfi
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Button as Button
+import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -18,8 +19,10 @@ import Service.Ticket as TicketService
 import Set
 import Shared exposing (Shared)
 import Task
+import Time
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
+import Util.Time as TimeUtil
 
 
 type Msg
@@ -33,6 +36,25 @@ type Msg
     | SetFromZone String
     | SetToZone String
     | ModUser UserType Int
+    | SetUser UserType
+    | ShowTravelers
+    | ShowDuration
+    | ShowStart
+    | ShowZones
+    | SetTime String
+    | SetDate String
+    | ToggleNow
+    | SetNow Bool
+    | UpdateNow Time.Posix
+    | UpdateZone Time.Zone
+    | GetIsoTime String
+
+
+type MainView
+    = Travelers
+    | Duration
+    | Start
+    | Zones
 
 
 type alias Model =
@@ -42,6 +64,14 @@ type alias Model =
     , users : List ( UserType, Int )
     , offers : Status (List Offer)
     , reservation : Status Reservation
+    , mainView : MainView
+    , now : Bool
+    , nowDate : String
+    , nowTime : String
+    , travelDate : String
+    , travelTime : String
+    , zone : Time.Zone
+    , isoTime : Maybe String
     }
 
 
@@ -67,11 +97,22 @@ init shared =
                     |> Maybe.withDefault ""
           , fromZone = firstZone
           , toZone = firstZone
-          , users = []
+          , users = [ ( UserTypeAdult, 1 ) ]
           , offers = NotLoaded
           , reservation = NotLoaded
+          , mainView = Travelers
+          , now = True
+          , nowDate = ""
+          , nowTime = "00:00"
+          , travelDate = ""
+          , travelTime = "00:00"
+          , zone = Time.utc
+          , isoTime = Nothing
           }
-        , TaskUtil.doTask FetchOffers
+        , Cmd.batch
+            [ TaskUtil.doTask FetchOffers
+            , Task.perform UpdateZone Time.here
+            ]
         )
 
 
@@ -79,13 +120,28 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         SetProduct product ->
-            PageUpdater.init { model | product = product }
+            PageUpdater.fromPair
+                ( { model | product = product }
+                , TaskUtil.doTask FetchOffers
+                )
 
         SetFromZone zone ->
-            PageUpdater.init { model | fromZone = zone }
+            PageUpdater.fromPair
+                ( { model | fromZone = zone }
+                , TaskUtil.doTask FetchOffers
+                )
 
         SetToZone zone ->
-            PageUpdater.init { model | toZone = zone }
+            PageUpdater.fromPair
+                ( { model | toZone = zone }
+                , TaskUtil.doTask FetchOffers
+                )
+
+        SetUser userType ->
+            PageUpdater.fromPair
+                ( { model | users = [ ( userType, 1 ) ] }
+                , TaskUtil.doTask FetchOffers
+                )
 
         ModUser userType change ->
             let
@@ -135,7 +191,17 @@ update msg env model =
                 in
                     PageUpdater.fromPair
                         ( { model | offers = Loading oldOffers, reservation = NotLoaded }
-                        , fetchOffers env model.product model.fromZone model.toZone model.users
+                        , fetchOffers env
+                            model.product
+                            model.fromZone
+                            model.toZone
+                            model.users
+                            (if model.now then
+                                Nothing
+
+                             else
+                                model.isoTime
+                            )
                         )
 
         ReceiveOffers result ->
@@ -147,11 +213,8 @@ update msg env model =
                     PageUpdater.init { model | offers = Failed "Unable to load offers" }
 
         BuyOffers paymentType ->
-            case ( env.customerNumber, model.offers ) of
-                ( 0, _ ) ->
-                    PageUpdater.init model
-
-                ( customerNumber, Loaded offers ) ->
+            case model.offers of
+                Loaded offers ->
                     let
                         offerCounts =
                             List.filterMap
@@ -165,7 +228,7 @@ update msg env model =
                     in
                         PageUpdater.fromPair
                             ( { model | reservation = Loading Nothing }
-                            , buyOffers env customerNumber paymentType offerCounts
+                            , buyOffers env paymentType offerCounts
                             )
 
                 _ ->
@@ -186,12 +249,12 @@ update msg env model =
                     PageUpdater.init { model | reservation = Failed "Unable to reserve offers" }
 
         ReceivePaymentStatus paymentId result ->
-            case result of
-                Ok paymentStatus ->
+            case ( model.reservation, result ) of
+                ( Loaded { orderId }, Ok paymentStatus ) ->
                     case paymentStatus.status of
                         "CAPTURE" ->
                             PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
-                                |> PageUpdater.addGlobalAction GA.RefreshTickets
+                                |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
                                 |> PageUpdater.addGlobalAction GA.CloseShop
 
                         "CANCEL" ->
@@ -200,60 +263,286 @@ update msg env model =
                         _ ->
                             PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
 
-                Err _ ->
+                _ ->
+                    -- Either there was no longer a reservation, or the payment failed. We treat this
+                    -- as if the payment was cancelled so the user can try again.
                     PageUpdater.init { model | reservation = NotLoaded }
 
         CloseShop ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.CloseShop
 
+        ShowTravelers ->
+            PageUpdater.init { model | mainView = Travelers }
+
+        ShowDuration ->
+            PageUpdater.init { model | mainView = Duration }
+
+        ShowStart ->
+            PageUpdater.init { model | mainView = Start }
+
+        ShowZones ->
+            PageUpdater.init { model | mainView = Zones }
+
+        ToggleNow ->
+            model
+                |> updateNow (not model.now)
+                |> PageUpdater.init
+
+        SetNow now ->
+            model
+                |> updateNow now
+                |> PageUpdater.init
+
+        SetDate date ->
+            PageUpdater.fromPair
+                ( { model | travelDate = date, isoTime = Nothing }
+                , MiscService.convertTime ( date, model.travelTime )
+                )
+
+        SetTime time ->
+            PageUpdater.fromPair
+                ( { model | travelTime = time, isoTime = Nothing }
+                , MiscService.convertTime ( model.travelDate, time )
+                )
+
+        UpdateNow time ->
+            if model.now then
+                model
+                    |> updateNowDateTime time
+                    |> updateTravelDateTime
+                    |> PageUpdater.init
+
+            else
+                model
+                    |> updateNowDateTime time
+                    |> PageUpdater.init
+
+        UpdateZone zone ->
+            PageUpdater.init { model | zone = zone }
+
+        GetIsoTime isoTime ->
+            PageUpdater.fromPair
+                ( { model | isoTime = Just isoTime, now = False }
+                , TaskUtil.doTask FetchOffers
+                )
+
+
+updateNowDateTime : Time.Posix -> Model -> Model
+updateNowDateTime time model =
+    { model
+        | nowDate = TimeUtil.toIsoDate model.zone time
+        , nowTime = TimeUtil.toIsoTime model.zone time
+    }
+
+
+updateTravelDateTime : Model -> Model
+updateTravelDateTime model =
+    { model | travelDate = model.nowDate, travelTime = model.nowTime }
+
+
+updateNow : Bool -> Model -> Model
+updateNow now model =
+    if now then
+        { model | now = now, travelDate = model.nowDate, travelTime = model.nowTime }
+
+    else
+        { model | now = now }
+
+
+actionButton : Bool -> msg -> String -> Html msg
+actionButton active action title =
+    H.div [ A.class "pseudo-button", A.classList [ ( "active", active ) ], E.onClick action ]
+        [ H.button [ A.class "action-button" ] [ H.text title ] ]
+
+
+richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
+richActionButton active maybeAction content =
+    let
+        baseAttributes =
+            [ A.classList
+                [ ( "active", active )
+                , ( "pseudo-button", maybeAction /= Nothing )
+                , ( "pseudo-button-disabled", maybeAction == Nothing )
+                ]
+            ]
+
+        attributes =
+            case maybeAction of
+                Just action ->
+                    E.onClick action :: baseAttributes
+
+                Nothing ->
+                    baseAttributes
+    in
+        H.div attributes [ content ]
+
+
+richBuyButton : Bool -> msg -> Html msg -> Html msg
+richBuyButton disabled action content =
+    let
+        onClick =
+            if disabled then
+                [ A.class "disabled-button-new" ]
+
+            else
+                [ E.onClick action ]
+    in
+        H.div (A.class "pseudo-button buy-button-new" :: onClick)
+            [ content ]
+
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div [ A.class "box" ]
-        [ H.h2 [] [ H.text "Shop" ]
-        , H.button [ E.onClick FetchOffers ] [ H.text "Search" ]
-        , H.button [ E.onClick CloseShop ] [ H.text "Close" ]
-        , H.div [] [ viewProducts model shared.fareProducts ]
-        , H.div [] [ viewZones model shared.tariffZones ]
-        , H.div [] [ viewUserProfiles model shared.userProfiles ]
-        , case model.offers of
-            NotLoaded ->
-                H.text ""
+    H.div [ A.class "page-shop" ]
+        [ H.div [ A.class "left" ]
+            [ H.div [ A.class "section-box" ]
+                [ richActionButton False
+                    Nothing
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.wrapper 18 Icon.bus
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisetype" ]
+                        , Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Travelers)
+                    (Just ShowTravelers)
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.wrapper 18 Icon.traveler
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisende" ]
+                        , if model.mainView == Travelers then
+                            H.text ""
 
-            Loading _ ->
-                H.div [ A.style "padding" "20px" ] [ Button.loading ]
+                          else
+                            Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Duration)
+                    (Just ShowDuration)
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.wrapper 18 Icon.duration
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Varighet" ]
+                        , if model.mainView == Duration then
+                            H.text ""
 
-            Loaded offers ->
-                let
-                    disableButtons =
-                        case model.reservation of
-                            Loading _ ->
-                                True
+                          else
+                            Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Start)
+                    (Just ShowStart)
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.wrapper 18 Icon.ticket
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gyldig fra og med" ]
+                        , if model.mainView == Start then
+                            H.text ""
 
-                            Loaded _ ->
-                                True
+                          else
+                            Icon.edit
+                        ]
+                    )
+                , richActionButton (model.mainView == Zones)
+                    (Just ShowZones)
+                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                        [ Icon.wrapper 18 Icon.ticket
+                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Soner" ]
+                        , if model.mainView == Zones then
+                            H.text ""
 
-                            _ ->
-                                False
-                in
-                    H.div []
-                        [ H.div []
-                            [ H.button
-                                [ E.onClick <| BuyOffers Nets
-                                , A.disabled disableButtons
+                          else
+                            Icon.edit
+                        ]
+                    )
+                ]
+            ]
+        , H.div [ A.class "middle" ]
+            [ case model.mainView of
+                Travelers ->
+                    H.div [] [ viewUserProfiles model shared.userProfiles ]
+
+                Duration ->
+                    H.div [] [ viewProducts model shared.fareProducts ]
+
+                Start ->
+                    H.div [] [ viewStart model ]
+
+                Zones ->
+                    H.div [] [ viewZones model shared.tariffZones ]
+            ]
+        , H.div [ A.class "right" ]
+            (case model.offers of
+                NotLoaded ->
+                    [ H.text "" ]
+
+                Loading _ ->
+                    [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
+
+                Loaded offers ->
+                    let
+                        disableButtons =
+                            case model.reservation of
+                                Loading _ ->
+                                    True
+
+                                Loaded _ ->
+                                    True
+
+                                _ ->
+                                    False
+
+                        totalPrice =
+                            offers
+                                |> List.map (calculateOfferPrice model.users)
+                                |> List.sum
+                                |> round
+                                |> String.fromInt
+                    in
+                        [ H.div [ A.class "section-box" ]
+                            [ H.div [ A.class "section-header" ] [ H.text "Oppsummering" ]
+                            , H.div [ A.class "summary-price" ]
+                                [ H.text ("kr " ++ totalPrice ++ ",00")
                                 ]
-                                [ H.text "Buy with Nets" ]
-                            , H.button
-                                [ E.onClick <| BuyOffers Vipps
-                                , A.disabled disableButtons
-                                ]
-                                [ H.text "Buy with Vipps" ]
+                            ]
+                        , H.div [ A.class "section-box" ]
+                            [ richBuyButton disableButtons
+                                (BuyOffers Nets)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
+                                    , Icon.creditcard
+                                    ]
+                                )
+                            , richBuyButton disableButtons
+                                (BuyOffers Vipps)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
+                                    , H.div
+                                        [ A.style "width" "18px"
+                                        , A.style "height" "12px"
+                                        , A.style "background-color" "#FF5B24"
+                                        , A.style "text-align" "center"
+                                        , A.style "display" "grid"
+                                        , A.style "place-items" "center"
+                                        ]
+                                        [ Icon.vipps ]
+                                    ]
+                                )
+                            , richActionButton False
+                                (Just CloseShop)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span
+                                        [ A.style "flex-grow" "1"
+                                        , A.style "font-weight" "500"
+                                        ]
+                                        [ H.text "Avbryt" ]
+                                    , Icon.cross
+                                    ]
+                                )
                             ]
                         ]
 
-            Failed error ->
-                H.div [] [ H.text error ]
+                Failed error ->
+                    [ H.div [] [ H.text error ] ]
+            )
         , case model.reservation of
             NotLoaded ->
                 H.text ""
@@ -274,21 +563,78 @@ langString (LangString _ value) =
     value
 
 
+viewStart : Model -> Html Msg
+viewStart model =
+    H.div [ A.class "section-box" ]
+        [ H.div [ A.class "section-header" ] [ H.text "Velg starttidspunkt" ]
+        , richActionButton False
+            (Just ToggleNow)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text "Nå" ]
+                , if model.now then
+                    Icon.checkmark
+
+                  else
+                    H.text ""
+                ]
+            )
+        , H.div [ A.class "section-block" ]
+            [ H.input
+                [ E.onInput SetTime
+                , E.onFocus (SetNow False)
+                , A.type_ "time"
+                , A.value model.travelTime
+                , A.min
+                    (if model.travelDate == model.nowDate then
+                        model.nowTime
+
+                     else
+                        "00:00:00"
+                    )
+                ]
+                []
+            ]
+        , H.div [ A.class "section-block" ]
+            [ H.input
+                [ E.onInput SetDate
+                , E.onFocus (SetNow False)
+                , A.type_ "date"
+                , A.value model.travelDate
+                , A.min model.nowDate
+                ]
+                []
+            ]
+        ]
+
+
 viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
-    H.p []
-        [ H.text "Choose product: "
-        , H.select [ E.onInput SetProduct ] <| List.map (viewProduct model) products
-        ]
+    H.div [ A.class "section-box" ]
+        (H.div [ A.class "section-header" ] [ H.text "Velg varighet" ]
+            :: List.map (viewProduct model) products
+        )
 
 
-viewProduct : Model -> FareProduct -> Html msg
+viewProduct : Model -> FareProduct -> Html Msg
 viewProduct model product =
-    H.option
-        [ A.value product.id
-        , A.selected (model.product == product.id)
-        ]
-        [ H.text <| langString product.name ]
+    let
+        isCurrent =
+            model.product == product.id
+
+        extraHtml =
+            if isCurrent then
+                H.span [ A.style "float" "right" ] [ Icon.checkmark ]
+
+            else
+                H.text ""
+    in
+        richActionButton False
+            (Just <| SetProduct product.id)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString product.name ]
+                , extraHtml
+                ]
+            )
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -303,11 +649,11 @@ viewZones model zones =
                 )
                 zones
     in
-        H.p []
-            [ H.text "From "
-            , H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones
-            , H.text " to "
-            , H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones
+        H.div [ A.class "section-box" ]
+            [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
+            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
+            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
+            , H.div [ A.class "section-block" ] [ H.node "atb-map" [] [] ]
             ]
 
 
@@ -322,72 +668,35 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    H.div []
-        [ userProfiles
-            |> List.filter (.userType >> (/=) UserTypeAnyone)
-            |> List.map (viewUserProfile model)
-            |> H.table [ A.class "shop-user" ]
-        ]
+    H.div [ A.class "section-box" ]
+        (H.div [ A.class "section-header" ] [ H.text "Velg reisende" ]
+            :: (userProfiles
+                    |> List.filter (.userType >> (/=) UserTypeAnyone)
+                    |> List.map (viewUserProfile model)
+               )
+        )
 
 
 viewUserProfile : Model -> UserProfile -> Html Msg
 viewUserProfile model userProfile =
     let
-        value =
-            model.users
-                |> List.filter (Tuple.first >> (==) userProfile.userType)
-                |> List.head
-                |> Maybe.map Tuple.second
-                |> Maybe.withDefault 0
+        isCurrent =
+            List.any (Tuple.first >> (==) userProfile.userType) model.users
 
-        offer =
-            case model.offers of
-                Loaded offers ->
-                    offers
-                        |> List.filter (.userType >> (==) userProfile.userType)
-                        |> List.head
+        extraHtml =
+            if isCurrent then
+                Icon.checkmark
 
-                Loading (Just offers) ->
-                    offers
-                        |> List.filter (.userType >> (==) userProfile.userType)
-                        |> List.head
-
-                _ ->
-                    Nothing
-
-        onClick change =
-            E.onClick <| ModUser userProfile.userType change
+            else
+                H.text ""
     in
-        H.tr []
-            [ H.td []
-                [ if value > 0 then
-                    H.button [ onClick -1 ] [ H.text "-" ]
-
-                  else
-                    H.text ""
+        richActionButton False
+            (Just <| SetUser userProfile.userType)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString userProfile.name ]
+                , extraHtml
                 ]
-            , H.td []
-                [ H.text <|
-                    if value > 0 then
-                        String.fromInt value
-
-                    else
-                        ""
-                ]
-            , H.td [] [ H.button [ onClick 1 ] [ H.text "+" ] ]
-            , H.td [] [ H.text <| langString userProfile.name ]
-            , H.td []
-                [ offer
-                    |> Maybe.andThen
-                        (\{ prices } ->
-                            prices
-                                |> List.head
-                                |> Maybe.map (\{ amountFloat } -> String.fromInt (round amountFloat * value) ++ ",-")
-                        )
-                    |> Maybe.withDefault ""
-                    |> H.text
-                ]
-            ]
+            )
 
 
 viewOffer : Offer -> Html msg
@@ -407,27 +716,30 @@ viewOffer offer =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Sub.batch
+        [ MiscService.convertedTime GetIsoTime
+        , Time.every 1000 UpdateNow
+        ]
 
 
 
 -- INTERNAL
 
 
-fetchOffers : Environment -> String -> String -> String -> List ( UserType, Int ) -> Cmd Msg
-fetchOffers env product fromZone toZone users =
+fetchOffers : Environment -> String -> String -> String -> List ( UserType, Int ) -> Maybe String -> Cmd Msg
+fetchOffers env product fromZone toZone users travelDate =
     [ fromZone, toZone ]
         |> Set.fromList
         |> Set.toList
-        |> TicketService.search env product users
+        |> TicketService.search env travelDate product users
         |> Http.toTask
         |> Task.attempt ReceiveOffers
 
 
-buyOffers : Environment -> Int -> PaymentType -> List ( String, Int ) -> Cmd Msg
-buyOffers env customerNumber paymentType offerCounts =
+buyOffers : Environment -> PaymentType -> List ( String, Int ) -> Cmd Msg
+buyOffers env paymentType offerCounts =
     offerCounts
-        |> TicketService.reserve env customerNumber paymentType
+        |> TicketService.reserve env paymentType
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
 
@@ -441,3 +753,28 @@ fetchPaymentStatus env paymentId =
                     |> Http.toTask
             )
         |> Task.attempt (ReceivePaymentStatus paymentId)
+
+
+calculateOfferPrice : List ( UserType, Int ) -> Offer -> Float
+calculateOfferPrice users offer =
+    let
+        price =
+            offer.prices
+                |> List.map .amountFloat
+                |> List.head
+                |> Maybe.withDefault 0.0
+
+        count =
+            users
+                |> List.filterMap
+                    (\( userType, userCount ) ->
+                        if userType == offer.userType then
+                            Just userCount
+
+                        else
+                            Nothing
+                    )
+                |> List.head
+                |> Maybe.withDefault 0
+    in
+        price * toFloat count

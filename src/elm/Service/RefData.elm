@@ -1,4 +1,11 @@
-module Service.RefData exposing (getFareProducts, getTariffZones, getUserProfiles)
+port module Service.RefData exposing
+    ( getFareProducts
+    , getTariffZones
+    , getUserProfiles
+    , onFareProducts
+    , onTariffZones
+    , onUserProfiles
+    )
 
 import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
 import Environment exposing (Environment)
@@ -45,7 +52,7 @@ fareProductDecoder =
     Decode.succeed FareProduct
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "name" langStringDecoder
-        |> DecodeP.required "description" langStringDecoder
+        |> DecodeP.optional "description" langStringDecoder (LangString "" "")
         |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
 
 
@@ -122,3 +129,38 @@ userTypeDecoder =
                     Decode.fail "Invalid user type"
         )
         Decode.int
+
+
+onTariffZones : (Result () (List TariffZone) -> msg) -> Sub msg
+onTariffZones =
+    remoteConfigDecoder tariffZoneDecoder >> remoteConfigTariffZones
+
+
+onFareProducts : (Result () (List FareProduct) -> msg) -> Sub msg
+onFareProducts =
+    remoteConfigDecoder fareProductDecoder >> remoteConfigFareProducts
+
+
+onUserProfiles : (Result () (List UserProfile) -> msg) -> Sub msg
+onUserProfiles =
+    remoteConfigDecoder userProfileDecoder >> remoteConfigUserProfiles
+
+
+
+-- INTERNAL
+
+
+port remoteConfigTariffZones : (Decode.Value -> msg) -> Sub msg
+
+
+port remoteConfigFareProducts : (Decode.Value -> msg) -> Sub msg
+
+
+port remoteConfigUserProfiles : (Decode.Value -> msg) -> Sub msg
+
+
+remoteConfigDecoder : Decoder a -> (Result () (List a) -> msg) -> (Decode.Value -> msg)
+remoteConfigDecoder decoder msg =
+    Decode.decodeValue (Decode.list decoder)
+        >> Result.mapError (\_ -> ())
+        >> msg

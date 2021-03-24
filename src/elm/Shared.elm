@@ -1,16 +1,13 @@
-module Shared exposing (Msg, Shared, init, load, update)
+module Shared exposing (Msg, Shared, init, subscriptions, update)
 
 import Data.RefData exposing (FareProduct, TariffZone, UserProfile)
-import Environment exposing (Environment)
-import Http
 import Service.RefData as RefDataService
-import Task
 
 
 type Msg
-    = ReceiveTariffZones (Result Http.Error (List TariffZone))
-    | ReceiveFareProducts (Result Http.Error (List FareProduct))
-    | ReceiveUserProfiles (Result Http.Error (List UserProfile))
+    = ReceiveTariffZones (Result () (List TariffZone))
+    | ReceiveFareProducts (Result () (List FareProduct))
+    | ReceiveUserProfiles (Result () (List UserProfile))
 
 
 type alias Shared =
@@ -56,31 +53,10 @@ update msg model =
                     model
 
 
-load : Environment -> Cmd Msg
-load env =
-    Cmd.batch
-        [ fetchTariffZones env
-        , fetchFareProducts env
-        , fetchUserProfiles env
+subscriptions : Sub Msg
+subscriptions =
+    Sub.batch
+        [ RefDataService.onTariffZones ReceiveTariffZones
+        , RefDataService.onFareProducts ReceiveFareProducts
+        , RefDataService.onUserProfiles ReceiveUserProfiles
         ]
-
-
-fetchTariffZones : Environment -> Cmd Msg
-fetchTariffZones env =
-    RefDataService.getTariffZones env
-        |> Http.toTask
-        |> Task.attempt ReceiveTariffZones
-
-
-fetchFareProducts : Environment -> Cmd Msg
-fetchFareProducts env =
-    RefDataService.getFareProducts env
-        |> Http.toTask
-        |> Task.attempt ReceiveFareProducts
-
-
-fetchUserProfiles : Environment -> Cmd Msg
-fetchUserProfiles env =
-    RefDataService.getUserProfiles env
-        |> Http.toTask
-        |> Task.attempt ReceiveUserProfiles

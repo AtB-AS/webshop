@@ -18,37 +18,41 @@ import Util.Http as HttpUtil
 
 {-| Search for offers.
 -}
-search : Environment -> String -> List ( UserType, Int ) -> List String -> Http.Request (List Offer)
-search env product travellers zones =
+search : Environment -> Maybe String -> String -> List ( UserType, Int ) -> List String -> Http.Request (List Offer)
+search env travelDate product travellers zones =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl [ "ticket", "v1", "search" ] []
+            Url.Builder.crossOrigin env.ticketUrl [ "ticket", "v1", "search", "zones" ] []
 
         body =
-            Encode.object
-                [ ( "products", Encode.list Encode.string [ product ] )
-                , ( "travellers", Encode.list encodeTraveller travellers )
-                , ( "zones", Encode.list Encode.string zones )
-                ]
+            [ ( "products", Encode.list Encode.string [ product ] )
+            , ( "travellers", Encode.list encodeTraveller travellers )
+            , ( "zones", Encode.list Encode.string zones )
+            ]
+                ++ (case travelDate of
+                        Just dateTime ->
+                            [ ( "travel_date", Encode.string dateTime ) ]
+
+                        Nothing ->
+                            []
+                   )
     in
-        HttpUtil.post env url (Http.jsonBody body) (Decode.list offerDecoder)
+        HttpUtil.post env url (Http.jsonBody <| Encode.object body) (Decode.list offerDecoder)
 
 
 {-| Reserve offers.
 -}
-reserve : Environment -> Int -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
-reserve env customerNumber paymentType offers =
+reserve : Environment -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
+reserve env paymentType offers =
     let
         url =
             Url.Builder.crossOrigin env.ticketUrl
-                [ "ticket", "v1", "reserve" ]
+                [ "ticket", "v2", "reserve" ]
                 []
 
         body =
             Encode.object
-                [ ( "customer_id", Encode.string env.installId )
-                , ( "customer_number", Encode.int customerNumber )
-                , ( "offers", Encode.list encodeOffer offers )
+                [ ( "offers", Encode.list encodeOffer offers )
                 , ( "payment_type", encodePaymentType paymentType )
                 , ( "payment_redirect_url", Encode.string (env.ticketUrl ++ "/thanks") )
                 ]
