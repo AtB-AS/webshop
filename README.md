@@ -34,6 +34,12 @@ module.exports = {
 
 It is highly recommended that you set the `host` property at least.
 
+When making changes, always format Elm files using the following `elm-format` release:
+
+> https://github.com/mjenssen/elm-format/releases/latest
+
+This is to ensure that `let-in` expressions are correctly indented.
+
 ## Production
 
 To build for production, just run the `build` script:
