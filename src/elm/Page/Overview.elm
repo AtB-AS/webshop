@@ -1,4 +1,4 @@
-module Page.Home exposing (Model, Msg(..), init, subscriptions, update, view)
+module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, TravelRight(..))

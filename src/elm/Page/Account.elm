@@ -1,4 +1,4 @@
-module Page.Settings exposing (Model, Msg(..), init, subscriptions, update, view)
+module Page.Account exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Environment exposing (Environment)

@@ -9,15 +9,14 @@ import Fragment.Icon as Icon
 import GlobalActions as GA exposing (GlobalAction)
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Events as E
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
+import Page.Account as AccountPage
 import Page.History as HistoryPage
-import Page.Home as HomePage
 import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
-import Page.Settings as SettingsPage
+import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
@@ -37,10 +36,10 @@ type Msg
     | UrlChanged Url
     | UrlRequested Browser.UrlRequest
     | CloseNotification Time.Posix
-    | HomeMsg HomePage.Msg
+    | OverviewMsg OverviewPage.Msg
     | ShopMsg ShopPage.Msg
     | HistoryMsg HistoryPage.Msg
-    | SettingsMsg SettingsPage.Msg
+    | AccountMsg AccountPage.Msg
     | LoginMsg LoginPage.Msg
     | OnboardingMsg OnboardingPage.Msg
     | SharedMsg Shared.Msg
@@ -54,10 +53,10 @@ type Msg
 type alias Model =
     { environment : Environment
     , appInfo : AppInfo
-    , home : HomePage.Model
+    , overview : OverviewPage.Model
     , shop : Maybe ShopPage.Model
     , history : HistoryPage.Model
-    , settings : SettingsPage.Model
+    , account : AccountPage.Model
     , shared : Shared
     , login : LoginPage.Model
     , onboarding : Maybe OnboardingPage.Model
@@ -143,14 +142,11 @@ init flags url navKey =
             , commit = flags.commit
             }
 
-        ( homeModel, homeCmd ) =
-            HomePage.init
+        ( overviewModel, overviewCmd ) =
+            OverviewPage.init
 
-        ( settingsModel, settingsCmd ) =
-            SettingsPage.init
-
-        historyModel =
-            HistoryPage.init
+        ( accountModel, accountCmd ) =
+            AccountPage.init
 
         route =
             Route.fromUrl url
@@ -166,10 +162,10 @@ init flags url navKey =
             setRoute route
                 { environment = environment
                 , appInfo = appInfo
-                , home = homeModel
+                , overview = overviewModel
                 , shop = Nothing
-                , history = historyModel
-                , settings = settingsModel
+                , history = HistoryPage.init
+                , account = accountModel
                 , shared = Shared.init
                 , login = LoginPage.init
                 , onboarding = Nothing
@@ -183,8 +179,8 @@ init flags url navKey =
     in
         ( routeModel
         , Cmd.batch
-            [ Cmd.map HomeMsg homeCmd
-            , Cmd.map SettingsMsg settingsCmd
+            [ Cmd.map OverviewMsg overviewCmd
+            , Cmd.map AccountMsg accountCmd
             , routeCmd
             ]
         )
@@ -228,7 +224,7 @@ update msg model =
 
                 GA.SetPendingOrder orderId ->
                     ( model
-                    , TaskUtil.doTask <| HomeMsg <| HomePage.SetPendingOrder orderId
+                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.SetPendingOrder orderId
                     )
 
                 GA.Logout ->
@@ -274,9 +270,9 @@ update msg model =
             in
                 ( { model | notifications = newNotifications }, Cmd.none )
 
-        HomeMsg subMsg ->
-            HomePage.update subMsg model.environment model.home
-                |> PageUpdater.map (\newModel -> { model | home = newModel }) HomeMsg
+        OverviewMsg subMsg ->
+            OverviewPage.update subMsg model.environment model.overview
+                |> PageUpdater.map (\newModel -> { model | overview = newModel }) OverviewMsg
                 |> doPageUpdate
 
         ShopMsg subMsg ->
@@ -294,9 +290,9 @@ update msg model =
                 |> PageUpdater.map (\newModel -> { model | history = newModel }) HistoryMsg
                 |> doPageUpdate
 
-        SettingsMsg subMsg ->
-            SettingsPage.update subMsg model.environment model.settings
-                |> PageUpdater.map (\newModel -> { model | settings = newModel }) SettingsMsg
+        AccountMsg subMsg ->
+            AccountPage.update subMsg model.environment model.account
+                |> PageUpdater.map (\newModel -> { model | account = newModel }) AccountMsg
                 |> doPageUpdate
 
         LoginMsg subMsg ->
@@ -422,8 +418,8 @@ viewPage model =
     in
         case model.route of
             Just Route.Home ->
-                HomePage.view env model.appInfo shared model.home model.route
-                    |> H.map HomeMsg
+                OverviewPage.view env model.appInfo shared model.overview model.route
+                    |> H.map OverviewMsg
 
             Just Route.Shop ->
                 case model.shop of
@@ -441,8 +437,8 @@ viewPage model =
                     |> wrapSubPage "Kjøpshistorikk"
 
             Just Route.Settings ->
-                SettingsPage.view env model.appInfo shared model.settings model.route
-                    |> H.map SettingsMsg
+                AccountPage.view env model.appInfo shared model.account model.route
+                    |> H.map AccountMsg
                     |> wrapSubPage "Kontoinformasjon"
 
             Just Route.NotFound ->
@@ -479,15 +475,15 @@ wrapSubPage title children =
 subs : Model -> Sub Msg
 subs model =
     Sub.batch
-        [ HomePage.subscriptions model.home
-            |> Sub.map HomeMsg
+        [ OverviewPage.subscriptions model.overview
+            |> Sub.map OverviewMsg
         , model.shop
             |> Maybe.map (ShopPage.subscriptions >> Sub.map ShopMsg)
             |> Maybe.withDefault Sub.none
         , HistoryPage.subscriptions model.history
             |> Sub.map HistoryMsg
-        , SettingsPage.subscriptions model.settings
-            |> Sub.map SettingsMsg
+        , AccountPage.subscriptions model.account
+            |> Sub.map AccountMsg
         , LoginPage.subscriptions model.login
             |> Sub.map LoginMsg
         , Shared.subscriptions
