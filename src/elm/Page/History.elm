@@ -248,9 +248,9 @@ viewOrder shared model order =
                             , List.indexedMap
                                 (viewTravelRight shared (List.length order.travelRights))
                                 order.travelRights
-                            , [ H.div
-                                    ([ A.style "display" "flex"
-                                     , A.style "cursor" "pointer"
+                            , [ H.button
+                                    ([ A.type_ "button"
+                                     , A.class "receipt-button"
                                      ]
                                         ++ (if sendingReceipt then
                                                 []
@@ -259,11 +259,7 @@ viewOrder shared model order =
                                                 [ E.onClick (RequestReceipt order.orderId) ]
                                            )
                                     )
-                                    [ H.div
-                                        [ A.style "flex-grow" "1"
-                                        , A.style "font-weight" "500"
-                                        ]
-                                        [ H.text "Be om kvittering på e-post" ]
+                                    [ H.div [] [ H.text "Be om kvittering på e-post" ]
                                     , if sendingReceipt then
                                         H.span [ A.class "button-loading" ] []
 

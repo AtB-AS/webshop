@@ -288,6 +288,24 @@ main {
             }
         }
     }
+
+    .receipt-button {
+        display: flex;
+        cursor: pointer;
+        background-color: inherit;
+        border: none;
+        width: 100%;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        appearance: none;
+        text-align: left;
+        align-items: center;
+
+        > div:first-child {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+    }
 }
 
 .page-shop {
