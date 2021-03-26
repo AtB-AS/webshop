@@ -8,11 +8,15 @@ import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Http
 import Json.Decode as Decode
+import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
-import Service.Misc as MiscService
+import Service.Misc as MiscService exposing (Profile)
+import Service.Ticket as TicketService
 import Shared exposing (Shared)
+import Task
 import Util.Format as Format exposing (date)
 
 
@@ -21,6 +25,9 @@ type Msg
     | InputTo String
     | ToggleOrder String
     | ReceiveFareContracts (Result Decode.Error (List FareContract))
+    | ProfileChange (Maybe Profile)
+    | RequestReceipt String
+    | ReceiveReceipt String (Result Http.Error ())
 
 
 type alias Model =
@@ -28,6 +35,8 @@ type alias Model =
     , to : Maybe String
     , orders : List FareContract
     , expanded : Maybe String
+    , sendingReceipt : List String
+    , profile : Maybe Profile
     }
 
 
@@ -37,6 +46,8 @@ init =
     , to = Nothing
     , orders = []
     , expanded = Nothing
+    , sendingReceipt = []
+    , profile = Nothing
     }
 
 
@@ -73,6 +84,31 @@ update msg env model =
 
                 Err _ ->
                     PageUpdater.init model
+
+        ProfileChange (Just profile) ->
+            PageUpdater.init
+                { model | profile = Just profile }
+
+        ProfileChange Nothing ->
+            PageUpdater.init { model | profile = Nothing }
+
+        RequestReceipt orderId ->
+            case model.profile of
+                Just profile ->
+                    PageUpdater.fromPair
+                        ( { model | sendingReceipt = orderId :: model.sendingReceipt }
+                        , TicketService.receipt env profile.email orderId
+                            |> Http.toTask
+                            |> Task.attempt (ReceiveReceipt orderId)
+                        )
+
+                Nothing ->
+                    -- TODO: Handle no profile and no email in profile
+                    PageUpdater.init model
+
+        ReceiveReceipt orderId _ ->
+            -- TODO: Show error
+            PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -179,6 +215,9 @@ viewOrder shared model order =
 
         expanded =
             model.expanded == Just order.id
+
+        sendingReceipt =
+            List.member order.orderId model.sendingReceipt
     in
         H.div [ A.class "section-box" ]
             (H.div [ A.class "order-header", E.onClick (ToggleOrder order.id) ]
@@ -209,13 +248,27 @@ viewOrder shared model order =
                             , List.indexedMap
                                 (viewTravelRight shared (List.length order.travelRights))
                                 order.travelRights
-                            , [ H.div [ A.style "display" "flex" ]
+                            , [ H.div
+                                    ([ A.style "display" "flex"
+                                     , A.style "cursor" "pointer"
+                                     ]
+                                        ++ (if sendingReceipt then
+                                                []
+
+                                            else
+                                                [ E.onClick (RequestReceipt order.orderId) ]
+                                           )
+                                    )
                                     [ H.div
                                         [ A.style "flex-grow" "1"
                                         , A.style "font-weight" "500"
                                         ]
                                         [ H.text "Be om kvittering på e-post" ]
-                                    , Icon.rightArrow
+                                    , if sendingReceipt then
+                                        H.span [ A.class "button-loading" ] []
+
+                                      else
+                                        Icon.rightArrow
                                     ]
                               ]
                             ]
@@ -265,10 +318,13 @@ viewTravelRight shared total num travelRight =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    MiscService.receiveFareContracts
-        (Decode.decodeValue (Decode.list MiscService.fareContractDecoder)
-            >> ReceiveFareContracts
-        )
+    Sub.batch
+        [ MiscService.receiveFareContracts
+            (Decode.decodeValue (Decode.list MiscService.fareContractDecoder)
+                >> ReceiveFareContracts
+            )
+        , MiscService.onProfileChange ProfileChange
+        ]
 
 
 
