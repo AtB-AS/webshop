@@ -1,16 +1,20 @@
+@import '~@atb-as/theme/lib/theme.css';
+@import '~@atb-as/theme/lib/typography.css';
+
 * {
     box-sizing: border-box;
 }
 
 :root {
-    --background: #E7E8E9;
-    --primary-2: #71D6E0;
+    --background: #e7e8e9;
+    --primary-2: #71d6e0;
     --primary-2-hover: rgba(113, 214, 224, 0.8);
     --primary: #000;
     --section-background: #fff;
 }
 
-html, body {
+html,
+body {
     height: 100%;
 }
 
@@ -119,7 +123,8 @@ main {
         width: 100%;
     }
 
-    .button, .no-button {
+    .button,
+    .no-button {
         padding: 24px;
         font-weight: 500;
         display: flex;
@@ -131,7 +136,7 @@ main {
     }
 
     .button {
-        background-color: #71D6E0;
+        background-color: #71d6e0;
         border-radius: 12px;
 
         .button-loading {
@@ -177,7 +182,8 @@ main {
         }
     }
 
-    .button, .no-button {
+    .button,
+    .no-button {
         padding: 24px;
         font-weight: 500;
         display: flex;
@@ -189,7 +195,7 @@ main {
     }
 
     .button {
-        background-color: #71D6E0;
+        background-color: #71d6e0;
         border-radius: 12px;
     }
 }
@@ -211,8 +217,6 @@ main {
             font-weight: normal;
             display: block;
         }
-
-
     }
 
     .main {
@@ -229,8 +233,15 @@ main {
         .ticket-progress {
             height: 8px;
             min-height: 8px;
-            background-color: #A2AD00;
-            background-image: linear-gradient( -45deg, transparent 12px, rgba(0, 0, 0, .6) 12px, rgba(0, 0, 0, .6) 20px, transparent 20px, transparent );
+            background-color: #a2ad00;
+            background-image: linear-gradient(
+                -45deg,
+                transparent 12px,
+                rgba(0, 0, 0, 0.6) 12px,
+                rgba(0, 0, 0, 0.6) 20px,
+                transparent 20px,
+                transparent
+            );
             background-size: 60px 8px;
             animation: ticket-progress-move 2s linear infinite;
             margin: 0;
@@ -281,7 +292,6 @@ main {
             cursor: pointer;
 
             > div {
-
                 &:first-child {
                     flex-grow: 1;
                 }
@@ -307,7 +317,8 @@ main {
         width: 320px;
     }
 
-    input[type="time"], input[type="date"] {
+    input[type='time'],
+    input[type='date'] {
         box-shadow: none;
         outline: none;
         border: none;
@@ -337,11 +348,18 @@ main {
         margin-right: 24px;
     }
 
-    .page-overview, .page-history, .page-shop, .page-account {
+    .page-overview,
+    .page-history,
+    .page-shop,
+    .page-account {
         grid-template-columns: 1fr;
     }
 
-    .page-overview .sidebar, .page-shop .left, .page-shop .middle, .page-shop .right, .page-history .sidebar {
+    .page-overview .sidebar,
+    .page-shop .left,
+    .page-shop .middle,
+    .page-shop .right,
+    .page-history .sidebar {
         width: inherit;
     }
 }
@@ -378,7 +396,7 @@ main {
         }
 
         &.active {
-            background-color: #CFD2D3;
+            background-color: #cfd2d3;
         }
     }
 
@@ -417,7 +435,7 @@ main {
         padding: 0;
         line-height: 1em;
         align-self: center;
-        background-color: #37424A;
+        background-color: #37424a;
         color: #fff;
 
         > button {
@@ -479,7 +497,7 @@ main {
 }
 
 .buy-button-new {
-    background-color: #37424A;
+    background-color: #37424a;
     color: #fff;
 
     &.disabled-button-new > * {
@@ -539,7 +557,8 @@ button {
     }
 }
 
-button + button, input + button {
+button + button,
+input + button {
     margin-left: 10px;
 }
 
@@ -584,7 +603,8 @@ table {
     border-collapse: collapse;
     margin: 1rem 0;
 
-    th, td {
+    th,
+    td {
         padding: 0.5rem;
         border: 1px solid #345d63;
     }
@@ -602,7 +622,7 @@ table {
 }
 
 .info-box {
-    background-color: #007C92;
+    background-color: #007c92;
     color: #fff;
     padding: 24px;
     margin-bottom: 24px;
@@ -619,4 +639,5 @@ table {
     }
 }
 
-@import "waiting";
+@import 'waiting';
+@import 'ui';
