@@ -10,6 +10,7 @@ module Fragment.Icon exposing
     , downArrow
     , duration
     , edit
+    , error
     , info
     , leftArrow
     , leftCaret
@@ -25,6 +26,7 @@ module Fragment.Icon exposing
     , traveler
     , upArrow
     , vipps
+    , warning
     , wrapper
     )
 
@@ -120,6 +122,36 @@ info =
             , SA.clipRule "evenodd"
             , SA.d "M2 20C2 10.0589 10.0589 2 20 2C29.9411 2 38 10.0589 38 20C38 29.9411 29.9411 38 20 38C10.0589 38 2 29.9411 2 20ZM20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z"
             , SA.fill "black"
+            ]
+            []
+        ]
+
+
+warning : Html msg
+warning =
+    S.svg [ SA.width "20", SA.height "20", SA.viewBox "0 0 20 20", SA.fill "none" ]
+        [ S.path [ SA.d "M9 6V11H11V6H9Z", SA.fill "black" ] []
+        , S.path [ SA.d "M11 12H9V14H11V12Z", SA.fill "black" ] []
+        , S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M7 1C6.73478 1 6.48043 1.10536 6.29289 1.29289L1.29289 6.29289C1.10536 6.48043 1 6.73478 1 7V13C1 13.2652 1.10536 13.5196 1.29289 13.7071L6.29289 18.7071C6.48043 18.8946 6.73478 19 7 19H13C13.2652 19 13.5196 18.8946 13.7071 18.7071L18.7071 13.7071C18.8946 13.5196 19 13.2652 19 13V7C19 6.73478 18.8946 6.48043 18.7071 6.29289L13.7071 1.29289C13.5196 1.10536 13.2652 1 13 1H7ZM3 7.41421L7.41421 3H12.5858L17 7.41421V12.5858L12.5858 17H7.41421L3 12.5858V7.41421Z"
+            , SA.fill "black"
+            ]
+            []
+        ]
+
+
+error : Html msg
+error =
+    S.svg [ SA.width "18", SA.height "16", SA.viewBox "0 0 18 16", SA.fill "none" ]
+        [ S.path [ SA.d "M10 11V13H8V11H10Z", SA.fill "white" ] []
+        , S.path [ SA.d "M8 6V10H10V6H8Z", SA.fill "white" ] []
+        , S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M9 0C9.35886 0 9.6902 0.192286 9.86824 0.503861L17.8682 14.5039C18.0451 14.8134 18.0438 15.1936 17.8649 15.5019C17.686 15.8102 17.3565 16 17 16H1C0.64353 16 0.314012 15.8102 0.13509 15.5019C-0.043832 15.1936 -0.045102 14.8134 0.131757 14.5039L8.13176 0.503861C8.3098 0.192286 8.64114 0 9 0ZM15.2768 14L9 3.01556L2.72318 14H15.2768Z"
+            , SA.fill "white"
             ]
             []
         ]

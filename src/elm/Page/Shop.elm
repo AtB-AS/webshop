@@ -20,6 +20,8 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
+import Ui.Message as Message
+import Ui.Section as Section
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 import Util.Time as TimeUtil
@@ -497,11 +499,17 @@ view _ _ shared model _ =
                                 |> round
                                 |> String.fromInt
                     in
-                        [ H.div [ A.class "section-box" ]
-                            [ H.div [ A.class "section-header" ] [ H.text "Oppsummering" ]
-                            , H.div [ A.class "summary-price" ]
-                                [ H.text ("kr " ++ totalPrice ++ ",00")
+                        [ Section.sectionWithOptions
+                            { marginBottom = True
+                            , marginTop = False
+                            }
+                            [ Section.sectionHeader "Oppsummering"
+                            , Section.sectionGenericItem
+                                [ H.div [ A.class "summary-price" ]
+                                    [ H.text ("kr " ++ totalPrice ++ ",00")
+                                    ]
                                 ]
+                            , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
                             ]
                         , H.div [ A.class "section-box" ]
                             [ richBuyButton disableButtons

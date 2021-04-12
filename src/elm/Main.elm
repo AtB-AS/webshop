@@ -383,7 +383,7 @@ view model =
                             ]
 
             _ ->
-                H.div []
+                H.div [ A.class "light" ]
                     [ header model
                     , case model.environment.customerId of
                         Just _ ->
