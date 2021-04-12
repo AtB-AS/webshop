@@ -20,6 +20,7 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
+import Ui.Group
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Status exposing (Status(..))
@@ -39,10 +40,7 @@ type Msg
     | SetToZone String
     | ModUser UserType Int
     | SetUser UserType
-    | ShowTravelers
-    | ShowDuration
-    | ShowStart
-    | ShowZones
+    | ShowView MainView
     | SetTime String
     | SetDate String
     | ToggleNow
@@ -57,6 +55,7 @@ type MainView
     | Duration
     | Start
     | Zones
+    | None
 
 
 type alias Model =
@@ -274,17 +273,8 @@ update msg env model =
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.CloseShop
 
-        ShowTravelers ->
-            PageUpdater.init { model | mainView = Travelers }
-
-        ShowDuration ->
-            PageUpdater.init { model | mainView = Duration }
-
-        ShowStart ->
-            PageUpdater.init { model | mainView = Start }
-
-        ShowZones ->
-            PageUpdater.init { model | mainView = Zones }
+        ShowView mainView ->
+            PageUpdater.init (toggleShowMainView model mainView)
 
         ToggleNow ->
             model
@@ -328,6 +318,18 @@ update msg env model =
                 ( { model | isoTime = Just isoTime, now = False }
                 , TaskUtil.doTask FetchOffers
                 )
+
+
+toggleShowMainView : Model -> MainView -> Model
+toggleShowMainView model mainView =
+    { model
+        | mainView =
+            if model.mainView == mainView then
+                None
+
+            else
+                mainView
+    }
 
 
 updateNowDateTime : Time.Posix -> Model -> Model
@@ -396,173 +398,152 @@ richBuyButton disabled action content =
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div [ A.class "page-shop" ]
-        [ H.div [ A.class "left" ]
-            [ H.div [ A.class "section-box" ]
-                [ richActionButton False
-                    Nothing
-                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.wrapper 18 Icon.bus
-                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisetype" ]
-                        , Icon.edit
-                        ]
-                    )
-                , richActionButton (model.mainView == Travelers)
-                    (Just ShowTravelers)
-                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.wrapper 18 Icon.traveler
-                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Reisende" ]
-                        , if model.mainView == Travelers then
-                            H.text ""
-
-                          else
-                            Icon.edit
-                        ]
-                    )
-                , richActionButton (model.mainView == Duration)
-                    (Just ShowDuration)
-                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.wrapper 18 Icon.duration
-                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Varighet" ]
-                        , if model.mainView == Duration then
-                            H.text ""
-
-                          else
-                            Icon.edit
-                        ]
-                    )
-                , richActionButton (model.mainView == Start)
-                    (Just ShowStart)
-                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.wrapper 18 Icon.ticket
-                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gyldig fra og med" ]
-                        , if model.mainView == Start then
-                            H.text ""
-
-                          else
-                            Icon.edit
-                        ]
-                    )
-                , richActionButton (model.mainView == Zones)
-                    (Just ShowZones)
-                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                        [ Icon.wrapper 18 Icon.ticket
-                        , H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Soner" ]
-                        , if model.mainView == Zones then
-                            H.text ""
-
-                          else
-                            Icon.edit
-                        ]
-                    )
+    H.div []
+        [ H.div []
+            [ Ui.Group.togglable
+                { title = "Reisetype"
+                , icon = Just Icon.bus
+                , value = Nothing
+                , open = False
+                , disabled = True
+                , onOpenClick = Nothing
+                }
+                []
+            , Ui.Group.togglable
+                { title = "Reisende"
+                , icon = Just Icon.bus
+                , value = Nothing
+                , open = model.mainView == Travelers
+                , disabled = False
+                , onOpenClick = Just (ShowView Travelers)
+                }
+                [ viewUserProfiles model shared.userProfiles
+                ]
+            , Ui.Group.togglable
+                { title = "Varighet"
+                , icon = Just Icon.duration
+                , value = Nothing
+                , open = model.mainView == Duration
+                , disabled = False
+                , onOpenClick = Just (ShowView Duration)
+                }
+                [ viewProducts model shared.fareProducts
+                ]
+            , Ui.Group.togglable
+                { title = "Gyldig fra og med"
+                , icon = Just Icon.ticket
+                , value = Nothing
+                , open = model.mainView == Start
+                , disabled = False
+                , onOpenClick = Just (ShowView Start)
+                }
+                [ viewStart model
+                ]
+            , Ui.Group.togglable
+                { title = "Soner"
+                , icon = Just Icon.ticket
+                , value = Nothing
+                , open = model.mainView == Zones
+                , disabled = False
+                , onOpenClick = Just (ShowView Zones)
+                }
+                [ viewZones model shared.tariffZones
                 ]
             ]
-        , H.div [ A.class "middle" ]
-            [ case model.mainView of
-                Travelers ->
-                    H.div [] [ viewUserProfiles model shared.userProfiles ]
+        , H.div [ A.class "page-shop" ]
+            [ H.div [ A.class "right" ]
+                (case model.offers of
+                    NotLoaded ->
+                        [ H.text "" ]
 
-                Duration ->
-                    H.div [] [ viewProducts model shared.fareProducts ]
+                    Loading _ ->
+                        [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
 
-                Start ->
-                    H.div [] [ viewStart model ]
+                    Loaded offers ->
+                        let
+                            disableButtons =
+                                case model.reservation of
+                                    Loading _ ->
+                                        True
 
-                Zones ->
-                    H.div [] [ viewZones model shared.tariffZones ]
-            ]
-        , H.div [ A.class "right" ]
-            (case model.offers of
+                                    Loaded _ ->
+                                        True
+
+                                    _ ->
+                                        False
+
+                            totalPrice =
+                                offers
+                                    |> List.map (calculateOfferPrice model.users)
+                                    |> List.sum
+                                    |> round
+                                    |> String.fromInt
+                        in
+                            [ Section.sectionWithOptions
+                                { marginBottom = True
+                                , marginTop = False
+                                }
+                                [ Section.sectionHeader "Oppsummering"
+                                , Section.sectionGenericItem
+                                    [ H.div [ A.class "summary-price" ]
+                                        [ H.text ("kr " ++ totalPrice ++ ",00")
+                                        ]
+                                    ]
+                                , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
+                                ]
+                            , H.div [ A.class "section-box" ]
+                                [ richBuyButton disableButtons
+                                    (BuyOffers Nets)
+                                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                        [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
+                                        , Icon.creditcard
+                                        ]
+                                    )
+                                , richBuyButton disableButtons
+                                    (BuyOffers Vipps)
+                                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                        [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
+                                        , H.div
+                                            [ A.style "width" "18px"
+                                            , A.style "height" "12px"
+                                            , A.style "background-color" "#FF5B24"
+                                            , A.style "text-align" "center"
+                                            , A.style "display" "grid"
+                                            , A.style "place-items" "center"
+                                            ]
+                                            [ Icon.vipps ]
+                                        ]
+                                    )
+                                , richActionButton False
+                                    (Just CloseShop)
+                                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                        [ H.span
+                                            [ A.style "flex-grow" "1"
+                                            , A.style "font-weight" "500"
+                                            ]
+                                            [ H.text "Avbryt" ]
+                                        , Icon.cross
+                                        ]
+                                    )
+                                ]
+                            ]
+
+                    Failed error ->
+                        [ H.div [] [ H.text error ] ]
+                )
+            , case model.reservation of
                 NotLoaded ->
-                    [ H.text "" ]
+                    H.text ""
 
                 Loading _ ->
-                    [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
+                    H.p [] [ H.text "Reserving offers..." ]
 
-                Loaded offers ->
-                    let
-                        disableButtons =
-                            case model.reservation of
-                                Loading _ ->
-                                    True
-
-                                Loaded _ ->
-                                    True
-
-                                _ ->
-                                    False
-
-                        totalPrice =
-                            offers
-                                |> List.map (calculateOfferPrice model.users)
-                                |> List.sum
-                                |> round
-                                |> String.fromInt
-                    in
-                        [ Section.sectionWithOptions
-                            { marginBottom = True
-                            , marginTop = False
-                            }
-                            [ Section.sectionHeader "Oppsummering"
-                            , Section.sectionGenericItem
-                                [ H.div [ A.class "summary-price" ]
-                                    [ H.text ("kr " ++ totalPrice ++ ",00")
-                                    ]
-                                ]
-                            , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
-                            ]
-                        , H.div [ A.class "section-box" ]
-                            [ richBuyButton disableButtons
-                                (BuyOffers Nets)
-                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
-                                    , Icon.creditcard
-                                    ]
-                                )
-                            , richBuyButton disableButtons
-                                (BuyOffers Vipps)
-                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
-                                    , H.div
-                                        [ A.style "width" "18px"
-                                        , A.style "height" "12px"
-                                        , A.style "background-color" "#FF5B24"
-                                        , A.style "text-align" "center"
-                                        , A.style "display" "grid"
-                                        , A.style "place-items" "center"
-                                        ]
-                                        [ Icon.vipps ]
-                                    ]
-                                )
-                            , richActionButton False
-                                (Just CloseShop)
-                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                    [ H.span
-                                        [ A.style "flex-grow" "1"
-                                        , A.style "font-weight" "500"
-                                        ]
-                                        [ H.text "Avbryt" ]
-                                    , Icon.cross
-                                    ]
-                                )
-                            ]
-                        ]
+                Loaded reservation ->
+                    H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
 
                 Failed error ->
-                    [ H.div [] [ H.text error ] ]
-            )
-        , case model.reservation of
-            NotLoaded ->
-                H.text ""
-
-            Loading _ ->
-                H.p [] [ H.text "Reserving offers..." ]
-
-            Loaded reservation ->
-                H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
-
-            Failed error ->
-                H.p [] [ H.text error ]
+                    H.p [] [ H.text error ]
+            ]
         ]
 
 

@@ -404,7 +404,7 @@ view model =
 
 header : Model -> Html Msg
 header _ =
-    H.header [] [ Icon.atb ]
+    H.header [ A.class "pageHeader" ] [ Icon.atb ]
 
 
 viewPage : Model -> Html Msg
