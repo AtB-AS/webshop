@@ -1,4 +1,9 @@
-module Ui.Section exposing (..)
+module Ui.Section exposing
+    ( section
+    , sectionGenericItem
+    , sectionHeader
+    , sectionWithOptions
+    )
 
 import Html as H exposing (Html)
 import Html.Attributes as A
