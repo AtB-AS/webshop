@@ -87,10 +87,10 @@ base statusType options text =
         icon =
             statusToIcon statusType
     in
-    H.div [ A.classList classList ]
-        [ icon
-        , H.div [ A.class "message__content" ] [ text ]
-        ]
+        H.div [ A.classList classList ]
+            [ icon
+            , H.div [ A.class "message__content" ] [ text ]
+            ]
 
 
 defaultOption : MessageOptions

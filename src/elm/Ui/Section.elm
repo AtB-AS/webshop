@@ -25,7 +25,7 @@ sectionWithOptions options items =
             , ( "section--marginBottom", options.marginBottom )
             ]
     in
-    H.div [ A.classList classList ] items
+        H.div [ A.classList classList ] items
 
 
 section : List (Html msg) -> Html msg

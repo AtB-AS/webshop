@@ -92,30 +92,30 @@ init shared =
                 |> Maybe.map .id
                 |> Maybe.withDefault ""
     in
-    ( { product =
-            shared.fareProducts
-                |> List.head
-                |> Maybe.map .id
-                |> Maybe.withDefault ""
-      , fromZone = firstZone
-      , toZone = firstZone
-      , users = [ ( UserTypeAdult, 1 ) ]
-      , offers = NotLoaded
-      , reservation = NotLoaded
-      , mainView = Travelers
-      , now = True
-      , nowDate = ""
-      , nowTime = "00:00"
-      , travelDate = ""
-      , travelTime = "00:00"
-      , zone = Time.utc
-      , isoTime = Nothing
-      }
-    , Cmd.batch
-        [ TaskUtil.doTask FetchOffers
-        , Task.perform UpdateZone Time.here
-        ]
-    )
+        ( { product =
+                shared.fareProducts
+                    |> List.head
+                    |> Maybe.map .id
+                    |> Maybe.withDefault ""
+          , fromZone = firstZone
+          , toZone = firstZone
+          , users = [ ( UserTypeAdult, 1 ) ]
+          , offers = NotLoaded
+          , reservation = NotLoaded
+          , mainView = Travelers
+          , now = True
+          , nowDate = ""
+          , nowTime = "00:00"
+          , travelDate = ""
+          , travelTime = "00:00"
+          , zone = Time.utc
+          , isoTime = Nothing
+          }
+        , Cmd.batch
+            [ TaskUtil.doTask FetchOffers
+            , Task.perform UpdateZone Time.here
+            ]
+        )
 
 
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
@@ -172,7 +172,7 @@ update msg env model =
                     else
                         ( userType, newValue ) :: otherUsers
             in
-            PageUpdater.init { model | users = newUsers }
+                PageUpdater.init { model | users = newUsers }
 
         FetchOffers ->
             if List.isEmpty model.users then
@@ -191,20 +191,20 @@ update msg env model =
                             _ ->
                                 Nothing
                 in
-                PageUpdater.fromPair
-                    ( { model | offers = Loading oldOffers, reservation = NotLoaded }
-                    , fetchOffers env
-                        model.product
-                        model.fromZone
-                        model.toZone
-                        model.users
-                        (if model.now then
-                            Nothing
+                    PageUpdater.fromPair
+                        ( { model | offers = Loading oldOffers, reservation = NotLoaded }
+                        , fetchOffers env
+                            model.product
+                            model.fromZone
+                            model.toZone
+                            model.users
+                            (if model.now then
+                                Nothing
 
-                         else
-                            model.isoTime
+                             else
+                                model.isoTime
+                            )
                         )
-                    )
 
         ReceiveOffers result ->
             case result of
@@ -228,10 +228,10 @@ update msg env model =
                                 )
                                 offers
                     in
-                    PageUpdater.fromPair
-                        ( { model | reservation = Loading Nothing }
-                        , buyOffers env paymentType offerCounts
-                        )
+                        PageUpdater.fromPair
+                            ( { model | reservation = Loading Nothing }
+                            , buyOffers env paymentType offerCounts
+                            )
 
                 _ ->
                     PageUpdater.init model
@@ -377,7 +377,7 @@ richActionButton active maybeAction content =
                 Nothing ->
                     baseAttributes
     in
-    H.div attributes [ content ]
+        H.div attributes [ content ]
 
 
 richBuyButton : Bool -> msg -> Html msg -> Html msg
@@ -390,8 +390,8 @@ richBuyButton disabled action content =
             else
                 [ E.onClick action ]
     in
-    H.div (A.class "pseudo-button buy-button-new" :: onClick)
-        [ content ]
+        H.div (A.class "pseudo-button buy-button-new" :: onClick)
+            [ content ]
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -499,54 +499,54 @@ view _ _ shared model _ =
                                 |> round
                                 |> String.fromInt
                     in
-                    [ Section.sectionWithOptions
-                        { marginBottom = True
-                        , marginTop = False
-                        }
-                        [ Section.sectionHeader "Oppsummering"
-                        , Section.sectionGenericItem
-                            [ H.div [ A.class "summary-price" ]
-                                [ H.text ("kr " ++ totalPrice ++ ",00")
+                        [ Section.sectionWithOptions
+                            { marginBottom = True
+                            , marginTop = False
+                            }
+                            [ Section.sectionHeader "Oppsummering"
+                            , Section.sectionGenericItem
+                                [ H.div [ A.class "summary-price" ]
+                                    [ H.text ("kr " ++ totalPrice ++ ",00")
+                                    ]
                                 ]
+                            , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
                             ]
-                        , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
-                        ]
-                    , H.div [ A.class "section-box" ]
-                        [ richBuyButton disableButtons
-                            (BuyOffers Nets)
-                            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
-                                , Icon.creditcard
-                                ]
-                            )
-                        , richBuyButton disableButtons
-                            (BuyOffers Vipps)
-                            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
-                                , H.div
-                                    [ A.style "width" "18px"
-                                    , A.style "height" "12px"
-                                    , A.style "background-color" "#FF5B24"
-                                    , A.style "text-align" "center"
-                                    , A.style "display" "grid"
-                                    , A.style "place-items" "center"
+                        , H.div [ A.class "section-box" ]
+                            [ richBuyButton disableButtons
+                                (BuyOffers Nets)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
+                                    , Icon.creditcard
                                     ]
-                                    [ Icon.vipps ]
-                                ]
-                            )
-                        , richActionButton False
-                            (Just CloseShop)
-                            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                [ H.span
-                                    [ A.style "flex-grow" "1"
-                                    , A.style "font-weight" "500"
+                                )
+                            , richBuyButton disableButtons
+                                (BuyOffers Vipps)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
+                                    , H.div
+                                        [ A.style "width" "18px"
+                                        , A.style "height" "12px"
+                                        , A.style "background-color" "#FF5B24"
+                                        , A.style "text-align" "center"
+                                        , A.style "display" "grid"
+                                        , A.style "place-items" "center"
+                                        ]
+                                        [ Icon.vipps ]
                                     ]
-                                    [ H.text "Avbryt" ]
-                                , Icon.cross
-                                ]
-                            )
+                                )
+                            , richActionButton False
+                                (Just CloseShop)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span
+                                        [ A.style "flex-grow" "1"
+                                        , A.style "font-weight" "500"
+                                        ]
+                                        [ H.text "Avbryt" ]
+                                    , Icon.cross
+                                    ]
+                                )
+                            ]
                         ]
-                    ]
 
                 Failed error ->
                     [ H.div [] [ H.text error ] ]
@@ -636,13 +636,13 @@ viewProduct model product =
             else
                 H.text ""
     in
-    richActionButton False
-        (Just <| SetProduct product.id)
-        (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-            [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString product.name ]
-            , extraHtml
-            ]
-        )
+        richActionButton False
+            (Just <| SetProduct product.id)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString product.name ]
+                , extraHtml
+                ]
+            )
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -657,12 +657,12 @@ viewZones model zones =
                 )
                 zones
     in
-    H.div [ A.class "section-box" ]
-        [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
-        , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
-        , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
-        , H.div [ A.class "section-block" ] [ H.node "atb-map" [] [] ]
-        ]
+        H.div [ A.class "section-box" ]
+            [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
+            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
+            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
+            , H.div [ A.class "section-block" ] [ H.node "atb-map" [] [] ]
+            ]
 
 
 viewZone : String -> TariffZone -> Html msg
@@ -698,13 +698,13 @@ viewUserProfile model userProfile =
             else
                 H.text ""
     in
-    richActionButton False
-        (Just <| SetUser userProfile.userType)
-        (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-            [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString userProfile.name ]
-            , extraHtml
-            ]
-        )
+        richActionButton False
+            (Just <| SetUser userProfile.userType)
+            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString userProfile.name ]
+                , extraHtml
+                ]
+            )
 
 
 viewOffer : Offer -> Html msg
@@ -785,4 +785,4 @@ calculateOfferPrice users offer =
                 |> List.head
                 |> Maybe.withDefault 0
     in
-    price * toFloat count
+        price * toFloat count

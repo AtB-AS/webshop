@@ -177,13 +177,13 @@ init flags url navKey =
                 , navKey = navKey
                 }
     in
-    ( routeModel
-    , Cmd.batch
-        [ Cmd.map OverviewMsg overviewCmd
-        , Cmd.map AccountMsg accountCmd
-        , routeCmd
-        ]
-    )
+        ( routeModel
+        , Cmd.batch
+            [ Cmd.map OverviewMsg overviewCmd
+            , Cmd.map AccountMsg accountCmd
+            , routeCmd
+            ]
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -205,19 +205,19 @@ update msg model =
                         newEnvironment =
                             { oldEnvironment | customerNumber = number }
                     in
-                    ( { model | environment = newEnvironment }, Cmd.none )
+                        ( { model | environment = newEnvironment }, Cmd.none )
 
                 GA.OpenShop ->
                     let
                         ( initModel, initCmd ) =
                             ShopPage.init model.shared
                     in
-                    ( { model | shop = Just initModel }
-                    , Cmd.batch
-                        [ Cmd.map ShopMsg initCmd
-                        , Route.newUrl model.navKey Route.Shop
-                        ]
-                    )
+                        ( { model | shop = Just initModel }
+                        , Cmd.batch
+                            [ Cmd.map ShopMsg initCmd
+                            , Route.newUrl model.navKey Route.Shop
+                            ]
+                        )
 
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
@@ -238,9 +238,9 @@ update msg model =
                                 , token = ""
                             }
                     in
-                    ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-                    , FirebaseAuth.signOut
-                    )
+                        ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                        , FirebaseAuth.signOut
+                        )
 
         SetRoute route ->
             setRoute route model
@@ -268,7 +268,7 @@ update msg model =
                         |> List.tail
                         |> Maybe.withDefault []
             in
-            ( { model | notifications = newNotifications }, Cmd.none )
+                ( { model | notifications = newNotifications }, Cmd.none )
 
         OverviewMsg subMsg ->
             OverviewPage.update subMsg model.environment model.overview
@@ -330,9 +330,9 @@ update msg model =
                         , token = ""
                     }
             in
-            ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-            , FirebaseAuth.signOut
-            )
+                ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                , FirebaseAuth.signOut
+                )
 
         LoggedInData result ->
             case result of
@@ -348,9 +348,9 @@ update msg model =
                                 , token = value.token
                             }
                     in
-                    ( { model | userData = Loaded value, environment = newEnvironment }
-                    , Cmd.none
-                    )
+                        ( { model | userData = Loaded value, environment = newEnvironment }
+                        , Cmd.none
+                        )
 
                 Err error ->
                     ( { model | authError = AuthErrorSimple <| Decode.errorToString error }, Cmd.none )
@@ -416,49 +416,49 @@ viewPage model =
         shared =
             model.shared
     in
-    case model.route of
-        Just Route.Home ->
-            OverviewPage.view env model.appInfo shared model.overview model.route
-                |> H.map OverviewMsg
+        case model.route of
+            Just Route.Home ->
+                OverviewPage.view env model.appInfo shared model.overview model.route
+                    |> H.map OverviewMsg
 
-        Just Route.Shop ->
-            case model.shop of
-                Just shop ->
-                    ShopPage.view env model.appInfo shared shop model.route
-                        |> H.map ShopMsg
-                        |> wrapSubPage "Kjøp ny billett"
+            Just Route.Shop ->
+                case model.shop of
+                    Just shop ->
+                        ShopPage.view env model.appInfo shared shop model.route
+                            |> H.map ShopMsg
+                            |> wrapSubPage "Kjøp ny billett"
 
-                Nothing ->
-                    H.text ""
+                    Nothing ->
+                        H.text ""
 
-        Just Route.History ->
-            HistoryPage.view env model.appInfo shared model.history model.route
-                |> H.map HistoryMsg
-                |> wrapSubPage "Kjøpshistorikk"
+            Just Route.History ->
+                HistoryPage.view env model.appInfo shared model.history model.route
+                    |> H.map HistoryMsg
+                    |> wrapSubPage "Kjøpshistorikk"
 
-        Just Route.Settings ->
-            AccountPage.view env model.appInfo shared model.account model.route
-                |> H.map AccountMsg
-                |> wrapSubPage "Kontoinformasjon"
+            Just Route.Settings ->
+                AccountPage.view env model.appInfo shared model.account model.route
+                    |> H.map AccountMsg
+                    |> wrapSubPage "Kontoinformasjon"
 
-        Just Route.NotFound ->
-            H.div
-                [ A.class "welcome-container" ]
-                [ H.div []
-                    [ H.h2 [] [ H.text model.appInfo.title ]
-                    , H.h3 [] [ H.text "Not found." ]
+            Just Route.NotFound ->
+                H.div
+                    [ A.class "welcome-container" ]
+                    [ H.div []
+                        [ H.h2 [] [ H.text model.appInfo.title ]
+                        , H.h3 [] [ H.text "Not found." ]
+                        ]
                     ]
-                ]
 
-        Nothing ->
-            H.div
-                [ A.class "welcome-container" ]
-                [ H.div []
-                    [ H.h2 [] [ H.text model.appInfo.title ]
-                    , H.h3 [] [ H.a [ A.href "#/" ] [ H.text "Go home" ] ]
-                    , H.h3 [] [ H.a [ A.href "#/settings" ] [ H.text "Go to settings" ] ]
+            Nothing ->
+                H.div
+                    [ A.class "welcome-container" ]
+                    [ H.div []
+                        [ H.h2 [] [ H.text model.appInfo.title ]
+                        , H.h3 [] [ H.a [ A.href "#/" ] [ H.text "Go home" ] ]
+                        , H.h3 [] [ H.a [ A.href "#/settings" ] [ H.text "Go to settings" ] ]
+                        ]
                     ]
-                ]
 
 
 wrapSubPage : String -> Html msg -> Html msg
@@ -540,4 +540,4 @@ doPageUpdate pageUpdater =
         ( newModel, cmd ) =
             pageUpdater.update
     in
-    ( newModel, Cmd.batch (cmd :: List.map (GlobalAction >> TaskUtil.doTask) pageUpdater.globalActions) )
+        ( newModel, Cmd.batch (cmd :: List.map (GlobalAction >> TaskUtil.doTask) pageUpdater.globalActions) )
