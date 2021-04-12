@@ -84,7 +84,10 @@ function loadConfig() {
         console.log('Loaded local config.');
         return localConfig;
     } catch (ex) {
-        console.log('Loaded default config.');
+        if (ex && ex.code === 'MODULE_NOT_FOUND') {
+            console.error('Error loading local config: \n', ex);
+            console.error('Loading default config instead.');
+        }
         return {
             host: '0.0.0.0',
             port: 8000
@@ -140,11 +143,17 @@ function getBaseUrl(config, name) {
 
     if (typeof config[name] === 'object') {
         if (isProduction || isDebug) {
-            if (typeof config[name].production === 'string' && config[name].production.length > 0) {
+            if (
+                typeof config[name].production === 'string' &&
+                config[name].production.length > 0
+            ) {
                 return config[name].production;
             }
         } else if (isDevelopment) {
-            if (typeof config[name].development === 'string' && config[name].development.length > 0) {
+            if (
+                typeof config[name].development === 'string' &&
+                config[name].development.length > 0
+            ) {
                 return config[name].development;
             }
         }
@@ -158,14 +167,21 @@ function getBaseUrl(config, name) {
 
 // Get languageSwitcher from command line or config file
 function getLanguageSwitcher(config) {
-    return getOption('languageSwitcher', true, config.languageSwitcher || false);
+    return getOption(
+        'languageSwitcher',
+        true,
+        config.languageSwitcher || false
+    );
 }
 
 // Try to run a Git command. If Git isn't found in the PATH, then we
 // silently return an empty string.
 function runGitCommand(command) {
     try {
-        return ('' + execSync(['git', command].join(' '))).replace(/[\s\r\n]+$/, '');
+        return ('' + execSync(['git', command].join(' '))).replace(
+            /[\s\r\n]+$/,
+            ''
+        );
     } catch (ex) {
         return '';
     }
@@ -187,7 +203,8 @@ console.log('Initializing...');
 
 // Local config
 const localConfig = loadConfig();
-const publicPath = localConfig.publicPath || `${localConfig.host}:${localConfig.port}`;
+const publicPath =
+    localConfig.publicPath || `${localConfig.host}:${localConfig.port}`;
 
 // Determine build environment.
 const TARGET_ENV = getTargetEnv();
@@ -234,14 +251,16 @@ const commonConfig = {
             template: 'src/static/index.html',
             inject: true,
             filename: 'index.html',
-            minify: isDevelopment ? {} : {
-                removeAttributeQuotes: false,
-                collapseWhitespace: true,
-                html5: true,
-                minifyCSS: true,
-                removeComments: true,
-                removeEmptyAttributes: true,
-            }
+            minify: isDevelopment
+                ? {}
+                : {
+                      removeAttributeQuotes: false,
+                      collapseWhitespace: true,
+                      html5: true,
+                      minifyCSS: true,
+                      removeComments: true,
+                      removeEmptyAttributes: true
+                  }
         }),
         new CopyPlugin([
             {
@@ -280,10 +299,7 @@ if (isDevelopment) {
     console.log('Serving locally...');
 
     module.exports = merge(commonConfig, {
-        entry: [
-            `webpack-dev-server/client?http://${publicPath}`,
-            entryPath
-        ],
+        entry: [`webpack-dev-server/client?http://${publicPath}`, entryPath],
         devServer: {
             host: localConfig.host,
             port: localConfig.port,
@@ -380,11 +396,7 @@ if (isDevelopment) {
                     test: /\.(css|scss)$/,
                     use: ExtractTextPlugin.extract({
                         fallback: 'style-loader',
-                        use: [
-                            'css-loader',
-                            'postcss-loader',
-                            'sass-loader'
-                        ],
+                        use: ['css-loader', 'postcss-loader', 'sass-loader'],
                         publicPath: '../../'
                     })
                 }
@@ -398,7 +410,24 @@ if (isDevelopment) {
                 terserOptions: {
                     ecma: 5,
                     compress: {
-                        pure_funcs: ['F2','F3','F4','F5','F6','F7','F8','F9','A2','A3','A4','A5','A6','A7','A8','A9'],
+                        pure_funcs: [
+                            'F2',
+                            'F3',
+                            'F4',
+                            'F5',
+                            'F6',
+                            'F7',
+                            'F8',
+                            'F9',
+                            'A2',
+                            'A3',
+                            'A4',
+                            'A5',
+                            'A6',
+                            'A7',
+                            'A8',
+                            'A9'
+                        ],
                         pure_getters: true,
                         keep_fargs: false,
                         unsafe_comps: true,
@@ -418,7 +447,10 @@ if (isDevelopment) {
             new OptimizeCssAssetsPlugin({
                 cssProcessor: require('cssnano'),
                 cssProcessorPluginOptions: {
-                    preset: ['default', {discardComments: {removeAll: true}}],
+                    preset: [
+                        'default',
+                        { discardComments: { removeAll: true } }
+                    ]
                 },
                 canPrint: true
             }),
@@ -433,8 +465,8 @@ if (isDevelopment) {
 
             // Compress everything with Zopfli (gzip)
             new ZopfliPlugin({
-                asset: "[path].gz[query]",
-                algorithm: "gzip",
+                asset: '[path].gz[query]',
+                algorithm: 'gzip',
                 test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
                 threshold: 1024,
                 minRatio: 0.8
@@ -446,7 +478,7 @@ if (isDevelopment) {
                 test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
                 threshold: 1024,
                 minRatio: 0.8
-            }),
+            })
         ]
     });
 } else {
