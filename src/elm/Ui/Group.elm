@@ -73,6 +73,13 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
         regionId =
             id ++ "region"
 
+        maybeInert =
+            if not open then
+                [ A.attribute "inert" "true" ]
+
+            else
+                []
+
         buttonAttributes =
             case onOpenClick of
                 Just action ->
@@ -101,11 +108,13 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                         ]
                     ]
                 , H.div
-                    [ A.classList classListContent
-                    , A.attribute "aria-labelledby" id
-                    , A.attribute "role" "region"
-                    , A.id regionId
-                    ]
+                    (List.append maybeInert
+                        [ A.classList classListContent
+                        , A.attribute "aria-labelledby" id
+                        , A.attribute "role" "region"
+                        , A.id regionId
+                        ]
+                    )
                     children
                 ]
             ]

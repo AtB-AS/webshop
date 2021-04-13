@@ -45,6 +45,7 @@
     "webpack-merge": "4.2.2",
     "webpack-sources": "1.4.3",
     "webpack-subresource-integrity": "1.4.0",
+    "wicg-inert": "^3.1.1",
     "workbox-webpack-plugin": "5.0.0-rc.2"
   },
   "dependencies": {},
