@@ -407,6 +407,7 @@ view _ _ shared model _ =
                 , open = False
                 , disabled = True
                 , onOpenClick = Nothing
+                , id = "reisetype"
                 }
                 []
             , Ui.Group.togglable
@@ -416,6 +417,7 @@ view _ _ shared model _ =
                 , open = model.mainView == Travelers
                 , disabled = False
                 , onOpenClick = Just (ShowView Travelers)
+                , id = "reisende"
                 }
                 [ viewUserProfiles model shared.userProfiles
                 ]
@@ -426,6 +428,7 @@ view _ _ shared model _ =
                 , open = model.mainView == Duration
                 , disabled = False
                 , onOpenClick = Just (ShowView Duration)
+                , id = "varighet"
                 }
                 [ viewProducts model shared.fareProducts
                 ]
@@ -436,6 +439,7 @@ view _ _ shared model _ =
                 , open = model.mainView == Start
                 , disabled = False
                 , onOpenClick = Just (ShowView Start)
+                , id = "duration"
                 }
                 [ viewStart model
                 ]
@@ -446,6 +450,7 @@ view _ _ shared model _ =
                 , open = model.mainView == Zones
                 , disabled = False
                 , onOpenClick = Just (ShowView Zones)
+                , id = "zones"
                 }
                 [ viewZones model shared.tariffZones
                 ]

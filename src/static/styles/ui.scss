@@ -76,6 +76,10 @@
     background: var(--colors-background_0-backgroundColor);
     margin-bottom: var(--spacings-medium);
 }
+.group__header {
+    margin: 0;
+    padding: 0;
+}
 .group__content {
     overflow: hidden;
     max-height: 0;

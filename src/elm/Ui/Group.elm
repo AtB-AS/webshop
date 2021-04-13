@@ -4,13 +4,13 @@ import Fragment.Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
-import Svg exposing (metadata)
 import Ui.Heading
 import Ui.TextContainer
 
 
 type alias GroupMetadata msg =
     { title : String
+    , id : String
     , icon : Maybe (Html msg)
     , value : Maybe String
     , open : Bool
@@ -34,34 +34,47 @@ maybeHtml maybe =
             empty
 
 
+maybeText : Maybe String -> Html msg
+maybeText maybe =
+    case maybe of
+        Just a ->
+            H.span [] [ H.text a ]
+
+        Nothing ->
+            empty
+
+
 togglable : GroupMetadata msg -> List (Html msg) -> Html msg
-togglable metadata children =
+togglable { open, disabled, onOpenClick, icon, id, title, value } children =
     let
         classList =
             [ ( "group", True )
-            , ( "group--open", metadata.open )
-            , ( "group--disabled", metadata.disabled )
+            , ( "group--open", open )
+            , ( "group--disabled", disabled )
             ]
 
         classListContent =
             [ ( "group__content", True )
-            , ( "group__content--open", metadata.open )
+            , ( "group__content--open", open )
             ]
 
         classListButton =
             [ ( "group__headerButton", True )
-            , ( "group__headerButton--disabled", metadata.disabled )
+            , ( "group__headerButton--disabled", disabled )
             ]
 
         chevronIcon =
-            if metadata.open then
+            if open then
                 Fragment.Icon.upArrow
 
             else
                 Fragment.Icon.downArrow
 
+        regionId =
+            id ++ "region"
+
         buttonAttributes =
-            case metadata.onOpenClick of
+            case onOpenClick of
                 Just action ->
                     [ E.onClick action ]
 
@@ -71,19 +84,37 @@ togglable metadata children =
         Ui.TextContainer.primary
             [ H.section
                 [ A.classList classList ]
-                [ H.header [ A.class "group__header" ]
+                [ H.h3 [ A.class "group__header" ]
                     [ H.button
                         (List.append buttonAttributes
                             [ A.classList classListButton
-                            , A.disabled metadata.disabled
+                            , A.disabled disabled
+                            , A.attribute "aria-expanded" (stringFromBool open)
+                            , A.attribute "aria-controls" regionId
+                            , A.id id
                             ]
                         )
-                        [ maybeHtml metadata.icon
-                        , H.div [ A.class "group__headerButton__title" ] [ Ui.Heading.component metadata.title ]
+                        [ maybeHtml icon
+                        , H.div [ A.class "group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
+                        , maybeText value
                         , chevronIcon
                         ]
                     ]
-                , H.div [ A.classList classListContent ]
+                , H.div
+                    [ A.classList classListContent
+                    , A.attribute "aria-labelledby" id
+                    , A.attribute "role" "region"
+                    , A.id regionId
+                    ]
                     children
                 ]
             ]
+
+
+stringFromBool : Bool -> String
+stringFromBool value =
+    if value then
+        "true"
+
+    else
+        "false"

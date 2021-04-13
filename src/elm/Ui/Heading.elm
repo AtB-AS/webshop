@@ -1,10 +1,13 @@
 module Ui.Heading exposing
     ( component
+    , componentWithEl
     , paragraph
+    , paragraphWithEl
     , title
+    , titleWithEl
     )
 
-import Html as H exposing (Html)
+import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 
 
@@ -27,13 +30,18 @@ headingToClass head =
             ( "typo-heading__paragraph", text )
 
 
-heading : Heading -> Html msg
-heading msg =
+headingWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> Heading -> Html msg
+headingWithEl el msg =
     let
         ( class, text ) =
             headingToClass msg
     in
-        H.h3 [ A.class (class ++ " ui-heading") ] [ H.text text ]
+        el [ A.class (class ++ " ui-heading") ] [ H.text text ]
+
+
+heading : Heading -> Html msg
+heading =
+    headingWithEl H.h3
 
 
 title : String -> Html msg
@@ -49,3 +57,18 @@ component =
 paragraph : String -> Html msg
 paragraph =
     Paragraph >> heading
+
+
+titleWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Html msg
+titleWithEl el =
+    Title >> headingWithEl el
+
+
+componentWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Html msg
+componentWithEl el =
+    Component >> headingWithEl el
+
+
+paragraphWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Html msg
+paragraphWithEl el =
+    Paragraph >> headingWithEl el
