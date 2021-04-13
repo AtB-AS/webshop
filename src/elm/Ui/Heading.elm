@@ -33,7 +33,7 @@ heading msg =
         ( class, text ) =
             headingToClass msg
     in
-        H.h3 [ A.class class ] [ H.text text ]
+        H.h3 [ A.class (class ++ " ui-heading") ] [ H.text text ]
 
 
 title : String -> Html msg

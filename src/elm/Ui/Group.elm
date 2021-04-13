@@ -79,16 +79,11 @@ togglable metadata children =
                             ]
                         )
                         [ maybeHtml metadata.icon
-                        , Ui.Heading.component metadata.title
+                        , H.div [ A.class "group__headerButton__title" ] [ Ui.Heading.component metadata.title ]
                         , chevronIcon
                         ]
                     ]
                 , H.div [ A.classList classListContent ]
-                    (if metadata.open then
-                        children
-
-                     else
-                        []
-                    )
+                    children
                 ]
             ]
