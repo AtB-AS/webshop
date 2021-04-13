@@ -18,6 +18,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-community/dict-extra": "2.4.0",
+            "elm-community/html-extra": "3.4.0",
             "elm-community/list-extra": "8.2.3",
             "elm-explorations/markdown": "1.0.0",
             "jinjor/elm-contextmenu": "2.0.0",

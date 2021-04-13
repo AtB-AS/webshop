@@ -3,7 +3,10 @@ module Ui.Group exposing (togglable)
 import Fragment.Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Attributes.Extra as Attr
 import Html.Events as E
+import Html.Extra as Html
+import Json.Encode as Json
 import Ui.Heading
 import Ui.TextContainer
 
@@ -17,31 +20,6 @@ type alias GroupMetadata msg =
     , disabled : Bool
     , onOpenClick : Maybe msg
     }
-
-
-empty : Html msg
-empty =
-    H.text ""
-
-
-maybeHtml : Maybe (Html msg) -> Html msg
-maybeHtml maybe =
-    case maybe of
-        Just a ->
-            a
-
-        Nothing ->
-            empty
-
-
-maybeText : Maybe String -> Html msg
-maybeText maybe =
-    case maybe of
-        Just a ->
-            H.span [] [ H.text a ]
-
-        Nothing ->
-            empty
 
 
 togglable : GroupMetadata msg -> List (Html msg) -> Html msg
@@ -72,58 +50,56 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
 
         regionId =
             id ++ "region"
-
-        maybeInert =
-            if not open then
-                [ A.attribute "inert" "true" ]
-
-            else
-                []
-
-        buttonAttributes =
-            case onOpenClick of
-                Just action ->
-                    [ E.onClick action ]
-
-                _ ->
-                    []
     in
         Ui.TextContainer.primary
             [ H.section
                 [ A.classList classList ]
                 [ H.h3 [ A.class "group__header" ]
                     [ H.button
-                        (List.append buttonAttributes
-                            [ A.classList classListButton
-                            , A.disabled disabled
-                            , A.attribute "aria-expanded" (stringFromBool open)
-                            , A.attribute "aria-controls" regionId
-                            , A.id id
-                            ]
-                        )
-                        [ maybeHtml icon
+                        [ A.classList classListButton
+                        , A.disabled disabled
+                        , A.attribute "aria-expanded" (boolAsString open)
+                        , A.attribute "aria-controls" regionId
+                        , A.id id
+                        , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
+                        ]
+                        [ viewMaybe icon
                         , H.div [ A.class "group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
-                        , maybeText value
+                        , viewMaybeText value
                         , chevronIcon
                         ]
                     ]
                 , H.div
-                    (List.append maybeInert
-                        [ A.classList classListContent
-                        , A.attribute "aria-labelledby" id
-                        , A.attribute "role" "region"
-                        , A.id regionId
-                        ]
-                    )
+                    [ A.classList classListContent
+                    , A.attribute "aria-labelledby" id
+                    , Attr.role "region"
+                    , A.id regionId
+                    , Attr.attributeIf (not open) (A.attribute "inert" "true")
+                    ]
                     children
                 ]
             ]
 
 
-stringFromBool : Bool -> String
-stringFromBool value =
-    if value then
-        "true"
+boolAsString : Bool -> String
+boolAsString b =
+    case b of
+        True ->
+            "true"
 
-    else
-        "false"
+        False ->
+            "false"
+
+
+viewMaybe : Maybe (Html msg) -> Html msg
+viewMaybe maybeView =
+    Html.viewMaybe identity maybeView
+
+
+viewMaybeText : Maybe String -> Html msg
+viewMaybeText value =
+    let
+        spanNode =
+            H.text >> List.singleton >> H.span []
+    in
+        viewMaybe (Maybe.map spanNode value)
