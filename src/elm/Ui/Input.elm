@@ -6,7 +6,10 @@ module Ui.Input exposing
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra exposing (viewMaybe)
+import Ui.Button exposing (ButtonMode(..))
 import Ui.Group
+import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..), textContainer)
 
 
 type alias RadioOptions msg =
@@ -30,7 +33,7 @@ radioGroup hiddenTitle children =
 
 
 radio : RadioOptions msg -> Html msg
-radio { id, name, title, onCheck, checked } =
+radio { id, name, title, onCheck, checked, subtitle } =
     H.div []
         [ H.input
             [ A.type_ "radio"
@@ -42,7 +45,10 @@ radio { id, name, title, onCheck, checked } =
             ]
             []
         , H.label [ A.for id, A.class "ui-input-radio" ]
-            [ H.div [ A.class "ui-input-radio__title" ] [ H.text title ]
+            [ H.div [ A.class "ui-input-radio__title" ]
+                [ H.text title
+                , viewMaybe (\text -> Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text text ]) subtitle
+                ]
             , H.div [ A.class "ui-input-radio__box" ] []
             ]
         ]

@@ -273,3 +273,13 @@
 .ui-button--disabled:hover {
     filter: none;
 }
+
+.ui-textContainer--primary {
+    color: var(--text-colors-primary);
+}
+.ui-textContainer--secondary {
+    color: var(--text-colors-secondary);
+}
+.ui-textContainer--disabled {
+    color: var(--text-colors-disabled);
+}

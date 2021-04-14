@@ -636,7 +636,7 @@ viewUserProfile model userProfile =
         Input.radio
             { id = userTypeAsIdString userProfile.userType
             , title = langString userProfile.name
-            , subtitle = Nothing
+            , subtitle = Just <| langString userProfile.description
             , name = "userprofile"
             , checked = isCurrent
             , onCheck = Just <| SetUser userProfile.userType

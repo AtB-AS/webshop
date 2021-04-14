@@ -1,5 +1,7 @@
 module Ui.TextContainer exposing
-    ( primary
+    ( TextColor(..)
+    , TextContainer(..)
+    , primary
     , primaryBold
     , primaryJumbo
     , primaryUnderline
@@ -14,6 +16,12 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 
 
+type TextColor
+    = PrimaryColor
+    | SecondaryColor
+    | DisabledColor
+
+
 type TextContainer msg
     = Primary (List (Html msg))
     | PrimaryBold (List (Html msg))
@@ -25,78 +33,93 @@ type TextContainer msg
     | TertiaryStrike (List (Html msg))
 
 
-toClassChildrenPair : TextContainer msg -> ( String, List (Html msg) )
-toClassChildrenPair head =
-    case head of
-        Primary text ->
-            ( "typo-body__primary", text )
+toClassChildrenPair : TextContainer msg -> Maybe TextColor -> ( String, List (Html msg) )
+toClassChildrenPair head color =
+    let
+        textColorClass =
+            case color of
+                Just PrimaryColor ->
+                    "ui-textContainer--primary"
 
-        PrimaryBold text ->
-            ( "typo-body__primary--bold", text )
+                Just SecondaryColor ->
+                    "ui-textContainer--secondary"
 
-        PrimaryUnderline text ->
-            ( "typo-body__primary--underline", text )
+                Just DisabledColor ->
+                    "ui-textContainer--disabled"
 
-        PrimaryJumbo text ->
-            ( "typo-body__primary--jumbo", text )
+                Nothing ->
+                    ""
+    in
+        case head of
+            Primary text ->
+                ( "typo-body__primary ui-textContainer " ++ textColorClass, text )
 
-        Secondary text ->
-            ( "typo-body__secondary", text )
+            PrimaryBold text ->
+                ( "typo-body__primary--bold ui-textContainer " ++ textColorClass, text )
 
-        SecondaryBold text ->
-            ( "typo-body__secondary--bold", text )
+            PrimaryUnderline text ->
+                ( "typo-body__primary--underline ui-textContainer " ++ textColorClass, text )
 
-        Tertiary text ->
-            ( "typo-body__tertiary", text )
+            PrimaryJumbo text ->
+                ( "typo-body__primary--jumbo ui-textContainer " ++ textColorClass, text )
 
-        TertiaryStrike text ->
-            ( "typo-body__tertiary--strike", text )
+            Secondary text ->
+                ( "typo-body__secondary ui-textContainer " ++ textColorClass, text )
+
+            SecondaryBold text ->
+                ( "typo-body__secondary--bold ui-textContainer " ++ textColorClass, text )
+
+            Tertiary text ->
+                ( "typo-body__tertiary ui-textContainer " ++ textColorClass, text )
+
+            TertiaryStrike text ->
+                ( "typo-body__tertiary--strike ui-textContainer " ++ textColorClass, text )
 
 
-textContainer : TextContainer msg -> Html msg
-textContainer msg =
+textContainer : Maybe TextColor -> TextContainer msg -> Html msg
+textContainer color msg =
     let
         ( class, children ) =
-            toClassChildrenPair msg
+            toClassChildrenPair msg color
     in
         H.div [ A.class class ] children
 
 
 primary : List (Html msg) -> Html msg
 primary =
-    Primary >> textContainer
+    Primary >> textContainer Nothing
 
 
 primaryBold : List (Html msg) -> Html msg
 primaryBold =
-    PrimaryBold >> textContainer
+    PrimaryBold >> textContainer Nothing
 
 
 primaryUnderline : List (Html msg) -> Html msg
 primaryUnderline =
-    PrimaryUnderline >> textContainer
+    PrimaryUnderline >> textContainer Nothing
 
 
 primaryJumbo : List (Html msg) -> Html msg
 primaryJumbo =
-    PrimaryJumbo >> textContainer
+    PrimaryJumbo >> textContainer Nothing
 
 
 secondary : List (Html msg) -> Html msg
 secondary =
-    Secondary >> textContainer
+    Secondary >> textContainer Nothing
 
 
 secondaryBold : List (Html msg) -> Html msg
 secondaryBold =
-    SecondaryBold >> textContainer
+    SecondaryBold >> textContainer Nothing
 
 
 tertiary : List (Html msg) -> Html msg
 tertiary =
-    Tertiary >> textContainer
+    Tertiary >> textContainer Nothing
 
 
 tertiaryStrike : List (Html msg) -> Html msg
 tertiaryStrike =
-    TertiaryStrike >> textContainer
+    TertiaryStrike >> textContainer Nothing
