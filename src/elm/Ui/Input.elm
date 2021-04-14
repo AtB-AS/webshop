@@ -1,4 +1,7 @@
-module Ui.Input exposing (..)
+module Ui.Input exposing
+    ( radio
+    , radioGroup
+    )
 
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A

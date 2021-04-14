@@ -24,6 +24,7 @@ import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
 import Time
+import Ui.Heading
 import Url exposing (Url)
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -464,10 +465,7 @@ viewPage model =
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ H.div [ A.class "title-bar" ]
-            [ H.div [ A.class "go-back" ] [ H.a [ A.href "#/" ] [ Icon.leftArrow, H.text " Oversikt" ] ]
-            , H.div [] [ H.text title ]
-            ]
+        [ Ui.Heading.page title "Oversikt"
         , children
         ]
 

@@ -135,6 +135,30 @@
     margin: 0;
     padding: 0;
 }
+.ui-heading-page {
+    display: flex;
+    padding: var(--spacings-xLarge);
+    position: relative;
+    justify-content: center;
+}
+.ui-heading-page__back:link,
+.ui-heading-page__back:visited,
+.ui-heading-page__back:hover {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: var(--spacings-xLarge);
+    color: var(--text-colors-primary);
+    text-decoration: none;
+    transition: opacity 150ms ease-in;
+
+    svg {
+        margin-right: var(--spacings-medium);
+    }
+}
+.ui-heading-page__back:active {
+    opacity: 0.6;
+}
 
 .ui-input-radio {
     display: flex;
