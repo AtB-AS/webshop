@@ -254,7 +254,6 @@
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
 }
-
 .ui-button:hover {
     filter: brightness(90%);
 }
@@ -266,4 +265,11 @@
     border: var(--border-width-medium) solid
         var(--colors-primary_2-backgroundColor);
     border-radius: var(--border-radius-regular);
+}
+
+.ui-button--disabled > * {
+    opacity: 0.2;
+}
+.ui-button--disabled:hover {
+    filter: none;
 }
