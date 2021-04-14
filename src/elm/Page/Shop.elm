@@ -393,7 +393,7 @@ richBuyButton disabled action content =
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div []
+    H.div [ A.class "page-shop" ]
         [ H.div []
             [ Ui.Group.togglable
                 { title = "Reisetype"
@@ -450,100 +450,98 @@ view _ _ shared model _ =
                 [ viewZones model shared.tariffZones
                 ]
             ]
-        , H.div [ A.class "page-shop" ]
-            [ H.div [ A.class "right" ]
-                (case model.offers of
-                    NotLoaded ->
-                        [ H.text "" ]
-
-                    Loading _ ->
-                        [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
-
-                    Loaded offers ->
-                        let
-                            disableButtons =
-                                case model.reservation of
-                                    Loading _ ->
-                                        True
-
-                                    Loaded _ ->
-                                        True
-
-                                    _ ->
-                                        False
-
-                            totalPrice =
-                                offers
-                                    |> List.map (calculateOfferPrice model.users)
-                                    |> List.sum
-                                    |> round
-                                    |> String.fromInt
-                        in
-                            [ Section.sectionWithOptions
-                                { marginBottom = True
-                                , marginTop = False
-                                }
-                                [ Section.sectionHeader "Oppsummering"
-                                , Section.sectionGenericItem
-                                    [ H.div [ A.class "summary-price" ]
-                                        [ H.text ("kr " ++ totalPrice ++ ",00")
-                                        ]
-                                    ]
-                                , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
-                                ]
-                            , H.div [ A.class "section-box" ]
-                                [ richBuyButton disableButtons
-                                    (BuyOffers Nets)
-                                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                        [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
-                                        , Icon.creditcard
-                                        ]
-                                    )
-                                , richBuyButton disableButtons
-                                    (BuyOffers Vipps)
-                                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                        [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
-                                        , H.div
-                                            [ A.style "width" "18px"
-                                            , A.style "height" "12px"
-                                            , A.style "background-color" "#FF5B24"
-                                            , A.style "text-align" "center"
-                                            , A.style "display" "grid"
-                                            , A.style "place-items" "center"
-                                            ]
-                                            [ Icon.vipps ]
-                                        ]
-                                    )
-                                , richActionButton False
-                                    (Just CloseShop)
-                                    (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                        [ H.span
-                                            [ A.style "flex-grow" "1"
-                                            , A.style "font-weight" "500"
-                                            ]
-                                            [ H.text "Avbryt" ]
-                                        , Icon.cross
-                                        ]
-                                    )
-                                ]
-                            ]
-
-                    Failed error ->
-                        [ H.div [] [ H.text error ] ]
-                )
-            , case model.reservation of
+        , H.div [ A.class "page-shop__summary" ]
+            (case model.offers of
                 NotLoaded ->
-                    H.text ""
+                    [ H.text "" ]
 
                 Loading _ ->
-                    H.p [] [ H.text "Reserving offers..." ]
+                    [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
 
-                Loaded reservation ->
-                    H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
+                Loaded offers ->
+                    let
+                        disableButtons =
+                            case model.reservation of
+                                Loading _ ->
+                                    True
+
+                                Loaded _ ->
+                                    True
+
+                                _ ->
+                                    False
+
+                        totalPrice =
+                            offers
+                                |> List.map (calculateOfferPrice model.users)
+                                |> List.sum
+                                |> round
+                                |> String.fromInt
+                    in
+                        [ Section.sectionWithOptions
+                            { marginBottom = True
+                            , marginTop = False
+                            }
+                            [ Section.sectionHeader "Oppsummering"
+                            , Section.sectionGenericItem
+                                [ H.div [ A.class "summary-price" ]
+                                    [ H.text ("kr " ++ totalPrice ++ ",00")
+                                    ]
+                                ]
+                            , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
+                            ]
+                        , H.div [ A.class "section-box" ]
+                            [ richBuyButton disableButtons
+                                (BuyOffers Nets)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
+                                    , Icon.creditcard
+                                    ]
+                                )
+                            , richBuyButton disableButtons
+                                (BuyOffers Vipps)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
+                                    , H.div
+                                        [ A.style "width" "18px"
+                                        , A.style "height" "12px"
+                                        , A.style "background-color" "#FF5B24"
+                                        , A.style "text-align" "center"
+                                        , A.style "display" "grid"
+                                        , A.style "place-items" "center"
+                                        ]
+                                        [ Icon.vipps ]
+                                    ]
+                                )
+                            , richActionButton False
+                                (Just CloseShop)
+                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
+                                    [ H.span
+                                        [ A.style "flex-grow" "1"
+                                        , A.style "font-weight" "500"
+                                        ]
+                                        [ H.text "Avbryt" ]
+                                    , Icon.cross
+                                    ]
+                                )
+                            ]
+                        ]
 
                 Failed error ->
-                    H.p [] [ H.text error ]
-            ]
+                    [ H.div [] [ H.text error ] ]
+            )
+        , case model.reservation of
+            NotLoaded ->
+                H.text ""
+
+            Loading _ ->
+                H.p [] [ H.text "Reserving offers..." ]
+
+            Loaded reservation ->
+                H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
+
+            Failed error ->
+                H.p [] [ H.text error ]
         ]
 
 

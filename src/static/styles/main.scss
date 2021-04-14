@@ -65,11 +65,6 @@ a:hover {
 }
 
 .pageHeader {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 48px;
     background-color: var(--primary-2);
 
     display: flex;
@@ -91,11 +86,13 @@ a:hover {
     }
 }
 
-main {
-    margin-top: 96px;
-    width: 920px;
-    margin-left: auto;
-    margin-right: auto;
+.container {
+    min-height: 100vh;
+}
+.app {
+    margin: auto;
+    padding: var(--spacings-xLarge);
+    max-width: 976px;
 }
 
 // Page layouts
@@ -320,20 +317,8 @@ main {
 
 .page-shop {
     display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 320px 320px 320px;
-
-    .left {
-        width: 320px;
-    }
-
-    .middle {
-        width: 320px;
-    }
-
-    .right {
-        width: 320px;
-    }
+    grid-gap: var(--spacings-xLarge);
+    grid-template-columns: 2fr 1fr;
 
     input[type='time'],
     input[type='date'] {
@@ -361,9 +346,7 @@ main {
 
 @media (max-width: 768px) {
     main {
-        width: inherit;
-        margin-left: 24px;
-        margin-right: 24px;
+        padding: var(--spacings-medium);
     }
 
     .page-overview,
@@ -371,14 +354,6 @@ main {
     .page-shop,
     .page-account {
         grid-template-columns: 1fr;
-    }
-
-    .page-overview .sidebar,
-    .page-shop .left,
-    .page-shop .middle,
-    .page-shop .right,
-    .page-history .sidebar {
-        width: inherit;
     }
 }
 

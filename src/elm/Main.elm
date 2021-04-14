@@ -383,11 +383,11 @@ view model =
                             ]
 
             _ ->
-                H.div [ A.class "light" ]
+                H.div [ A.class "light container" ]
                     [ header model
                     , case model.environment.customerId of
                         Just _ ->
-                            H.main_ [] [ viewPage model ]
+                            H.main_ [ A.class "app" ] [ viewPage model ]
 
                         Nothing ->
                             case model.onboarding of
