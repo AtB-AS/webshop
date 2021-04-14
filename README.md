@@ -32,7 +32,9 @@ module.exports = {
 };
 ```
 
-It is highly recommended that you set the `host` property at least.
+The `baseUrl` needs to be set to be able to make calls to the backend.  As an
+alternative to using a local config file if you only need to set the base URL,
+you can set the `WEBSHOP_BASE_URL` environment variable.
 
 When making changes, always format Elm files using the following `elm-format` release:
 
