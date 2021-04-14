@@ -21,7 +21,7 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
-import Ui.Button exposing (ThemeColor(..), primary)
+import Ui.Button exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input as Input
 import Ui.Message as Message
@@ -213,7 +213,7 @@ update msg env model =
                 Ok offers ->
                     PageUpdater.init { model | offers = Loaded offers }
 
-                Err err ->
+                Err _ ->
                     PageUpdater.init { model | offers = Failed "Unable to load offers" }
 
         BuyOffers paymentType ->
@@ -377,20 +377,6 @@ richActionButton active maybeAction content =
                     baseAttributes
     in
         H.div attributes [ content ]
-
-
-richBuyButton : Bool -> msg -> Html msg -> Html msg
-richBuyButton disabled action content =
-    let
-        onClick =
-            if disabled then
-                [ A.class "disabled-button-new" ]
-
-            else
-                [ E.onClick action ]
-    in
-        H.div (A.class "pseudo-button buy-button-new" :: onClick)
-            [ content ]
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -682,21 +668,6 @@ viewUserProfile model userProfile =
             , checked = isCurrent
             , onCheck = Just <| SetUser userProfile.userType
             }
-
-
-viewOffer : Offer -> Html msg
-viewOffer offer =
-    H.div []
-        [ H.div [] [ H.text offer.offerId ]
-        , H.div [] [ H.text offer.travellerId ]
-        , H.div []
-            [ offer.prices
-                |> List.head
-                |> Maybe.map (\price -> price.currency ++ " " ++ price.amount)
-                |> Maybe.withDefault "No prices"
-                |> H.text
-            ]
-        ]
 
 
 subscriptions : Model -> Sub Msg
