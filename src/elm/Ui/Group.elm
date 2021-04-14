@@ -100,8 +100,8 @@ boolAsString b =
 
 
 viewMaybe : Maybe (Html msg) -> Html msg
-viewMaybe maybeView =
-    Html.viewMaybe identity maybeView
+viewMaybe =
+    Html.viewMaybe identity
 
 
 viewMaybeText : Maybe String -> Html msg

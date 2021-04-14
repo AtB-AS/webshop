@@ -74,6 +74,7 @@
     overflow: hidden;
     border-radius: var(--border-radius-regular);
     background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
     margin-bottom: var(--spacings-medium);
 }
 .group__header {
@@ -227,4 +228,42 @@
 .ui-input-radioGroup__hiddenLegend {
     position: absolute;
     clip: rect(0 0 0 0);
+}
+
+.ui-button {
+    display: flex;
+    width: 100%;
+
+    border: var(--border-width-medium) solid transparent;
+    // Remove border from padding.
+    padding: calc(var(--spacings-xLarge) - 2 * var(--border-width-medium));
+
+    text-align: left;
+    justify-content: space-between;
+    align-items: center;
+    transition: filter 150ms ease-in;
+
+    > :not(.ui-button__coloredIcon) {
+        svg,
+        path {
+            fill: currentColor;
+        }
+    }
+}
+.ui-button--tertiary {
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+}
+
+.ui-button:hover {
+    filter: brightness(90%);
+}
+.ui-button:active {
+    filter: brightness(80%);
+}
+.ui-button:focus {
+    outline: 0;
+    border: var(--border-width-medium) solid
+        var(--colors-primary_2-backgroundColor);
+    border-radius: var(--border-radius-regular);
 }

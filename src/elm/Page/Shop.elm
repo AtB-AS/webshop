@@ -20,6 +20,7 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
+import Ui.Button exposing (ThemeColor(..), primary)
 import Ui.Group
 import Ui.Input as Input
 import Ui.Message as Message
@@ -490,40 +491,13 @@ view _ _ shared model _ =
                                 ]
                             , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
                             ]
-                        , H.div [ A.class "section-box" ]
-                            [ richBuyButton disableButtons
-                                (BuyOffers Nets)
-                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med bankkort" ]
-                                    , Icon.creditcard
-                                    ]
-                                )
-                            , richBuyButton disableButtons
-                                (BuyOffers Vipps)
-                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                    [ H.span [ A.style "flex-grow" "1", A.style "font-weight" "500" ] [ H.text "Kjøp med Vipps" ]
-                                    , H.div
-                                        [ A.style "width" "18px"
-                                        , A.style "height" "12px"
-                                        , A.style "background-color" "#FF5B24"
-                                        , A.style "text-align" "center"
-                                        , A.style "display" "grid"
-                                        , A.style "place-items" "center"
-                                        ]
-                                        [ Icon.vipps ]
-                                    ]
-                                )
-                            , richActionButton False
-                                (Just CloseShop)
-                                (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                                    [ H.span
-                                        [ A.style "flex-grow" "1"
-                                        , A.style "font-weight" "500"
-                                        ]
-                                        [ H.text "Avbryt" ]
-                                    , Icon.cross
-                                    ]
-                                )
+                        , Section.sectionWithOptions
+                            { marginBottom = True
+                            , marginTop = False
+                            }
+                            [ Ui.Button.primary Secondary_1 "Kjøp med bankkort" (Just Icon.creditcard) (BuyOffers Nets)
+                            , Ui.Button.primary Secondary_1 "Kjøp med Vipps" (Just <| Ui.Button.coloredIcon Icon.vipps) (BuyOffers Vipps)
+                            , Ui.Button.tertiary "Avbryt" (Just Icon.cross) CloseShop
                             ]
                         ]
 
