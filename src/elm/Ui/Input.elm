@@ -9,7 +9,7 @@ import Html.Events as E
 import Html.Extra exposing (viewMaybe)
 import Ui.Button exposing (ButtonMode(..))
 import Ui.Group
-import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..), textContainer)
+import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
 type alias RadioOptions msg =

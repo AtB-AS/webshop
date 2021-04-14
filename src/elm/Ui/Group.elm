@@ -6,7 +6,6 @@ import Html.Attributes as A
 import Html.Attributes.Extra as Attr
 import Html.Events as E
 import Html.Extra as Html
-import Json.Encode as Json
 import Ui.Heading
 import Ui.TextContainer
 
@@ -91,12 +90,11 @@ groupItem =
 
 boolAsString : Bool -> String
 boolAsString b =
-    case b of
-        True ->
-            "true"
+    if b then
+        "true"
 
-        False ->
-            "false"
+    else
+        "false"
 
 
 viewMaybe : Maybe (Html msg) -> Html msg
