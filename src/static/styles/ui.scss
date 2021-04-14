@@ -234,6 +234,7 @@
 .ui-button {
     display: flex;
     width: 100%;
+    cursor: pointer;
 
     border: var(--border-width-medium) solid transparent;
     // Remove border from padding.
