@@ -1,4 +1,4 @@
-module Ui.Group exposing (togglable)
+module Ui.Group exposing (groupItem, togglable)
 
 import Fragment.Icon
 import Html as H exposing (Html)
@@ -69,6 +69,7 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                         , chevronIcon
                         ]
                     ]
+                    |> groupItem
                 , H.div
                     [ A.classList classListContent
                     , A.attribute "aria-labelledby" id
@@ -76,9 +77,16 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                     , A.id regionId
                     , Attr.attributeIf (not open) (A.attribute "inert" "true")
                     ]
-                    children
+                    (children
+                        |> List.map groupItem
+                    )
                 ]
             ]
+
+
+groupItem : Html msg -> Html msg
+groupItem =
+    List.singleton >> H.div [ A.class "group__item" ]
 
 
 boolAsString : Bool -> String

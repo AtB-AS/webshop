@@ -85,6 +85,10 @@
     max-height: 0;
     transition: max-height 200ms ease-in-out;
 }
+.group__item:not(:last-child) {
+    border-bottom: var(--border-width-slim) solid
+        var(--colors-background_1-backgroundColor);
+}
 .group__content--open {
     max-height: 600px;
     overflow: auto;

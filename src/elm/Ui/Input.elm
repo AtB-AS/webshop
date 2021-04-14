@@ -6,6 +6,7 @@ module Ui.Input exposing
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Events as E
+import Ui.Group
 
 
 type alias RadioOptions msg =
@@ -24,7 +25,7 @@ radioGroup hiddenTitle children =
         (H.legend
             [ A.class "ui-input-radioGroup__hiddenLegend" ]
             [ H.text hiddenTitle ]
-            :: children
+            :: (children |> List.map Ui.Group.groupItem)
         )
 
 

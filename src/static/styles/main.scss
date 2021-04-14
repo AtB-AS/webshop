@@ -22,9 +22,18 @@ body {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     font-size: 16px;
     line-height: 1.2em;
-    color: var(--primary);
     margin: 0;
-    background-color: var(--background);
+}
+
+.container {
+    min-height: 100vh;
+    color: var(--colors-background_1-color);
+    background-color: var(--colors-background_1-backgroundColor);
+}
+.app {
+    margin: auto;
+    padding: var(--spacings-xLarge);
+    max-width: 976px;
 }
 
 a:link,
@@ -65,15 +74,6 @@ a:hover {
         height: 32px;
         margin: 8px 0 8px 1rem;
     }
-}
-
-.container {
-    min-height: 100vh;
-}
-.app {
-    margin: auto;
-    padding: var(--spacings-xLarge);
-    max-width: 976px;
 }
 
 // Page layouts
