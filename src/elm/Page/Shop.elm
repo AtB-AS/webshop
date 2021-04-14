@@ -36,7 +36,7 @@ type Msg
     | ReceiveBuyOffers (Result Http.Error Reservation)
     | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
     | CloseShop
-    | SetProduct String
+    | SetProduct String Bool
     | SetFromZone String
     | SetToZone String
     | ModUser UserType Int
@@ -121,7 +121,7 @@ init shared =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
-        SetProduct product ->
+        SetProduct product _ ->
             PageUpdater.fromPair
                 ( { model | product = product }
                 , TaskUtil.doTask FetchOffers
@@ -139,7 +139,7 @@ update msg env model =
                 , TaskUtil.doTask FetchOffers
                 )
 
-        SetUser userType check ->
+        SetUser userType _ ->
             PageUpdater.fromPair
                 ( { model | users = [ ( userType, 1 ) ] }
                 , TaskUtil.doTask FetchOffers
@@ -414,9 +414,7 @@ view _ _ shared model _ =
                 , onOpenClick = Just (ShowView Travelers)
                 , id = "reisende"
                 }
-                [ Input.radioGroup "Reisende" <|
-                    List.singleton <|
-                        viewUserProfiles model shared.userProfiles
+                [ viewUserProfiles model shared.userProfiles
                 ]
             , Ui.Group.togglable
                 { title = "Varighet"
@@ -600,10 +598,7 @@ viewStart model =
 
 viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
-    H.div [ A.class "section-box" ]
-        (H.div [ A.class "section-header" ] [ H.text "Velg varighet" ]
-            :: List.map (viewProduct model) products
-        )
+    Input.radioGroup "Velg varighet" <| List.map (viewProduct model) products
 
 
 viewProduct : Model -> FareProduct -> Html Msg
@@ -611,21 +606,15 @@ viewProduct model product =
     let
         isCurrent =
             model.product == product.id
-
-        extraHtml =
-            if isCurrent then
-                H.span [ A.style "float" "right" ] [ Icon.checkmark ]
-
-            else
-                H.text ""
     in
-        richActionButton False
-            (Just <| SetProduct product.id)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString product.name ]
-                , extraHtml
-                ]
-            )
+        Input.radio
+            { id = product.id
+            , title = langString product.name
+            , subtitle = Nothing
+            , name = "product"
+            , checked = isCurrent
+            , onCheck = Just <| SetProduct product.id
+            }
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -659,7 +648,7 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    H.div []
+    Input.radioGroup "Reisende"
         (userProfiles
             |> List.filter (.userType >> (/=) UserTypeAnyone)
             |> List.map (viewUserProfile model)
