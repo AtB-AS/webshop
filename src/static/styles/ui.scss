@@ -57,7 +57,7 @@
 .section--marginBottom {
     margin-bottom: var(--spacings-xLarge);
 }
-.section__item:not(:last-child) {
+.section__item {
     margin-bottom: 1px;
     padding: var(--spacings-xLarge);
     flex: 1;

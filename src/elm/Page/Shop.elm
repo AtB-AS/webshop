@@ -10,6 +10,7 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra exposing (viewMaybe)
 import Http
 import PageUpdater exposing (PageUpdater)
 import Process
@@ -489,7 +490,7 @@ view _ _ shared model _ =
                                     [ H.text ("kr " ++ totalPrice ++ ",00")
                                     ]
                                 ]
-                            , Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
+                            , maybeBuyNotice model.users
                             ]
                         , Section.sectionWithOptions
                             { marginBottom = True
@@ -517,6 +518,46 @@ view _ _ shared model _ =
             Failed error ->
                 H.p [] [ H.text error ]
         ]
+
+
+hasReducedCost : UserType -> Bool
+hasReducedCost userType =
+    case userType of
+        UserTypeAdult ->
+            False
+
+        UserTypeInfant ->
+            False
+
+        UserTypeSchoolPupil ->
+            False
+
+        UserTypeAnimal ->
+            False
+
+        UserTypeAnyone ->
+            False
+
+        _ ->
+            True
+
+
+maybeBuyNotice : List ( UserType, Int ) -> Html msg
+maybeBuyNotice users =
+    let
+        reduced =
+            users |> List.any (Tuple.first >> hasReducedCost)
+
+        result =
+            if reduced then
+                Just <| Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
+
+            else
+                Nothing
+
+        --
+    in
+        viewMaybe identity result
 
 
 langString : LangString -> String
