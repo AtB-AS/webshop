@@ -145,6 +145,7 @@
     padding: var(--spacings-xLarge);
     position: relative;
     justify-content: center;
+    margin-bottom: var(--spacings-xLarge);
 }
 .ui-heading-page__back:link,
 .ui-heading-page__back:visited,
@@ -266,7 +267,6 @@
         var(--colors-primary_2-backgroundColor);
     border-radius: var(--border-radius-regular);
 }
-
 .ui-button--disabled > * {
     opacity: 0.2;
 }
