@@ -21,6 +21,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Group
+import Ui.Input as Input
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Status exposing (Status(..))
@@ -39,7 +40,7 @@ type Msg
     | SetFromZone String
     | SetToZone String
     | ModUser UserType Int
-    | SetUser UserType
+    | SetUser UserType Bool
     | ShowView MainView
     | SetTime String
     | SetDate String
@@ -138,7 +139,7 @@ update msg env model =
                 , TaskUtil.doTask FetchOffers
                 )
 
-        SetUser userType ->
+        SetUser userType check ->
             PageUpdater.fromPair
                 ( { model | users = [ ( userType, 1 ) ] }
                 , TaskUtil.doTask FetchOffers
@@ -354,12 +355,6 @@ updateNow now model =
         { model | now = now }
 
 
-actionButton : Bool -> msg -> String -> Html msg
-actionButton active action title =
-    H.div [ A.class "pseudo-button", A.classList [ ( "active", active ) ], E.onClick action ]
-        [ H.button [ A.class "action-button" ] [ H.text title ] ]
-
-
 richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
 richActionButton active maybeAction content =
     let
@@ -419,7 +414,9 @@ view _ _ shared model _ =
                 , onOpenClick = Just (ShowView Travelers)
                 , id = "reisende"
                 }
-                [ viewUserProfiles model shared.userProfiles
+                [ Input.radioGroup "Reisende" <|
+                    List.singleton <|
+                        viewUserProfiles model shared.userProfiles
                 ]
             , Ui.Group.togglable
                 { title = "Varighet"
@@ -662,12 +659,10 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    H.div [ A.class "section-box" ]
-        (H.div [ A.class "section-header" ] [ H.text "Velg reisende" ]
-            :: (userProfiles
-                    |> List.filter (.userType >> (/=) UserTypeAnyone)
-                    |> List.map (viewUserProfile model)
-               )
+    H.div []
+        (userProfiles
+            |> List.filter (.userType >> (/=) UserTypeAnyone)
+            |> List.map (viewUserProfile model)
         )
 
 
@@ -676,21 +671,15 @@ viewUserProfile model userProfile =
     let
         isCurrent =
             List.any (Tuple.first >> (==) userProfile.userType) model.users
-
-        extraHtml =
-            if isCurrent then
-                Icon.checkmark
-
-            else
-                H.text ""
     in
-        richActionButton False
-            (Just <| SetUser userProfile.userType)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1" ] [ H.text <| langString userProfile.name ]
-                , extraHtml
-                ]
-            )
+        Input.radio
+            { id = userTypeAsIdString userProfile.userType
+            , title = langString userProfile.name
+            , subtitle = Nothing
+            , name = "userprofile"
+            , checked = isCurrent
+            , onCheck = Just <| SetUser userProfile.userType
+            }
 
 
 viewOffer : Offer -> Html msg
@@ -772,3 +761,49 @@ calculateOfferPrice users offer =
                 |> Maybe.withDefault 0
     in
         price * toFloat count
+
+
+userTypeAsIdString : UserType -> String
+userTypeAsIdString userType =
+    case userType of
+        UserTypeAdult ->
+            "UserTypeAdult"
+
+        UserTypeChild ->
+            "UserTypeChild"
+
+        UserTypeInfant ->
+            "UserTypeInfant"
+
+        UserTypeSenior ->
+            "UserTypeSenior"
+
+        UserTypeStudent ->
+            "UserTypeStudent"
+
+        UserTypeYoungPerson ->
+            "UserTypeYoungPerson"
+
+        UserTypeSchoolPupil ->
+            "UserTypeSchoolPupil"
+
+        UserTypeMilitary ->
+            "UserTypeMilitary"
+
+        UserTypeDisabled ->
+            "UserTypeDisabled"
+
+        UserTypeDisabledCompanion ->
+            "UserTypeDisabledCompanion"
+
+        UserTypeJobSeeker ->
+            "UserTypeJobSeeker"
+
+        UserTypeEmployee ->
+            "UserTypeEmployee"
+
+        UserTypeAnimal ->
+            "UserTypeAnimal"
+
+        UserTypeAnyone ->
+            "UserTypeAnyone"
