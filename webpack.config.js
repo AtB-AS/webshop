@@ -162,7 +162,7 @@ function getBaseUrl(config, name) {
     // Use root of current server as default backend. This won't work for
     // development as the dev server only serves frontend code. It's just
     // a semi-sane default.
-    return '/';
+    return process.env.WEBSHOP_BASE_URL || '/';
 }
 
 // Get languageSwitcher from command line or config file
