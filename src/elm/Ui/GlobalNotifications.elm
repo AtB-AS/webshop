@@ -1,4 +1,4 @@
-module Ui.GlobalNotifications exposing (..)
+module Ui.GlobalNotifications exposing (notifications)
 
 import Html as H exposing (Html)
 import Html.Attributes as A

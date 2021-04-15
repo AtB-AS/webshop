@@ -1,4 +1,4 @@
-module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
+module Page.Shop exposing (MainView, Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
@@ -26,6 +26,7 @@ import Ui.Group
 import Ui.Input as Input
 import Ui.Message as Message
 import Ui.Section as Section
+import Util.Format
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 import Util.Time as TimeUtil
@@ -492,8 +493,7 @@ summaryView _ model =
                         |> List.map (calculateOfferPrice model.users)
                         |> List.sum
                         |> round
-                        |> String.fromInt
-                        |> (\price -> "kr " ++ price ++ ",00")
+                        |> (\price -> "kr " ++ Util.Format.int price 2)
 
                 _ ->
                     "-"

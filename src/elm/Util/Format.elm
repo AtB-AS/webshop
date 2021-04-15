@@ -8,6 +8,8 @@ module Util.Format exposing
     )
 
 import Data.FareContract exposing (FareTime)
+import FormatNumber
+import FormatNumber.Locales exposing (Locale)
 
 
 {-| Pad a string with a number of zeroes on the left side.
@@ -53,9 +55,9 @@ dateTime ft =
 TODO: Handle different locales, e.g. "," for English and " " for Norwegian.
 
 -}
-int : Int -> String
+int : Int -> Int -> String
 int num =
-    String.join " " <| splitThousands num
+    float (toFloat num)
 
 
 {-| Format a float with thousands separator and the given number of decimals.
@@ -66,17 +68,10 @@ TODO: Handle different locales, e.g. "." for English, and "," for Norwegian.
 float : Float -> Int -> String
 float num dec =
     let
-        truncated =
-            truncate num
-
-        integer =
-            if truncated < 0 then
-                -truncated
-
-            else
-                truncated
+        locale =
+            FormatNumber.Locales.spanishLocale
     in
-        String.concat [ int integer, ".", decimals dec num ]
+        FormatNumber.format { locale | decimals = dec } num
 
 
 

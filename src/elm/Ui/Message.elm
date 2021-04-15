@@ -1,5 +1,6 @@
 module Ui.Message exposing
     ( Border(..)
+    , MessageOptions
     , UserStatus(..)
     , defaultOption
     , error

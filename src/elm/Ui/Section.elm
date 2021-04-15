@@ -1,5 +1,6 @@
 module Ui.Section exposing
-    ( section
+    ( SectionOptions
+    , section
     , sectionGenericItem
     , sectionHeader
     , sectionWithOptions

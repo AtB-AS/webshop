@@ -1,4 +1,4 @@
-module Ui.Group exposing (groupItem, togglable)
+module Ui.Group exposing (GroupMetadata, groupItem, togglable)
 
 import Fragment.Icon
 import Html as H exposing (Html)
