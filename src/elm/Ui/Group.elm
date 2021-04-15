@@ -25,19 +25,19 @@ togglable : GroupMetadata msg -> List (Html msg) -> Html msg
 togglable { open, disabled, onOpenClick, icon, id, title, value } children =
     let
         classList =
-            [ ( "group", True )
-            , ( "group--open", open )
-            , ( "group--disabled", disabled )
+            [ ( "ui-group", True )
+            , ( "ui-group--open", open )
+            , ( "ui-group--disabled", disabled )
             ]
 
         classListContent =
-            [ ( "group__content", True )
-            , ( "group__content--open", open )
+            [ ( "ui-group__content", True )
+            , ( "ui-group__content--open", open )
             ]
 
         classListButton =
-            [ ( "group__headerButton", True )
-            , ( "group__headerButton--disabled", disabled )
+            [ ( "ui-group__headerButton", True )
+            , ( "ui-group__headerButton--disabled", disabled )
             ]
 
         chevronIcon =
@@ -53,7 +53,7 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
         Ui.TextContainer.primary
             [ H.section
                 [ A.classList classList ]
-                [ H.h3 [ A.class "group__header" ]
+                [ H.h3 [ A.class "ui-group__header" ]
                     [ H.button
                         [ A.classList classListButton
                         , A.disabled disabled
@@ -63,7 +63,7 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                         , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                         ]
                         [ viewMaybe icon
-                        , H.div [ A.class "group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
+                        , H.div [ A.class "ui-group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
                         , viewMaybeText value
                         , chevronIcon
                         ]
@@ -85,7 +85,7 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
 
 groupItem : Html msg -> Html msg
 groupItem =
-    List.singleton >> H.div [ A.class "group__item" ]
+    List.singleton >> H.div [ A.class "ui-group__item" ]
 
 
 boolAsString : Bool -> String

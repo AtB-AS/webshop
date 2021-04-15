@@ -37,16 +37,16 @@ statusToClass : UserStatus -> String
 statusToClass status =
     case status of
         Warning _ ->
-            "message--warning"
+            "ui-message--warning"
 
         Error _ ->
-            "message--error"
+            "ui-message--error"
 
         Valid _ ->
-            "message--valid"
+            "ui-message--valid"
 
         Info _ ->
-            "message--info"
+            "ui-message--info"
 
 
 statusToIcon : UserStatus -> Html msg
@@ -96,12 +96,12 @@ messageWithOptions options statusType =
             statusToClass statusType
 
         classList =
-            [ ( "message", True )
+            [ ( "ui-message", True )
             , ( statusClass, True )
-            , ( "message--borderTop", options.borderTop )
-            , ( "message--borderBottom", options.borderBottom )
-            , ( "message--marginTop", options.marginTop )
-            , ( "message--marginBottom", options.marginBottom )
+            , ( "ui-message--borderTop", options.borderTop )
+            , ( "ui-message--borderBottom", options.borderBottom )
+            , ( "ui-message--marginTop", options.marginTop )
+            , ( "ui-message--marginBottom", options.marginBottom )
             ]
 
         text =
@@ -112,7 +112,7 @@ messageWithOptions options statusType =
     in
         H.div [ A.classList classList ]
             [ icon
-            , H.div [ A.class "message__content" ] [ text ]
+            , H.div [ A.class "ui-message__content" ] [ text ]
             ]
 
 
