@@ -3,6 +3,8 @@
     padding: var(--spacings-xLarge);
     align-items: flex-start;
 
+    animation: fadeIn 350ms;
+
     svg {
         width: var(--icon-size-normal);
         height: var(--icon-size-normal);
@@ -13,6 +15,21 @@
         }
     }
 }
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0.2;
+        transform: translateY(-0.4rem);
+    }
+    30% {
+        opacity: 0.4;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 .message__content {
     flex: 1;
 }
