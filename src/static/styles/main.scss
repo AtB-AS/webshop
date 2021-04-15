@@ -33,6 +33,10 @@ button {
     background-color: var(--colors-background_1-backgroundColor);
 }
 .app {
+    position: relative;
+}
+.content {
+    position: relative;
     margin: auto;
     padding: var(--spacings-xLarge);
     max-width: 976px;

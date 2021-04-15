@@ -4,7 +4,6 @@ import Base exposing (AppInfo)
 import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
 import Environment exposing (Environment)
-import Fragment.Button as Button
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
@@ -12,6 +11,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Extra exposing (viewMaybe)
 import Http
+import Notification
 import PageUpdater exposing (PageUpdater)
 import Process
 import Route exposing (Route)
@@ -24,7 +24,7 @@ import Time
 import Ui.Button exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input as Input
-import Ui.Message as Message
+import Ui.Message as Message exposing (defaultOption)
 import Ui.Section as Section
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -122,205 +122,223 @@ init shared =
 
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
-    case msg of
-        SetProduct product _ ->
-            PageUpdater.fromPair
-                ( { model | product = product }
-                , TaskUtil.doTask FetchOffers
-                )
+    let
+        addGlobalNotification statusText =
+            statusText
+                |> Message.message
+                |> (\s -> Notification.setContent s Notification.init)
+                |> GA.ShowNotification
+                |> PageUpdater.addGlobalAction
+    in
+        case msg of
+            SetProduct product _ ->
+                PageUpdater.fromPair
+                    ( { model | product = product }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
-        SetFromZone zone ->
-            PageUpdater.fromPair
-                ( { model | fromZone = zone }
-                , TaskUtil.doTask FetchOffers
-                )
+            SetFromZone zone ->
+                PageUpdater.fromPair
+                    ( { model | fromZone = zone }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
-        SetToZone zone ->
-            PageUpdater.fromPair
-                ( { model | toZone = zone }
-                , TaskUtil.doTask FetchOffers
-                )
+            SetToZone zone ->
+                PageUpdater.fromPair
+                    ( { model | toZone = zone }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
-        SetUser userType _ ->
-            PageUpdater.fromPair
-                ( { model | users = [ ( userType, 1 ) ] }
-                , TaskUtil.doTask FetchOffers
-                )
+            SetUser userType _ ->
+                PageUpdater.fromPair
+                    ( { model | users = [ ( userType, 1 ) ] }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
-        ModUser userType change ->
-            let
-                users =
-                    model.users
-
-                otherUsers =
-                    List.filter (Tuple.first >> (/=) userType) users
-
-                user =
-                    List.filter (Tuple.first >> (==) userType) users
-                        |> List.head
-
-                newValue =
-                    case user of
-                        Just ( _, count ) ->
-                            count + change
-
-                        Nothing ->
-                            change
-
-                newUsers =
-                    if newValue < 1 then
-                        otherUsers
-
-                    else
-                        ( userType, newValue ) :: otherUsers
-            in
-                PageUpdater.init { model | users = newUsers }
-
-        FetchOffers ->
-            if List.isEmpty model.users then
-                PageUpdater.init model
-
-            else
+            ModUser userType change ->
                 let
-                    oldOffers =
-                        case model.offers of
-                            Loaded offers ->
-                                Just offers
+                    users =
+                        model.users
 
-                            Loading offers ->
-                                offers
+                    otherUsers =
+                        List.filter (Tuple.first >> (/=) userType) users
 
-                            _ ->
-                                Nothing
+                    user =
+                        List.filter (Tuple.first >> (==) userType) users
+                            |> List.head
+
+                    newValue =
+                        case user of
+                            Just ( _, count ) ->
+                                count + change
+
+                            Nothing ->
+                                change
+
+                    newUsers =
+                        if newValue < 1 then
+                            otherUsers
+
+                        else
+                            ( userType, newValue ) :: otherUsers
                 in
-                    PageUpdater.fromPair
-                        ( { model | offers = Loading oldOffers, reservation = NotLoaded }
-                        , fetchOffers env
-                            model.product
-                            model.fromZone
-                            model.toZone
-                            model.users
-                            (if model.now then
-                                Nothing
+                    PageUpdater.init { model | users = newUsers }
 
-                             else
-                                model.isoTime
-                            )
-                        )
-
-        ReceiveOffers result ->
-            case result of
-                Ok offers ->
-                    PageUpdater.init { model | offers = Loaded offers }
-
-                Err _ ->
-                    PageUpdater.init { model | offers = Failed "Unable to load offers" }
-
-        BuyOffers paymentType ->
-            case model.offers of
-                Loaded offers ->
-                    let
-                        offerCounts =
-                            List.filterMap
-                                (\offer ->
-                                    model.users
-                                        |> List.filter (Tuple.first >> (==) offer.userType)
-                                        |> List.head
-                                        |> Maybe.map (\( _, count ) -> ( offer.offerId, count ))
-                                )
-                                offers
-                    in
-                        PageUpdater.fromPair
-                            ( { model | reservation = Loading Nothing }
-                            , buyOffers env paymentType offerCounts
-                            )
-
-                _ ->
+            FetchOffers ->
+                if List.isEmpty model.users then
                     PageUpdater.init model
 
-        ReceiveBuyOffers result ->
-            case result of
-                Ok reservation ->
-                    PageUpdater.fromPair
-                        ( { model | reservation = Loaded reservation }
-                        , Cmd.batch
-                            [ MiscService.openWindow reservation.url
-                            , fetchPaymentStatus env reservation.paymentId
-                            ]
-                        )
+                else
+                    let
+                        oldOffers =
+                            case model.offers of
+                                Loaded offers ->
+                                    Just offers
 
-                Err _ ->
-                    PageUpdater.init { model | reservation = Failed "Unable to reserve offers" }
+                                Loading offers ->
+                                    offers
 
-        ReceivePaymentStatus paymentId result ->
-            case ( model.reservation, result ) of
-                ( Loaded { orderId }, Ok paymentStatus ) ->
-                    case paymentStatus.status of
-                        "CAPTURE" ->
-                            PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
-                                |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
-                                |> PageUpdater.addGlobalAction GA.CloseShop
+                                _ ->
+                                    Nothing
+                    in
+                        PageUpdater.fromPair
+                            ( { model | offers = Loading oldOffers, reservation = NotLoaded }
+                            , fetchOffers env
+                                model.product
+                                model.fromZone
+                                model.toZone
+                                model.users
+                                (if model.now then
+                                    Nothing
 
-                        "CANCEL" ->
-                            PageUpdater.init { model | reservation = NotLoaded }
+                                 else
+                                    model.isoTime
+                                )
+                            )
 
-                        _ ->
-                            PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
+            ReceiveOffers result ->
+                case result of
+                    Ok offers ->
+                        PageUpdater.init { model | offers = Loaded offers }
 
-                _ ->
-                    -- Either there was no longer a reservation, or the payment failed. We treat this
-                    -- as if the payment was cancelled so the user can try again.
-                    PageUpdater.init { model | reservation = NotLoaded }
+                    Err _ ->
+                        let
+                            errorMessage =
+                                "Kunne ikke laste inn billettinformasjon. Prøv igjen."
+                        in
+                            PageUpdater.init { model | offers = Failed errorMessage }
+                                |> addGlobalNotification (Message.Error errorMessage)
 
-        CloseShop ->
-            PageUpdater.init model
-                |> PageUpdater.addGlobalAction GA.CloseShop
+            BuyOffers paymentType ->
+                case model.offers of
+                    Loaded offers ->
+                        let
+                            offerCounts =
+                                List.filterMap
+                                    (\offer ->
+                                        model.users
+                                            |> List.filter (Tuple.first >> (==) offer.userType)
+                                            |> List.head
+                                            |> Maybe.map (\( _, count ) -> ( offer.offerId, count ))
+                                    )
+                                    offers
+                        in
+                            PageUpdater.fromPair
+                                ( { model | reservation = Loading Nothing }
+                                , buyOffers env paymentType offerCounts
+                                )
 
-        ShowView mainView ->
-            PageUpdater.init (toggleShowMainView model mainView)
+                    _ ->
+                        PageUpdater.init model
 
-        ToggleNow ->
-            model
-                |> updateNow (not model.now)
-                |> PageUpdater.init
+            ReceiveBuyOffers result ->
+                case result of
+                    Ok reservation ->
+                        PageUpdater.fromPair
+                            ( { model | reservation = Loaded reservation }
+                            , Cmd.batch
+                                [ MiscService.openWindow reservation.url
+                                , fetchPaymentStatus env reservation.paymentId
+                                ]
+                            )
 
-        SetNow now ->
-            model
-                |> updateNow now
-                |> PageUpdater.init
+                    Err _ ->
+                        let
+                            errorMessage =
+                                "Fikk ikke reservert billett. Prøv igjen."
+                        in
+                            PageUpdater.init { model | reservation = Failed errorMessage }
+                                |> addGlobalNotification (Message.Error errorMessage)
 
-        SetDate date ->
-            PageUpdater.fromPair
-                ( { model | travelDate = date, isoTime = Nothing }
-                , MiscService.convertTime ( date, model.travelTime )
-                )
+            ReceivePaymentStatus paymentId result ->
+                case ( model.reservation, result ) of
+                    ( Loaded { orderId }, Ok paymentStatus ) ->
+                        case paymentStatus.status of
+                            "CAPTURE" ->
+                                PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
+                                    |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
+                                    |> PageUpdater.addGlobalAction GA.CloseShop
 
-        SetTime time ->
-            PageUpdater.fromPair
-                ( { model | travelTime = time, isoTime = Nothing }
-                , MiscService.convertTime ( model.travelDate, time )
-                )
+                            "CANCEL" ->
+                                PageUpdater.init { model | reservation = NotLoaded }
 
-        UpdateNow time ->
-            if model.now then
+                            _ ->
+                                PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
+
+                    _ ->
+                        -- Either there was no longer a reservation, or the payment failed. We treat this
+                        -- as if the payment was cancelled so the user can try again.
+                        PageUpdater.init { model | reservation = NotLoaded }
+
+            CloseShop ->
+                PageUpdater.init model
+                    |> PageUpdater.addGlobalAction GA.CloseShop
+
+            ShowView mainView ->
+                PageUpdater.init (toggleShowMainView model mainView)
+
+            ToggleNow ->
                 model
-                    |> updateNowDateTime time
-                    |> updateTravelDateTime
+                    |> updateNow (not model.now)
                     |> PageUpdater.init
 
-            else
+            SetNow now ->
                 model
-                    |> updateNowDateTime time
+                    |> updateNow now
                     |> PageUpdater.init
 
-        UpdateZone zone ->
-            PageUpdater.init { model | zone = zone }
+            SetDate date ->
+                PageUpdater.fromPair
+                    ( { model | travelDate = date, isoTime = Nothing }
+                    , MiscService.convertTime ( date, model.travelTime )
+                    )
 
-        GetIsoTime isoTime ->
-            PageUpdater.fromPair
-                ( { model | isoTime = Just isoTime, now = False }
-                , TaskUtil.doTask FetchOffers
-                )
+            SetTime time ->
+                PageUpdater.fromPair
+                    ( { model | travelTime = time, isoTime = Nothing }
+                    , MiscService.convertTime ( model.travelDate, time )
+                    )
+
+            UpdateNow time ->
+                if model.now then
+                    model
+                        |> updateNowDateTime time
+                        |> updateTravelDateTime
+                        |> PageUpdater.init
+
+                else
+                    model
+                        |> updateNowDateTime time
+                        |> PageUpdater.init
+
+            UpdateZone zone ->
+                PageUpdater.init { model | zone = zone }
+
+            GetIsoTime isoTime ->
+                PageUpdater.fromPair
+                    ( { model | isoTime = Just isoTime, now = False }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
 
 toggleShowMainView : Model -> MainView -> Model
@@ -381,129 +399,128 @@ richActionButton active maybeAction content =
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div [ A.class "page-shop" ]
-        [ H.div []
-            [ Ui.Group.togglable
-                { title = "Reisetype"
-                , icon = Just Icon.bus
-                , value = Nothing
-                , open = False
-                , disabled = True
-                , onOpenClick = Nothing
-                , id = "reisetype"
-                }
-                []
-            , Ui.Group.togglable
-                { title = "Reisende"
-                , icon = Just Icon.bus
-                , value = Nothing
-                , open = model.mainView == Travelers
-                , disabled = False
-                , onOpenClick = Just (ShowView Travelers)
-                , id = "reisende"
-                }
-                [ viewUserProfiles model shared.userProfiles
+    let
+        disableButtons =
+            case model.reservation of
+                Loading _ ->
+                    True
+
+                Loaded _ ->
+                    True
+
+                _ ->
+                    False
+    in
+        H.div [ A.class "page-shop" ]
+            [ H.div []
+                [ Ui.Group.togglable
+                    { title = "Reisetype"
+                    , icon = Just Icon.bus
+                    , value = Nothing
+                    , open = False
+                    , disabled = True
+                    , onOpenClick = Nothing
+                    , id = "reisetype"
+                    }
+                    []
+                , Ui.Group.togglable
+                    { title = "Reisende"
+                    , icon = Just Icon.bus
+                    , value = Nothing
+                    , open = model.mainView == Travelers
+                    , disabled = False
+                    , onOpenClick = Just (ShowView Travelers)
+                    , id = "reisende"
+                    }
+                    [ viewUserProfiles model shared.userProfiles
+                    ]
+                , Ui.Group.togglable
+                    { title = "Varighet"
+                    , icon = Just Icon.duration
+                    , value = Nothing
+                    , open = model.mainView == Duration
+                    , disabled = False
+                    , onOpenClick = Just (ShowView Duration)
+                    , id = "varighet"
+                    }
+                    [ viewProducts model shared.fareProducts
+                    ]
+                , Ui.Group.togglable
+                    { title = "Gyldig fra og med"
+                    , icon = Just Icon.ticket
+                    , value = Nothing
+                    , open = model.mainView == Start
+                    , disabled = False
+                    , onOpenClick = Just (ShowView Start)
+                    , id = "duration"
+                    }
+                    [ viewStart model
+                    ]
+                , Ui.Group.togglable
+                    { title = "Soner"
+                    , icon = Just Icon.ticket
+                    , value = Nothing
+                    , open = model.mainView == Zones
+                    , disabled = False
+                    , onOpenClick = Just (ShowView Zones)
+                    , id = "zones"
+                    }
+                    [ viewZones model shared.tariffZones
+                    ]
                 ]
-            , Ui.Group.togglable
-                { title = "Varighet"
-                , icon = Just Icon.duration
-                , value = Nothing
-                , open = model.mainView == Duration
-                , disabled = False
-                , onOpenClick = Just (ShowView Duration)
-                , id = "varighet"
-                }
-                [ viewProducts model shared.fareProducts
-                ]
-            , Ui.Group.togglable
-                { title = "Gyldig fra og med"
-                , icon = Just Icon.ticket
-                , value = Nothing
-                , open = model.mainView == Start
-                , disabled = False
-                , onOpenClick = Just (ShowView Start)
-                , id = "duration"
-                }
-                [ viewStart model
-                ]
-            , Ui.Group.togglable
-                { title = "Soner"
-                , icon = Just Icon.ticket
-                , value = Nothing
-                , open = model.mainView == Zones
-                , disabled = False
-                , onOpenClick = Just (ShowView Zones)
-                , id = "zones"
-                }
-                [ viewZones model shared.tariffZones
+            , H.div []
+                [ summaryView disableButtons model
+                , Section.sectionWithOptions
+                    { marginBottom = True
+                    , marginTop = False
+                    }
+                    [ Ui.Button.primary Secondary_1 "Kjøp med bankkort" disableButtons (Just Icon.creditcard) (BuyOffers Nets)
+                    , Ui.Button.primary Secondary_1 "Kjøp med Vipps" disableButtons (Just <| Ui.Button.coloredIcon Icon.vipps) (BuyOffers Vipps)
+                    , Ui.Button.tertiary "Avbryt" False (Just Icon.cross) CloseShop
+                    ]
+                , case model.reservation of
+                    NotLoaded ->
+                        H.text ""
+
+                    Loading _ ->
+                        H.p [] [ H.text "Reserving offers..." ]
+
+                    Loaded reservation ->
+                        H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
+
+                    Failed error ->
+                        H.p [] [ H.text error ]
                 ]
             ]
-        , H.div [ A.class "page-shop__summary" ]
-            (case model.offers of
-                NotLoaded ->
-                    [ H.text "" ]
 
-                Loading _ ->
-                    [ H.div [ A.style "padding" "20px" ] [ Button.loading ] ]
 
+summaryView : Bool -> Model -> Html Msg
+summaryView _ model =
+    let
+        totalPrice =
+            case model.offers of
                 Loaded offers ->
-                    let
-                        disableButtons =
-                            case model.reservation of
-                                Loading _ ->
-                                    True
+                    offers
+                        |> List.map (calculateOfferPrice model.users)
+                        |> List.sum
+                        |> round
+                        |> String.fromInt
 
-                                Loaded _ ->
-                                    True
-
-                                _ ->
-                                    False
-
-                        totalPrice =
-                            offers
-                                |> List.map (calculateOfferPrice model.users)
-                                |> List.sum
-                                |> round
-                                |> String.fromInt
-                    in
-                        [ Section.sectionWithOptions
-                            { marginBottom = True
-                            , marginTop = False
-                            }
-                            [ Section.sectionHeader "Oppsummering"
-                            , Section.sectionGenericItem
-                                [ H.div [ A.class "summary-price" ]
-                                    [ H.text ("kr " ++ totalPrice ++ ",00")
-                                    ]
-                                ]
-                            , maybeBuyNotice model.users
-                            ]
-                        , Section.sectionWithOptions
-                            { marginBottom = True
-                            , marginTop = False
-                            }
-                            [ Ui.Button.primary Secondary_1 "Kjøp med bankkort" disableButtons (Just Icon.creditcard) (BuyOffers Nets)
-                            , Ui.Button.primary Secondary_1 "Kjøp med Vipps" disableButtons (Just <| Ui.Button.coloredIcon Icon.vipps) (BuyOffers Vipps)
-                            , Ui.Button.tertiary "Avbryt" False (Just Icon.cross) CloseShop
-                            ]
-                        ]
-
-                Failed error ->
-                    [ H.div [] [ H.text error ] ]
-            )
-        , case model.reservation of
-            NotLoaded ->
-                H.text ""
-
-            Loading _ ->
-                H.p [] [ H.text "Reserving offers..." ]
-
-            Loaded reservation ->
-                H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
-
-            Failed error ->
-                H.p [] [ H.text error ]
-        ]
+                _ ->
+                    ""
+    in
+        Section.sectionWithOptions
+            { marginBottom = True
+            , marginTop = False
+            }
+            [ Section.sectionHeader "Oppsummering"
+            , Section.sectionGenericItem
+                [ H.div [ A.class "summary-price" ]
+                    [ H.text ("kr " ++ totalPrice ++ ",00")
+                    ]
+                ]
+            , maybeBuyNotice model.users
+            ]
 
 
 hasReducedCost : UserType -> Bool
@@ -536,7 +553,7 @@ maybeBuyNotice users =
 
         result =
             if reduced then
-                Just <| Message.info (H.text "Husk at du må reise med gyldig moderasjonsbevis")
+                Just <| Message.info "Husk at du må reise med gyldig moderasjonsbevis"
 
             else
                 Nothing

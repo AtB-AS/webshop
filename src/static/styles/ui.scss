@@ -301,3 +301,12 @@
 .ui-textContainer--disabled {
     color: var(--text-colors-disabled);
 }
+
+.ui-notifications {
+    position: absolute;
+    top: var(--spacings-xLarge);
+    right: var(--spacings-xLarge);
+
+    max-height: 70vh;
+    overflow: auto;
+}

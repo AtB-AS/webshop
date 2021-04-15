@@ -3,6 +3,7 @@ module Main exposing (main)
 import Base exposing (AppInfo)
 import Browser
 import Browser.Navigation as Nav
+import Debug
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
@@ -11,7 +12,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
-import Notification exposing (Notification)
+import Notification exposing (Notification, decrementTimer)
 import Page.Account as AccountPage
 import Page.History as HistoryPage
 import Page.Login as LoginPage
@@ -24,6 +25,7 @@ import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
 import Time
+import Ui.GlobalNotifications
 import Ui.Heading
 import Url exposing (Url)
 import Util.Status exposing (Status(..))
@@ -36,7 +38,7 @@ type Msg
     | RouteTo Route
     | UrlChanged Url
     | UrlRequested Browser.UrlRequest
-    | CloseNotification Time.Posix
+    | MaybeCloseNotification Time.Posix
     | OverviewMsg OverviewPage.Msg
     | ShopMsg ShopPage.Msg
     | HistoryMsg HistoryPage.Msg
@@ -262,12 +264,20 @@ update msg model =
                 Browser.External href ->
                     ( model, Nav.load href )
 
-        CloseNotification _ ->
+        MaybeCloseNotification _ ->
             let
                 newNotifications =
                     model.notifications
-                        |> List.tail
-                        |> Maybe.withDefault []
+                        |> List.map decrementTimer
+                        |> List.filter
+                            (\n ->
+                                case n.timer of
+                                    Just time ->
+                                        time > 0
+
+                                    _ ->
+                                        True
+                            )
             in
                 ( { model | notifications = newNotifications }, Cmd.none )
 
@@ -388,7 +398,10 @@ view model =
                     [ header model
                     , case model.environment.customerId of
                         Just _ ->
-                            H.main_ [ A.class "app" ] [ viewPage model ]
+                            H.main_ [ A.class "app" ]
+                                [ Ui.GlobalNotifications.notifications model.notifications
+                                , H.div [ A.class "content" ] [ viewPage model ]
+                                ]
 
                         Nothing ->
                             case model.onboarding of
@@ -486,10 +499,7 @@ subs model =
             |> Sub.map LoginMsg
         , Shared.subscriptions
             |> Sub.map SharedMsg
-        , model.notifications
-            |> List.head
-            |> Maybe.map (\_ -> Time.every 1000 CloseNotification)
-            |> Maybe.withDefault Sub.none
+        , Time.every 1000 MaybeCloseNotification
         , FirebaseAuth.signInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userDataDecoder >> LoggedInData)
         , MiscService.onboardingStart StartOnboarding
