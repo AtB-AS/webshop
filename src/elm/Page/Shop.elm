@@ -538,7 +538,7 @@ maybeBuyNotice : List ( UserType, Int ) -> Html msg
 maybeBuyNotice users =
     let
         reduced =
-            users |> List.any (Tuple.first >> hasReducedCost)
+            List.any (Tuple.first >> hasReducedCost) users
 
         result =
             if reduced then

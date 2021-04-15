@@ -12,7 +12,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
-import Notification exposing (Notification, decrementTimer)
+import Notification exposing (Notification)
 import Page.Account as AccountPage
 import Page.History as HistoryPage
 import Page.Login as LoginPage
@@ -268,7 +268,7 @@ update msg model =
             let
                 newNotifications =
                     model.notifications
-                        |> List.map decrementTimer
+                        |> List.map Notification.decrementTimer
                         |> List.filter
                             (\n ->
                                 case n.timer of
