@@ -5,7 +5,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra as Attr
 import Html.Events as E
-import Html.Extra as Html
+import Html.Extra
 import Ui.Heading
 import Ui.TextContainer
 
@@ -99,7 +99,7 @@ boolAsString b =
 
 viewMaybe : Maybe (Html msg) -> Html msg
 viewMaybe =
-    Html.viewMaybe identity
+    Html.Extra.viewMaybe identity
 
 
 viewMaybeText : Maybe String -> Html msg

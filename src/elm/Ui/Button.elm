@@ -13,7 +13,7 @@ module Ui.Button exposing
 import Html as H exposing (Html)
 import Html.Attributes as A exposing (disabled)
 import Html.Events as E
-import Html.Extra as Html
+import Html.Extra
 import Ui.TextContainer
 
 
@@ -49,7 +49,7 @@ button mode color text disabled icon action =
             , E.onClick action
             , A.disabled disabled
             ]
-            [ Ui.TextContainer.primaryBold [ H.text text ], Html.viewMaybe identity icon ]
+            [ Ui.TextContainer.primaryBold [ H.text text ], Html.Extra.viewMaybe identity icon ]
 
 
 primary : ThemeColor -> String -> Bool -> Maybe (Html msg) -> msg -> Html msg

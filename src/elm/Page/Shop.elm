@@ -9,7 +9,7 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
-import Html.Extra exposing (viewMaybe)
+import Html.Extra
 import Http
 import Notification
 import PageUpdater exposing (PageUpdater)
@@ -24,7 +24,7 @@ import Time
 import Ui.Button exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input as Input
-import Ui.Message as Message exposing (defaultOption)
+import Ui.Message as Message
 import Ui.Section as Section
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -549,7 +549,7 @@ maybeBuyNotice users =
 
         --
     in
-        viewMaybe identity result
+        Html.Extra.viewMaybe identity result
 
 
 langString : LangString -> String

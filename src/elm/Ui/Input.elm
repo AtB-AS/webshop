@@ -6,7 +6,7 @@ module Ui.Input exposing
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Events as E
-import Html.Extra exposing (viewMaybe)
+import Html.Extra
 import Ui.Button exposing (ButtonMode(..))
 import Ui.Group
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
@@ -47,7 +47,7 @@ radio { id, name, title, onCheck, checked, subtitle } =
         , H.label [ A.for id, A.class "ui-input-radio" ]
             [ H.div [ A.class "ui-input-radio__title" ]
                 [ H.text title
-                , viewMaybe (\text -> Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text text ]) subtitle
+                , Html.Extra.viewMaybe (\text -> Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text text ]) subtitle
                 ]
             , H.div [ A.class "ui-input-radio__box" ] []
             ]
