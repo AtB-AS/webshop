@@ -64,7 +64,7 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                         ]
                         [ viewMaybe icon
                         , H.div [ A.class "ui-group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
-                        , viewMaybeText value
+                        , viewMaybeValue value
                         , chevronIcon
                         ]
                     ]
@@ -102,10 +102,10 @@ viewMaybe =
     Html.Extra.viewMaybe identity
 
 
-viewMaybeText : Maybe String -> Html msg
-viewMaybeText value =
+viewMaybeValue : Maybe String -> Html msg
+viewMaybeValue value =
     let
         spanNode =
-            H.text >> List.singleton >> H.span []
+            H.text >> List.singleton >> H.span [ A.class "ui-group__headerButton__value" ]
     in
         viewMaybe (Maybe.map spanNode value)
