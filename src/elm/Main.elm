@@ -3,7 +3,6 @@ module Main exposing (main)
 import Base exposing (AppInfo)
 import Browser
 import Browser.Navigation as Nav
-import Debug
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon

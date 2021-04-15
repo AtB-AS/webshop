@@ -11,6 +11,7 @@ module Ui.Heading exposing
 import Fragment.Icon as Icon
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
+import Route
 
 
 type Heading
@@ -79,6 +80,6 @@ paragraphWithEl el =
 page : String -> String -> Html msg
 page pageTitle backTitle =
     H.div [ A.class "ui-heading-page" ]
-        [ H.a [ A.href "#/", A.class "ui-heading-page__back" ] [ Icon.leftArrow, H.text backTitle ]
+        [ H.a [ Route.href Route.Home, A.class "ui-heading-page__back" ] [ Icon.leftArrow, H.text backTitle ]
         , componentWithEl H.h2 pageTitle
         ]
