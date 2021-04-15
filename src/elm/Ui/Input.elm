@@ -28,7 +28,7 @@ radioGroup hiddenTitle children =
         (H.legend
             [ A.class "ui-input-radioGroup__hiddenLegend" ]
             [ H.text hiddenTitle ]
-            :: (children |> List.map Ui.Group.groupItem)
+            :: List.map Ui.Group.groupItem children
         )
 
 
