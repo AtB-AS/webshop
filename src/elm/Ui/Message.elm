@@ -1,9 +1,13 @@
 module Ui.Message exposing
     ( Border(..)
+    , UserStatus(..)
+    , defaultOption
     , error
     , errorWithOptions
     , info
     , infoWithOptions
+    , message
+    , messageWithOptions
     , valid
     , validWithOptions
     , warning
@@ -16,10 +20,10 @@ import Html.Attributes as A
 
 
 type UserStatus
-    = Warning
-    | Info
-    | Valid
-    | Error
+    = Warning String
+    | Info String
+    | Valid String
+    | Error String
 
 
 type Border
@@ -32,33 +36,49 @@ type Border
 statusToClass : UserStatus -> String
 statusToClass status =
     case status of
-        Warning ->
-            "message--warning"
+        Warning _ ->
+            "ui-message--warning"
 
-        Error ->
-            "message--error"
+        Error _ ->
+            "ui-message--error"
 
-        Valid ->
-            "message--valid"
+        Valid _ ->
+            "ui-message--valid"
 
-        Info ->
-            "message--info"
+        Info _ ->
+            "ui-message--info"
 
 
 statusToIcon : UserStatus -> Html msg
 statusToIcon status =
     case status of
-        Warning ->
+        Warning _ ->
             Icon.warning
 
-        Error ->
+        Error _ ->
             Icon.error
 
-        Valid ->
+        Valid _ ->
             Icon.checkmarkCircle
 
-        Info ->
+        Info _ ->
             Icon.info
+
+
+stringOfStatus : UserStatus -> String
+stringOfStatus status =
+    case status of
+        Warning text ->
+            text
+
+        Error text ->
+            text
+
+        Valid text ->
+            text
+
+        Info text ->
+            text
 
 
 type alias MessageOptions =
@@ -69,27 +89,30 @@ type alias MessageOptions =
     }
 
 
-base : UserStatus -> MessageOptions -> Html msg -> Html msg
-base statusType options text =
+messageWithOptions : MessageOptions -> UserStatus -> Html msg
+messageWithOptions options statusType =
     let
         statusClass =
             statusToClass statusType
 
         classList =
-            [ ( "message", True )
+            [ ( "ui-message", True )
             , ( statusClass, True )
-            , ( "message--borderTop", options.borderTop )
-            , ( "message--borderBottom", options.borderBottom )
-            , ( "message--marginTop", options.marginTop )
-            , ( "message--marginBottom", options.marginBottom )
+            , ( "ui-message--borderTop", options.borderTop )
+            , ( "ui-message--borderBottom", options.borderBottom )
+            , ( "ui-message--marginTop", options.marginTop )
+            , ( "ui-message--marginBottom", options.marginBottom )
             ]
+
+        text =
+            H.text <| stringOfStatus statusType
 
         icon =
             statusToIcon statusType
     in
         H.div [ A.classList classList ]
             [ icon
-            , H.div [ A.class "message__content" ] [ text ]
+            , H.div [ A.class "ui-message__content" ] [ text ]
             ]
 
 
@@ -102,41 +125,46 @@ defaultOption =
     }
 
 
-infoWithOptions : MessageOptions -> Html msg -> Html msg
-infoWithOptions =
-    base Info
+message : UserStatus -> Html msg
+message =
+    messageWithOptions defaultOption
 
 
-warningWithOptions : MessageOptions -> Html msg -> Html msg
-warningWithOptions =
-    base Warning
+infoWithOptions : MessageOptions -> String -> Html msg
+infoWithOptions opts text =
+    messageWithOptions opts (Info text)
 
 
-validWithOptions : MessageOptions -> Html msg -> Html msg
-validWithOptions =
-    base Valid
+warningWithOptions : MessageOptions -> String -> Html msg
+warningWithOptions opts text =
+    messageWithOptions opts (Warning text)
 
 
-errorWithOptions : MessageOptions -> Html msg -> Html msg
-errorWithOptions =
-    base Error
+validWithOptions : MessageOptions -> String -> Html msg
+validWithOptions opts text =
+    messageWithOptions opts (Valid text)
 
 
-info : Html msg -> Html msg
+errorWithOptions : MessageOptions -> String -> Html msg
+errorWithOptions opts text =
+    messageWithOptions opts (Error text)
+
+
+info : String -> Html msg
 info =
     infoWithOptions defaultOption
 
 
-warning : Html msg -> Html msg
+warning : String -> Html msg
 warning =
     warningWithOptions defaultOption
 
 
-valid : Html msg -> Html msg
+valid : String -> Html msg
 valid =
     validWithOptions defaultOption
 
 
-error : Html msg -> Html msg
+error : String -> Html msg
 error =
     errorWithOptions defaultOption

@@ -1,5 +1,4 @@
 @import '~@atb-as/theme/lib/theme.css';
-@import '~@atb-as/theme/lib/typography.css';
 
 * {
     box-sizing: border-box;
@@ -19,31 +18,30 @@ body {
 }
 
 body {
-    font-family: Roboto, Arial, Helvetica, sans-serif;
-    font-size: 16px;
     line-height: 1.2em;
-    color: var(--primary);
     margin: 0;
-    background-color: var(--background);
 }
 
-.title-bar {
-    padding: 24px;
+input,
+button {
+    font-family: var(--font-main);
+    // Explicitly set font size as 16px to avoid mobile zoom on focus.
+    font-size: 16px;
+}
+
+.container {
+    min-height: 100vh;
+    color: var(--colors-background_1-color);
+    background-color: var(--colors-background_1-backgroundColor);
+}
+.app {
     position: relative;
-    text-align: center;
-    font-weight: 500;
-
-    .go-back {
-        position: absolute;
-        left: 24px;
-        top: 24px;
-
-        a {
-            color: #000;
-            text-decoration: none;
-            font-weight: 400;
-        }
-    }
+}
+.content {
+    position: relative;
+    margin: auto;
+    padding: var(--spacings-xLarge);
+    max-width: 976px;
 }
 
 a:link,
@@ -64,12 +62,7 @@ a:hover {
     border-radius: 8px;
 }
 
-header {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 48px;
+.pageHeader {
     background-color: var(--primary-2);
 
     display: flex;
@@ -89,13 +82,6 @@ header {
         height: 32px;
         margin: 8px 0 8px 1rem;
     }
-}
-
-main {
-    margin-top: 96px;
-    width: 920px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 // Page layouts
@@ -320,20 +306,8 @@ main {
 
 .page-shop {
     display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 320px 320px 320px;
-
-    .left {
-        width: 320px;
-    }
-
-    .middle {
-        width: 320px;
-    }
-
-    .right {
-        width: 320px;
-    }
+    grid-gap: var(--spacings-xLarge);
+    grid-template-columns: 2fr 1fr;
 
     input[type='time'],
     input[type='date'] {
@@ -361,9 +335,7 @@ main {
 
 @media (max-width: 768px) {
     main {
-        width: inherit;
-        margin-left: 24px;
-        margin-right: 24px;
+        padding: var(--spacings-medium);
     }
 
     .page-overview,
@@ -371,14 +343,6 @@ main {
     .page-shop,
     .page-account {
         grid-template-columns: 1fr;
-    }
-
-    .page-overview .sidebar,
-    .page-shop .left,
-    .page-shop .middle,
-    .page-shop .right,
-    .page-history .sidebar {
-        width: inherit;
     }
 }
 
@@ -558,47 +522,6 @@ main {
     }
 }
 
-button {
-    padding: 0 1rem;
-    border-radius: 0.25rem;
-    appearance: none;
-    font-size: 1rem;
-    height: 1.75rem;
-    border: 0;
-    color: var(--primary);
-    background-color: var(--primary-2);
-    cursor: pointer;
-    min-width: 4rem;
-
-    &:hover {
-        background-color: var(--primary-2-hover);
-    }
-}
-
-button + button,
-input + button {
-    margin-left: 10px;
-}
-
-input {
-    appearance: none;
-    border-radius: 0.25rem;
-    background-color: #eee;
-    border: 1px solid #104048;
-    line-height: 1.25rem;
-    font-size: 1em;
-    padding: 0.25rem 0.5rem;
-    outline: none;
-
-    &:focus {
-        background-color: #fff;
-    }
-
-    &:disabled {
-        color: #666;
-    }
-}
-
 dl {
     margin-bottom: 1rem;
 }
@@ -659,3 +582,6 @@ table {
 
 @import 'waiting';
 @import 'ui';
+
+// Take priority
+@import '~@atb-as/theme/lib/typography.css';

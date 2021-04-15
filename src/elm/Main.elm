@@ -24,6 +24,8 @@ import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
 import Time
+import Ui.GlobalNotifications
+import Ui.Heading
 import Url exposing (Url)
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -35,7 +37,7 @@ type Msg
     | RouteTo Route
     | UrlChanged Url
     | UrlRequested Browser.UrlRequest
-    | CloseNotification Time.Posix
+    | MaybeCloseNotification Time.Posix
     | OverviewMsg OverviewPage.Msg
     | ShopMsg ShopPage.Msg
     | HistoryMsg HistoryPage.Msg
@@ -261,12 +263,20 @@ update msg model =
                 Browser.External href ->
                     ( model, Nav.load href )
 
-        CloseNotification _ ->
+        MaybeCloseNotification _ ->
             let
                 newNotifications =
                     model.notifications
-                        |> List.tail
-                        |> Maybe.withDefault []
+                        |> List.map Notification.decrementTimer
+                        |> List.filter
+                            (\n ->
+                                case n.timer of
+                                    Just time ->
+                                        time > 0
+
+                                    _ ->
+                                        True
+                            )
             in
                 ( { model | notifications = newNotifications }, Cmd.none )
 
@@ -383,11 +393,14 @@ view model =
                             ]
 
             _ ->
-                H.div [ A.class "light" ]
+                H.div [ A.class "light container" ]
                     [ header model
                     , case model.environment.customerId of
                         Just _ ->
-                            H.main_ [] [ viewPage model ]
+                            H.main_ [ A.class "app" ]
+                                [ Ui.GlobalNotifications.notifications model.notifications
+                                , H.div [ A.class "content" ] [ viewPage model ]
+                                ]
 
                         Nothing ->
                             case model.onboarding of
@@ -404,7 +417,7 @@ view model =
 
 header : Model -> Html Msg
 header _ =
-    H.header [] [ Icon.atb ]
+    H.header [ A.class "pageHeader" ] [ Icon.atb ]
 
 
 viewPage : Model -> Html Msg
@@ -464,10 +477,7 @@ viewPage model =
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ H.div [ A.class "title-bar" ]
-            [ H.div [ A.class "go-back" ] [ H.a [ A.href "#/" ] [ Icon.leftArrow, H.text " Oversikt" ] ]
-            , H.div [] [ H.text title ]
-            ]
+        [ Ui.Heading.page title "Oversikt"
         , children
         ]
 
@@ -488,10 +498,7 @@ subs model =
             |> Sub.map LoginMsg
         , Shared.subscriptions
             |> Sub.map SharedMsg
-        , model.notifications
-            |> List.head
-            |> Maybe.map (\_ -> Time.every 1000 CloseNotification)
-            |> Maybe.withDefault Sub.none
+        , Time.every 1000 MaybeCloseNotification
         , FirebaseAuth.signInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userDataDecoder >> LoggedInData)
         , MiscService.onboardingStart StartOnboarding

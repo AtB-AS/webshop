@@ -1,5 +1,6 @@
 module Notification exposing
     ( Notification
+    , decrementTimer
     , init
     , map
     , setContent
@@ -33,7 +34,7 @@ be your preferred approach when creating `Notification` instances.
 init : Notification msg
 init =
     { content = H.text ""
-    , timer = Nothing
+    , timer = Just 10
     }
 
 
@@ -51,6 +52,13 @@ setTimer timer confirm =
     { confirm | timer = Just timer }
 
 
+{-| Set the timer of a notification.
+-}
+decrementTimer : Notification msg -> Notification msg
+decrementTimer confirm =
+    { confirm | timer = confirm.timer |> Maybe.map (flip (-) 1) }
+
+
 {-| Maps a function over `Notification`
 -}
 map : (a -> msg) -> Notification a -> Notification msg
@@ -58,3 +66,8 @@ map f notification =
     { content = H.map f notification.content
     , timer = notification.timer
     }
+
+
+flip : (a -> b -> c) -> b -> a -> c
+flip f a b =
+    f b a

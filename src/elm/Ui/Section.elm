@@ -12,7 +12,7 @@ import Html.Attributes as A
 
 -- sectionItem : Html msg -> Html msg
 -- sectionItem =
---     List.singleton >> H.div [ A.class "section__item" ]
+--     List.singleton >> H.div [ A.class "ui-section__item" ]
 
 
 type alias SectionOptions =
@@ -25,9 +25,9 @@ sectionWithOptions : SectionOptions -> List (Html msg) -> Html msg
 sectionWithOptions options items =
     let
         classList =
-            [ ( "section", True )
-            , ( "section--marginTop", options.marginTop )
-            , ( "section--marginBottom", options.marginBottom )
+            [ ( "ui-section", True )
+            , ( "ui-section--marginTop", options.marginTop )
+            , ( "ui-section--marginBottom", options.marginBottom )
             ]
     in
         H.div [ A.classList classList ] items
@@ -40,9 +40,9 @@ section =
 
 sectionGenericItem : List (Html msg) -> Html msg
 sectionGenericItem children =
-    H.div [ A.class "section__item" ] children
+    H.div [ A.class "ui-section__item" ] children
 
 
 sectionHeader : String -> Html msg
 sectionHeader title =
-    sectionGenericItem [ H.h2 [ A.class "sectionHeaderTitle typo-heading__component" ] [ H.text title ] ]
+    sectionGenericItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
