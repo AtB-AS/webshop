@@ -478,18 +478,6 @@ view _ _ shared model _ =
                     , Ui.Button.primary Secondary_1 "Kjøp med Vipps" disableButtons (Just <| Ui.Button.coloredIcon Icon.vipps) (BuyOffers Vipps)
                     , Ui.Button.tertiary "Avbryt" False (Just Icon.cross) CloseShop
                     ]
-                , case model.reservation of
-                    NotLoaded ->
-                        H.text ""
-
-                    Loading _ ->
-                        H.p [] [ H.text "Reserving offers..." ]
-
-                    Loaded reservation ->
-                        H.p [] [ H.text <| "Waiting for payment of order " ++ reservation.orderId ]
-
-                    Failed error ->
-                        H.p [] [ H.text error ]
                 ]
             ]
 
@@ -505,9 +493,10 @@ summaryView _ model =
                         |> List.sum
                         |> round
                         |> String.fromInt
+                        |> (\price -> "kr " ++ price ++ ",00")
 
                 _ ->
-                    ""
+                    "-"
     in
         Section.sectionWithOptions
             { marginBottom = True
@@ -516,7 +505,7 @@ summaryView _ model =
             [ Section.sectionHeader "Oppsummering"
             , Section.sectionGenericItem
                 [ H.div [ A.class "summary-price" ]
-                    [ H.text ("kr " ++ totalPrice ++ ",00")
+                    [ H.text totalPrice
                     ]
                 ]
             , maybeBuyNotice model.users
