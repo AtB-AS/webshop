@@ -11,6 +11,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
 import Http
+import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Process
@@ -27,7 +28,6 @@ import Ui.Input as Input
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Format
-import Util.List
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 import Util.Time as TimeUtil
@@ -489,14 +489,14 @@ view _ _ shared model _ =
 nameFromUserType : List UserProfile -> UserType -> Maybe String
 nameFromUserType profiles userType =
     profiles
-        |> Util.List.find (.userType >> (==) userType)
+        |> List.Extra.find (.userType >> (==) userType)
         |> Maybe.map (.name >> langString)
 
 
 nameFromFareProduct : List FareProduct -> String -> Maybe String
 nameFromFareProduct products productId =
     products
-        |> Util.List.find (.id >> (==) productId)
+        |> List.Extra.find (.id >> (==) productId)
         |> Maybe.map (.name >> langString)
 
 
@@ -514,7 +514,7 @@ stringFromZone tariffZones model =
     let
         findName zone =
             tariffZones
-                |> Util.List.find (.id >> (==) zone)
+                |> List.Extra.find (.id >> (==) zone)
                 |> Maybe.map (.name >> langString)
                 |> Maybe.withDefault "-"
 
