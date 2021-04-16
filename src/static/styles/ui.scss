@@ -205,10 +205,13 @@
     color: var(--colors-background_3-color);
 }
 .ui-input-radio__input {
-    margin: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
     position: absolute;
-    height: 0;
-    width: 0;
+    white-space: nowrap;
+    width: 1px;
 }
 .ui-input-radio__input:focus + .ui-input-radio {
     outline: 0;
