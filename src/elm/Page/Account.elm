@@ -3,9 +3,10 @@ module Page.Account exposing (Model, Msg(..), init, subscriptions, update, view)
 import Base exposing (AppInfo)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
+import GlobalActions as GA
 import Html as H exposing (Html)
-import Html.Attributes as A
-import Html.Events as E
+import Html.Attributes as A exposing (disabled)
+import Html.Events as E exposing (onClick)
 import Http
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
@@ -13,6 +14,8 @@ import Service.Misc as MiscService exposing (Profile)
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
+import Ui.Button
+import Ui.Section
 
 
 type Msg
@@ -23,6 +26,7 @@ type Msg
     | EditName
     | EditPhoneNumber
     | RemoveTravelCard
+    | Logout
     | DeleteAccount
     | ProfileChange (Maybe Profile)
 
@@ -92,78 +96,44 @@ update msg env model =
         ProfileChange Nothing ->
             PageUpdater.init { model | profile = Nothing }
 
+        Logout ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction GA.Logout
+
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ _ model _ =
-    H.div [ A.class "page-account" ]
+    H.div [ A.class "page" ]
         [ viewMain model
         , H.div [] [ viewSidebar model ]
         ]
 
 
-richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
-richActionButton active maybeAction content =
-    let
-        baseAttributes =
-            [ A.classList
-                [ ( "active", active )
-                , ( "pseudo-button", maybeAction /= Nothing )
-                , ( "pseudo-button-disabled", maybeAction == Nothing )
-                ]
-            ]
-
-        attributes =
-            case maybeAction of
-                Just action ->
-                    E.onClick action :: baseAttributes
-
-                Nothing ->
-                    baseAttributes
-    in
-        H.div attributes [ content ]
-
-
 viewSidebar : Model -> Html Msg
 viewSidebar model =
-    H.div [ A.class "section-box" ]
-        [ richActionButton False
-            (Just EditName)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Endre navn" ]
-                , Icon.rightArrow
-                ]
-            )
-        , richActionButton False
-            (Just EditPhoneNumber)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Endre telefonnummer" ]
-                , Icon.rightArrow
-                ]
-            )
-        , richActionButton False
-            (Just RemoveTravelCard)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Fjern t:kort" ]
-                , Icon.ticketRemove
-                ]
-            )
-        , richActionButton False
-            Nothing
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px", A.style "font-weight" "500" ] [ H.text "Slett konto" ]
-                , Icon.delete
-                ]
-            )
+    Ui.Section.section
+        [ Ui.Button.tertiary
+            { text = "Logg ut"
+            , disabled = False
+            , icon = Just Icon.logout
+            , onClick = Just Logout
+            }
+        , Ui.Button.tertiary
+            { text = "Slett konto"
+            , disabled = True
+            , icon = Just Icon.delete
+            , onClick = Nothing
+            }
         ]
 
 
 viewMain : Model -> Html Msg
 viewMain model =
     H.div [ A.class "main" ]
-        [ H.div [ A.class "section-box" ]
+        [ Ui.Section.section
             (case model.profile of
                 Just profile ->
-                    [ H.div [ A.class "section-header" ] [ H.text "Min konto" ]
+                    [ Ui.Section.sectionHeader "Min konto"
                     , viewProfile profile
                     , viewTravelCard profile
                     , viewPhoneNumber profile
@@ -179,14 +149,16 @@ viewMain model =
 viewProfile : Profile -> Html msg
 viewProfile profile =
     if hasField profile.firstName || hasField profile.lastName then
-        H.div [ A.class "two-col" ]
-            [ H.div []
-                [ H.label [] [ H.text "Fornavn" ]
-                , viewField profile.firstName
-                ]
-            , H.div []
-                [ H.label [] [ H.text "Etternavn" ]
-                , viewField profile.lastName
+        Ui.Section.sectionGenericItem
+            [ H.div [ A.class "two-col" ]
+                [ H.div []
+                    [ H.label [] [ H.text "Fornavn" ]
+                    , viewField profile.firstName
+                    ]
+                , H.div []
+                    [ H.label [] [ H.text "Etternavn" ]
+                    , viewField profile.lastName
+                    ]
                 ]
             ]
 
@@ -197,7 +169,7 @@ viewProfile profile =
 viewPhoneNumber : Profile -> Html msg
 viewPhoneNumber profile =
     if hasField profile.phone then
-        H.div []
+        Ui.Section.sectionGenericItem
             [ H.label [] [ H.text "Telefonnummer" ]
             , viewField profile.phone
             ]
@@ -209,7 +181,7 @@ viewPhoneNumber profile =
 viewEmailAddress : Profile -> Html msg
 viewEmailAddress profile =
     if hasField profile.email then
-        H.div []
+        Ui.Section.sectionGenericItem
             [ H.label [] [ H.text "E-postadresse" ]
             , viewField profile.email
             ]
@@ -222,7 +194,7 @@ viewTravelCard : Profile -> Html msg
 viewTravelCard profile =
     case profile.travelCard of
         Just travelCard ->
-            H.div []
+            Ui.Section.sectionGenericItem
                 [ H.label [] [ H.text "t:kort" ]
                 , viewField <| String.fromInt <| travelCard.id
                 ]

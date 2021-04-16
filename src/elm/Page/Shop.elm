@@ -416,7 +416,7 @@ view _ _ shared model _ =
         summary =
             modelSummary shared model
     in
-        H.div [ A.class "page-shop" ]
+        H.div [ A.class "page" ]
             [ H.div []
                 [ Ui.Group.togglable
                     { title = "Reisetype"
