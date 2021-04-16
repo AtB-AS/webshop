@@ -2,6 +2,7 @@ module Service.Webshop exposing
     ( addQrCode
     , addTravelCard
     , deleteToken
+    , deleteTravelCard
     , getFareContracts
     , getProfile
     , getToken
@@ -52,9 +53,18 @@ addTravelCard : Environment -> String -> Http.Request ()
 addTravelCard env id =
     let
         payload =
-            Encode.object [ ( "travelCardId", Encode.string id ) ]
+            Encode.object [ ( "id", Encode.string id ) ]
     in
-        HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/travelcard") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.post env (env.baseUrl ++ "/webshop/v1/travelcards") (Http.jsonBody payload) (Decode.succeed ())
+
+
+deleteTravelCard : Environment -> String -> Http.Request ()
+deleteTravelCard env id =
+    let
+        payload =
+            Encode.object [ ( "id", Encode.string id ) ]
+    in
+        HttpUtil.delete env (env.baseUrl ++ "/webshop/v1/travelcards") (Http.jsonBody payload) (Decode.succeed ())
 
 
 deleteToken : Environment -> String -> Http.Request ()
