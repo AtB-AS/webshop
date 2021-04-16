@@ -113,5 +113,5 @@ isoStringToFullHumanized zone dateString =
         Err deadEnds ->
             Nothing
 
-        Ok timePostix ->
-            Just <| DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy, HH:mm" zone timePostix
+        Ok timePosix ->
+            Just <| DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy, HH:mm" zone timePosix
