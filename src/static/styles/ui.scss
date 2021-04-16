@@ -75,11 +75,14 @@
     margin-bottom: var(--spacings-xLarge);
 }
 .ui-section__item {
-    margin-bottom: 1px;
     padding: var(--spacings-xLarge);
     flex: 1;
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
+}
+.ui-section__child:not(:last-child) {
+    border-bottom: var(--border-width-slim) solid
+        var(--colors-background_1-backgroundColor);
 }
 .ui-section__headerTitle {
     padding: 0;

@@ -31,7 +31,7 @@ sectionWithOptions options items =
             , ( "ui-section--marginBottom", options.marginBottom )
             ]
     in
-        H.div [ A.classList classList ] items
+        H.div [ A.classList classList ] (List.map (List.singleton >> internalItem) items)
 
 
 section : List (Html msg) -> Html msg
@@ -47,3 +47,8 @@ sectionGenericItem children =
 sectionHeader : String -> Html msg
 sectionHeader title =
     sectionGenericItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
+
+
+internalItem : List (Html msg) -> Html msg
+internalItem children =
+    H.div [ A.class "ui-section__child" ] children
