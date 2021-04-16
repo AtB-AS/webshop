@@ -11,6 +11,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
 import Http
+import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Process
@@ -411,13 +412,16 @@ view _ _ shared model _ =
 
                 _ ->
                     False
+
+        summary =
+            modelSummary shared model
     in
         H.div [ A.class "page-shop" ]
             [ H.div []
                 [ Ui.Group.togglable
                     { title = "Reisetype"
                     , icon = Just Icon.bus
-                    , value = Nothing
+                    , value = Just "Buss og trikk"
                     , open = False
                     , disabled = True
                     , onOpenClick = Nothing
@@ -427,47 +431,46 @@ view _ _ shared model _ =
                 , Ui.Group.togglable
                     { title = "Reisende"
                     , icon = Just Icon.bus
-                    , value = Nothing
+                    , value =
+                        summary.users
+                            |> List.head
+                            |> Maybe.map (\( name, num ) -> String.fromInt num ++ " " ++ name)
                     , open = model.mainView == Travelers
                     , disabled = False
                     , onOpenClick = Just (ShowView Travelers)
                     , id = "reisende"
                     }
-                    [ viewUserProfiles model shared.userProfiles
-                    ]
+                    [ viewUserProfiles model shared.userProfiles ]
                 , Ui.Group.togglable
                     { title = "Varighet"
                     , icon = Just Icon.duration
-                    , value = Nothing
+                    , value = summary.duration
                     , open = model.mainView == Duration
                     , disabled = False
                     , onOpenClick = Just (ShowView Duration)
                     , id = "varighet"
                     }
-                    [ viewProducts model shared.fareProducts
-                    ]
+                    [ viewProducts model shared.fareProducts ]
                 , Ui.Group.togglable
                     { title = "Gyldig fra og med"
                     , icon = Just Icon.ticket
-                    , value = Nothing
+                    , value = summary.start
                     , open = model.mainView == Start
                     , disabled = False
                     , onOpenClick = Just (ShowView Start)
                     , id = "duration"
                     }
-                    [ viewStart model
-                    ]
+                    [ viewStart model ]
                 , Ui.Group.togglable
                     { title = "Soner"
                     , icon = Just Icon.ticket
-                    , value = Nothing
+                    , value = summary.zones
                     , open = model.mainView == Zones
                     , disabled = False
                     , onOpenClick = Just (ShowView Zones)
                     , id = "zones"
                     }
-                    [ viewZones model shared.tariffZones
-                    ]
+                    [ viewZones model shared.tariffZones ]
                 ]
             , H.div []
                 [ summaryView disableButtons model
@@ -481,6 +484,71 @@ view _ _ shared model _ =
                     ]
                 ]
             ]
+
+
+nameFromUserType : List UserProfile -> UserType -> Maybe String
+nameFromUserType profiles userType =
+    profiles
+        |> List.Extra.find (.userType >> (==) userType)
+        |> Maybe.map (.name >> langString)
+
+
+nameFromFareProduct : List FareProduct -> String -> Maybe String
+nameFromFareProduct products productId =
+    products
+        |> List.Extra.find (.id >> (==) productId)
+        |> Maybe.map (.name >> langString)
+
+
+stringFromStart : Model -> Maybe String
+stringFromStart model =
+    if model.now then
+        Just "Nå"
+
+    else
+        Maybe.andThen (Util.Format.isoStringToFullHumanized model.zone) model.isoTime
+
+
+stringFromZone : List TariffZone -> Model -> Maybe String
+stringFromZone tariffZones model =
+    let
+        findName zone =
+            tariffZones
+                |> List.Extra.find (.id >> (==) zone)
+                |> Maybe.map (.name >> langString)
+                |> Maybe.withDefault "-"
+
+        fromZoneName =
+            findName model.fromZone
+
+        toZoneName =
+            findName model.toZone
+    in
+        if model.fromZone == model.toZone then
+            Just <| "Reise i 1 sone (" ++ fromZoneName ++ ")"
+
+        else
+            Just <| "Reise fra sone " ++ fromZoneName ++ " til sone " ++ toZoneName
+
+
+type alias ModelSummary =
+    { users : List ( String, Int )
+    , duration : Maybe String
+    , start : Maybe String
+    , zones : Maybe String
+    }
+
+
+modelSummary : Shared -> Model -> ModelSummary
+modelSummary shared model =
+    { users =
+        model.users
+            |> List.map
+                (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
+    , duration = nameFromFareProduct shared.fareProducts model.product
+    , start = stringFromStart model
+    , zones = stringFromZone shared.tariffZones model
+    }
 
 
 summaryView : Bool -> Model -> Html Msg
