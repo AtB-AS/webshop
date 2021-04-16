@@ -478,9 +478,24 @@ view _ _ shared model _ =
                     { marginBottom = True
                     , marginTop = False
                     }
-                    [ Ui.Button.primary Secondary_1 "Kjøp med bankkort" disableButtons (Just Icon.creditcard) (Just <| BuyOffers Nets)
-                    , Ui.Button.primary Secondary_1 "Kjøp med Vipps" disableButtons (Just <| Ui.Button.coloredIcon Icon.vipps) (Just <| BuyOffers Vipps)
-                    , Ui.Button.tertiary "Avbryt" False (Just Icon.cross) (Just CloseShop)
+                    [ Ui.Button.primary Secondary_1
+                        { text = "Kjøp med bankkort"
+                        , disabled = disableButtons
+                        , icon = Just Icon.creditcard
+                        , onClick = Just (BuyOffers Nets)
+                        }
+                    , Ui.Button.primary Secondary_1
+                        { text = "Kjøp med Vipps"
+                        , disabled = disableButtons
+                        , icon = Just (Ui.Button.coloredIcon Icon.vipps)
+                        , onClick = Just (BuyOffers Vipps)
+                        }
+                    , Ui.Button.tertiary
+                        { text = "Avbryt"
+                        , disabled = False
+                        , icon = Just Icon.cross
+                        , onClick = Just CloseShop
+                        }
                     ]
                 ]
             ]
