@@ -12,6 +12,7 @@ module Ui.Button exposing
 
 import Html as H exposing (Html)
 import Html.Attributes as A exposing (disabled)
+import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
 import Ui.TextContainer
@@ -34,7 +35,7 @@ type ThemeColor
     | Secondary_4
 
 
-button : ButtonMode -> ThemeColor -> String -> Bool -> Maybe (Html msg) -> msg -> Html msg
+button : ButtonMode -> ThemeColor -> String -> Bool -> Maybe (Html msg) -> Maybe msg -> Html msg
 button mode color text disabled icon action =
     let
         classList =
@@ -46,33 +47,33 @@ button mode color text disabled icon action =
     in
         H.button
             [ A.classList classList
-            , E.onClick action
+            , Html.Attributes.Extra.attributeMaybe E.onClick action
             , A.disabled disabled
             ]
             [ Ui.TextContainer.primaryBold [ H.text text ], Html.Extra.viewMaybe identity icon ]
 
 
-primary : ThemeColor -> String -> Bool -> Maybe (Html msg) -> msg -> Html msg
+primary : ThemeColor -> String -> Bool -> Maybe (Html msg) -> Maybe msg -> Html msg
 primary =
     button Primary
 
 
-secondary : ThemeColor -> String -> Bool -> Maybe (Html msg) -> msg -> Html msg
+secondary : ThemeColor -> String -> Bool -> Maybe (Html msg) -> Maybe msg -> Html msg
 secondary =
     button Secondary
 
 
-tertiary : String -> Bool -> Maybe (Html msg) -> msg -> Html msg
+tertiary : String -> Bool -> Maybe (Html msg) -> Maybe msg -> Html msg
 tertiary =
     button Tertiary Primary_2
 
 
-primaryDefault : String -> Bool -> Maybe (Html msg) -> msg -> Html msg
+primaryDefault : String -> Bool -> Maybe (Html msg) -> Maybe msg -> Html msg
 primaryDefault =
     button Primary Primary_2
 
 
-secondaryDefault : String -> Bool -> Maybe (Html msg) -> msg -> Html msg
+secondaryDefault : String -> Bool -> Maybe (Html msg) -> Maybe msg -> Html msg
 secondaryDefault =
     button Secondary Primary_2
 
