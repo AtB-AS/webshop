@@ -20,8 +20,7 @@ import NoImportingEverything
 
 config : List Rule
 config =
-    [ NoMissingTypeExpose.rule
-    , NoUnused.Dependencies.rule
+    [ NoUnused.Dependencies.rule
     , NoExposingEverything.rule
     , NoImportingEverything.rule []
     ]

@@ -1,4 +1,4 @@
-module Page.Shop exposing (MainView, Model, Msg(..), init, subscriptions, update, view)
+module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))

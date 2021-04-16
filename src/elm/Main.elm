@@ -1,4 +1,4 @@
-module Main exposing (AuthError, Flags, Model, Msg, UserData, main)
+module Main exposing (main)
 
 import Base exposing (AppInfo)
 import Browser

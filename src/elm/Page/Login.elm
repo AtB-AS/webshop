@@ -1,4 +1,4 @@
-module Page.Login exposing (Model, Msg, Step, init, subscriptions, update, view)
+module Page.Login exposing (Model, Msg, init, subscriptions, update, view)
 
 import Environment exposing (Environment)
 import Fragment.Icon as Icon

@@ -1,6 +1,5 @@
 port module Service.Misc exposing
     ( Profile
-    , TravelCard
     , convertTime
     , convertedTime
     , fareContractDecoder
