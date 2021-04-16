@@ -1,0 +1,19 @@
+name: 'elm-review'
+
+on:
+    pull_request:
+    push:
+        branches:
+            - master
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - run: yarn --frozen-lockfile
+            - name: Add elm-review, elm and elm-format to path
+              run: yarn bin >> $GITHUB_PATH
+            - uses: sparksp/elm-review-action@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

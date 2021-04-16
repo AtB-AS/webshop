@@ -1,5 +1,6 @@
 module Ui.Input exposing
-    ( radio
+    ( RadioOptions
+    , radio
     , radioGroup
     )
 
