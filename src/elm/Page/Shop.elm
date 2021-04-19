@@ -24,7 +24,7 @@ import Task
 import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
-import Ui.Input as Input
+import Ui.Input.Radio as Radio
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Format
@@ -683,7 +683,7 @@ viewStart model =
 
 viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
-    Input.radioGroup "Velg varighet" <| List.map (viewProduct model) products
+    Radio.group "Velg varighet" <| List.map (viewProduct model) products
 
 
 viewProduct : Model -> FareProduct -> Html Msg
@@ -692,7 +692,7 @@ viewProduct model product =
         isCurrent =
             model.product == product.id
     in
-        Input.radio
+        Radio.radio
             { id = product.id
             , title = langString product.name
             , subtitle = Nothing
@@ -733,7 +733,7 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    Input.radioGroup "Reisende"
+    Radio.group "Reisende"
         (userProfiles
             |> List.filter (.userType >> (/=) UserTypeAnyone)
             |> List.map (viewUserProfile model)
@@ -746,7 +746,7 @@ viewUserProfile model userProfile =
         isCurrent =
             List.any (Tuple.first >> (==) userProfile.userType) model.users
     in
-        Input.radio
+        Radio.radio
             { id = userTypeAsIdString userProfile.userType
             , title = langString userProfile.name
             , subtitle = Just <| langString userProfile.description

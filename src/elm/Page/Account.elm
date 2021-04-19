@@ -17,7 +17,8 @@ import Shared exposing (Shared)
 import Task
 import Time exposing (Month(..))
 import Ui.Button as B
-import Ui.Input
+import Ui.Input.EditSection as EditSection
+import Ui.Input.Text as Text
 import Ui.Section
 import Ui.TextContainer
 import Validate as Validate
@@ -302,7 +303,7 @@ travelCardValidator =
 
 viewTravelCard : Model -> Profile -> Html Msg
 viewTravelCard model profile =
-    Ui.Input.editSection
+    EditSection.editSection
         { accessibilityName = ""
         , editText =
             case profile.travelCard of
@@ -318,7 +319,7 @@ viewTravelCard model profile =
         }
         (\inEditMode ->
             if inEditMode then
-                [ Ui.Input.text
+                [ Text.text
                     { id = "tkort"
                     , title = Just "t:kort"
                     , error = selectValidationError TravelCard model.validationErrors
