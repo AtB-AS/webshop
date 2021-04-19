@@ -4,11 +4,21 @@ module Ui.Button exposing
     , ThemeColor(..)
     , button
     , coloredIcon
+    , init
     , primary
+    , primaryCompact
     , primaryDefault
     , secondary
+    , secondaryCompact
     , secondaryDefault
+    , setAttribues
+    , setDisabled
+    , setIcon
+    , setOnClick
+    , setText
+    , setType
     , tertiary
+    , tertiaryCompact
     )
 
 import Html as H exposing (Html)
@@ -23,6 +33,9 @@ type ButtonMode
     = Primary
     | Secondary
     | Tertiary
+    | PrimaryCompact
+    | SecondaryCompact
+    | TertiaryCompact
 
 
 type ThemeColor
@@ -41,11 +54,54 @@ type alias ButtonOptions msg =
     , disabled : Bool
     , icon : Maybe (Html msg)
     , onClick : Maybe msg
+    , type_ : String
+    , attributes : List (H.Attribute msg)
     }
 
 
+init : String -> ButtonOptions msg
+init text =
+    { text = text
+    , disabled = False
+    , icon = Nothing
+    , onClick = Nothing
+    , type_ = "button"
+    , attributes = []
+    }
+
+
+setDisabled : Bool -> ButtonOptions msg -> ButtonOptions msg
+setDisabled disabled opts =
+    { opts | disabled = disabled }
+
+
+setText : String -> ButtonOptions msg -> ButtonOptions msg
+setText text opts =
+    { opts | text = text }
+
+
+setIcon : Maybe (Html msg) -> ButtonOptions msg -> ButtonOptions msg
+setIcon icon opts =
+    { opts | icon = icon }
+
+
+setOnClick : Maybe msg -> ButtonOptions msg -> ButtonOptions msg
+setOnClick onClick opts =
+    { opts | onClick = onClick }
+
+
+setType : String -> ButtonOptions msg -> ButtonOptions msg
+setType type_ opts =
+    { opts | type_ = type_ }
+
+
+setAttribues : List (H.Attribute msg) -> ButtonOptions msg -> ButtonOptions msg
+setAttribues attributes opts =
+    { opts | attributes = attributes }
+
+
 button : ButtonMode -> ThemeColor -> ButtonOptions msg -> Html msg
-button mode color { text, disabled, icon, onClick } =
+button mode color { text, disabled, icon, onClick, type_, attributes } =
     let
         classList =
             [ ( buttonModeToClass mode, True )
@@ -55,10 +111,13 @@ button mode color { text, disabled, icon, onClick } =
             ]
     in
         H.button
-            [ A.classList classList
-            , Html.Attributes.Extra.attributeMaybe E.onClick onClick
-            , A.disabled disabled
-            ]
+            ([ A.classList classList
+             , Html.Attributes.Extra.attributeMaybe E.onClick onClick
+             , A.disabled disabled
+             , A.type_ type_
+             ]
+                ++ attributes
+            )
             [ Ui.TextContainer.primaryBold [ H.text text ], Html.Extra.viewMaybe identity icon ]
 
 
@@ -75,6 +134,21 @@ secondary =
 tertiary : ButtonOptions msg -> Html msg
 tertiary =
     button Tertiary Primary_2
+
+
+primaryCompact : ThemeColor -> ButtonOptions msg -> Html msg
+primaryCompact =
+    button PrimaryCompact
+
+
+secondaryCompact : ThemeColor -> ButtonOptions msg -> Html msg
+secondaryCompact =
+    button SecondaryCompact
+
+
+tertiaryCompact : ButtonOptions msg -> Html msg
+tertiaryCompact =
+    button TertiaryCompact Primary_2
 
 
 primaryDefault : ButtonOptions msg -> Html msg
@@ -98,6 +172,15 @@ buttonModeToClass mode =
 
         Tertiary ->
             "ui-button--tertiary"
+
+        PrimaryCompact ->
+            "ui-button--primary ui-button--compact"
+
+        SecondaryCompact ->
+            "ui-button--secondary ui-button--compact"
+
+        TertiaryCompact ->
+            "ui-button--tertiary ui-button--compact"
 
 
 themeColorToClass : ThemeColor -> String

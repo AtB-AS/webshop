@@ -5,37 +5,67 @@ import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
-import Html.Attributes as A exposing (disabled)
-import Html.Events as E exposing (onClick)
-import Http
+import Html.Attributes as A
+import Http exposing (Error(..))
+import Json.Decode exposing (Error(..))
+import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
-import Ui.Button
+import Time exposing (Month(..))
+import Ui.Button as B
+import Ui.Input
 import Ui.Section
+import Ui.TextContainer
+import Validate as Validate
+
+
+type EditSection
+    = TravelCardSection
+    | NameSection
+
+
+type FieldName
+    = FirstName
+    | LastName
+    | TravelCard
+
+
+type alias FormError =
+    ( FieldName, String )
 
 
 type Msg
     = UpdateFirstName String
     | UpdateLastName String
+    | UpdateTravelCard String
     | UpdateProfile
     | ReceiveUpdateProfile (Result Http.Error ())
+    | ReceiveUpdateTravelCard (Result Http.Error ())
     | EditName
     | EditPhoneNumber
     | RemoveTravelCard
     | Logout
     | DeleteAccount
     | ProfileChange (Maybe Profile)
+    | ValidateTravelCard
+    | SaveTravelCard
+    | SetEditSection (Maybe EditSection)
+    | LoadingEditSection (Maybe EditSection)
+    | ClearValidationError
 
 
 type alias Model =
     { firstName : String
     , lastName : String
+    , travelCard : String
     , profile : Maybe Profile
-    , updating : Bool
+    , editSection : Maybe EditSection
+    , loadingEditSection : Maybe EditSection
+    , validationErrors : List FormError
     }
 
 
@@ -43,8 +73,11 @@ init : ( Model, Cmd Msg )
 init =
     ( { firstName = ""
       , lastName = ""
+      , travelCard = ""
       , profile = Nothing
-      , updating = False
+      , editSection = Nothing
+      , loadingEditSection = Nothing
+      , validationErrors = []
       }
     , Cmd.none
     )
@@ -59,19 +92,38 @@ update msg env model =
         UpdateLastName value ->
             PageUpdater.init { model | lastName = value }
 
+        UpdateTravelCard value ->
+            PageUpdater.init
+                { model
+                    | travelCard = value
+                    , validationErrors = clearValidationError TravelCard model.validationErrors
+                }
+
         UpdateProfile ->
             PageUpdater.fromPair
-                ( { model | updating = True }
+                ( { model | loadingEditSection = Just NameSection }
                 , updateProfile env model.firstName model.lastName
                 )
 
         ReceiveUpdateProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | updating = False }
+                    PageUpdater.init { model | loadingEditSection = Nothing }
 
                 Err _ ->
-                    PageUpdater.init { model | updating = False }
+                    PageUpdater.init { model | loadingEditSection = Nothing }
+
+        ReceiveUpdateTravelCard result ->
+            case result of
+                Ok () ->
+                    PageUpdater.init { model | loadingEditSection = Nothing }
+
+                Err error ->
+                    PageUpdater.init
+                        { model
+                            | loadingEditSection = Nothing
+                            , validationErrors = addValidationError ( TravelCard, errorToString error ) model.validationErrors
+                        }
 
         EditName ->
             PageUpdater.init model
@@ -91,14 +143,62 @@ update msg env model =
                     | profile = Just profile
                     , firstName = profile.firstName
                     , lastName = profile.lastName
+                    , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
+                    , validationErrors = []
                 }
 
         ProfileChange Nothing ->
             PageUpdater.init { model | profile = Nothing }
 
+        SaveTravelCard ->
+            case Validate.validate travelCardValidator model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model
+                            | loadingEditSection = Just TravelCardSection
+                            , validationErrors = clearValidationError TravelCard model.validationErrors
+                          }
+                        , updateTravelCard env model.travelCard
+                        )
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
+
+        ValidateTravelCard ->
+            case Validate.validate travelCardValidator model of
+                Ok _ ->
+                    PageUpdater.init model
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
+
+        SetEditSection section ->
+            PageUpdater.init { model | editSection = section, validationErrors = [] }
+
+        LoadingEditSection section ->
+            PageUpdater.init { model | loadingEditSection = section }
+
         Logout ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.Logout
+
+        ClearValidationError ->
+            PageUpdater.init { model | validationErrors = [] }
+
+
+selectValidationError : FieldName -> List FormError -> Maybe String
+selectValidationError fieldName =
+    List.Extra.find (Tuple.first >> (==) fieldName) >> Maybe.map Tuple.second
+
+
+clearValidationError : FieldName -> List FormError -> List FormError
+clearValidationError fieldName =
+    List.filter (Tuple.first >> (/=) fieldName)
+
+
+addValidationError : FormError -> List FormError -> List FormError
+addValidationError formError =
+    (::) formError
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -110,20 +210,17 @@ view _ _ _ model _ =
 
 
 viewSidebar : Model -> Html Msg
-viewSidebar model =
+viewSidebar _ =
     Ui.Section.section
-        [ Ui.Button.tertiary
-            { text = "Logg ut"
-            , disabled = False
-            , icon = Just Icon.logout
-            , onClick = Just Logout
-            }
-        , Ui.Button.tertiary
-            { text = "Slett konto"
-            , disabled = True
-            , icon = Just Icon.delete
-            , onClick = Nothing
-            }
+        [ B.init "Logg ut"
+            |> B.setIcon (Just Icon.logout)
+            |> B.setOnClick (Just Logout)
+            |> B.tertiary
+        , B.init "Logg ut"
+            |> B.setIcon (Just Icon.delete)
+            |> B.setDisabled True
+            |> B.setOnClick (Just Logout)
+            |> B.tertiary
         ]
 
 
@@ -135,8 +232,8 @@ viewMain model =
                 Just profile ->
                     [ Ui.Section.sectionHeader "Min konto"
                     , viewProfile profile
-                    , viewTravelCard profile
                     , viewPhoneNumber profile
+                    , viewTravelCard model profile
                     , viewEmailAddress profile
                     ]
 
@@ -190,17 +287,59 @@ viewEmailAddress profile =
         H.text ""
 
 
-viewTravelCard : Profile -> Html msg
-viewTravelCard profile =
-    case profile.travelCard of
-        Just travelCard ->
-            Ui.Section.sectionGenericItem
-                [ H.label [] [ H.text "t:kort" ]
-                , viewField <| String.fromInt <| travelCard.id
+fieldInEditMode : Maybe EditSection -> EditSection -> Bool
+fieldInEditMode state actual =
+    state == Just actual
+
+
+travelCardValidator : Validate.Validator FormError Model
+travelCardValidator =
+    Validate.firstError
+        [ Validate.ifBlank .travelCard ( TravelCard, "t:kort id kan ikke være tomt." )
+        , Validate.ifNotInt .travelCard (\_ -> ( TravelCard, "t:kort id må være et tall." ))
+        ]
+
+
+viewTravelCard : Model -> Profile -> Html Msg
+viewTravelCard model profile =
+    Ui.Input.editSection
+        { accessibilityName = ""
+        , editText =
+            case profile.travelCard of
+                Just _ ->
+                    "Endre / fjern t:kort"
+
+                Nothing ->
+                    "Legg til t:kort"
+        , onEdit = Just <| SetEditSection (Just TravelCardSection)
+        , onSave = Just <| SaveTravelCard
+        , onCancel = Just (SetEditSection Nothing)
+        , inEditMode = fieldInEditMode model.editSection TravelCardSection
+        }
+        (\inEditMode ->
+            if inEditMode then
+                [ Ui.Input.text
+                    { id = "tkort"
+                    , title = Just "t:kort"
+                    , error = selectValidationError TravelCard model.validationErrors
+                    , onInput = Just <| UpdateTravelCard
+                    , onBlur = Just <| ValidateTravelCard
+                    , value = Just model.travelCard
+                    , placeholder = "Legg til et t:kort nå"
+                    }
                 ]
 
-        Nothing ->
-            H.text ""
+            else
+                [ Ui.Section.labelItem "t:kort"
+                    [ Ui.TextContainer.primary
+                        [ profile.travelCard
+                            |> Maybe.map (.id >> String.fromInt)
+                            |> Maybe.withDefault "Ikke lagt til"
+                            |> H.text
+                        ]
+                    ]
+                ]
+        )
 
 
 subscriptions : Model -> Sub Msg
@@ -239,3 +378,37 @@ updateProfile env firstName lastName =
     WebshopService.updateProfile env firstName lastName
         |> Http.toTask
         |> Task.attempt ReceiveUpdateProfile
+
+
+updateTravelCard : Environment -> String -> Cmd Msg
+updateTravelCard env travelCard =
+    WebshopService.addTravelCard env travelCard
+        |> Http.toTask
+        |> Task.attempt ReceiveUpdateTravelCard
+
+
+errorToString : Http.Error -> String
+errorToString error =
+    case error of
+        BadUrl url ->
+            "The URL " ++ url ++ " was invalid"
+
+        Timeout ->
+            "Unable to reach the server, try again"
+
+        NetworkError ->
+            "Unable to reach the server, check your network connection"
+
+        BadPayload errorMessage _ ->
+            errorMessage
+
+        BadStatus { status, body } ->
+            case status.code of
+                500 ->
+                    "The server had a problem, try again later"
+
+                400 ->
+                    "Verify your information and try again " ++ body
+
+                _ ->
+                    "Unknown error"

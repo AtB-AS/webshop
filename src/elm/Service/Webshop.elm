@@ -55,7 +55,7 @@ addTravelCard env id =
         payload =
             Encode.object [ ( "id", Encode.string id ) ]
     in
-        HttpUtil.post env (env.baseUrl ++ "/webshop/v1/travelcards") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.post env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Decode.succeed ())
 
 
 deleteTravelCard : Environment -> String -> Http.Request ()
@@ -64,7 +64,7 @@ deleteTravelCard env id =
         payload =
             Encode.object [ ( "id", Encode.string id ) ]
     in
-        HttpUtil.delete env (env.baseUrl ++ "/webshop/v1/travelcards") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.delete env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Decode.succeed ())
 
 
 deleteToken : Environment -> String -> Http.Request ()

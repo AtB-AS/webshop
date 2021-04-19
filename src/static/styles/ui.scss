@@ -278,6 +278,9 @@
         }
     }
 }
+.ui-button--compact {
+    display: inline-flex;
+}
 .ui-button--tertiary {
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
@@ -309,6 +312,9 @@
 }
 .ui-textContainer--disabled {
     color: var(--text-colors-disabled);
+}
+.ui-textContainer--destructive {
+    color: var(--colors-primary_destructive-backgroundColor);
 }
 
 .ui-notifications {

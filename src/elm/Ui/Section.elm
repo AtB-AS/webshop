@@ -1,5 +1,6 @@
 module Ui.Section exposing
     ( SectionOptions
+    , labelItem
     , section
     , sectionGenericItem
     , sectionHeader
@@ -8,6 +9,7 @@ module Ui.Section exposing
 
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
 
@@ -40,8 +42,18 @@ section =
 
 
 sectionGenericItem : List (Html msg) -> Html msg
-sectionGenericItem children =
-    H.div [ A.class "ui-section__item" ] children
+sectionGenericItem =
+    H.div [ A.class "ui-section__item" ]
+
+
+labelItem : String -> List (Html msg) -> Html msg
+labelItem label children =
+    H.div [ A.class "ui-section__item" ]
+        (H.div [ A.class "ui-section__item__label" ]
+            [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
+            ]
+            :: children
+        )
 
 
 sectionHeader : String -> Html msg

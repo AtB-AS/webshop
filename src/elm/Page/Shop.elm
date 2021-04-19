@@ -22,7 +22,7 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
-import Ui.Button exposing (ThemeColor(..))
+import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input as Input
 import Ui.Message as Message
@@ -478,24 +478,21 @@ view _ _ shared model _ =
                     { marginBottom = True
                     , marginTop = False
                     }
-                    [ Ui.Button.primary Secondary_1
-                        { text = "Kjøp med bankkort"
-                        , disabled = disableButtons
-                        , icon = Just Icon.creditcard
-                        , onClick = Just (BuyOffers Nets)
-                        }
-                    , Ui.Button.primary Secondary_1
-                        { text = "Kjøp med Vipps"
-                        , disabled = disableButtons
-                        , icon = Just (Ui.Button.coloredIcon Icon.vipps)
-                        , onClick = Just (BuyOffers Vipps)
-                        }
-                    , Ui.Button.tertiary
-                        { text = "Avbryt"
-                        , disabled = False
-                        , icon = Just Icon.cross
-                        , onClick = Just CloseShop
-                        }
+                    [ B.init "Kjøp med bankkort"
+                        |> B.setDisabled disableButtons
+                        |> B.setIcon (Just Icon.creditcard)
+                        |> B.setOnClick (Just (BuyOffers Nets))
+                        |> B.primary Secondary_1
+                    , B.init "Kjøp med Vipps"
+                        |> B.setDisabled disableButtons
+                        |> B.setIcon (Just (B.coloredIcon Icon.vipps))
+                        |> B.setOnClick (Just (BuyOffers Vipps))
+                        |> B.primary Secondary_1
+                    , B.init "Avbryt"
+                        |> B.setDisabled False
+                        |> B.setIcon (Just Icon.cross)
+                        |> B.setOnClick (Just CloseShop)
+                        |> B.tertiary
                     ]
                 ]
             ]
