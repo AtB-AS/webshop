@@ -1,4 +1,15 @@
-module Ui.Input.Text exposing (text)
+module Ui.Input.Text exposing
+    ( init
+    , setAttributes
+    , setError
+    , setId
+    , setOnBlur
+    , setOnInput
+    , setPlaceholder
+    , setTitle
+    , setValue
+    , text
+    )
 
 import Fragment.Icon
 import Html as H exposing (Attribute, Html)
@@ -19,7 +30,61 @@ type alias TextOptions msg =
     , placeholder : String
     , onInput : Maybe (String -> msg)
     , onBlur : Maybe msg
+    , attributes : List (H.Attribute msg)
     }
+
+
+init : String -> TextOptions msg
+init id =
+    { id = id
+    , title = Nothing
+    , error = Nothing
+    , value = Nothing
+    , placeholder = ""
+    , onInput = Nothing
+    , onBlur = Nothing
+    , attributes = []
+    }
+
+
+setPlaceholder : String -> TextOptions msg -> TextOptions msg
+setPlaceholder placeholder opts =
+    { opts | placeholder = placeholder }
+
+
+setId : String -> TextOptions msg -> TextOptions msg
+setId id opts =
+    { opts | id = id }
+
+
+setTitle : Maybe String -> TextOptions msg -> TextOptions msg
+setTitle title opts =
+    { opts | title = title }
+
+
+setError : Maybe String -> TextOptions msg -> TextOptions msg
+setError error opts =
+    { opts | error = error }
+
+
+setValue : Maybe String -> TextOptions msg -> TextOptions msg
+setValue value opts =
+    { opts | value = value }
+
+
+setAttributes : List (H.Attribute msg) -> TextOptions msg -> TextOptions msg
+setAttributes attributes opts =
+    { opts | attributes = attributes }
+
+
+setOnInput : Maybe (String -> msg) -> TextOptions msg -> TextOptions msg
+setOnInput onInput opts =
+    { opts | onInput = onInput }
+
+
+setOnBlur : Maybe msg -> TextOptions msg -> TextOptions msg
+setOnBlur onBlur opts =
+    { opts | onBlur = onBlur }
 
 
 text : TextOptions msg -> Html msg

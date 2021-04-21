@@ -319,15 +319,14 @@ viewTravelCard model profile =
         }
         (\inEditMode ->
             if inEditMode then
-                [ Text.text
-                    { id = "tkort"
-                    , title = Just "t:kort"
-                    , error = selectValidationError TravelCard model.validationErrors
-                    , onInput = Just <| UpdateTravelCard
-                    , onBlur = Just <| ValidateTravelCard
-                    , value = Just model.travelCard
-                    , placeholder = "Legg til et t:kort nå"
-                    }
+                [ Text.init "tkort"
+                    |> Text.setTitle (Just "t:kort")
+                    |> Text.setError (selectValidationError TravelCard model.validationErrors)
+                    |> Text.setOnInput (Just <| UpdateTravelCard)
+                    |> Text.setOnBlur (Just <| ValidateTravelCard)
+                    |> Text.setPlaceholder "Legg til et t:kort nå"
+                    |> Text.setValue (Just model.travelCard)
+                    |> Text.text
                 ]
 
             else
