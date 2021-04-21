@@ -18,7 +18,6 @@ body {
 }
 
 body {
-    line-height: 1.2em;
     margin: 0;
 }
 
@@ -35,6 +34,9 @@ button {
     min-height: 100vh;
     color: var(--colors-background_1-color);
     background-color: var(--colors-background_1-backgroundColor);
+
+    line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
+    letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
 .app {
     position: relative;
