@@ -21,7 +21,6 @@ import Ui.Button as B
 import Ui.Input.EditSection as EditSection
 import Ui.Input.Text as Text
 import Ui.Section
-import Ui.TextContainer
 import Validate as Validate
 
 
@@ -31,9 +30,7 @@ type EditSection
 
 
 type FieldName
-    = FirstName
-    | LastName
-    | TravelCard
+    = TravelCard
 
 
 type alias FormError =
@@ -306,42 +303,42 @@ travelCardValidator =
 
 viewTravelCard : Model -> Profile -> Html Msg
 viewTravelCard model profile =
-    EditSection.editSection
-        { accessibilityName = ""
-        , editText =
-            case profile.travelCard of
+    EditSection.init "Legg til eller fjern t:kort"
+        |> EditSection.setEditText
+            (case profile.travelCard of
                 Just _ ->
                     "Endre / fjern t:kort"
 
                 Nothing ->
                     "Legg til t:kort"
-        , onEdit = Just <| SetEditSection (Just TravelCardSection) (Just "tkort")
-        , onSave = Just <| SaveTravelCard
-        , onCancel = Just (SetEditSection Nothing Nothing)
-        , inEditMode = fieldInEditMode model.editSection TravelCardSection
-        }
-        (\inEditMode ->
-            if inEditMode then
-                EditSection.horizontalGroup
-                    [ Text.init "tkort"
-                        |> Text.setTitle (Just "t:kort")
-                        |> Text.setError (selectValidationError TravelCard model.validationErrors)
-                        |> Text.setOnInput (Just <| UpdateTravelCard)
-                        |> Text.setOnBlur (Just <| ValidateTravelCard)
-                        |> Text.setPlaceholder "Legg til et t:kort nå"
-                        |> Text.setValue (Just model.travelCard)
-                        |> Text.text
-                    ]
+            )
+        |> EditSection.setOnSave (Just SaveTravelCard)
+        |> EditSection.setOnCancel (Just <| SetEditSection Nothing Nothing)
+        |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
+        |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
+        |> EditSection.editSection
+            (\inEditMode ->
+                if inEditMode then
+                    EditSection.horizontalGroup
+                        [ Text.init "tkort"
+                            |> Text.setTitle (Just "t:kort")
+                            |> Text.setError (selectValidationError TravelCard model.validationErrors)
+                            |> Text.setOnInput (Just <| UpdateTravelCard)
+                            |> Text.setOnBlur (Just <| ValidateTravelCard)
+                            |> Text.setPlaceholder "Legg til et t:kort nå"
+                            |> Text.setValue (Just model.travelCard)
+                            |> Text.text
+                        ]
 
-            else
-                [ Ui.Section.labelItem "t:kort"
-                    [ profile.travelCard
-                        |> Maybe.map (.id >> String.fromInt)
-                        |> Maybe.withDefault "Ikke lagt til"
-                        |> H.text
+                else
+                    [ Ui.Section.labelItem "t:kort"
+                        [ profile.travelCard
+                            |> Maybe.map (.id >> String.fromInt)
+                            |> Maybe.withDefault "Ikke lagt til"
+                            |> H.text
+                        ]
                     ]
-                ]
-        )
+            )
 
 
 subscriptions : Model -> Sub Msg
