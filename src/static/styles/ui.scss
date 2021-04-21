@@ -374,6 +374,8 @@
     width: 100%;
     display: flex;
     padding: var(--spacings-medium);
+
+    animation: fadeIn 350ms;
 }
 .ui-editSection__fieldset__buttonGroup > :nth-child(2) {
     margin-left: auto;
@@ -411,4 +413,18 @@
 }
 .ui-input-text__input:focus {
     outline: 0;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0.2;
+        transform: translateY(-0.4rem);
+    }
+    30% {
+        opacity: 0.4;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 1;
+    }
 }

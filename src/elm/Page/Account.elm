@@ -335,12 +335,10 @@ viewTravelCard model profile =
 
             else
                 [ Ui.Section.labelItem "t:kort"
-                    [ Ui.TextContainer.primary
-                        [ profile.travelCard
-                            |> Maybe.map (.id >> String.fromInt)
-                            |> Maybe.withDefault "Ikke lagt til"
-                            |> H.text
-                        ]
+                    [ profile.travelCard
+                        |> Maybe.map (.id >> String.fromInt)
+                        |> Maybe.withDefault "Ikke lagt til"
+                        |> H.text
                     ]
                 ]
         )
