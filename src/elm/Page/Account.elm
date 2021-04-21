@@ -234,7 +234,7 @@ viewSidebar _ =
             |> B.setIcon (Just Icon.logout)
             |> B.setOnClick (Just Logout)
             |> B.tertiary
-        , B.init "Logg ut"
+        , B.init "Slett konto"
             |> B.setIcon (Just Icon.delete)
             |> B.setDisabled True
             |> B.setOnClick (Just Logout)
@@ -283,26 +283,12 @@ viewProfile profile =
 
 viewPhoneNumber : Profile -> Html msg
 viewPhoneNumber profile =
-    if hasField profile.phone then
-        Ui.Section.sectionGenericItem
-            [ H.label [] [ H.text "Telefonnummer" ]
-            , viewField profile.phone
-            ]
-
-    else
-        H.text ""
+    Ui.Section.labelItem "Telefonnummer" [ viewField profile.phone ]
 
 
 viewEmailAddress : Profile -> Html msg
 viewEmailAddress profile =
-    if hasField profile.email then
-        Ui.Section.sectionGenericItem
-            [ H.label [] [ H.text "E-postadresse" ]
-            , viewField profile.email
-            ]
-
-    else
-        H.text ""
+    Ui.Section.labelItem "E-postadresse" [ viewField profile.email ]
 
 
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
