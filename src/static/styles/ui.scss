@@ -278,6 +278,9 @@
         }
     }
 }
+.ui-button:not(.ui-button--compact) {
+    width: 100%;
+}
 .ui-button__icon {
     margin-left: var(--spacings-small);
 }
@@ -355,6 +358,7 @@
     display: flex;
     border: 0;
     flex-wrap: wrap;
+    padding: 0;
 }
 .ui-editSection__fieldset__legend {
     position: absolute;
@@ -363,10 +367,8 @@
 .ui-editSection__fieldset__buttonGroup {
     width: 100%;
     display: flex;
+    padding: var(--spacings-medium);
 }
 .ui-editSection__fieldset__buttonGroup > :nth-child(2) {
     margin-left: auto;
 }
-// .ui-editSection__fieldset__saveButton {
-//     margin-left: var(--spacings-small);
-// }
