@@ -11,7 +11,7 @@ module Ui.Button exposing
     , secondary
     , secondaryCompact
     , secondaryDefault
-    , setAttribues
+    , setAttributes
     , setDisabled
     , setIcon
     , setOnClick
@@ -95,8 +95,8 @@ setType type_ opts =
     { opts | type_ = type_ }
 
 
-setAttribues : List (H.Attribute msg) -> ButtonOptions msg -> ButtonOptions msg
-setAttribues attributes opts =
+setAttributes : List (H.Attribute msg) -> ButtonOptions msg -> ButtonOptions msg
+setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
