@@ -1,6 +1,7 @@
 module Page.Account exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
+import Browser.Dom as Dom
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
@@ -54,9 +55,11 @@ type Msg
     | ProfileChange (Maybe Profile)
     | ValidateTravelCard
     | SaveTravelCard
-    | SetEditSection (Maybe EditSection)
+    | SetEditSection (Maybe EditSection) (Maybe String)
     | LoadingEditSection (Maybe EditSection)
     | ClearValidationError
+    | FocusItem String
+    | NoOp
 
 
 type alias Model =
@@ -173,8 +176,9 @@ update msg env model =
                 Err errors ->
                     PageUpdater.init { model | validationErrors = errors }
 
-        SetEditSection section ->
+        SetEditSection section focusId ->
             PageUpdater.init { model | editSection = section, validationErrors = [] }
+                |> PageUpdater.addCmd (focusBox focusId)
 
         LoadingEditSection section ->
             PageUpdater.init { model | loadingEditSection = section }
@@ -185,6 +189,12 @@ update msg env model =
 
         ClearValidationError ->
             PageUpdater.init { model | validationErrors = [] }
+
+        FocusItem id ->
+            PageUpdater.fromPair ( model, focusBox <| Just id )
+
+        NoOp ->
+            PageUpdater.init model
 
 
 selectValidationError : FieldName -> List FormError -> Maybe String
@@ -200,6 +210,13 @@ clearValidationError fieldName =
 addValidationError : FormError -> List FormError -> List FormError
 addValidationError formError =
     (::) formError
+
+
+focusBox : Maybe String -> Cmd Msg
+focusBox id =
+    id
+        |> Maybe.map (\i -> Task.attempt (\_ -> NoOp) (Dom.focus i))
+        |> Maybe.withDefault Cmd.none
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -312,9 +329,9 @@ viewTravelCard model profile =
 
                 Nothing ->
                     "Legg til t:kort"
-        , onEdit = Just <| SetEditSection (Just TravelCardSection)
+        , onEdit = Just <| SetEditSection (Just TravelCardSection) (Just "tkort")
         , onSave = Just <| SaveTravelCard
-        , onCancel = Just (SetEditSection Nothing)
+        , onCancel = Just (SetEditSection Nothing Nothing)
         , inEditMode = fieldInEditMode model.editSection TravelCardSection
         }
         (\inEditMode ->
