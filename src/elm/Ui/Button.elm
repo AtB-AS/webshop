@@ -118,7 +118,7 @@ button mode color { text, disabled, icon, onClick, type_, attributes } =
              ]
                 ++ attributes
             )
-            [ Ui.TextContainer.primaryBold [ H.text text ], Html.Extra.viewMaybe identity icon ]
+            [ Ui.TextContainer.primaryBold [ H.text text ], Html.Extra.viewMaybe (List.singleton >> H.div [ A.class "ui-button__icon" ]) icon ]
 
 
 primary : ThemeColor -> ButtonOptions msg -> Html msg

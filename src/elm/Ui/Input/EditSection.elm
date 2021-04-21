@@ -26,25 +26,27 @@ type alias EditSectionOptions msg =
 
 editSection : EditSectionOptions msg -> (Bool -> List (Html msg)) -> Html msg
 editSection { accessibilityName, editText, onEdit, onSave, onCancel, inEditMode } children =
-    H.form [ A.method "post", Html.Attributes.Extra.attributeMaybe (\action -> E.onSubmit action) onSave ]
+    H.form [ A.class "ui-editSection", A.method "post", Html.Attributes.Extra.attributeMaybe (\action -> E.onSubmit action) onSave ]
         [ if not inEditMode then
-            H.div []
-                (children False
-                    ++ [ B.init editText
-                            |> B.setIcon (Just Fragment.Icon.edit)
-                            |> B.setOnClick onEdit
-                            |> B.tertiaryCompact
-                       ]
-                )
+            H.div [ A.class "ui-editSection__container" ]
+                [ H.div [ A.class "ui-editSection__content" ] (children False)
+                , B.init editText
+                    |> B.setIcon (Just Fragment.Icon.edit)
+                    |> B.setOnClick onEdit
+                    |> B.tertiaryCompact
+                ]
 
           else
-            H.fieldset []
+            H.fieldset [ A.class "ui-editSection__fieldset" ]
                 (H.legend
-                    []
+                    [ A.class "ui-editSection__fieldset__legend" ]
                     [ H.text accessibilityName ]
                     :: children True
-                    ++ [ H.div []
-                            [ B.init "Avbryt"
+                    ++ [ H.div [ A.class "ui-editSection__fieldset__buttonGroup" ]
+                            [ H.div []
+                                []
+                            , B.init
+                                "Avbryt"
                                 |> B.setIcon (Just Fragment.Icon.cross)
                                 |> B.setOnClick onCancel
                                 |> B.tertiaryCompact
@@ -52,7 +54,8 @@ editSection { accessibilityName, editText, onEdit, onSave, onCancel, inEditMode 
                                 |> B.setIcon (Just Fragment.Icon.checkmark)
                                 |> B.setOnClick onSave
                                 |> B.setType "submit"
-                                |> B.primaryCompact B.Secondary_2
+                                |> B.setAttributes [ A.classList [ ( "ui-editSection__fieldset__saveButton", True ) ] ]
+                                |> B.primaryCompact B.Primary_2
                             ]
                        ]
                 )

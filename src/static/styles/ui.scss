@@ -259,7 +259,7 @@
 
 .ui-button {
     display: flex;
-    width: 100%;
+    flex: 1;
     cursor: pointer;
 
     border: var(--border-width-medium) solid transparent;
@@ -278,8 +278,8 @@
         }
     }
 }
-.ui-button--compact {
-    display: inline-flex;
+.ui-button__icon {
+    margin-left: var(--spacings-small);
 }
 .ui-button--tertiary {
     background: var(--colors-background_0-backgroundColor);
@@ -302,6 +302,18 @@
 }
 .ui-button--disabled:hover {
     filter: none;
+}
+.ui-button--compact {
+    display: inline-flex;
+    flex: initial;
+    padding: calc(var(--spacings-medium) - 2 * var(--border-width-medium));
+}
+.ui-button--compact:not(.ui-button--tertiary) {
+    border-radius: var(--border-radius-regular);
+}
+.ui-button--compact.ui-button--tertiary:hover {
+    filter: none;
+    opacity: 0.6;
 }
 
 .ui-textContainer--primary {
@@ -327,3 +339,34 @@
 
     z-index: 9999;
 }
+
+.ui-editSection {
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+}
+.ui-editSection__container {
+    display: flex;
+    align-items: center;
+}
+.ui-editSection__content {
+    flex: 1;
+}
+.ui-editSection__fieldset {
+    display: flex;
+    border: 0;
+    flex-wrap: wrap;
+}
+.ui-editSection__fieldset__legend {
+    position: absolute;
+    clip: rect(0 0 0 0);
+}
+.ui-editSection__fieldset__buttonGroup {
+    width: 100%;
+    display: flex;
+}
+.ui-editSection__fieldset__buttonGroup > :nth-child(2) {
+    margin-left: auto;
+}
+// .ui-editSection__fieldset__saveButton {
+//     margin-left: var(--spacings-small);
+// }
