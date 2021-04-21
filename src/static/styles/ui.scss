@@ -398,6 +398,14 @@
     margin: var(--spacings-medium)
         calc(var(--spacings-medium) - var(--border-width-medium));
 }
+.ui-input-text:hover {
+    background: var(--colors-background_2-backgroundColor);
+    color: var(--colors-background_2-color);
+}
+.ui-input-text:active {
+    background: var(--colors-background_3-backgroundColor);
+    color: var(--colors-background_3-color);
+}
 .ui-input-text:focus-within {
     border-color: var(--colors-primary_2-backgroundColor);
     border-radius: var(--border-radius-regular);
@@ -410,6 +418,7 @@
     width: 100%;
     padding: 0;
     border: 0;
+    background-color: transparent;
 }
 .ui-input-text__input:focus {
     outline: 0;
