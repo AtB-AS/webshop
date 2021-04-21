@@ -692,14 +692,12 @@ viewProduct model product =
         isCurrent =
             model.product == product.id
     in
-        Radio.radio
-            { id = product.id
-            , title = langString product.name
-            , subtitle = Nothing
-            , name = "product"
-            , checked = isCurrent
-            , onCheck = Just <| SetProduct product.id
-            }
+        Radio.init product.id
+            |> Radio.setTitle (langString product.name)
+            |> Radio.setName "product"
+            |> Radio.setChecked isCurrent
+            |> Radio.setOnCheck (Just <| SetProduct product.id)
+            |> Radio.radio
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -746,14 +744,13 @@ viewUserProfile model userProfile =
         isCurrent =
             List.any (Tuple.first >> (==) userProfile.userType) model.users
     in
-        Radio.radio
-            { id = userTypeAsIdString userProfile.userType
-            , title = langString userProfile.name
-            , subtitle = Just <| langString userProfile.description
-            , name = "userprofile"
-            , checked = isCurrent
-            , onCheck = Just <| SetUser userProfile.userType
-            }
+        Radio.init (userTypeAsIdString userProfile.userType)
+            |> Radio.setTitle (langString userProfile.name)
+            |> Radio.setName "userprofile"
+            |> Radio.setSubtitle (Just <| langString userProfile.description)
+            |> Radio.setChecked isCurrent
+            |> Radio.setOnCheck (Just <| SetUser userProfile.userType)
+            |> Radio.radio
 
 
 subscriptions : Model -> Sub Msg

@@ -1,7 +1,14 @@
 module Ui.Input.Radio exposing
     ( RadioOptions
     , group
+    , init
     , radio
+    , setChecked
+    , setId
+    , setName
+    , setOnCheck
+    , setSubtitle
+    , setTitle
     )
 
 import Fragment.Icon
@@ -22,6 +29,7 @@ type alias RadioOptions msg =
     , subtitle : Maybe String
     , checked : Bool
     , onCheck : Maybe (Bool -> msg)
+    , attributes : List (H.Attribute msg)
     }
 
 
@@ -33,11 +41,43 @@ init id =
     , subtitle = Nothing
     , checked = False
     , onCheck = Nothing
+    , attributes = []
     }
 
 
+setId : String -> RadioOptions msg -> RadioOptions msg
+setId id opts =
+    { opts | id = id }
 
--- setId : String -> RadioOptions msg
+
+setName : String -> RadioOptions msg -> RadioOptions msg
+setName name opts =
+    { opts | name = name }
+
+
+setTitle : String -> RadioOptions msg -> RadioOptions msg
+setTitle title opts =
+    { opts | title = title }
+
+
+setSubtitle : Maybe String -> RadioOptions msg -> RadioOptions msg
+setSubtitle subtitle opts =
+    { opts | subtitle = subtitle }
+
+
+setChecked : Bool -> RadioOptions msg -> RadioOptions msg
+setChecked checked opts =
+    { opts | checked = checked }
+
+
+setOnCheck : Maybe (Bool -> msg) -> RadioOptions msg -> RadioOptions msg
+setOnCheck onCheck opts =
+    { opts | onCheck = onCheck }
+
+
+setAttributes : List (H.Attribute msg) -> RadioOptions msg -> RadioOptions msg
+setAttributes attributes opts =
+    { opts | attributes = attributes }
 
 
 group : String -> List (Html msg) -> Html msg
@@ -51,16 +91,18 @@ group hiddenTitle children =
 
 
 radio : RadioOptions msg -> Html msg
-radio { id, name, title, onCheck, checked, subtitle } =
+radio { id, name, title, onCheck, checked, subtitle, attributes } =
     H.div []
         [ H.input
-            [ A.type_ "radio"
-            , A.id id
-            , A.name name
-            , A.class "ui-input-radio__input"
-            , maybeOnCheck onCheck
-            , A.checked checked
-            ]
+            ([ A.type_ "radio"
+             , A.id id
+             , A.name name
+             , A.class "ui-input-radio__input"
+             , maybeOnCheck onCheck
+             , A.checked checked
+             ]
+                ++ attributes
+            )
             []
         , H.label [ A.for id, A.class "ui-input-radio" ]
             [ H.div [ A.class "ui-input-radio__title" ]
