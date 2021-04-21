@@ -110,8 +110,10 @@ text { id, title, value, error, placeholder, onInput, onBlur } =
                 []
             , Html.Extra.viewMaybe
                 (\t ->
-                    Text.textContainer (Just Text.DestructiveColor) <|
-                        Text.Primary [ Fragment.Icon.error, H.text t ]
+                    H.div [ A.class "ui-input-text__errorMessage" ]
+                        [ Text.textContainer (Just Text.DestructiveColor) <|
+                            Text.Primary [ Fragment.Icon.error, H.text t ]
+                        ]
                 )
                 error
             ]

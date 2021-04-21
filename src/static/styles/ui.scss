@@ -397,6 +397,21 @@
     padding: calc(var(--spacings-medium) - var(--border-width-medium));
     margin: var(--spacings-medium)
         calc(var(--spacings-medium) - var(--border-width-medium));
+
+    svg,
+    path {
+        fill: currentColor;
+    }
+
+    svg {
+        margin-right: var(--spacings-medium);
+    }
+}
+.ui-input-text--error {
+    border-color: var(--status-error-main-backgroundColor);
+}
+.ui-input-text__errorMessage {
+    margin-top: var(--spacings-medium);
 }
 .ui-input-text:hover {
     background: var(--colors-background_2-backgroundColor);
@@ -418,7 +433,7 @@
     width: 100%;
     padding: 0;
     border: 0;
-    background-color: transparent;
+    background: transparent;
 }
 .ui-input-text__input:focus {
     outline: 0;
