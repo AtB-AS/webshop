@@ -173,9 +173,26 @@ update msg env model =
                 Err errors ->
                     PageUpdater.init { model | validationErrors = errors }
 
-        SetEditSection section focusId ->
-            PageUpdater.init { model | editSection = section, validationErrors = [] }
+        SetEditSection (Just section) focusId ->
+            PageUpdater.init { model | editSection = Just section, validationErrors = [] }
                 |> PageUpdater.addCmd (focusBox focusId)
+
+        SetEditSection Nothing focusId ->
+            case model.profile of
+                Nothing ->
+                    PageUpdater.init model
+
+                Just profile ->
+                    PageUpdater.fromPair
+                        ( { model
+                            | editSection = Nothing
+                            , validationErrors = []
+                            , firstName = profile.firstName
+                            , lastName = profile.lastName
+                            , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
+                          }
+                        , focusBox focusId
+                        )
 
         LoadingEditSection section ->
             PageUpdater.init { model | loadingEditSection = section }
