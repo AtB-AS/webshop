@@ -1,17 +1,16 @@
 module Ui.Input.EditSection exposing
     ( EditSectionOptions
     , editSection
+    , horizontalGroup
     )
 
 import Fragment.Icon
-import Html as H exposing (Attribute, Html)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra
 import Html.Events as E
-import Html.Extra
 import Ui.Button as B exposing (ButtonMode(..))
-import Ui.Group
-import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
+import Ui.TextContainer exposing (TextColor(..), TextContainer(..))
 
 
 type alias EditSectionOptions msg =
@@ -33,6 +32,7 @@ editSection { accessibilityName, editText, onEdit, onSave, onCancel, inEditMode 
                 , B.init editText
                     |> B.setIcon (Just Fragment.Icon.edit)
                     |> B.setOnClick onEdit
+                    |> B.setAttributes [ A.class "ui-editSection__editButton" ]
                     |> B.tertiaryCompact
                 ]
 
@@ -60,3 +60,8 @@ editSection { accessibilityName, editText, onEdit, onSave, onCancel, inEditMode 
                        ]
                 )
         ]
+
+
+horizontalGroup : List (Html msg) -> List (Html msg)
+horizontalGroup children =
+    children |> H.div [ A.class "ui-editSection__horizontalGroup" ] |> List.singleton

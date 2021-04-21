@@ -80,6 +80,9 @@
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
 }
+.ui-section__item__label {
+    margin-bottom: var(--spacings-medium);
+}
 .ui-section__child:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
         var(--colors-background_1-backgroundColor);
@@ -347,17 +350,20 @@
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
 }
+.ui-editSection__editButton {
+    margin-bottom: var(--spacings-medium);
+}
 .ui-editSection__container {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-wrap: wrap;
 }
 .ui-editSection__content {
     flex: 1;
 }
 .ui-editSection__fieldset {
-    display: flex;
     border: 0;
-    flex-wrap: wrap;
     padding: 0;
 }
 .ui-editSection__fieldset__legend {
@@ -371,4 +377,38 @@
 }
 .ui-editSection__fieldset__buttonGroup > :nth-child(2) {
     margin-left: auto;
+}
+.ui-editSection__fieldset__buttonGroup > :last-child {
+    margin-left: var(--spacings-medium);
+}
+.ui-editSection__horizontalGroup {
+    display: grid;
+    gap: var(--spacings-medium);
+}
+
+.ui-input-text {
+    transition: all 150ms ease-in-out;
+    border-radius: var(--border-radius-regular);
+    border: var(--border-width-medium) solid transparent;
+
+    // Remove border from padding.
+    padding: calc(var(--spacings-medium) - var(--border-width-medium));
+    margin: var(--spacings-medium)
+        calc(var(--spacings-medium) - var(--border-width-medium));
+}
+.ui-input-text:focus-within {
+    border-color: var(--colors-primary_2-backgroundColor);
+    border-radius: var(--border-radius-regular);
+}
+.ui-input-text__label {
+    margin-bottom: var(--spacings-medium);
+}
+.ui-input-text__input {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+}
+.ui-input-text__input:focus {
+    outline: 0;
 }

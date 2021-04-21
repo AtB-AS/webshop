@@ -12,13 +12,12 @@ module Ui.Input.Text exposing
     )
 
 import Fragment.Icon
-import Html as H exposing (Attribute, Html)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
-import Ui.Button as B exposing (ButtonMode(..))
-import Ui.Group
+import Ui.Button exposing (ButtonMode(..))
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
@@ -94,7 +93,11 @@ text { id, title, value, error, placeholder, onInput, onBlur } =
             [ ( "ui-input-text", True ), ( "ui-input-text--error", error /= Nothing ) ]
     in
         H.label [ A.for id, A.classList classList ]
-            [ Html.Extra.viewMaybe (\t -> Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ]) title
+            [ Html.Extra.viewMaybe
+                (\t ->
+                    H.div [ A.class "ui-input-text__label" ] [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
+                )
+                title
             , H.input
                 [ A.type_ "text"
                 , A.id id

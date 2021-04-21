@@ -3,6 +3,7 @@ module Ui.Input.Radio exposing
     , group
     , init
     , radio
+    , setAttributes
     , setChecked
     , setId
     , setName
@@ -11,13 +12,11 @@ module Ui.Input.Radio exposing
     , setTitle
     )
 
-import Fragment.Icon
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
-import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
-import Ui.Button as B exposing (ButtonMode(..))
+import Ui.Button exposing (ButtonMode(..))
 import Ui.Group
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
