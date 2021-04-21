@@ -365,6 +365,7 @@
 .ui-editSection__fieldset {
     border: 0;
     padding: 0;
+    margin: 0;
 }
 .ui-editSection__fieldset__legend {
     position: absolute;
@@ -374,15 +375,19 @@
     width: 100%;
     display: flex;
     padding: var(--spacings-medium);
+    justify-content: flex-end;
+    align-items: center;
 
     animation: fadeIn 350ms;
+
+    flex-wrap: wrap;
 }
-.ui-editSection__fieldset__buttonGroup > :nth-child(2) {
-    margin-left: auto;
+.ui-editSection__fieldset__buttonGroup__deleteText {
+    margin-right: auto;
+    padding: var(--spacings-medium);
+    color: var(--status-error-main-backgroundColor);
 }
-.ui-editSection__fieldset__buttonGroup > :last-child {
-    margin-left: var(--spacings-medium);
-}
+
 .ui-editSection__horizontalGroup {
     display: grid;
     gap: var(--spacings-medium);
@@ -397,6 +402,8 @@
     padding: calc(var(--spacings-medium) - var(--border-width-medium));
     margin: var(--spacings-medium)
         calc(var(--spacings-medium) - var(--border-width-medium));
+
+    transition: all 150ms ease-in-out;
 
     svg,
     path {

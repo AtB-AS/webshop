@@ -109,7 +109,7 @@ update msg env model =
         ReceiveUpdateProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | loadingEditSection = Nothing }
+                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
 
                 Err _ ->
                     PageUpdater.init { model | loadingEditSection = Nothing }
@@ -117,7 +117,7 @@ update msg env model =
         ReceiveUpdateTravelCard result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | loadingEditSection = Nothing }
+                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
 
                 Err error ->
                     PageUpdater.init
@@ -130,9 +130,6 @@ update msg env model =
             PageUpdater.init model
 
         EditPhoneNumber ->
-            PageUpdater.init model
-
-        RemoveTravelCard ->
             PageUpdater.init model
 
         DeleteAccount ->
@@ -150,6 +147,15 @@ update msg env model =
 
         ProfileChange Nothing ->
             PageUpdater.init { model | profile = Nothing }
+
+        RemoveTravelCard ->
+            PageUpdater.fromPair
+                ( { model
+                    | loadingEditSection = Just TravelCardSection
+                    , validationErrors = clearValidationError TravelCard model.validationErrors
+                  }
+                , removeTravelCard env model.travelCard
+                )
 
         SaveTravelCard ->
             case Validate.validate travelCardValidator model of
@@ -320,42 +326,65 @@ travelCardValidator =
 
 viewTravelCard : Model -> Profile -> Html Msg
 viewTravelCard model profile =
-    EditSection.init "Legg til eller fjern t:kort"
-        |> EditSection.setEditText
-            (case profile.travelCard of
-                Just _ ->
-                    "Endre / fjern t:kort"
+    let
+        onSave =
+            Just SaveTravelCard
 
-                Nothing ->
-                    "Legg til t:kort"
-            )
-        |> EditSection.setOnSave (Just SaveTravelCard)
-        |> EditSection.setOnCancel (Just <| SetEditSection Nothing Nothing)
-        |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
-        |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
-        |> EditSection.editSection
-            (\inEditMode ->
-                if inEditMode then
-                    EditSection.horizontalGroup
-                        [ Text.init "tkort"
-                            |> Text.setTitle (Just "t:kort")
-                            |> Text.setError (selectValidationError TravelCard model.validationErrors)
-                            |> Text.setOnInput (Just <| UpdateTravelCard)
-                            |> Text.setOnBlur (Just <| ValidateTravelCard)
-                            |> Text.setPlaceholder "Legg til et t:kort nå"
-                            |> Text.setValue (Just model.travelCard)
-                            |> Text.text
-                        ]
+        onRemove =
+            Just RemoveTravelCard
 
-                else
-                    [ Ui.Section.labelItem "t:kort"
-                        [ profile.travelCard
-                            |> Maybe.map (.id >> String.fromInt)
-                            |> Maybe.withDefault "Ikke lagt til"
-                            |> H.text
+        onCancel =
+            Just <| SetEditSection Nothing Nothing
+
+        hasTravelCard =
+            profile.travelCard /= Nothing
+    in
+        EditSection.init "Administrer t:kort"
+            |> EditSection.setEditButtonType
+                (if hasTravelCard then
+                    ( "Fjern t:kort", Icon.delete )
+
+                 else
+                    ( "Legg til t:kort", Icon.edit )
+                )
+            |> EditSection.setOnSave onSave
+            |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
+            |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
+            |> EditSection.setButtonGroup
+                (if hasTravelCard then
+                    Just <|
+                        EditSection.destructiveGroup
+                            "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                            onCancel
+                            onRemove
+
+                 else
+                    Just <|
+                        EditSection.cancelConfirmGroup onCancel
+                )
+            |> EditSection.editSection
+                (\inEditMode ->
+                    if inEditMode && not hasTravelCard then
+                        EditSection.horizontalGroup
+                            [ Text.init "tkort"
+                                |> Text.setTitle (Just "t:kort")
+                                |> Text.setError (selectValidationError TravelCard model.validationErrors)
+                                |> Text.setOnInput (Just <| UpdateTravelCard)
+                                |> Text.setOnBlur (Just <| ValidateTravelCard)
+                                |> Text.setPlaceholder "Legg til et t:kort nå"
+                                |> Text.setValue (Just model.travelCard)
+                                |> Text.text
+                            ]
+
+                    else
+                        [ Ui.Section.labelItem "t:kort"
+                            [ profile.travelCard
+                                |> Maybe.map (.id >> String.fromInt)
+                                |> Maybe.withDefault "Ikke lagt til"
+                                |> H.text
+                            ]
                         ]
-                    ]
-            )
+                )
 
 
 subscriptions : Model -> Sub Msg
@@ -399,6 +428,13 @@ updateProfile env firstName lastName =
 updateTravelCard : Environment -> String -> Cmd Msg
 updateTravelCard env travelCard =
     WebshopService.addTravelCard env travelCard
+        |> Http.toTask
+        |> Task.attempt ReceiveUpdateTravelCard
+
+
+removeTravelCard : Environment -> String -> Cmd Msg
+removeTravelCard env travelCard =
+    WebshopService.deleteTravelCard env travelCard
         |> Http.toTask
         |> Task.attempt ReceiveUpdateTravelCard
 

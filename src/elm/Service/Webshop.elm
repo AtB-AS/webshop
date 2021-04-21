@@ -25,7 +25,7 @@ import Util.Http as HttpUtil
 
 getProfile : Environment -> Http.Request Profile
 getProfile env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/profile") profileDecoder
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/profile") (Http.expectJson profileDecoder)
 
 
 updateProfile : Environment -> String -> String -> Http.Request ()
@@ -37,17 +37,17 @@ updateProfile env firstName lastName =
                 , ( "surname", Encode.string lastName )
                 ]
     in
-        HttpUtil.put env (env.baseUrl ++ "/api/v1/profile") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.put env (env.baseUrl ++ "/api/v1/profile") (Http.jsonBody payload) (Http.expectJson (Decode.succeed ()))
 
 
 getTokens : Environment -> Http.Request (List Token)
 getTokens env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens") (Decode.list tokenDecoder)
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens") (Http.expectJson (Decode.list tokenDecoder))
 
 
 getToken : Environment -> String -> Http.Request Token
 getToken env id =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens/" ++ id) tokenDecoder
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens/" ++ id) (Http.expectJson tokenDecoder)
 
 
 addTravelCard : Environment -> String -> Http.Request ()
@@ -56,7 +56,7 @@ addTravelCard env id =
         payload =
             Encode.object [ ( "id", Encode.string id ) ]
     in
-        HttpUtil.post env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.post env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
 
 
 deleteTravelCard : Environment -> String -> Http.Request ()
@@ -65,7 +65,7 @@ deleteTravelCard env id =
         payload =
             Encode.object [ ( "id", Encode.string id ) ]
     in
-        HttpUtil.delete env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.delete env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
 
 
 deleteToken : Environment -> String -> Http.Request ()
@@ -86,7 +86,7 @@ deleteToken env tokenId =
 
 addQrCode : Environment -> Http.Request ()
 addQrCode env =
-    HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/qrcode") Http.emptyBody (Decode.succeed ())
+    HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/qrcode") Http.emptyBody (Http.expectJson (Decode.succeed ()))
 
 
 inspectQrCode : Environment -> String -> Http.Request (List Inspection)
@@ -95,14 +95,14 @@ inspectQrCode env tokenPayload =
         payload =
             Encode.object [ ( "token", Encode.string tokenPayload ) ]
     in
-        HttpUtil.post env (env.baseUrl ++ "/api/v1/inspection/qrcode") (Http.jsonBody payload) (Decode.list inspectionDecoder)
+        HttpUtil.post env (env.baseUrl ++ "/api/v1/inspection/qrcode") (Http.jsonBody payload) (Http.expectJson (Decode.list inspectionDecoder))
 
 
 {-| Get list of tickets.
 -}
 getFareContracts : Environment -> Http.Request (List FareContract)
 getFareContracts env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Http.expectJson (Decode.list fareContractDecoder))
 
 
 register : Environment -> String -> String -> Maybe String -> Maybe String -> Http.Request ()
@@ -119,7 +119,7 @@ register env firstName lastName phone email =
         HttpUtil.post env
             (env.baseUrl ++ "/webshop/v1/register")
             (Http.jsonBody payload)
-            (Decode.succeed ())
+            (Http.expectJson (Decode.succeed ()))
 
 
 
