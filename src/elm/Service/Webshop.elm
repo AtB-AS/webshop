@@ -9,6 +9,7 @@ module Service.Webshop exposing
     , getTokens
     , inspectQrCode
     , register
+    , travelCardErrorDecoder
     , updateProfile
     )
 
@@ -123,6 +124,11 @@ register env firstName lastName phone email =
 
 
 -- DECODERS
+
+
+travelCardErrorDecoder : String -> Result Decode.Error String
+travelCardErrorDecoder =
+    Decode.decodeString (Decode.field "error" Decode.string)
 
 
 inspectionDecoder : Decoder Inspection

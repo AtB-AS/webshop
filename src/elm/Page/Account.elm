@@ -424,7 +424,12 @@ errorToString error =
                     "The server had a problem, try again later"
 
                 400 ->
-                    "Verify your information and try again " ++ body
+                    case WebshopService.travelCardErrorDecoder body of
+                        Ok errorMessage ->
+                            errorMessage
+
+                        _ ->
+                            "Verify your information and try again"
 
                 _ ->
                     "Unknown error"
