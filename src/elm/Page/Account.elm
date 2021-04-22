@@ -285,22 +285,10 @@ viewMain model =
 
 viewProfile : Profile -> Html msg
 viewProfile profile =
-    if hasField profile.firstName || hasField profile.lastName then
-        Ui.Section.sectionGenericItem
-            [ H.div [ A.class "two-col" ]
-                [ H.div []
-                    [ H.label [] [ H.text "Fornavn" ]
-                    , viewField profile.firstName
-                    ]
-                , H.div []
-                    [ H.label [] [ H.text "Etternavn" ]
-                    , viewField profile.lastName
-                    ]
-                ]
-            ]
-
-    else
-        H.text ""
+    H.div []
+        [ Ui.Section.labelItem "Fornavn" [ viewField profile.firstName ]
+        , Ui.Section.labelItem "Etternavn" [ viewField profile.lastName ]
+        ]
 
 
 viewPhoneNumber : Profile -> Html msg
