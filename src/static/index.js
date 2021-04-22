@@ -103,6 +103,8 @@ app.ports.signInHandler.subscribe((provider_id) => {
 });
 
 app.ports.signOutHandler.subscribe(() => {
+    clearRefreshToken();
+
     localStorage["loggedIn"] = '';
 
     if (typeof fareContractSnapshotCallback === 'function') {
@@ -123,7 +125,45 @@ firebase.auth().onAuthStateChanged(user => {
     }
 });
 
+let refreshTokenTimer = null;
+
+function clearRefreshToken() {
+    if (refreshTokenTimer !== null) {
+        clearTimeout(refreshTokenTimer);
+        refreshTokenTimer = null;
+    }
+}
+
+function enqueueRefreshToken(user, expirationString) {
+    const expiration = new Date(expirationString).valueOf();
+    const now = new Date().valueOf();
+    const diff = expiration - now;
+
+    clearRefreshToken();
+
+    // Token is already expired, but we just got a token. Something is broken
+    // with Firebase or our clock.  We could refresh the token, but that could
+    // just create an endless loop of errors.  Instead we just bail out.
+    if (diff < 0) {
+        return;
+    }
+
+    // Refresh one minute before the timeout.
+    const refreshTime = diff - 60000;
+
+    // Less than a minute until token times out, let's just refresh the token
+    // immediately.
+    if (refreshTime < 0) {
+        fetchAuthInfo(user);
+        return;
+    }
+
+    refreshTokenTimer = setTimeout(fetchAuthInfo.bind(null, user), refreshTime);
+}
+
 function fetchAuthInfo(user) {
+    clearRefreshToken();
+
     user
         .getIdTokenResult(true)
         .then(idToken => {
@@ -136,6 +176,8 @@ function fetchAuthInfo(user) {
                 const email = user.email || '';
                 const phone = user.phoneNumber || '';
                 const provider = idToken.signInProvider || '';
+
+                enqueueRefreshToken(user, idToken.expirationTime);
 
                 localStorage["loggedIn"] = 'loggedIn';
 
