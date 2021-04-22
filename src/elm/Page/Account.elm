@@ -318,10 +318,16 @@ fieldInEditMode state actual =
     state == Just actual
 
 
+ifNotLength : Int -> (subject -> String) -> error -> Validate.Validator error subject
+ifNotLength stringLength subjectToString error =
+    Validate.ifTrue (\subject -> String.length (subjectToString subject) /= stringLength) error
+
+
 travelCardValidator : Validate.Validator FormError Model
 travelCardValidator =
     Validate.firstError
         [ Validate.ifBlank .travelCard ( TravelCard, "t:kort id kan ikke være tomt." )
+        , ifNotLength 9 .travelCard ( TravelCard, "t:kort id ser ut til å være feil." )
         , Validate.ifNotInt .travelCard (\_ -> ( TravelCard, "t:kort id må være et tall." ))
         ]
 
@@ -390,7 +396,7 @@ viewTravelCard model profile =
                         [ Ui.Section.labelItem "t:kort"
                             [ profile.travelCard
                                 |> Maybe.map (.id >> String.fromInt)
-                                |> Maybe.withDefault "Ikke lagt til"
+                                |> Maybe.withDefault "Ingen t:kort lagt til"
                                 |> H.text
                             ]
                         , model.validationErrors
@@ -455,30 +461,21 @@ removeTravelCard env travelCard =
 errorToString : Http.Error -> String
 errorToString error =
     case error of
-        BadUrl url ->
-            "The URL " ++ url ++ " was invalid"
-
-        Timeout ->
-            "Unable to reach the server, try again"
-
-        NetworkError ->
-            "Unable to reach the server, check your network connection"
-
-        BadPayload errorMessage _ ->
-            errorMessage
-
         BadStatus { status, body } ->
             case status.code of
                 500 ->
-                    "The server had a problem, try again later"
+                    "Det skjedde en feil med tjenesten. Prøv igjen senere."
 
                 400 ->
                     case WebshopService.travelCardErrorDecoder body of
                         Ok errorMessage ->
-                            errorMessage
+                            "Feilmelding fra tjenesten: " ++ errorMessage
 
                         _ ->
-                            "Verify your information and try again"
+                            "Innsendt informasjon ser ut til å ikke stemme. Prøv igjen er du snill."
 
                 _ ->
                     "Unknown error"
+
+        _ ->
+            "Fikk ikke kontakt med tjenesten. Sjekk om du er på nett og prøv igjen."
