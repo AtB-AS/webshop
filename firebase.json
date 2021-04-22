@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "atb-webshop-staging",
+    "target": "webshop",
     "public": "dist",
     "rewrites": [
     ],

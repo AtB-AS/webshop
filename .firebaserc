@@ -1,5 +1,21 @@
 {
   "projects": {
     "default": "atb-mobility-platform-staging"
+  },
+  "targets": {
+    "atb-mobility-platform": {
+      "hosting": {
+        "webshop": [
+          "atb-webshop-production"
+        ]
+      }
+    },
+    "atb-mobility-platform-staging": {
+      "hosting": {
+        "webshop": [
+          "atb-webshop-staging"
+        ]
+      }
+    }
   }
 }
