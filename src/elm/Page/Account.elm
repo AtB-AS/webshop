@@ -7,6 +7,7 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode exposing (Error(..))
 import List.Extra
@@ -20,6 +21,7 @@ import Time exposing (Month(..))
 import Ui.Button as B
 import Ui.Input.EditSection as EditSection
 import Ui.Input.Text as Text
+import Ui.Message
 import Ui.Section
 import Validate as Validate
 
@@ -383,6 +385,9 @@ viewTravelCard model profile =
                                 |> Maybe.withDefault "Ikke lagt til"
                                 |> H.text
                             ]
+                        , model.validationErrors
+                            |> selectValidationError TravelCard
+                            |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
 
