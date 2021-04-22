@@ -27,15 +27,6 @@ if (!installId) {
 
 console.log('Atb-Install-Id:', installId);
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDoat8ob5tewAXaPEhqbZKzx8e7LC5nuzQ",
-    authDomain: "atb-mobility-platform-staging.firebaseapp.com",
-    projectId: "atb-mobility-platform-staging",
-    storageBucket: "atb-mobility-platform-staging.appspot.com",
-    messagingSenderId: "939812594010",
-    appId: "1:939812594010:web:0308b2a9cdc80b0d069363"
-};
-
 firebase.initializeApp(firebaseConfig);
 
 let fareContractSnapshotCallback = null;
