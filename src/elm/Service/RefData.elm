@@ -54,6 +54,7 @@ fareProductDecoder =
         |> DecodeP.required "name" langStringDecoder
         |> DecodeP.optional "description" langStringDecoder (LangString "" "")
         |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
+        |> DecodeP.required "limitations" limitationsDecoder
 
 
 userProfileDecoder : Decoder UserProfile
@@ -76,6 +77,12 @@ langStringDecoder =
     Decode.succeed LangString
         |> DecodeP.optional "lang" Decode.string ""
         |> DecodeP.optional "value" Decode.string ""
+
+
+limitationsDecoder : Decoder (List String)
+limitationsDecoder =
+    Decode.succeed identity
+        |> DecodeP.required "userProfileRefs" (Decode.list Decode.string)
 
 
 userTypeDecoder : Decoder UserType

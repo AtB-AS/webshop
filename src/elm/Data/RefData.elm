@@ -22,6 +22,7 @@ type alias FareProduct =
     , name : LangString
     , description : LangString
     , alternativeNames : List LangString
+    , limitations : List String
     }
 
 

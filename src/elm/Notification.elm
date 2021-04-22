@@ -11,6 +11,7 @@ module Notification exposing
 -}
 
 import Html as H exposing (Html)
+import Util.Func as Func
 
 
 {-| Describes a notification.
@@ -56,7 +57,7 @@ setTimer timer confirm =
 -}
 decrementTimer : Notification msg -> Notification msg
 decrementTimer confirm =
-    { confirm | timer = confirm.timer |> Maybe.map (flip (-) 1) }
+    { confirm | timer = confirm.timer |> Maybe.map (Func.flip (-) 1) }
 
 
 {-| Maps a function over `Notification`
@@ -66,8 +67,3 @@ map f notification =
     { content = H.map f notification.content
     , timer = notification.timer
     }
-
-
-flip : (a -> b -> c) -> b -> a -> c
-flip f a b =
-    f b a
