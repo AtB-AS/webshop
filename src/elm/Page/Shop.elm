@@ -1,7 +1,7 @@
 module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (FareProduct, LangString(..), Limitation, TariffZone, UserProfile, UserType(..))
 import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -123,8 +123,8 @@ init shared =
         )
 
 
-update : Msg -> Environment -> Model -> PageUpdater Model Msg
-update msg env model =
+update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
+update msg env model shared =
     let
         addGlobalNotification statusText =
             statusText
@@ -136,7 +136,7 @@ update msg env model =
         case msg of
             SetProduct product _ ->
                 PageUpdater.fromPair
-                    ( { model | product = product }
+                    ( { model | product = product, users = maybeResetUsers shared product model.users }
                     , TaskUtil.doTask FetchOffers
                     )
 
@@ -342,6 +342,20 @@ update msg env model =
                     ( { model | isoTime = Just isoTime, now = False }
                     , TaskUtil.doTask FetchOffers
                     )
+
+
+maybeResetUsers : Shared -> String -> List ( UserType, Int ) -> List ( UserType, Int )
+maybeResetUsers shared product users =
+    let
+        data =
+            users
+                |> List.filter (Tuple.first >> Func.flip List.member (findLimitations product shared.productLimitations))
+    in
+        if List.isEmpty data then
+            [ ( UserTypeAdult, 1 ) ]
+
+        else
+            data
 
 
 toggleShowMainView : Model -> MainView -> Model
@@ -686,7 +700,7 @@ viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
     products
         |> List.map (viewProduct model)
-        |> Radio.viewGroup "Velg varighet"
+        |> Radio.viewGroup "Velg billettype"
 
 
 viewProduct : Model -> FareProduct -> Html Msg
@@ -735,16 +749,16 @@ viewZone current zone =
 viewUserProfiles : Model -> Shared -> Html Msg
 viewUserProfiles model shared =
     shared.userProfiles
-        |> List.filter (.id >> Func.flip List.member (findLimitations model.product shared.fareProducts))
+        |> List.filter (.userType >> Func.flip List.member (findLimitations model.product shared.productLimitations))
         |> List.filter (.userType >> (/=) UserTypeAnyone)
         |> List.map (viewUserProfile model)
         |> Radio.viewGroup "Reisende"
 
 
-findLimitations : String -> List FareProduct -> List String
+findLimitations : String -> List Limitation -> List UserType
 findLimitations productId fareProducts =
     fareProducts
-        |> List.Extra.find (.id >> (==) productId)
+        |> List.Extra.find (.productId >> (==) productId)
         |> Maybe.map .limitations
         |> Maybe.withDefault []
 
