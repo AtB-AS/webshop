@@ -18,7 +18,7 @@ import Service.Misc as MiscService exposing (Profile)
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
-import Time exposing (Month(..))
+import Time exposing (Month(..), ZoneName(..))
 import Ui.Button as B
 import Ui.Input.EditSection as EditSection
 import Ui.Input.Text as Text
@@ -36,6 +36,8 @@ type EditSection
 type FieldName
     = TravelCard
     | Email
+    | FirstName
+    | LastName
 
 
 type alias FormError =
@@ -48,9 +50,7 @@ type Msg
     | UpdateEmail String
     | UpdateTravelCard String
     | UpdateProfile
-    | ReceiveUpdateProfile (Result Http.Error ())
-    | ReceiveUpdateTravelCard (Result Http.Error ())
-    | ReceiveUpdatedEmail (Result Http.Error ())
+    | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
     | EditName
     | EditPhoneNumber
     | RemoveTravelCard
@@ -118,15 +118,7 @@ update msg env model =
                 , updateProfile env model.firstName model.lastName
                 )
 
-        ReceiveUpdateProfile result ->
-            case result of
-                Ok () ->
-                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
-
-                Err _ ->
-                    PageUpdater.init { model | loadingEditSection = Nothing }
-
-        ReceiveUpdateTravelCard result ->
+        ReceiveUpdateProfile field result ->
             case result of
                 Ok () ->
                     PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
@@ -135,19 +127,7 @@ update msg env model =
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
-                            , validationErrors = addValidationError ( TravelCard, errorToString error ) model.validationErrors
-                        }
-
-        ReceiveUpdatedEmail result ->
-            case result of
-                Ok () ->
-                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
-
-                Err error ->
-                    PageUpdater.init
-                        { model
-                            | loadingEditSection = Nothing
-                            , validationErrors = addValidationError ( Email, errorToString error ) model.validationErrors
+                            , validationErrors = addValidationError field (errorToString error) model.validationErrors
                         }
 
         EditName ->
@@ -259,9 +239,9 @@ clearValidationError fieldName =
     List.filter (Tuple.first >> (/=) fieldName)
 
 
-addValidationError : FormError -> List FormError -> List FormError
-addValidationError formError =
-    (::) formError
+addValidationError : List FieldName -> String -> List FormError -> List FormError
+addValidationError fields error =
+    (++) (fields |> List.map (\a -> ( a, error )))
 
 
 focusBox : Maybe String -> Cmd Msg
@@ -515,28 +495,28 @@ updateProfile : Environment -> String -> String -> Cmd Msg
 updateProfile env firstName lastName =
     WebshopService.updateProfile env firstName lastName
         |> Http.toTask
-        |> Task.attempt ReceiveUpdateProfile
+        |> Task.attempt (ReceiveUpdateProfile [ FirstName, LastName ])
 
 
 updateEmail : Environment -> String -> Cmd Msg
 updateEmail env email =
     WebshopService.updateEmail env email
         |> Http.toTask
-        |> Task.attempt ReceiveUpdatedEmail
+        |> Task.attempt (ReceiveUpdateProfile [ Email ])
 
 
 updateTravelCard : Environment -> String -> Cmd Msg
 updateTravelCard env travelCard =
     WebshopService.addTravelCard env travelCard
         |> Http.toTask
-        |> Task.attempt ReceiveUpdateTravelCard
+        |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
 
 
 removeTravelCard : Environment -> String -> Cmd Msg
 removeTravelCard env travelCard =
     WebshopService.deleteTravelCard env travelCard
         |> Http.toTask
-        |> Task.attempt ReceiveUpdateTravelCard
+        |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
 
 
 errorToString : Http.Error -> String
