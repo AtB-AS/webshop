@@ -7,6 +7,7 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode exposing (Error(..))
@@ -29,10 +30,12 @@ import Validate as Validate
 type EditSection
     = TravelCardSection
     | NameSection
+    | EmailSection
 
 
 type FieldName
     = TravelCard
+    | Email
 
 
 type alias FormError =
@@ -42,17 +45,19 @@ type alias FormError =
 type Msg
     = UpdateFirstName String
     | UpdateLastName String
+    | UpdateEmail String
     | UpdateTravelCard String
     | UpdateProfile
     | ReceiveUpdateProfile (Result Http.Error ())
     | ReceiveUpdateTravelCard (Result Http.Error ())
+    | ReceiveUpdatedEmail (Result Http.Error ())
     | EditName
     | EditPhoneNumber
     | RemoveTravelCard
     | Logout
     | DeleteAccount
     | ProfileChange (Maybe Profile)
-    | ValidateTravelCard
+    | SaveEmail
     | SaveTravelCard
     | SetEditSection (Maybe EditSection) (Maybe String)
     | LoadingEditSection (Maybe EditSection)
@@ -64,6 +69,7 @@ type Msg
 type alias Model =
     { firstName : String
     , lastName : String
+    , email : String
     , travelCard : String
     , profile : Maybe Profile
     , editSection : Maybe EditSection
@@ -76,6 +82,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { firstName = ""
       , lastName = ""
+      , email = ""
       , travelCard = ""
       , profile = Nothing
       , editSection = Nothing
@@ -94,6 +101,9 @@ update msg env model =
 
         UpdateLastName value ->
             PageUpdater.init { model | lastName = value }
+
+        UpdateEmail value ->
+            PageUpdater.init { model | email = value }
 
         UpdateTravelCard value ->
             PageUpdater.init
@@ -128,6 +138,18 @@ update msg env model =
                             , validationErrors = addValidationError ( TravelCard, errorToString error ) model.validationErrors
                         }
 
+        ReceiveUpdatedEmail result ->
+            case result of
+                Ok () ->
+                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
+
+                Err error ->
+                    PageUpdater.init
+                        { model
+                            | loadingEditSection = Nothing
+                            , validationErrors = addValidationError ( Email, errorToString error ) model.validationErrors
+                        }
+
         EditName ->
             PageUpdater.init model
 
@@ -143,6 +165,7 @@ update msg env model =
                     | profile = Just profile
                     , firstName = profile.firstName
                     , lastName = profile.lastName
+                    , email = profile.email
                     , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
                     , validationErrors = []
                 }
@@ -159,6 +182,20 @@ update msg env model =
                 , removeTravelCard env model.travelCard
                 )
 
+        SaveEmail ->
+            case Validate.validate emailValidator model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model
+                            | loadingEditSection = Just EmailSection
+                            , validationErrors = clearValidationError Email model.validationErrors
+                          }
+                        , updateEmail env model.email
+                        )
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
+
         SaveTravelCard ->
             case Validate.validate travelCardValidator model of
                 Ok _ ->
@@ -169,14 +206,6 @@ update msg env model =
                           }
                         , updateTravelCard env model.travelCard
                         )
-
-                Err errors ->
-                    PageUpdater.init { model | validationErrors = errors }
-
-        ValidateTravelCard ->
-            case Validate.validate travelCardValidator model of
-                Ok _ ->
-                    PageUpdater.init model
 
                 Err errors ->
                     PageUpdater.init { model | validationErrors = errors }
@@ -197,6 +226,7 @@ update msg env model =
                             , validationErrors = []
                             , firstName = profile.firstName
                             , lastName = profile.lastName
+                            , email = profile.email
                             , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
                           }
                         , focusBox focusId
@@ -274,7 +304,7 @@ viewMain model =
                     , viewProfile profile
                     , viewPhoneNumber profile
                     , viewTravelCard model profile
-                    , viewEmailAddress profile
+                    , viewEmailAddress model profile
                     ]
 
                 Nothing ->
@@ -296,9 +326,66 @@ viewPhoneNumber profile =
     Ui.Section.viewLabelItem "Telefonnummer" [ viewField profile.phone ]
 
 
-viewEmailAddress : Profile -> Html msg
-viewEmailAddress profile =
-    Ui.Section.viewLabelItem "E-postadresse" [ viewField profile.email ]
+emailValidator : Validate.Validator FormError Model
+emailValidator =
+    Validate.firstError
+        [ Validate.ifInvalidEmail .email (\_ -> ( Email, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
+        ]
+
+
+viewEmailAddress : Model -> Profile -> Html Msg
+viewEmailAddress model profile =
+    let
+        onSave =
+            Just SaveEmail
+
+        onCancel =
+            Just <| SetEditSection Nothing Nothing
+
+        hasEmail =
+            profile.email /= ""
+
+        disabledButtons =
+            model.loadingEditSection == Just EmailSection
+    in
+        EditSection.init "Administrer e-post"
+            |> EditSection.setEditButtonType
+                (if hasEmail then
+                    ( "Rediger e-post", Icon.delete )
+
+                 else
+                    ( "Legg til e-post", Icon.edit )
+                )
+            |> EditSection.setOnSave onSave
+            |> EditSection.setOnEdit (Just <| SetEditSection (Just EmailSection) (Just "email"))
+            |> EditSection.setInEditMode (fieldInEditMode model.editSection EmailSection)
+            |> EditSection.setButtonGroup
+                (Just <|
+                    EditSection.cancelConfirmGroup
+                        { onCancel = onCancel
+                        , disabled = disabledButtons
+                        }
+                )
+            |> EditSection.editSection
+                (\inEditMode ->
+                    if inEditMode then
+                        EditSection.horizontalGroup
+                            [ Text.init "email"
+                                |> Text.setTitle (Just "E-post")
+                                |> Text.setError (selectValidationError Email model.validationErrors)
+                                |> Text.setOnInput (Just <| UpdateEmail)
+                                |> Text.setPlaceholder "Legg til et e-post"
+                                |> Text.setValue (Just model.email)
+                                |> Text.view
+                            ]
+
+                    else
+                        [ Ui.Section.viewLabelItem "E-post" [ viewField profile.email ]
+                        , model.validationErrors
+                            |> selectValidationError Email
+                            |> Html.Extra.viewMaybe Ui.Message.error
+                        ]
+                )
 
 
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
@@ -429,6 +516,13 @@ updateProfile env firstName lastName =
     WebshopService.updateProfile env firstName lastName
         |> Http.toTask
         |> Task.attempt ReceiveUpdateProfile
+
+
+updateEmail : Environment -> String -> Cmd Msg
+updateEmail env email =
+    WebshopService.updateEmail env email
+        |> Http.toTask
+        |> Task.attempt ReceiveUpdatedEmail
 
 
 updateTravelCard : Environment -> String -> Cmd Msg

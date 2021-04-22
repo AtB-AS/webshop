@@ -1,8 +1,7 @@
-module Util.Http exposing (delete, get, post, put, request)
+module Util.Http exposing (delete, get, patch, post, put, request)
 
 import Environment exposing (Environment)
 import Http exposing (Body, Request)
-import Json.Decode exposing (Decoder)
 
 
 request : Environment -> String -> String -> Body -> Http.Expect a -> Request a
@@ -29,6 +28,11 @@ get env url expect =
 post : Environment -> String -> Body -> Http.Expect a -> Request a
 post env url body expect =
     request env "POST" url body expect
+
+
+patch : Environment -> String -> Body -> Http.Expect a -> Request a
+patch env url body expect =
+    request env "PATCH" url body expect
 
 
 put : Environment -> String -> Body -> Http.Expect a -> Request a

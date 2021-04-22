@@ -10,6 +10,7 @@ module Service.Webshop exposing
     , inspectQrCode
     , register
     , travelCardErrorDecoder
+    , updateEmail
     , updateProfile
     )
 
@@ -37,7 +38,18 @@ updateProfile env firstName lastName =
                 , ( "surname", Encode.string lastName )
                 ]
     in
-        HttpUtil.put env (env.baseUrl ++ "/api/v1/profile") (Http.jsonBody payload) (Http.expectJson (Decode.succeed ()))
+        HttpUtil.patch env (env.baseUrl ++ "/webshop/v1/profile") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
+
+
+updateEmail : Environment -> String -> Http.Request ()
+updateEmail env email =
+    let
+        payload =
+            Encode.object
+                [ ( "email", Encode.string email )
+                ]
+    in
+        HttpUtil.patch env (env.baseUrl ++ "/webshop/v1/profile") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
 
 
 getTokens : Environment -> Http.Request (List Token)
