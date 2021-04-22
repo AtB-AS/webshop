@@ -70,18 +70,7 @@ deleteTravelCard env id =
 
 deleteToken : Environment -> String -> Http.Request ()
 deleteToken env tokenId =
-    Http.request
-        { method = "DELETE"
-        , headers =
-            [ Http.header "Atb-Install-Id" env.installId
-            , Http.header "Authorization" ("Bearer " ++ env.token)
-            ]
-        , url = env.baseUrl ++ "/api/v1/tokens/" ++ tokenId
-        , body = Http.emptyBody
-        , expect = Http.expectStringResponse (\_ -> Ok ())
-        , timeout = Nothing
-        , withCredentials = False
-        }
+    HttpUtil.delete env (env.baseUrl ++ "/api/v1/tokens/" ++ tokenId) Http.emptyBody (Http.expectStringResponse (\_ -> Ok ()))
 
 
 addQrCode : Environment -> Http.Request ()
