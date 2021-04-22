@@ -1,5 +1,5 @@
 module Ui.Input.EditSection exposing
-    ( EditSectionOptions
+    ( EditSection
     , cancelConfirmGroup
     , destructiveGroup
     , editSection
@@ -29,7 +29,7 @@ import Ui.Button as B exposing (ButtonMode(..))
 import Ui.TextContainer exposing (TextColor(..), TextContainer(..))
 
 
-type alias EditSectionOptions msg =
+type alias EditSection msg =
     { accessibilityName : String
     , editButtonData : ( String, Html msg )
     , onEdit : Maybe msg
@@ -39,7 +39,7 @@ type alias EditSectionOptions msg =
     }
 
 
-init : String -> EditSectionOptions msg
+init : String -> EditSection msg
 init accessibilityName =
     { accessibilityName = accessibilityName
     , editButtonData = ( "Endre", Fragment.Icon.edit )
@@ -50,37 +50,37 @@ init accessibilityName =
     }
 
 
-setAccessibilityName : String -> EditSectionOptions msg -> EditSectionOptions msg
+setAccessibilityName : String -> EditSection msg -> EditSection msg
 setAccessibilityName accessibilityName opts =
     { opts | accessibilityName = accessibilityName }
 
 
-setEditButtonType : ( String, Html msg ) -> EditSectionOptions msg -> EditSectionOptions msg
+setEditButtonType : ( String, Html msg ) -> EditSection msg -> EditSection msg
 setEditButtonType editButtonData opts =
     { opts | editButtonData = editButtonData }
 
 
-setOnEdit : Maybe msg -> EditSectionOptions msg -> EditSectionOptions msg
+setOnEdit : Maybe msg -> EditSection msg -> EditSection msg
 setOnEdit onEdit opts =
     { opts | onEdit = onEdit }
 
 
-setOnSave : Maybe msg -> EditSectionOptions msg -> EditSectionOptions msg
+setOnSave : Maybe msg -> EditSection msg -> EditSection msg
 setOnSave onSave opts =
     { opts | onSave = onSave }
 
 
-setInEditMode : Bool -> EditSectionOptions msg -> EditSectionOptions msg
+setInEditMode : Bool -> EditSection msg -> EditSection msg
 setInEditMode inEditMode opts =
     { opts | inEditMode = inEditMode }
 
 
-setButtonGroup : Maybe (List (Html msg)) -> EditSectionOptions msg -> EditSectionOptions msg
+setButtonGroup : Maybe (List (Html msg)) -> EditSection msg -> EditSection msg
 setButtonGroup buttonGroup opts =
     { opts | buttonGroup = buttonGroup }
 
 
-editSection : (Bool -> List (Html msg)) -> EditSectionOptions msg -> Html msg
+editSection : (Bool -> List (Html msg)) -> EditSection msg -> Html msg
 editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave } =
     let
         ( editText, editIcon ) =

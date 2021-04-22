@@ -1,6 +1,6 @@
 module Ui.Button exposing
-    ( ButtonMode(..)
-    , ButtonOptions
+    ( Button
+    , ButtonMode(..)
     , ThemeColor(..)
     , button
     , coloredIcon
@@ -49,7 +49,7 @@ type ThemeColor
     | Secondary_4
 
 
-type alias ButtonOptions msg =
+type alias Button msg =
     { text : String
     , disabled : Bool
     , icon : Maybe (Html msg)
@@ -59,7 +59,7 @@ type alias ButtonOptions msg =
     }
 
 
-init : String -> ButtonOptions msg
+init : String -> Button msg
 init text =
     { text = text
     , disabled = False
@@ -70,37 +70,37 @@ init text =
     }
 
 
-setDisabled : Bool -> ButtonOptions msg -> ButtonOptions msg
+setDisabled : Bool -> Button msg -> Button msg
 setDisabled disabled opts =
     { opts | disabled = disabled }
 
 
-setText : String -> ButtonOptions msg -> ButtonOptions msg
+setText : String -> Button msg -> Button msg
 setText text opts =
     { opts | text = text }
 
 
-setIcon : Maybe (Html msg) -> ButtonOptions msg -> ButtonOptions msg
+setIcon : Maybe (Html msg) -> Button msg -> Button msg
 setIcon icon opts =
     { opts | icon = icon }
 
 
-setOnClick : Maybe msg -> ButtonOptions msg -> ButtonOptions msg
+setOnClick : Maybe msg -> Button msg -> Button msg
 setOnClick onClick opts =
     { opts | onClick = onClick }
 
 
-setType : String -> ButtonOptions msg -> ButtonOptions msg
+setType : String -> Button msg -> Button msg
 setType type_ opts =
     { opts | type_ = type_ }
 
 
-setAttributes : List (H.Attribute msg) -> ButtonOptions msg -> ButtonOptions msg
+setAttributes : List (H.Attribute msg) -> Button msg -> Button msg
 setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
-button : ButtonMode -> ThemeColor -> ButtonOptions msg -> Html msg
+button : ButtonMode -> ThemeColor -> Button msg -> Html msg
 button mode color { text, disabled, icon, onClick, type_, attributes } =
     let
         classList =
@@ -121,42 +121,42 @@ button mode color { text, disabled, icon, onClick, type_, attributes } =
             [ Ui.TextContainer.primaryBold [ H.text text ], Html.Extra.viewMaybe (List.singleton >> H.div [ A.class "ui-button__icon" ]) icon ]
 
 
-primary : ThemeColor -> ButtonOptions msg -> Html msg
+primary : ThemeColor -> Button msg -> Html msg
 primary =
     button Primary
 
 
-secondary : ThemeColor -> ButtonOptions msg -> Html msg
+secondary : ThemeColor -> Button msg -> Html msg
 secondary =
     button Secondary
 
 
-tertiary : ButtonOptions msg -> Html msg
+tertiary : Button msg -> Html msg
 tertiary =
     button Tertiary Primary_2
 
 
-primaryCompact : ThemeColor -> ButtonOptions msg -> Html msg
+primaryCompact : ThemeColor -> Button msg -> Html msg
 primaryCompact =
     button PrimaryCompact
 
 
-secondaryCompact : ThemeColor -> ButtonOptions msg -> Html msg
+secondaryCompact : ThemeColor -> Button msg -> Html msg
 secondaryCompact =
     button SecondaryCompact
 
 
-tertiaryCompact : ButtonOptions msg -> Html msg
+tertiaryCompact : Button msg -> Html msg
 tertiaryCompact =
     button TertiaryCompact Primary_2
 
 
-primaryDefault : ButtonOptions msg -> Html msg
+primaryDefault : Button msg -> Html msg
 primaryDefault =
     button Primary Primary_2
 
 
-secondaryDefault : ButtonOptions msg -> Html msg
+secondaryDefault : Button msg -> Html msg
 secondaryDefault =
     button Secondary Primary_2
 

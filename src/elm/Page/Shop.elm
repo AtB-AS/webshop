@@ -418,7 +418,7 @@ view _ _ shared model _ =
     in
         H.div [ A.class "page" ]
             [ H.div []
-                [ Ui.Group.togglable
+                [ Ui.Group.view
                     { title = "Reisetype"
                     , icon = Just Icon.bus
                     , value = Just "Buss og trikk"
@@ -428,7 +428,7 @@ view _ _ shared model _ =
                     , id = "reisetype"
                     }
                     []
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Reisende"
                     , icon = Just Icon.bus
                     , value =
@@ -441,7 +441,7 @@ view _ _ shared model _ =
                     , id = "reisende"
                     }
                     [ viewUserProfiles model shared.userProfiles ]
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Varighet"
                     , icon = Just Icon.duration
                     , value = summary.duration
@@ -451,7 +451,7 @@ view _ _ shared model _ =
                     , id = "varighet"
                     }
                     [ viewProducts model shared.fareProducts ]
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Gyldig fra og med"
                     , icon = Just Icon.ticket
                     , value = summary.start
@@ -461,7 +461,7 @@ view _ _ shared model _ =
                     , id = "duration"
                     }
                     [ viewStart model ]
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Soner"
                     , icon = Just Icon.ticket
                     , value = summary.zones
@@ -582,8 +582,8 @@ summaryView _ model =
             { marginBottom = True
             , marginTop = False
             }
-            [ Section.sectionHeader "Oppsummering"
-            , Section.sectionGenericItem
+            [ Section.viewHeader "Oppsummering"
+            , Section.viewGenericItem
                 [ H.div [ A.class "summary-price" ]
                     [ H.text totalPrice
                     ]
@@ -683,7 +683,7 @@ viewStart model =
 
 viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
-    Radio.group "Velg varighet" <| List.map (viewProduct model) products
+    Radio.viewGroup "Velg varighet" <| List.map (viewProduct model) products
 
 
 viewProduct : Model -> FareProduct -> Html Msg
@@ -697,7 +697,7 @@ viewProduct model product =
             |> Radio.setName "product"
             |> Radio.setChecked isCurrent
             |> Radio.setOnCheck (Just <| SetProduct product.id)
-            |> Radio.radio
+            |> Radio.view
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -731,7 +731,7 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    Radio.group "Reisende"
+    Radio.viewGroup "Reisende"
         (userProfiles
             |> List.filter (.userType >> (/=) UserTypeAnyone)
             |> List.map (viewUserProfile model)
@@ -750,7 +750,7 @@ viewUserProfile model userProfile =
             |> Radio.setSubtitle (Just <| langString userProfile.description)
             |> Radio.setChecked isCurrent
             |> Radio.setOnCheck (Just <| SetUser userProfile.userType)
-            |> Radio.radio
+            |> Radio.view
 
 
 subscriptions : Model -> Sub Msg

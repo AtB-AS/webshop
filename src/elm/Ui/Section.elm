@@ -1,10 +1,10 @@
 module Ui.Section exposing
-    ( SectionOptions
-    , labelItem
-    , section
-    , sectionGenericItem
-    , sectionHeader
+    ( Section
     , sectionWithOptions
+    , view
+    , viewGenericItem
+    , viewHeader
+    , viewLabelItem
     )
 
 import Html as H exposing (Html)
@@ -18,13 +18,13 @@ import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 --     List.singleton >> H.div [ A.class "ui-section__item" ]
 
 
-type alias SectionOptions =
+type alias Section =
     { marginTop : Bool
     , marginBottom : Bool
     }
 
 
-sectionWithOptions : SectionOptions -> List (Html msg) -> Html msg
+sectionWithOptions : Section -> List (Html msg) -> Html msg
 sectionWithOptions options items =
     let
         classList =
@@ -36,18 +36,18 @@ sectionWithOptions options items =
         H.div [ A.classList classList ] (List.map (List.singleton >> internalItem) items)
 
 
-section : List (Html msg) -> Html msg
-section =
+view : List (Html msg) -> Html msg
+view =
     sectionWithOptions { marginTop = False, marginBottom = False }
 
 
-sectionGenericItem : List (Html msg) -> Html msg
-sectionGenericItem =
+viewGenericItem : List (Html msg) -> Html msg
+viewGenericItem =
     H.div [ A.class "ui-section__item" ]
 
 
-labelItem : String -> List (Html msg) -> Html msg
-labelItem label children =
+viewLabelItem : String -> List (Html msg) -> Html msg
+viewLabelItem label children =
     H.div [ A.class "ui-section__item" ]
         (H.div [ A.class "ui-section__item__label" ]
             [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
@@ -56,9 +56,9 @@ labelItem label children =
         )
 
 
-sectionHeader : String -> Html msg
-sectionHeader title =
-    sectionGenericItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
+viewHeader : String -> Html msg
+viewHeader title =
+    viewGenericItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
 
 
 internalItem : List (Html msg) -> Html msg

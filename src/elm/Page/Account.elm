@@ -251,7 +251,7 @@ view _ _ _ model _ =
 
 viewSidebar : Model -> Html Msg
 viewSidebar _ =
-    Ui.Section.section
+    Ui.Section.view
         [ B.init "Logg ut"
             |> B.setIcon (Just Icon.logout)
             |> B.setOnClick (Just Logout)
@@ -267,10 +267,10 @@ viewSidebar _ =
 viewMain : Model -> Html Msg
 viewMain model =
     H.div [ A.class "main" ]
-        [ Ui.Section.section
+        [ Ui.Section.view
             (case model.profile of
                 Just profile ->
-                    [ Ui.Section.sectionHeader "Min konto"
+                    [ Ui.Section.viewHeader "Min konto"
                     , viewProfile profile
                     , viewPhoneNumber profile
                     , viewTravelCard model profile
@@ -286,19 +286,19 @@ viewMain model =
 viewProfile : Profile -> Html msg
 viewProfile profile =
     H.div []
-        [ Ui.Section.labelItem "Fornavn" [ viewField profile.firstName ]
-        , Ui.Section.labelItem "Etternavn" [ viewField profile.lastName ]
+        [ Ui.Section.viewLabelItem "Fornavn" [ viewField profile.firstName ]
+        , Ui.Section.viewLabelItem "Etternavn" [ viewField profile.lastName ]
         ]
 
 
 viewPhoneNumber : Profile -> Html msg
 viewPhoneNumber profile =
-    Ui.Section.labelItem "Telefonnummer" [ viewField profile.phone ]
+    Ui.Section.viewLabelItem "Telefonnummer" [ viewField profile.phone ]
 
 
 viewEmailAddress : Profile -> Html msg
 viewEmailAddress profile =
-    Ui.Section.labelItem "E-postadresse" [ viewField profile.email ]
+    Ui.Section.viewLabelItem "E-postadresse" [ viewField profile.email ]
 
 
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
@@ -377,11 +377,11 @@ viewTravelCard model profile =
                                 |> Text.setOnBlur (Just <| ValidateTravelCard)
                                 |> Text.setPlaceholder "Legg til et t:kort nå"
                                 |> Text.setValue (Just model.travelCard)
-                                |> Text.text
+                                |> Text.view
                             ]
 
                     else
-                        [ Ui.Section.labelItem "t:kort"
+                        [ Ui.Section.viewLabelItem "t:kort"
                             [ profile.travelCard
                                 |> Maybe.map (.id >> String.fromInt)
                                 |> Maybe.withDefault "Ingen t:kort lagt til"

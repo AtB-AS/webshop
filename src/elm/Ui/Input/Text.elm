@@ -8,7 +8,7 @@ module Ui.Input.Text exposing
     , setPlaceholder
     , setTitle
     , setValue
-    , text
+    , view
     )
 
 import Fragment.Icon
@@ -21,7 +21,7 @@ import Ui.Button exposing (ButtonMode(..))
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
-type alias TextOptions msg =
+type alias Text msg =
     { id : String
     , title : Maybe String
     , error : Maybe String
@@ -33,7 +33,7 @@ type alias TextOptions msg =
     }
 
 
-init : String -> TextOptions msg
+init : String -> Text msg
 init id =
     { id = id
     , title = Nothing
@@ -46,48 +46,48 @@ init id =
     }
 
 
-setPlaceholder : String -> TextOptions msg -> TextOptions msg
+setPlaceholder : String -> Text msg -> Text msg
 setPlaceholder placeholder opts =
     { opts | placeholder = placeholder }
 
 
-setId : String -> TextOptions msg -> TextOptions msg
+setId : String -> Text msg -> Text msg
 setId id opts =
     { opts | id = id }
 
 
-setTitle : Maybe String -> TextOptions msg -> TextOptions msg
+setTitle : Maybe String -> Text msg -> Text msg
 setTitle title opts =
     { opts | title = title }
 
 
-setError : Maybe String -> TextOptions msg -> TextOptions msg
+setError : Maybe String -> Text msg -> Text msg
 setError error opts =
     { opts | error = error }
 
 
-setValue : Maybe String -> TextOptions msg -> TextOptions msg
+setValue : Maybe String -> Text msg -> Text msg
 setValue value opts =
     { opts | value = value }
 
 
-setAttributes : List (H.Attribute msg) -> TextOptions msg -> TextOptions msg
+setAttributes : List (H.Attribute msg) -> Text msg -> Text msg
 setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
-setOnInput : Maybe (String -> msg) -> TextOptions msg -> TextOptions msg
+setOnInput : Maybe (String -> msg) -> Text msg -> Text msg
 setOnInput onInput opts =
     { opts | onInput = onInput }
 
 
-setOnBlur : Maybe msg -> TextOptions msg -> TextOptions msg
+setOnBlur : Maybe msg -> Text msg -> Text msg
 setOnBlur onBlur opts =
     { opts | onBlur = onBlur }
 
 
-text : TextOptions msg -> Html msg
-text { id, title, value, error, placeholder, onInput, onBlur } =
+view : Text msg -> Html msg
+view { id, title, value, error, placeholder, onInput, onBlur } =
     let
         classList =
             [ ( "ui-input-text", True ), ( "ui-input-text--error", error /= Nothing ) ]

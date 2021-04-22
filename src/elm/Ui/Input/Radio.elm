@@ -1,8 +1,6 @@
 module Ui.Input.Radio exposing
-    ( RadioOptions
-    , group
+    ( Radio
     , init
-    , radio
     , setAttributes
     , setChecked
     , setId
@@ -10,6 +8,8 @@ module Ui.Input.Radio exposing
     , setOnCheck
     , setSubtitle
     , setTitle
+    , view
+    , viewGroup
     )
 
 import Html as H exposing (Attribute, Html)
@@ -21,7 +21,7 @@ import Ui.Group
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
-type alias RadioOptions msg =
+type alias Radio msg =
     { id : String
     , name : String
     , title : String
@@ -32,7 +32,7 @@ type alias RadioOptions msg =
     }
 
 
-init : String -> RadioOptions msg
+init : String -> Radio msg
 init id =
     { id = id
     , name = ""
@@ -44,53 +44,53 @@ init id =
     }
 
 
-setId : String -> RadioOptions msg -> RadioOptions msg
+setId : String -> Radio msg -> Radio msg
 setId id opts =
     { opts | id = id }
 
 
-setName : String -> RadioOptions msg -> RadioOptions msg
+setName : String -> Radio msg -> Radio msg
 setName name opts =
     { opts | name = name }
 
 
-setTitle : String -> RadioOptions msg -> RadioOptions msg
+setTitle : String -> Radio msg -> Radio msg
 setTitle title opts =
     { opts | title = title }
 
 
-setSubtitle : Maybe String -> RadioOptions msg -> RadioOptions msg
+setSubtitle : Maybe String -> Radio msg -> Radio msg
 setSubtitle subtitle opts =
     { opts | subtitle = subtitle }
 
 
-setChecked : Bool -> RadioOptions msg -> RadioOptions msg
+setChecked : Bool -> Radio msg -> Radio msg
 setChecked checked opts =
     { opts | checked = checked }
 
 
-setOnCheck : Maybe (Bool -> msg) -> RadioOptions msg -> RadioOptions msg
+setOnCheck : Maybe (Bool -> msg) -> Radio msg -> Radio msg
 setOnCheck onCheck opts =
     { opts | onCheck = onCheck }
 
 
-setAttributes : List (H.Attribute msg) -> RadioOptions msg -> RadioOptions msg
+setAttributes : List (H.Attribute msg) -> Radio msg -> Radio msg
 setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
-group : String -> List (Html msg) -> Html msg
-group hiddenTitle children =
+viewGroup : String -> List (Html msg) -> Html msg
+viewGroup hiddenTitle children =
     H.fieldset [ A.class "ui-input-radioGroup" ]
         (H.legend
             [ A.class "ui-input-radioGroup__hiddenLegend" ]
             [ H.text hiddenTitle ]
-            :: List.map Ui.Group.groupItem children
+            :: List.map Ui.Group.viewItem children
         )
 
 
-radio : RadioOptions msg -> Html msg
-radio { id, name, title, onCheck, checked, subtitle, attributes } =
+view : Radio msg -> Html msg
+view { id, name, title, onCheck, checked, subtitle, attributes } =
     H.div []
         [ H.input
             ([ A.type_ "radio"
