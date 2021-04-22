@@ -1,9 +1,9 @@
 name: Deploy to Production Channel
 
 on:
-    push:
-        tags:
-            - '*'
+    release:
+        types:
+            - published
 
 jobs:
     deploy_live_website:
