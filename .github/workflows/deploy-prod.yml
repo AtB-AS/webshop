@@ -1,10 +1,12 @@
-name: Deploy to Preview Channel
+name: Deploy to Production Channel
 
 on:
-    pull_request:
+    release:
+        types:
+            - published
 
 jobs:
-    build_and_preview:
+    deploy_live_website:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
@@ -18,11 +20,11 @@ jobs:
             - run: yarn install
             - run: yarn build
               env:
-                  WEBSHOP_BASE_URL: ${{ secrets.BASE_URL_STAGING }}
-                  WEBSHOP_FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_STAGING }}
+                  WEBSHOP_BASE_URL: ${{ secrets.BASE_URL_PRODUCTION }}
+                  WEBSHOP_FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_PRODUCTION }}
             - uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: '${{ secrets.GITHUB_TOKEN }}'
-                  firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}'
-                  expires: 30d
-                  projectId: atb-mobility-platform-staging
+                  firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}'
+                  projectId: atb-mobility-platform
+                  channelId: live

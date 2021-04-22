@@ -165,6 +165,19 @@ function getBaseUrl(config, name) {
     return process.env.WEBSHOP_BASE_URL || '/';
 }
 
+function getFirebaseConfig(config) {
+    if (typeof config['firebaseConfig'] === 'object') {
+        return config['firebaseConfig'];
+    }
+
+    if (typeof process.env.WEBSHOP_FIREBASE_CONFIG === 'string') {
+        const config = JSON.parse(process.env.WEBSHOP_FIREBASE_CONFIG.trim());
+        return config;
+    }
+
+    throw Error("Need to set firebaseConfig in webpack.local.config.js or WEBSHOP_FIREBASE_CONFIG environment variable.");
+}
+
 // Get languageSwitcher from command line or config file
 function getLanguageSwitcher(config) {
     return getOption(
@@ -288,7 +301,8 @@ const commonConfig = {
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
                 commit: gitCommitHash()
-            })
+            }),
+            firebaseConfig: JSON.stringify(getFirebaseConfig(localConfig))
         })
     ]
 };

@@ -28,13 +28,21 @@ something like this to that file if it doesn't exist:
 module.exports = {
     host: '0.0.0.0',
     port: 8112,
-    baseUrl: 'http://localhost'
+    baseUrl: 'http://localhost',
+    firebaseConfig: {...}
 };
 ```
 
 The `baseUrl` needs to be set to be able to make calls to the backend.  As an
-alternative to using a local config file if you only need to set the base URL,
-you can set the `WEBSHOP_BASE_URL` environment variable.
+alternative to using a local config file, you can set the `WEBSHOP_BASE_URL`
+environment variable.
+
+The `firebaseConfig` needs to be set to be able to connect to Firebase.  As an
+alternative to using a local config file, you can also set the
+`WEBSHOP_FIREBASE_CONFIG` environment variable.  The config needs to be valid
+JSON, so remember when copying the config from the Firebase console to change
+the keys to be double-quoted strings (this is only necessary when using an
+environment variable).
 
 When making changes, always format Elm files using the following `elm-format` release:
 
