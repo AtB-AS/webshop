@@ -340,6 +340,9 @@ viewTravelCard model profile =
 
         hasTravelCard =
             profile.travelCard /= Nothing
+
+        disabledButtons =
+            model.loadingEditSection == Just TravelCardSection
     in
         EditSection.init "Administrer t:kort"
             |> EditSection.setEditButtonType
@@ -356,13 +359,18 @@ viewTravelCard model profile =
                 (if hasTravelCard then
                     Just <|
                         EditSection.destructiveGroup
-                            "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
-                            onCancel
-                            onRemove
+                            { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                            , onCancel = onCancel
+                            , onDestroy = onRemove
+                            , disabled = disabledButtons
+                            }
 
                  else
                     Just <|
-                        EditSection.cancelConfirmGroup onCancel
+                        EditSection.cancelConfirmGroup
+                            { onCancel = onCancel
+                            , disabled = disabledButtons
+                            }
                 )
             |> EditSection.editSection
                 (\inEditMode ->

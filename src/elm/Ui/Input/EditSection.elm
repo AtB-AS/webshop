@@ -5,8 +5,15 @@ module Ui.Input.EditSection exposing
     , editSection
     , horizontalGroup
     , init
+    , initDestructiveGroup
     , setAccessibilityName
     , setButtonGroup
+    , setCCGDisabled
+    , setCCGOnCancel
+    , setDGDisabled
+    , setDGMessage
+    , setDGOnCancel
+    , setDGOnDestroy
     , setEditButtonType
     , setInEditMode
     , setOnEdit
@@ -107,33 +114,90 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
             ]
 
 
-cancelConfirmGroup : Maybe msg -> List (Html msg)
-cancelConfirmGroup onCancel =
+type alias CancelConfirmGroup msg =
+    { onCancel : Maybe msg
+    , disabled : Bool
+    }
+
+
+setCCGOnCancel : Maybe msg -> CancelConfirmGroup msg -> CancelConfirmGroup msg
+setCCGOnCancel onCancel opts =
+    { opts | onCancel = onCancel }
+
+
+setCCGDisabled : Bool -> CancelConfirmGroup msg -> CancelConfirmGroup msg
+setCCGDisabled disabled opts =
+    { opts | disabled = disabled }
+
+
+cancelConfirmGroup : CancelConfirmGroup msg -> List (Html msg)
+cancelConfirmGroup { onCancel, disabled } =
     [ B.init
         "Avbryt"
         |> B.setIcon (Just Fragment.Icon.cross)
         |> B.setOnClick onCancel
+        |> B.setDisabled disabled
         |> B.tertiaryCompact
     , B.init "Lagre"
         |> B.setIcon (Just Fragment.Icon.checkmark)
         |> B.setType "submit"
+        |> B.setDisabled disabled
         |> B.setAttributes [ A.classList [ ( "ui-editSection__fieldset__saveButton", True ) ] ]
         |> B.primaryCompact B.Primary_2
     ]
 
 
-destructiveGroup : String -> Maybe msg -> Maybe msg -> List (Html msg)
-destructiveGroup message onCancel onDestroy =
+type alias DestructiveGroup msg =
+    { message : String
+    , onCancel : Maybe msg
+    , onDestroy : Maybe msg
+    , disabled : Bool
+    }
+
+
+initDestructiveGroup : DestructiveGroup msg
+initDestructiveGroup =
+    { message = ""
+    , onCancel = Nothing
+    , onDestroy = Nothing
+    , disabled = False
+    }
+
+
+setDGMessage : String -> DestructiveGroup msg -> DestructiveGroup msg
+setDGMessage message opts =
+    { opts | message = message }
+
+
+setDGOnCancel : Maybe msg -> DestructiveGroup msg -> DestructiveGroup msg
+setDGOnCancel onCancel opts =
+    { opts | onCancel = onCancel }
+
+
+setDGOnDestroy : Maybe msg -> DestructiveGroup msg -> DestructiveGroup msg
+setDGOnDestroy onDestroy opts =
+    { opts | onDestroy = onDestroy }
+
+
+setDGDisabled : Bool -> DestructiveGroup msg -> DestructiveGroup msg
+setDGDisabled disabled opts =
+    { opts | disabled = disabled }
+
+
+destructiveGroup : DestructiveGroup msg -> List (Html msg)
+destructiveGroup { message, onCancel, onDestroy, disabled } =
     [ H.div [ A.class "ui-editSection__fieldset__buttonGroup__deleteText" ]
         [ H.text message ]
     , B.init
         "Avbryt"
         |> B.setIcon (Just Fragment.Icon.cross)
         |> B.setOnClick onCancel
+        |> B.setDisabled disabled
         |> B.tertiaryCompact
     , B.init "Fjern t:kort"
         |> B.setIcon (Just Fragment.Icon.checkmark)
         |> B.setOnClick onDestroy
+        |> B.setDisabled disabled
         |> B.setAttributes [ A.classList [ ( "ui-editSection__fieldset__saveButton", True ) ] ]
         |> B.primaryCompact B.Primary_destructive
     ]
