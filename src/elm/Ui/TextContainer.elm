@@ -20,6 +20,7 @@ type TextColor
     = PrimaryColor
     | SecondaryColor
     | DisabledColor
+    | DestructiveColor
 
 
 type TextContainer msg
@@ -46,6 +47,9 @@ toClassChildrenPair head color =
 
                 Just DisabledColor ->
                     "ui-textContainer--disabled"
+
+                Just DestructiveColor ->
+                    "ui-textContainer--destructive"
 
                 Nothing ->
                     ""

@@ -37,7 +37,7 @@ search env travelDate product travellers zones =
                             []
                    )
     in
-        HttpUtil.post env url (Http.jsonBody <| Encode.object body) (Decode.list offerDecoder)
+        HttpUtil.post env url (Http.jsonBody <| Encode.object body) (Http.expectJson (Decode.list offerDecoder))
 
 
 {-| Reserve offers.
@@ -57,7 +57,7 @@ reserve env paymentType offers =
                 , ( "payment_redirect_url", Encode.string (env.ticketUrl ++ "/thanks") )
                 ]
     in
-        HttpUtil.post env url (Http.jsonBody body) reservationDecoder
+        HttpUtil.post env url (Http.jsonBody body) (Http.expectJson reservationDecoder)
 
 
 {-| Get a receipt for an order.
@@ -96,7 +96,7 @@ getPaymentStatus env paymentId =
                 [ "ticket", "v1", "payments", String.fromInt paymentId ]
                 []
     in
-        HttpUtil.get env url paymentStatusDecoder
+        HttpUtil.get env url (Http.expectJson paymentStatusDecoder)
 
 
 

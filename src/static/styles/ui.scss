@@ -75,11 +75,17 @@
     margin-bottom: var(--spacings-xLarge);
 }
 .ui-section__item {
-    margin-bottom: 1px;
     padding: var(--spacings-xLarge);
     flex: 1;
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
+}
+.ui-section__item__label {
+    margin-bottom: var(--spacings-medium);
+}
+.ui-section__child:not(:last-child) {
+    border-bottom: var(--border-width-slim) solid
+        var(--colors-background_1-backgroundColor);
 }
 .ui-section__headerTitle {
     padding: 0;
@@ -256,7 +262,7 @@
 
 .ui-button {
     display: flex;
-    width: 100%;
+    flex: 1;
     cursor: pointer;
 
     border: var(--border-width-medium) solid transparent;
@@ -274,6 +280,12 @@
             fill: currentColor;
         }
     }
+}
+.ui-button:not(.ui-button--compact) {
+    width: 100%;
+}
+.ui-button__icon {
+    margin-left: var(--spacings-small);
 }
 .ui-button--tertiary {
     background: var(--colors-background_0-backgroundColor);
@@ -297,6 +309,18 @@
 .ui-button--disabled:hover {
     filter: none;
 }
+.ui-button--compact {
+    display: inline-flex;
+    flex: initial;
+    padding: calc(var(--spacings-medium) - 2 * var(--border-width-medium));
+}
+.ui-button--compact:not(.ui-button--tertiary) {
+    border-radius: var(--border-radius-regular);
+}
+.ui-button--compact.ui-button--tertiary:hover {
+    filter: none;
+    opacity: 0.6;
+}
 
 .ui-textContainer--primary {
     color: var(--text-colors-primary);
@@ -306,6 +330,9 @@
 }
 .ui-textContainer--disabled {
     color: var(--text-colors-disabled);
+}
+.ui-textContainer--destructive {
+    color: var(--colors-primary_destructive-backgroundColor);
 }
 
 .ui-notifications {
@@ -317,4 +344,118 @@
     overflow: auto;
 
     z-index: 9999;
+}
+
+.ui-editSection {
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+}
+.ui-editSection__editButton {
+    margin: var(--spacings-medium);
+}
+.ui-editSection__container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+.ui-editSection__content {
+    flex: 1;
+}
+.ui-editSection__fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+.ui-editSection__fieldset__legend {
+    position: absolute;
+    clip: rect(0 0 0 0);
+}
+.ui-editSection__fieldset__buttonGroup {
+    width: 100%;
+    display: flex;
+    padding: var(--spacings-medium);
+    justify-content: flex-end;
+    align-items: center;
+
+    animation: fadeIn 350ms;
+
+    flex-wrap: wrap;
+}
+.ui-editSection__fieldset__buttonGroup__deleteText {
+    margin-right: auto;
+    padding: var(--spacings-medium);
+    color: var(--status-error-main-backgroundColor);
+}
+
+.ui-editSection__horizontalGroup {
+    display: grid;
+    gap: var(--spacings-medium);
+}
+
+.ui-input-text {
+    transition: all 150ms ease-in-out;
+    border-radius: var(--border-radius-regular);
+    border: var(--border-width-medium) solid transparent;
+
+    // Remove border from padding.
+    padding: calc(var(--spacings-medium) - var(--border-width-medium));
+    margin: var(--spacings-medium)
+        calc(var(--spacings-medium) - var(--border-width-medium));
+
+    transition: all 150ms ease-in-out;
+
+    svg,
+    path {
+        fill: currentColor;
+    }
+
+    svg {
+        margin-right: var(--spacings-medium);
+    }
+}
+.ui-input-text--error {
+    border-color: var(--status-error-main-backgroundColor);
+}
+.ui-input-text__errorMessage {
+    margin-top: var(--spacings-medium);
+}
+.ui-input-text:hover {
+    background: var(--colors-background_2-backgroundColor);
+    color: var(--colors-background_2-color);
+}
+.ui-input-text:active {
+    background: var(--colors-background_3-backgroundColor);
+    color: var(--colors-background_3-color);
+}
+.ui-input-text:focus-within {
+    border-color: var(--colors-primary_2-backgroundColor);
+    border-radius: var(--border-radius-regular);
+}
+.ui-input-text__label {
+    margin-bottom: var(--spacings-medium);
+}
+.ui-input-text__input {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+.ui-input-text__input:focus {
+    outline: 0;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0.2;
+        transform: translateY(-0.4rem);
+    }
+    30% {
+        opacity: 0.4;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 1;
+    }
 }

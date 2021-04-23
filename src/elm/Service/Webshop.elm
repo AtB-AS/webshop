@@ -2,12 +2,15 @@ module Service.Webshop exposing
     ( addQrCode
     , addTravelCard
     , deleteToken
+    , deleteTravelCard
     , getFareContracts
     , getProfile
     , getToken
     , getTokens
     , inspectQrCode
     , register
+    , travelCardErrorDecoder
+    , updateEmail
     , updateProfile
     )
 
@@ -23,7 +26,7 @@ import Util.Http as HttpUtil
 
 getProfile : Environment -> Http.Request Profile
 getProfile env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/profile") profileDecoder
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/profile") (Http.expectJson profileDecoder)
 
 
 updateProfile : Environment -> String -> String -> Http.Request ()
@@ -35,47 +38,56 @@ updateProfile env firstName lastName =
                 , ( "surname", Encode.string lastName )
                 ]
     in
-        HttpUtil.put env (env.baseUrl ++ "/api/v1/profile") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.patch env (env.baseUrl ++ "/webshop/v1/profile") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
+
+
+updateEmail : Environment -> String -> Http.Request ()
+updateEmail env email =
+    let
+        payload =
+            Encode.object
+                [ ( "email", Encode.string email )
+                ]
+    in
+        HttpUtil.patch env (env.baseUrl ++ "/webshop/v1/profile") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
 
 
 getTokens : Environment -> Http.Request (List Token)
 getTokens env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens") (Decode.list tokenDecoder)
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens") (Http.expectJson (Decode.list tokenDecoder))
 
 
 getToken : Environment -> String -> Http.Request Token
 getToken env id =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens/" ++ id) tokenDecoder
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/tokens/" ++ id) (Http.expectJson tokenDecoder)
 
 
 addTravelCard : Environment -> String -> Http.Request ()
 addTravelCard env id =
     let
         payload =
-            Encode.object [ ( "travelCardId", Encode.string id ) ]
+            Encode.object [ ( "id", Encode.string id ) ]
     in
-        HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/travelcard") (Http.jsonBody payload) (Decode.succeed ())
+        HttpUtil.post env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
+
+
+deleteTravelCard : Environment -> String -> Http.Request ()
+deleteTravelCard env id =
+    let
+        payload =
+            Encode.object [ ( "id", Encode.string id ) ]
+    in
+        HttpUtil.delete env (env.baseUrl ++ "/webshop/v1/travelcard") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
 
 
 deleteToken : Environment -> String -> Http.Request ()
 deleteToken env tokenId =
-    Http.request
-        { method = "DELETE"
-        , headers =
-            [ Http.header "Atb-Install-Id" env.installId
-            , Http.header "Authorization" ("Bearer " ++ env.token)
-            ]
-        , url = env.baseUrl ++ "/api/v1/tokens/" ++ tokenId
-        , body = Http.emptyBody
-        , expect = Http.expectStringResponse (\_ -> Ok ())
-        , timeout = Nothing
-        , withCredentials = False
-        }
+    HttpUtil.delete env (env.baseUrl ++ "/api/v1/tokens/" ++ tokenId) Http.emptyBody (Http.expectStringResponse (\_ -> Ok ()))
 
 
 addQrCode : Environment -> Http.Request ()
 addQrCode env =
-    HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/qrcode") Http.emptyBody (Decode.succeed ())
+    HttpUtil.post env (env.baseUrl ++ "/api/v1/tokens/qrcode") Http.emptyBody (Http.expectJson (Decode.succeed ()))
 
 
 inspectQrCode : Environment -> String -> Http.Request (List Inspection)
@@ -84,14 +96,14 @@ inspectQrCode env tokenPayload =
         payload =
             Encode.object [ ( "token", Encode.string tokenPayload ) ]
     in
-        HttpUtil.post env (env.baseUrl ++ "/api/v1/inspection/qrcode") (Http.jsonBody payload) (Decode.list inspectionDecoder)
+        HttpUtil.post env (env.baseUrl ++ "/api/v1/inspection/qrcode") (Http.jsonBody payload) (Http.expectJson (Decode.list inspectionDecoder))
 
 
 {-| Get list of tickets.
 -}
 getFareContracts : Environment -> Http.Request (List FareContract)
 getFareContracts env =
-    HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Decode.list fareContractDecoder)
+    HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Http.expectJson (Decode.list fareContractDecoder))
 
 
 register : Environment -> String -> String -> Maybe String -> Maybe String -> Http.Request ()
@@ -108,11 +120,16 @@ register env firstName lastName phone email =
         HttpUtil.post env
             (env.baseUrl ++ "/webshop/v1/register")
             (Http.jsonBody payload)
-            (Decode.succeed ())
+            (Http.expectJson (Decode.succeed ()))
 
 
 
 -- DECODERS
+
+
+travelCardErrorDecoder : String -> Result Decode.Error String
+travelCardErrorDecoder =
+    Decode.decodeString (Decode.field "error" Decode.string)
 
 
 inspectionDecoder : Decoder Inspection

@@ -1,12 +1,11 @@
-module Util.Http exposing (delete, get, post, put, request)
+module Util.Http exposing (delete, get, patch, post, put, request)
 
 import Environment exposing (Environment)
 import Http exposing (Body, Request)
-import Json.Decode exposing (Decoder)
 
 
-request : Environment -> String -> String -> Body -> Decoder a -> Request a
-request env method url body decoder =
+request : Environment -> String -> String -> Body -> Http.Expect a -> Request a
+request env method url body expect =
     Http.request
         { method = method
         , headers =
@@ -15,27 +14,32 @@ request env method url body decoder =
             ]
         , url = url
         , body = body
-        , expect = Http.expectJson decoder
+        , expect = expect
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-get : Environment -> String -> Decoder a -> Request a
-get env url decoder =
-    request env "GET" url Http.emptyBody decoder
+get : Environment -> String -> Http.Expect a -> Request a
+get env url expect =
+    request env "GET" url Http.emptyBody expect
 
 
-post : Environment -> String -> Body -> Decoder a -> Request a
-post env url body decoder =
-    request env "POST" url body decoder
+post : Environment -> String -> Body -> Http.Expect a -> Request a
+post env url body expect =
+    request env "POST" url body expect
 
 
-put : Environment -> String -> Body -> Decoder a -> Request a
-put env url body decoder =
-    request env "PUT" url body decoder
+patch : Environment -> String -> Body -> Http.Expect a -> Request a
+patch env url body expect =
+    request env "PATCH" url body expect
 
 
-delete : Environment -> String -> Body -> Decoder a -> Request a
-delete env url body decoder =
-    request env "DELETE" url body decoder
+put : Environment -> String -> Body -> Http.Expect a -> Request a
+put env url body expect =
+    request env "PUT" url body expect
+
+
+delete : Environment -> String -> Body -> Http.Expect a -> Request a
+delete env url body expect =
+    request env "DELETE" url body expect

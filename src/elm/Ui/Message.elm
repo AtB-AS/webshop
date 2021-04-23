@@ -1,6 +1,6 @@
 module Ui.Message exposing
     ( Border(..)
-    , MessageOptions
+    , Message
     , UserStatus(..)
     , defaultOption
     , error
@@ -82,7 +82,7 @@ stringOfStatus status =
             text
 
 
-type alias MessageOptions =
+type alias Message =
     { borderTop : Bool
     , borderBottom : Bool
     , marginTop : Bool
@@ -90,7 +90,7 @@ type alias MessageOptions =
     }
 
 
-messageWithOptions : MessageOptions -> UserStatus -> Html msg
+messageWithOptions : Message -> UserStatus -> Html msg
 messageWithOptions options statusType =
     let
         statusClass =
@@ -117,7 +117,7 @@ messageWithOptions options statusType =
             ]
 
 
-defaultOption : MessageOptions
+defaultOption : Message
 defaultOption =
     { borderTop = False
     , borderBottom = False
@@ -131,22 +131,22 @@ message =
     messageWithOptions defaultOption
 
 
-infoWithOptions : MessageOptions -> String -> Html msg
+infoWithOptions : Message -> String -> Html msg
 infoWithOptions opts text =
     messageWithOptions opts (Info text)
 
 
-warningWithOptions : MessageOptions -> String -> Html msg
+warningWithOptions : Message -> String -> Html msg
 warningWithOptions opts text =
     messageWithOptions opts (Warning text)
 
 
-validWithOptions : MessageOptions -> String -> Html msg
+validWithOptions : Message -> String -> Html msg
 validWithOptions opts text =
     messageWithOptions opts (Valid text)
 
 
-errorWithOptions : MessageOptions -> String -> Html msg
+errorWithOptions : Message -> String -> Html msg
 errorWithOptions opts text =
     messageWithOptions opts (Error text)
 

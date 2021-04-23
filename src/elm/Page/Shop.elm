@@ -22,9 +22,9 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
-import Ui.Button exposing (ThemeColor(..))
+import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
-import Ui.Input as Input
+import Ui.Input.Radio as Radio
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Format
@@ -416,9 +416,9 @@ view _ _ shared model _ =
         summary =
             modelSummary shared model
     in
-        H.div [ A.class "page-shop" ]
+        H.div [ A.class "page" ]
             [ H.div []
-                [ Ui.Group.togglable
+                [ Ui.Group.view
                     { title = "Reisetype"
                     , icon = Just Icon.bus
                     , value = Just "Buss og trikk"
@@ -428,7 +428,7 @@ view _ _ shared model _ =
                     , id = "reisetype"
                     }
                     []
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Reisende"
                     , icon = Just Icon.bus
                     , value =
@@ -441,7 +441,7 @@ view _ _ shared model _ =
                     , id = "reisende"
                     }
                     [ viewUserProfiles model shared.userProfiles ]
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Varighet"
                     , icon = Just Icon.duration
                     , value = summary.duration
@@ -451,7 +451,7 @@ view _ _ shared model _ =
                     , id = "varighet"
                     }
                     [ viewProducts model shared.fareProducts ]
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Gyldig fra og med"
                     , icon = Just Icon.ticket
                     , value = summary.start
@@ -461,7 +461,7 @@ view _ _ shared model _ =
                     , id = "duration"
                     }
                     [ viewStart model ]
-                , Ui.Group.togglable
+                , Ui.Group.view
                     { title = "Soner"
                     , icon = Just Icon.ticket
                     , value = summary.zones
@@ -478,9 +478,21 @@ view _ _ shared model _ =
                     { marginBottom = True
                     , marginTop = False
                     }
-                    [ Ui.Button.primary Secondary_1 "Kjøp med bankkort" disableButtons (Just Icon.creditcard) (BuyOffers Nets)
-                    , Ui.Button.primary Secondary_1 "Kjøp med Vipps" disableButtons (Just <| Ui.Button.coloredIcon Icon.vipps) (BuyOffers Vipps)
-                    , Ui.Button.tertiary "Avbryt" False (Just Icon.cross) CloseShop
+                    [ B.init "Kjøp med bankkort"
+                        |> B.setDisabled disableButtons
+                        |> B.setIcon (Just Icon.creditcard)
+                        |> B.setOnClick (Just (BuyOffers Nets))
+                        |> B.primary Secondary_1
+                    , B.init "Kjøp med Vipps"
+                        |> B.setDisabled disableButtons
+                        |> B.setIcon (Just (B.coloredIcon Icon.vipps))
+                        |> B.setOnClick (Just (BuyOffers Vipps))
+                        |> B.primary Secondary_1
+                    , B.init "Avbryt"
+                        |> B.setDisabled False
+                        |> B.setIcon (Just Icon.cross)
+                        |> B.setOnClick (Just CloseShop)
+                        |> B.tertiary
                     ]
                 ]
             ]
@@ -570,8 +582,8 @@ summaryView _ model =
             { marginBottom = True
             , marginTop = False
             }
-            [ Section.sectionHeader "Oppsummering"
-            , Section.sectionGenericItem
+            [ Section.viewHeader "Oppsummering"
+            , Section.viewGenericItem
                 [ H.div [ A.class "summary-price" ]
                     [ H.text totalPrice
                     ]
@@ -671,7 +683,7 @@ viewStart model =
 
 viewProducts : Model -> List FareProduct -> Html Msg
 viewProducts model products =
-    Input.radioGroup "Velg varighet" <| List.map (viewProduct model) products
+    Radio.viewGroup "Velg varighet" <| List.map (viewProduct model) products
 
 
 viewProduct : Model -> FareProduct -> Html Msg
@@ -680,14 +692,12 @@ viewProduct model product =
         isCurrent =
             model.product == product.id
     in
-        Input.radio
-            { id = product.id
-            , title = langString product.name
-            , subtitle = Nothing
-            , name = "product"
-            , checked = isCurrent
-            , onCheck = Just <| SetProduct product.id
-            }
+        Radio.init product.id
+            |> Radio.setTitle (langString product.name)
+            |> Radio.setName "product"
+            |> Radio.setChecked isCurrent
+            |> Radio.setOnCheck (Just <| SetProduct product.id)
+            |> Radio.view
 
 
 viewZones : Model -> List TariffZone -> Html Msg
@@ -721,7 +731,7 @@ viewZone current zone =
 
 viewUserProfiles : Model -> List UserProfile -> Html Msg
 viewUserProfiles model userProfiles =
-    Input.radioGroup "Reisende"
+    Radio.viewGroup "Reisende"
         (userProfiles
             |> List.filter (.userType >> (/=) UserTypeAnyone)
             |> List.map (viewUserProfile model)
@@ -734,14 +744,13 @@ viewUserProfile model userProfile =
         isCurrent =
             List.any (Tuple.first >> (==) userProfile.userType) model.users
     in
-        Input.radio
-            { id = userTypeAsIdString userProfile.userType
-            , title = langString userProfile.name
-            , subtitle = Just <| langString userProfile.description
-            , name = "userprofile"
-            , checked = isCurrent
-            , onCheck = Just <| SetUser userProfile.userType
-            }
+        Radio.init (userTypeAsIdString userProfile.userType)
+            |> Radio.setTitle (langString userProfile.name)
+            |> Radio.setName "userprofile"
+            |> Radio.setSubtitle (Just <| langString userProfile.description)
+            |> Radio.setChecked isCurrent
+            |> Radio.setOnCheck (Just <| SetUser userProfile.userType)
+            |> Radio.view
 
 
 subscriptions : Model -> Sub Msg

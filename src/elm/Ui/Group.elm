@@ -1,4 +1,4 @@
-module Ui.Group exposing (groupItem, togglable)
+module Ui.Group exposing (view, viewItem)
 
 import Fragment.Icon
 import Html as H exposing (Html)
@@ -10,7 +10,7 @@ import Ui.Heading
 import Ui.TextContainer
 
 
-type alias GroupMetadata msg =
+type alias Group msg =
     { title : String
     , id : String
     , icon : Maybe (Html msg)
@@ -21,8 +21,8 @@ type alias GroupMetadata msg =
     }
 
 
-togglable : GroupMetadata msg -> List (Html msg) -> Html msg
-togglable { open, disabled, onOpenClick, icon, id, title, value } children =
+view : Group msg -> List (Html msg) -> Html msg
+view { open, disabled, onOpenClick, icon, id, title, value } children =
     let
         classList =
             [ ( "ui-group", True )
@@ -68,7 +68,7 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                         , chevronIcon
                         ]
                     ]
-                    |> groupItem
+                    |> viewItem
                 , H.div
                     [ A.classList classListContent
                     , A.attribute "aria-labelledby" id
@@ -77,14 +77,14 @@ togglable { open, disabled, onOpenClick, icon, id, title, value } children =
                     , Attr.attributeIf (not open) (A.attribute "inert" "true")
                     ]
                     (children
-                        |> List.map groupItem
+                        |> List.map viewItem
                     )
                 ]
             ]
 
 
-groupItem : Html msg -> Html msg
-groupItem =
+viewItem : Html msg -> Html msg
+viewItem =
     List.singleton >> H.div [ A.class "ui-group__item" ]
 
 
