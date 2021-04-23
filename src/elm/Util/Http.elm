@@ -9,7 +9,8 @@ request env method url body expect =
     Http.request
         { method = method
         , headers =
-            [ Http.header "Atb-Install-Id" env.installId
+            [ Http.header "Atb-Distribution-Channel" "Web"
+            , Http.header "Atb-Install-Id" env.installId
             , Http.header "Authorization" ("Bearer " ++ env.token)
             ]
         , url = url
