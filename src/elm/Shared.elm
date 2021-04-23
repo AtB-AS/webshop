@@ -63,10 +63,6 @@ update msg model =
                     model
 
 
-
--- Fare products.limitations -> map to userTypes
-
-
 getMappedLimitations : List FareProduct -> List UserProfile -> List Limitation
 getMappedLimitations products userProfiles =
     let
@@ -78,7 +74,7 @@ getMappedLimitations products userProfiles =
             |> List.map
                 (\product ->
                     { productId = product.id
-                    , limitations = product.limitations |> List.filterMap userIdToType
+                    , limitations = List.filterMap userIdToType product.limitations
                     }
                 )
 
