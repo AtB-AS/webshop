@@ -3,6 +3,7 @@ dist
 elm-stuff
 node_modules
 webpack.local.config.js
+.env*
 yarn-error.log
 
 *~
@@ -10,4 +11,3 @@ yarn-error.log
 
 .DS_Store
 .firebase
-
