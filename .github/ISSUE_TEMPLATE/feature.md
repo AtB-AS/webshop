@@ -3,7 +3,7 @@ name: Feature
 about: 'En større endring som kan leve litt over tid, som et konsept, funksjonalitet
   eller sider. '
 title: "[Feature] Ny feature"
-labels: Feature
+labels: C-Feature
 assignees: ''
 
 ---
