@@ -1,6 +1,7 @@
 module Data.RefData exposing
     ( FareProduct
     , LangString(..)
+    , Limitation
     , TariffZone
     , UserProfile
     , UserType(..)
@@ -22,6 +23,13 @@ type alias FareProduct =
     , name : LangString
     , description : LangString
     , alternativeNames : List LangString
+    , limitations : List String
+    }
+
+
+type alias Limitation =
+    { productId : String
+    , limitations : List UserType
     }
 
 

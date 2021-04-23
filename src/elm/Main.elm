@@ -288,7 +288,7 @@ update msg model =
         ShopMsg subMsg ->
             case model.shop of
                 Just shop ->
-                    ShopPage.update subMsg model.environment shop
+                    ShopPage.update subMsg model.environment shop model.shared
                         |> PageUpdater.map (\newModel -> { model | shop = Just newModel }) ShopMsg
                         |> doPageUpdate
 

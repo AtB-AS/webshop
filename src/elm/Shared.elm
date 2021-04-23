@@ -1,6 +1,8 @@
 module Shared exposing (Msg, Shared, init, subscriptions, update)
 
-import Data.RefData exposing (FareProduct, TariffZone, UserProfile)
+import Data.RefData exposing (FareProduct, Limitation, TariffZone, UserProfile, UserType)
+import List exposing (product)
+import List.Extra
 import Service.RefData as RefDataService
 
 
@@ -14,6 +16,7 @@ type alias Shared =
     { tariffZones : List TariffZone
     , fareProducts : List FareProduct
     , userProfiles : List UserProfile
+    , productLimitations : List Limitation
     }
 
 
@@ -22,6 +25,7 @@ init =
     { tariffZones = []
     , fareProducts = []
     , userProfiles = []
+    , productLimitations = []
     }
 
 
@@ -39,7 +43,10 @@ update msg model =
         ReceiveFareProducts result ->
             case result of
                 Ok value ->
-                    { model | fareProducts = value }
+                    { model
+                        | fareProducts = value
+                        , productLimitations = getMappedLimitations value model.userProfiles
+                    }
 
                 Err _ ->
                     model
@@ -47,10 +54,29 @@ update msg model =
         ReceiveUserProfiles result ->
             case result of
                 Ok value ->
-                    { model | userProfiles = value }
+                    { model
+                        | userProfiles = value
+                        , productLimitations = getMappedLimitations model.fareProducts value
+                    }
 
                 Err _ ->
                     model
+
+
+getMappedLimitations : List FareProduct -> List UserProfile -> List Limitation
+getMappedLimitations products userProfiles =
+    let
+        userIdToType : String -> Maybe UserType
+        userIdToType id =
+            userProfiles |> List.Extra.find (.id >> (==) id) |> Maybe.map .userType
+    in
+        products
+            |> List.map
+                (\product ->
+                    { productId = product.id
+                    , limitations = List.filterMap userIdToType product.limitations
+                    }
+                )
 
 
 subscriptions : Sub Msg
