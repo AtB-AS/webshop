@@ -105,6 +105,7 @@ app.ports.signInHandler.subscribe((provider_id) => {
 app.ports.signOutHandler.subscribe(() => {
     clearRefreshToken();
 
+    console.log("setting loggedIn")
     localStorage["loggedIn"] = '';
 
     if (typeof fareContractSnapshotCallback === 'function') {
@@ -176,6 +177,7 @@ function fetchAuthInfo(user) {
                 const email = user.email || '';
                 const phone = user.phoneNumber || '';
                 const provider = idToken.signInProvider || '';
+                console.log('inside fetch auth info')
 
                 enqueueRefreshToken(user, idToken.expirationTime);
 
@@ -355,6 +357,10 @@ app.ports.phoneConfirm.subscribe((code) => {
 
         if (error && error.code === 'auth/invalid-phone-number') {
             app.ports.phoneError.send("Ugyldig telefonnummer.");
+        } else if (error && error.code === 'auth/invalid-verification-code') {
+            app.ports.phoneError.send("Passordet stemmer ikke, vennligst prøv på nytt eler be om et nytt engangspassord.");
+        } else if (error && error.code === 'auth/code-expired') {
+            app.ports.phoneError.send("Engangspassordet har utløpt. Vennligst prøv på nytt eler be om et nytt engangspassord.");
         } else {
             app.ports.phoneError.send("En ukjent feil oppstod.");
         }

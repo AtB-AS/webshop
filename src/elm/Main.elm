@@ -150,11 +150,14 @@ init flags url navKey =
         ( accountModel, accountCmd ) =
             AccountPage.init
 
+        ( loginModel, loginCmd ) =
+            LoginPage.init
+
         route =
             Route.fromUrl url
 
         userData =
-            if flags.loggedIn then
+            if Debug.log "foo" flags.loggedIn then
                 Loading Nothing
 
             else
@@ -169,7 +172,7 @@ init flags url navKey =
                 , history = HistoryPage.init
                 , account = accountModel
                 , shared = Shared.init
-                , login = LoginPage.init
+                , login = loginModel
                 , onboarding = Nothing
                 , route = route
                 , errors = []
@@ -183,6 +186,7 @@ init flags url navKey =
         , Cmd.batch
             [ Cmd.map OverviewMsg overviewCmd
             , Cmd.map AccountMsg accountCmd
+            , Cmd.map LoginMsg loginCmd
             , routeCmd
             ]
         )

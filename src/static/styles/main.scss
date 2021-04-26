@@ -58,6 +58,11 @@ a:hover {
     color: #ff9;
 }
 
+p {
+    margin: 0;
+    padding: 0;
+}
+
 .box {
     background-color: transparent;
     color: var(--primary);
@@ -89,47 +94,6 @@ a:hover {
 }
 
 // Page layouts
-
-.page-login {
-    margin-top: 96px;
-    width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-
-    > div:first-child {
-        margin: 24px auto;
-
-        svg path {
-            fill: black;
-        }
-    }
-
-    input {
-        border: none;
-        outline: none;
-        background: inherit;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-    }
-
-    .button,
-    .no-button {
-        padding: 24px;
-        font-weight: 500;
-        display: flex;
-        cursor: pointer;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button {
-        background-color: #71d6e0;
-        border-radius: 12px;
-    }
-}
 
 .button-loading {
     width: 20px;
@@ -321,18 +285,10 @@ a:hover {
         background: inherit;
     }
 }
-
-.page-account {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 1fr 320px;
-
-    .sidebar {
-        width: 320px;
-    }
-
-    .main {
-    }
+.page--login {
+    width: 22.5rem;
+    margin: 3.25rem auto;
+    grid-template-columns: 1fr;
 }
 
 // Basic responsiveness for pages
@@ -347,6 +303,12 @@ a:hover {
     .page {
         grid-template-columns: 1fr;
     }
+}
+
+.pageLogin__illustration {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
 }
 
 // Components

@@ -6,7 +6,9 @@ module Ui.Input.Text exposing
     , setOnBlur
     , setOnInput
     , setPlaceholder
+    , setRequired
     , setTitle
+    , setType
     , setValue
     , view
     )
@@ -26,6 +28,8 @@ type alias Text msg =
     , title : Maybe String
     , error : Maybe String
     , value : Maybe String
+    , type_ : String
+    , required : Bool
     , placeholder : String
     , onInput : Maybe (String -> msg)
     , onBlur : Maybe msg
@@ -40,6 +44,8 @@ init id =
     , error = Nothing
     , value = Nothing
     , placeholder = ""
+    , type_ = "text"
+    , required = True
     , onInput = Nothing
     , onBlur = Nothing
     , attributes = []
@@ -71,6 +77,16 @@ setValue value opts =
     { opts | value = value }
 
 
+setType : String -> Text msg -> Text msg
+setType type_ opts =
+    { opts | type_ = type_ }
+
+
+setRequired : Bool -> Text msg -> Text msg
+setRequired required opts =
+    { opts | required = required }
+
+
 setAttributes : List (H.Attribute msg) -> Text msg -> Text msg
 setAttributes attributes opts =
     { opts | attributes = attributes }
@@ -87,7 +103,7 @@ setOnBlur onBlur opts =
 
 
 view : Text msg -> Html msg
-view { id, title, value, error, placeholder, onInput, onBlur } =
+view { id, title, value, type_, error, placeholder, onInput, required, onBlur } =
     let
         classList =
             [ ( "ui-input-text", True ), ( "ui-input-text--error", error /= Nothing ) ]
@@ -102,6 +118,8 @@ view { id, title, value, error, placeholder, onInput, onBlur } =
                 [ A.type_ "text"
                 , A.id id
                 , A.placeholder placeholder
+                , A.type_ type_
+                , A.required required
                 , A.value <| Maybe.withDefault "" value
                 , A.class "ui-input-text__input"
                 , Html.Attributes.Extra.attributeMaybe (\action -> E.onInput action) onInput

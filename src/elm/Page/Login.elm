@@ -1,5 +1,6 @@
 module Page.Login exposing (Model, Msg, init, subscriptions, update, view)
 
+import Browser.Dom as Dom
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
@@ -7,6 +8,10 @@ import Html.Attributes as A
 import Html.Events as E
 import PageUpdater exposing (PageUpdater)
 import Service.Phone as PhoneService
+import Task
+import Ui.Button as B
+import Ui.Input.Text as T
+import Ui.Section
 import Util.Event as EventUtil
 
 
@@ -17,6 +22,7 @@ type Msg
     | Confirm
     | RequestCode
     | HandleError String
+    | NoOp
 
 
 type alias Model =
@@ -33,14 +39,16 @@ type Step
     | StepConfirm
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    { phone = ""
-    , code = ""
-    , step = StepLogin
-    , error = Nothing
-    , loading = False
-    }
+    ( { phone = ""
+      , code = ""
+      , step = StepLogin
+      , error = Nothing
+      , loading = False
+      }
+    , focusBox (Just "phone")
+    )
 
 
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
@@ -73,139 +81,90 @@ update msg env model =
                 )
 
         RequestCode ->
-            PageUpdater.init
-                { model
+            PageUpdater.fromPair
+                ( { model
                     | step = StepConfirm
                     , code = ""
                     , error = Nothing
                     , loading = False
-                }
+                  }
+                , focusBox (Just "confirmbox")
+                )
 
         HandleError error ->
             PageUpdater.init { model | error = Just error, loading = False }
 
+        NoOp ->
+            PageUpdater.init model
+
+
+focusBox : Maybe String -> Cmd Msg
+focusBox id =
+    id
+        |> Maybe.map (\i -> Task.attempt (\_ -> NoOp) (Dom.focus i))
+        |> Maybe.withDefault Cmd.none
+
 
 view : Environment -> Model -> Html Msg
 view env model =
-    H.div [ A.class "page-login" ] <|
-        case model.step of
+    H.div [ A.class "page page--login" ]
+        [ H.img [ A.src "/static/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
+        , case model.step of
             StepLogin ->
                 viewLogin env model
 
             StepConfirm ->
                 viewConfirm env model
+        ]
 
 
-viewLogin : Environment -> Model -> List (Html Msg)
+viewLogin : Environment -> Model -> Html Msg
 viewLogin env model =
-    [ Icon.wrapper 80 Icon.atb
-    , H.div [ A.class "section-box", A.style "width" "320px" ]
-        [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
-            [ H.text "Logg inn i AtB nettbutikk" ]
-        , textInput model.phone
-            InputPhone
-            Login
-            "Telefonnummer"
-            "Logg inn med telefonnummeret ditt"
-        ]
-    , H.node "atb-login-recaptcha" [] []
-    , button True Login "Logg inn" model.loading
-    , case model.error of
-        Just error ->
-            H.div [] [ H.text error ]
-
-        Nothing ->
-            H.text ""
-    ]
-
-
-viewConfirm : Environment -> Model -> List (Html Msg)
-viewConfirm env model =
-    [ H.div [ A.class "section-box", A.style "width" "320px" ]
-        [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ]
-            [ H.text <| "Vi har sendt et engangspassord til " ++ model.phone ++ ", vennligst skriv det inn nedenfor." ]
-        , textInput model.code
-            InputCode
-            Confirm
-            "Engangspassord"
-            "Skriv inn engangspassordet"
-        ]
-    , H.node "atb-login-recaptcha" [] []
-    , button True Confirm "Logg inn" model.loading
-    , case model.error of
-        Just error ->
-            H.div [] [ H.text error ]
-
-        Nothing ->
-            H.text ""
-    ]
-
-
-button : Bool -> msg -> String -> Bool -> Html msg
-button primary action title loading =
-    H.div
-        (A.classList
-            [ ( "button", primary )
-            , ( "no-button", not primary )
-            ]
-            :: (if loading then
-                    []
-
-                else
-                    [ E.onClick action ]
-               )
-        )
-        [ H.div [] [ H.text title ]
-        , if loading then
-            H.span [ A.class "button-loading" ] []
-
-          else
-            Icon.rightArrow
-        ]
-
-
-textInput : String -> (String -> msg) -> msg -> String -> String -> Html msg
-textInput value action enterAction title placeholder =
-    H.div []
-        [ H.div
-            [ A.style "font-weight" "400"
-            , A.style "font-size" "12px"
-            , A.style "margin-bottom" "10px"
-            ]
-            [ H.text title ]
-        , H.div []
-            [ H.input
-                [ A.type_ "text"
-                , A.placeholder placeholder
-                , E.onInput action
-                , EventUtil.onEnter enterAction
-                , A.value value
+    H.form [ E.onSubmit Login ]
+        [ Ui.Section.view
+            [ Ui.Section.viewHeader "Logg inn i AtB nettbutikk"
+            , Ui.Section.viewItem
+                [ T.init "phone"
+                    |> T.setValue (Just model.phone)
+                    |> T.setOnInput (Just InputPhone)
+                    |> T.setError model.error
+                    |> T.setType "tel"
+                    |> T.setRequired True
+                    |> T.setTitle (Just "Telefonnummer")
+                    |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
+                    |> T.view
                 ]
-                []
+            , B.init "Send engangspassord"
+                |> B.setIcon (Just Icon.rightArrow)
+                |> B.setOnClick (Just Login)
+                |> B.setType "submit"
+                |> B.primary B.Primary_2
             ]
+        , H.node "atb-login-recaptcha" [] []
         ]
 
 
-consent : String -> Bool -> (Bool -> msg) -> String -> Html msg
-consent id value action title =
-    H.div [ A.class "consent" ]
-        [ H.div [] [ H.text title ]
-        , toggle id value action
-        ]
-
-
-toggle : String -> Bool -> (Bool -> msg) -> Html msg
-toggle id value action =
-    H.div []
-        [ H.input [ A.id id, A.type_ "checkbox", A.checked value, E.onCheck action ] []
-        , H.label [ A.for id, A.class "toggle" ]
-            [ case value of
-                True ->
-                    Icon.toggleOn
-
-                False ->
-                    Icon.toggleOff
+viewConfirm : Environment -> Model -> Html Msg
+viewConfirm env model =
+    H.form [ E.onSubmit Confirm ]
+        [ Ui.Section.view
+            [ Ui.Section.viewPaddedItem [ H.p [] [ H.text ("Vi har sendt et engangspassord til " ++ model.phone) ] ]
+            , Ui.Section.viewItem
+                [ T.init "confirmbox"
+                    |> T.setValue (Just model.code)
+                    |> T.setOnInput (Just InputCode)
+                    |> T.setError model.error
+                    |> T.setTitle (Just "Engangspassord")
+                    |> T.setPlaceholder "Skriv inn engangspassordet"
+                    |> T.view
+                ]
+            , B.init "Logg inn"
+                |> B.setIcon (Just Icon.rightArrow)
+                |> B.setOnClick (Just Confirm)
+                |> B.setType "submit"
+                |> B.primary B.Primary_2
             ]
+        , H.node "atb-login-recaptcha" [] []
         ]
 
 
@@ -215,35 +174,3 @@ subscriptions _ =
         [ PhoneService.onRequestCode RequestCode
         , PhoneService.onError HandleError
         ]
-
-
-
--- INTERNAL
--- INTERNAL COMPONENTS
-
-
-actionButton : msg -> String -> Html msg
-actionButton action title =
-    H.div [] [ H.button [ A.class "action-button", E.onClick action ] [ H.text title ] ]
-
-
-richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
-richActionButton active maybeAction content =
-    let
-        baseAttributes =
-            [ A.classList
-                [ ( "active", active )
-                , ( "pseudo-button", maybeAction /= Nothing )
-                , ( "pseudo-button-disabled", maybeAction == Nothing )
-                ]
-            ]
-
-        attributes =
-            case maybeAction of
-                Just action ->
-                    E.onClick action :: baseAttributes
-
-                Nothing ->
-                    baseAttributes
-    in
-        H.div attributes [ content ]

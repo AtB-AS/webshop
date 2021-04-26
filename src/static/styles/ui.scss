@@ -74,11 +74,21 @@
 .ui-section--marginBottom {
     margin-bottom: var(--spacings-xLarge);
 }
-.ui-section__item {
+.ui-section__paddedItem {
     padding: var(--spacings-xLarge);
     flex: 1;
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
+}
+.ui-section__item {
+    flex: 1;
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+    display: grid;
+    gap: var(--spacings-medium);
+}
+.ui-section__item--padded {
+    padding: var(--spacings-xLarge);
 }
 .ui-section__item__label {
     margin-bottom: var(--spacings-medium);

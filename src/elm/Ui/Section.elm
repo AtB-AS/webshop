@@ -2,9 +2,10 @@ module Ui.Section exposing
     ( Section
     , sectionWithOptions
     , view
-    , viewGenericItem
     , viewHeader
+    , viewItem
     , viewLabelItem
+    , viewPaddedItem
     )
 
 import Html as H exposing (Html)
@@ -41,14 +42,19 @@ view =
     sectionWithOptions { marginTop = False, marginBottom = False }
 
 
-viewGenericItem : List (Html msg) -> Html msg
-viewGenericItem =
+viewPaddedItem : List (Html msg) -> Html msg
+viewPaddedItem =
+    H.div [ A.class "ui-section__item ui-section__item--padded" ]
+
+
+viewItem : List (Html msg) -> Html msg
+viewItem =
     H.div [ A.class "ui-section__item" ]
 
 
 viewLabelItem : String -> List (Html msg) -> Html msg
 viewLabelItem label children =
-    H.div [ A.class "ui-section__item" ]
+    viewPaddedItem
         (H.div [ A.class "ui-section__item__label" ]
             [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
             ]
@@ -58,7 +64,7 @@ viewLabelItem label children =
 
 viewHeader : String -> Html msg
 viewHeader title =
-    viewGenericItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
+    viewPaddedItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
 
 
 internalItem : List (Html msg) -> Html msg
