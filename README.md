@@ -28,6 +28,12 @@ release:
 
 > https://github.com/mjenssen/elm-format/releases/latest
 
+It can also be installed with `yarn`:
+
+```sh
+$ yarn global add @atb-as/elm-format
+```
+
 This is to ensure that `let-in` expressions are correctly indented.
 
 ## Production
