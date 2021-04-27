@@ -40,6 +40,9 @@ button {
 }
 .app {
     position: relative;
+    background: url('/static/images/background-illustration.svg') no-repeat
+        center top;
+    background-size: cover;
 }
 .content {
     position: relative;
