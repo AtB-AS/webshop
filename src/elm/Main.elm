@@ -399,22 +399,24 @@ view model =
             _ ->
                 H.div [ A.class "light container" ]
                     [ header model
-                    , case model.environment.customerId of
-                        Just _ ->
-                            H.main_ [ A.class "app" ]
-                                [ Ui.GlobalNotifications.notifications model.notifications
-                                , H.div [ A.class "content" ] [ viewPage model ]
-                                ]
-
-                        Nothing ->
-                            case model.onboarding of
-                                Just onboarding ->
-                                    OnboardingPage.view model.environment onboarding
-                                        |> H.map OnboardingMsg
+                    , H.main_ [ A.class "app" ]
+                        [ Ui.GlobalNotifications.notifications model.notifications
+                        , H.div [ A.class "content" ]
+                            [ case model.environment.customerId of
+                                Just _ ->
+                                    viewPage model
 
                                 Nothing ->
-                                    LoginPage.view model.environment model.login
-                                        |> H.map LoginMsg
+                                    case model.onboarding of
+                                        Just onboarding ->
+                                            OnboardingPage.view model.environment onboarding
+                                                |> H.map OnboardingMsg
+
+                                        Nothing ->
+                                            LoginPage.view model.environment model.login
+                                                |> H.map LoginMsg
+                            ]
+                        ]
                     ]
         ]
 

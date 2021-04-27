@@ -398,6 +398,12 @@ app.ports.phoneLogin.subscribe((phone) => {
 
             if (error && error.code === 'auth/invalid-phone-number') {
                 app.ports.phoneError.send('Ugyldig telefonnummer.');
+            } else if (error && error.code === 'auth/too-many-requests') {
+                app.ports.phoneError.send(
+                    'Du har prøvd å logge inn for mange ganger uten hell. Vent noen minutter og prøv igjen.'
+                );
+            } else if (error.message) {
+                app.ports.phoneError.send(error.message);
             } else {
                 app.ports.phoneError.send('En ukjent feil oppstod.');
             }
@@ -434,6 +440,8 @@ app.ports.phoneConfirm.subscribe((code) => {
                 app.ports.phoneError.send(
                     'Engangspassordet har utløpt. Vennligst prøv på nytt eler be om et nytt engangspassord.'
                 );
+            } else if (error.message) {
+                app.ports.phoneError.send(error.message);
             } else {
                 app.ports.phoneError.send('En ukjent feil oppstod.');
             }

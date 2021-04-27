@@ -86,7 +86,7 @@ textContainer color msg =
         ( class, children ) =
             toClassChildrenPair msg color
     in
-        H.div [ A.class class ] children
+        H.span [ A.class class ] children
 
 
 primary : List (Html msg) -> Html msg

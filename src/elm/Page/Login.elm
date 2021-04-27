@@ -3,22 +3,25 @@ module Page.Login exposing (Model, Msg, init, subscriptions, update, view)
 import Browser.Dom as Dom
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
+import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.Phone as PhoneService
 import Task
 import Ui.Button as B
 import Ui.Input.Text as T
+import Ui.Message as Message
 import Ui.Section
-import Util.Event as EventUtil
 
 
 type Msg
     = InputPhone String
     | InputCode String
     | Login
+    | Resend
     | Confirm
     | RequestCode
     | HandleError String
@@ -52,7 +55,7 @@ init =
 
 
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
-update msg env model =
+update msg _ model =
     case msg of
         InputPhone value ->
             PageUpdater.init { model | phone = value }
@@ -61,18 +64,17 @@ update msg env model =
             PageUpdater.init { model | code = value }
 
         Login ->
-            let
-                fullPhone =
-                    if String.startsWith "+" model.phone then
-                        model.phone
+            updateLogin model
 
-                    else
-                        "+47" ++ model.phone
-            in
-                PageUpdater.fromPair
-                    ( { model | loading = True }
-                    , PhoneService.phoneLogin fullPhone
-                    )
+        Resend ->
+            updateLogin model
+                |> ("Sendt ny forespørsel etter engangspassord."
+                        |> Message.Valid
+                        |> Message.message
+                        |> (\s -> Notification.setContent s Notification.init)
+                        |> GA.ShowNotification
+                        |> PageUpdater.addGlobalAction
+                   )
 
         Confirm ->
             PageUpdater.fromPair
@@ -98,6 +100,22 @@ update msg env model =
             PageUpdater.init model
 
 
+updateLogin : Model -> PageUpdater Model Msg
+updateLogin model =
+    let
+        fullPhone =
+            if String.startsWith "+" model.phone then
+                model.phone
+
+            else
+                "+47" ++ model.phone
+    in
+        PageUpdater.fromPair
+            ( { model | loading = True }
+            , PhoneService.phoneLogin fullPhone
+            )
+
+
 focusBox : Maybe String -> Cmd Msg
 focusBox id =
     id
@@ -115,11 +133,12 @@ view env model =
 
             StepConfirm ->
                 viewConfirm env model
+        , H.node "atb-login-recaptcha" [] []
         ]
 
 
 viewLogin : Environment -> Model -> Html Msg
-viewLogin env model =
+viewLogin _ model =
     H.form [ E.onSubmit Login ]
         [ Ui.Section.view
             [ Ui.Section.viewHeader "Logg inn i AtB nettbutikk"
@@ -140,12 +159,11 @@ viewLogin env model =
                 |> B.setType "submit"
                 |> B.primary B.Primary_2
             ]
-        , H.node "atb-login-recaptcha" [] []
         ]
 
 
 viewConfirm : Environment -> Model -> Html Msg
-viewConfirm env model =
+viewConfirm _ model =
     H.form [ E.onSubmit Confirm ]
         [ Ui.Section.view
             [ Ui.Section.viewPaddedItem [ H.p [] [ H.text ("Vi har sendt et engangspassord til " ++ model.phone) ] ]
@@ -164,7 +182,10 @@ viewConfirm env model =
                 |> B.setType "submit"
                 |> B.primary B.Primary_2
             ]
-        , H.node "atb-login-recaptcha" [] []
+        , B.init "Send engangspassord på nytt"
+            |> B.setOnClick (Just Resend)
+            |> B.setType "button"
+            |> B.link
         ]
 
 
