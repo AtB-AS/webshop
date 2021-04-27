@@ -116,18 +116,19 @@ app.ports.signInHandler.subscribe((provider_id) => {
         });
 });
 
-app.ports.signOutHandler.subscribe(() => {
+app.ports.signOutHandler.subscribe(async () => {
     clearRefreshToken();
 
-    console.log('setting loggedIn');
-    localStorage['loggedIn'] = '';
-
-    if (typeof fareContractSnapshotCallback === 'function') {
-        fareContractSnapshotCallback();
-        fareContractSnapshotCallback = null;
+    try {
+        await firebase.auth().signOut();
+        localStorage.removeItem('loggedIn');
+        if (typeof fareContractSnapshotCallback === 'function') {
+            fareContractSnapshotCallback();
+            fareContractSnapshotCallback = null;
+        }
+    } catch (e) {
+        console.error('[debug] Unable to logout: ', e);
     }
-
-    firebase.auth().signOut();
 });
 
 // Use device language
@@ -268,53 +269,46 @@ function loadFareContracts(accountId) {
     const basePath = `customers/${accountId}`;
     const tokenPath = `${basePath}/fareContracts`;
 
-    try {
-        fareContractSnapshotCallback = db
-            .collection(tokenPath)
-            .onSnapshot((docs) => {
-                const fareContracts = [];
+    fareContractSnapshotCallback = db.collection(tokenPath).onSnapshot(
+        (docs) => {
+            const fareContracts = [];
 
-                docs.forEach((doc) => {
-                    const payload = doc.data();
+            docs.forEach((doc) => {
+                const payload = doc.data();
 
-                    if (payload) {
-                        // Transform firebase time fields to something we can use
-                        payload.created = convert_time(payload.created);
-                        payload.travelRights = payload.travelRights.map(
-                            (right) => {
-                                right.startDateTime = convert_time(
-                                    right.startDateTime
-                                );
-                                right.endDateTime = convert_time(
-                                    right.endDateTime
-                                );
-                                return right;
-                            }
-                        );
-                        payload.validFrom =
-                            Math.min.apply(
-                                null,
-                                payload.travelRights.map(
-                                    (x) => x.startDateTime.timestamp
-                                )
-                            ) || 0;
-                        payload.validTo =
-                            Math.max.apply(
-                                null,
-                                payload.travelRights.map(
-                                    (x) => x.endDateTime.timestamp
-                                )
-                            ) || 0;
+                if (payload) {
+                    // Transform firebase time fields to something we can use
+                    payload.created = convert_time(payload.created);
+                    payload.travelRights = payload.travelRights.map((right) => {
+                        right.startDateTime = convert_time(right.startDateTime);
+                        right.endDateTime = convert_time(right.endDateTime);
+                        return right;
+                    });
+                    payload.validFrom =
+                        Math.min.apply(
+                            null,
+                            payload.travelRights.map(
+                                (x) => x.startDateTime.timestamp
+                            )
+                        ) || 0;
+                    payload.validTo =
+                        Math.max.apply(
+                            null,
+                            payload.travelRights.map(
+                                (x) => x.endDateTime.timestamp
+                            )
+                        ) || 0;
 
-                        fareContracts.push(payload);
-                    }
-                });
-
-                app.ports.receiveFareContracts.send(fareContracts);
+                    fareContracts.push(payload);
+                }
             });
-    } catch (e) {
-        console.error('Error when retrieving fare contracts for user', e);
-    }
+
+            app.ports.receiveFareContracts.send(fareContracts);
+        },
+        function (e) {
+            console.error('Error when retrieving fare contracts for user', e);
+        }
+    );
 }
 
 app.ports.onboardingDone.subscribe(() => {
