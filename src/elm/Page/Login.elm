@@ -155,7 +155,6 @@ viewLogin _ model =
                 ]
             , B.init "Send engangspassord"
                 |> B.setIcon (Just Icon.rightArrow)
-                |> B.setOnClick (Just Login)
                 |> B.setType "submit"
                 |> B.primary B.Primary_2
             ]
@@ -178,7 +177,6 @@ viewConfirm _ model =
                 ]
             , B.init "Logg inn"
                 |> B.setIcon (Just Icon.rightArrow)
-                |> B.setOnClick (Just Confirm)
                 |> B.setType "submit"
                 |> B.primary B.Primary_2
             ]
