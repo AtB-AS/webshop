@@ -144,7 +144,7 @@ view env model =
             StepConfirm ->
                 PH.init |> PH.setBackButton ( E.onClick BackLogin, "Avbryt" ) |> PH.view |> List.singleton |> H.div [ A.class "pageLogin__header" ]
         , H.div [ A.class "page page--login" ]
-            [ H.img [ A.src "/static/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
+            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
             , case model.step of
                 StepLogin ->
                     viewLogin env model

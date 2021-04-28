@@ -292,6 +292,10 @@ const commonConfig = {
             {
                 from: 'src/static/icon.svg',
                 to: 'icon.svg'
+            },
+            {
+                from: 'src/static/images',
+                to: 'images'
             }
         ]),
         new webpack.DefinePlugin({
