@@ -9,6 +9,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Notification
 import PageUpdater exposing (PageUpdater)
+import Service.FirebaseAuth as FirebaseAuth
 import Service.Phone as PhoneService
 import Task
 import Ui.Button as B
@@ -25,6 +26,7 @@ type Msg
     | Confirm
     | RequestCode
     | HandleError String
+    | LoggedIn
     | NoOp
 
 
@@ -65,6 +67,9 @@ update msg _ model =
 
         Login ->
             updateLogin model
+
+        LoggedIn ->
+            PageUpdater.init (Tuple.first init)
 
         Resend ->
             updateLogin model
@@ -141,7 +146,8 @@ viewLogin : Environment -> Model -> Html Msg
 viewLogin _ model =
     H.form [ E.onSubmit Login ]
         [ Ui.Section.view
-            [ Ui.Section.viewHeader "Logg inn i AtB nettbutikk"
+            [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
+            , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Da oppretter vi den automatisk for deg når du skriver inn telefonnummer og velger ", H.strong [] [ H.text "Logg inn." ] ] ]
             , Ui.Section.viewItem
                 [ T.init "phone"
                     |> T.setValue (Just model.phone)
@@ -192,4 +198,5 @@ subscriptions _ =
     Sub.batch
         [ PhoneService.onRequestCode RequestCode
         , PhoneService.onError HandleError
+        , FirebaseAuth.signInInfo (\_ -> LoggedIn)
         ]
