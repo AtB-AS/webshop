@@ -157,7 +157,7 @@ init flags url navKey =
             Route.fromUrl url
 
         userData =
-            if Debug.log "foo" flags.loggedIn then
+            if flags.loggedIn then
                 Loading Nothing
 
             else
