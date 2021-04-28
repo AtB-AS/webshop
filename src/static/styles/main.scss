@@ -14,7 +14,7 @@
 
 html,
 body {
-    height: 100%;
+    min-height: 100vh;
 }
 
 body {
@@ -32,6 +32,8 @@ button {
 
 .container {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     color: var(--colors-background_1-color);
     background-color: var(--colors-background_1-backgroundColor);
 
@@ -39,6 +41,7 @@ button {
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
 .app {
+    flex: 1;
     position: relative;
     background: url('/static/images/background-illustration.svg') no-repeat
         center top;
@@ -78,7 +81,6 @@ p {
     background-color: var(--primary-2);
 
     display: flex;
-    flex: 1;
     color: white;
 
     > span {
