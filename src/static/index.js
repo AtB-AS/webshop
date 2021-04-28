@@ -354,17 +354,11 @@ if (app.ports.convertTime) {
 window.customElements.define(
     'atb-login-recaptcha',
     class extends HTMLElement {
-        constructor() {
-            super();
-
+        connectedCallback() {
             const recaptcha = document.createElement('div');
             recaptcha.setAttribute('id', 'atb-login-recaptcha');
             this.appendChild(recaptcha);
-        }
 
-        // Callbacks
-
-        connectedCallback() {
             window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
                 'atb-login-recaptcha',
                 {
