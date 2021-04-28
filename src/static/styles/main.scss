@@ -290,6 +290,9 @@ p {
         background: inherit;
     }
 }
+.page > :only-child {
+    grid-column: 1/-1;
+}
 .page--login {
     width: 22.5rem;
     margin: 3.25rem auto;
