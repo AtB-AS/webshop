@@ -32,7 +32,10 @@ console.log('Atb-Install-Id:', installId);
 
 firebase.initializeApp(firebaseConfig);
 
-let fareContractSnapshotCallback = null;
+// Closure data for unsubscribing on changes.
+let unsubscribeFareContractSnapshot = null;
+let unsubscribeFetchUserDataSnapshot = null;
+
 let onboardingUser = null;
 const db = firebase.firestore();
 const remoteConfig = firebase.remoteConfig();
@@ -122,10 +125,12 @@ app.ports.signOutHandler.subscribe(async () => {
     try {
         await firebase.auth().signOut();
         localStorage.removeItem('loggedIn');
-        if (typeof fareContractSnapshotCallback === 'function') {
-            fareContractSnapshotCallback();
-            fareContractSnapshotCallback = null;
-        }
+
+        unsubscribeFareContractSnapshot && unsubscribeFareContractSnapshot();
+        unsubscribeFareContractSnapshot = null;
+
+        unsubscribeFetchUserDataSnapshot && unsubscribeFetchUserDataSnapshot();
+        unsubscribeFetchUserDataSnapshot = null;
     } catch (e) {
         console.error('[debug] Unable to logout: ', e);
     }
@@ -136,6 +141,7 @@ firebase.auth().useDeviceLanguage();
 
 // Observer on user info
 firebase.auth().onAuthStateChanged((user) => {
+    console.log('auth state change');
     if (user) {
         fetchAuthInfo(user);
     }
@@ -177,71 +183,75 @@ function enqueueRefreshToken(user, expirationString) {
     refreshTokenTimer = setTimeout(fetchAuthInfo.bind(null, user), refreshTime);
 }
 
-function fetchAuthInfo(user) {
+async function fetchAuthInfo(user) {
     clearRefreshToken();
+    // Unsubscribe previous listener.
+    unsubscribeFetchUserDataSnapshot && unsubscribeFetchUserDataSnapshot();
+    console.log('[debug] fetching auth info');
 
-    user.getIdTokenResult(true)
-        .then((idToken) => {
-            if (
-                !idToken ||
-                !idToken.claims ||
-                !idToken.claims['sub'] ||
-                typeof idToken.claims['sub'] !== 'string'
-            ) {
-                // Start onboarding process
-                onboardingUser = user;
-                app.ports.onboardingStart.send(idToken.token);
-            } else {
-                const accountId = idToken.claims['sub'];
-                const email = user.email || '';
-                const phone = user.phoneNumber || '';
-                const provider = idToken.signInProvider || '';
-                console.log('inside fetch auth info');
+    try {
+        const idToken = await user.getIdTokenResult(true);
 
-                enqueueRefreshToken(user, idToken.expirationTime);
+        if (
+            !idToken ||
+            !idToken.claims ||
+            !idToken.claims['sub'] ||
+            typeof idToken.claims['sub'] !== 'string'
+        ) {
+            // Start onboarding process
+            onboardingUser = user;
+            app.ports.onboardingStart.send(idToken.token);
+        } else {
+            const accountId = idToken.claims['sub'];
+            const email = user.email || '';
+            const phone = user.phoneNumber || '';
+            const provider = idToken.signInProvider || '';
+            console.log('inside fetch auth info');
 
-                localStorage['loggedIn'] = 'loggedIn';
+            enqueueRefreshToken(user, idToken.expirationTime);
 
-                db.collection('customers')
-                    .doc(accountId)
-                    .onSnapshot((doc) => {
-                        const profile = doc.data();
+            localStorage.setItem('loggedIn', 'loggedIn');
 
-                        if (!profile) {
-                            onboardingUser = user;
-                            app.ports.onboardingStart.send([
-                                idToken.token,
-                                email,
-                                phone
-                            ]);
-                        } else {
-                            app.ports.signInInfo.send({
-                                token: idToken.token,
-                                email: email,
-                                phone: phone,
-                                uid: accountId,
-                                provider: provider
-                            });
+            unsubscribeFetchUserDataSnapshot = db
+                .collection('customers')
+                .doc(accountId)
+                .onSnapshot((doc) => {
+                    const profile = doc.data();
 
-                            if (
-                                typeof profile.travelcard === 'object' &&
-                                profile.travelcard !== null
-                            ) {
-                                profile.travelcard.expires = convert_time(
-                                    profile.travelcard.expires
-                                );
-                            }
+                    if (!profile) {
+                        onboardingUser = user;
+                        app.ports.onboardingStart.send([
+                            idToken.token,
+                            email,
+                            phone
+                        ]);
+                    } else {
+                        app.ports.signInInfo.send({
+                            token: idToken.token,
+                            email: email,
+                            phone: phone,
+                            uid: accountId,
+                            provider: provider
+                        });
 
-                            app.ports.firestoreReadProfile.send(profile);
-
-                            loadFareContracts(accountId);
+                        if (
+                            typeof profile.travelcard === 'object' &&
+                            profile.travelcard !== null
+                        ) {
+                            profile.travelcard.expires = convert_time(
+                                profile.travelcard.expires
+                            );
                         }
-                    });
-            }
-        })
-        .catch((error) => {
-            console.log('Error when retrieving cached user', error);
-        });
+
+                        app.ports.firestoreReadProfile.send(profile);
+
+                        loadFareContracts(accountId);
+                    }
+                });
+        }
+    } catch (error) {
+        console.log('Error when retrieving cached user', error);
+    }
 }
 
 // Convert a Firebase Time type to something that's easier to work with.
@@ -268,8 +278,11 @@ function convert_time(firebaseTime) {
 function loadFareContracts(accountId) {
     const basePath = `customers/${accountId}`;
     const tokenPath = `${basePath}/fareContracts`;
+    unsubscribeFareContractSnapshot && unsubscribeFareContractSnapshot();
 
-    fareContractSnapshotCallback = db.collection(tokenPath).onSnapshot(
+    console.log('[debug] fetching fare contracts');
+
+    unsubscribeFareContractSnapshot = db.collection(tokenPath).onSnapshot(
         (docs) => {
             const fareContracts = [];
 
