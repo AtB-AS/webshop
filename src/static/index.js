@@ -124,7 +124,6 @@ app.ports.signOutHandler.subscribe(async () => {
 
     try {
         await firebase.auth().signOut();
-        localStorage.removeItem('loggedIn');
 
         unsubscribeFareContractSnapshot && unsubscribeFareContractSnapshot();
         unsubscribeFareContractSnapshot = null;
@@ -133,6 +132,8 @@ app.ports.signOutHandler.subscribe(async () => {
         unsubscribeFetchUserDataSnapshot = null;
     } catch (e) {
         console.error('[debug] Unable to logout: ', e);
+    } finally {
+        localStorage.removeItem('loggedIn');
     }
 });
 
