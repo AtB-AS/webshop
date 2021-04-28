@@ -527,6 +527,9 @@ errorToString error =
                 500 ->
                     "Det skjedde en feil med tjenesten. Prøv igjen senere."
 
+                409 ->
+                    "Dette t:kortet eksisterer ikke eller er allerede registrert."
+
                 400 ->
                     case WebshopService.travelCardErrorDecoder body of
                         Ok errorMessage ->
