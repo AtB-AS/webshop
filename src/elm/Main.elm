@@ -25,7 +25,7 @@ import Service.Misc as MiscService
 import Shared exposing (Shared)
 import Time
 import Ui.GlobalNotifications
-import Ui.Heading
+import Ui.PageHeader as PH
 import Url exposing (Url)
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -483,7 +483,7 @@ viewPage model =
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ Ui.Heading.page title "Oversikt"
+        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( Route.Home, "Oversikt" ) |> PH.view
         , children
         ]
 

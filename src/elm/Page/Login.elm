@@ -7,6 +7,7 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.FirebaseAuth as FirebaseAuth
@@ -15,6 +16,7 @@ import Task
 import Ui.Button as B
 import Ui.Input.Text as T
 import Ui.Message as Message
+import Ui.PageHeader as PH
 import Ui.Section
 
 
@@ -24,6 +26,7 @@ type Msg
     | Login
     | Resend
     | Confirm
+    | BackLogin
     | RequestCode
     | HandleError String
     | LoggedIn
@@ -64,6 +67,9 @@ update msg _ model =
 
         InputCode value ->
             PageUpdater.init { model | code = value }
+
+        BackLogin ->
+            PageUpdater.init { model | step = StepLogin }
 
         Login ->
             updateLogin model
@@ -130,15 +136,23 @@ focusBox id =
 
 view : Environment -> Model -> Html Msg
 view env model =
-    H.div [ A.class "page page--login" ]
-        [ H.img [ A.src "/static/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
-        , case model.step of
+    H.div []
+        [ case model.step of
             StepLogin ->
-                viewLogin env model
+                Html.Extra.nothing
 
             StepConfirm ->
-                viewConfirm env model
-        , H.node "atb-login-recaptcha" [] []
+                PH.init |> PH.setBackButton ( E.onClick BackLogin, "Avbryt" ) |> PH.view |> List.singleton |> H.div [ A.class "pageLogin__header" ]
+        , H.div [ A.class "page page--login" ]
+            [ H.img [ A.src "/static/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
+            , case model.step of
+                StepLogin ->
+                    viewLogin env model
+
+                StepConfirm ->
+                    viewConfirm env model
+            , H.node "atb-login-recaptcha" [] []
+            ]
         ]
 
 

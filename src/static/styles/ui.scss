@@ -176,7 +176,8 @@
     margin: 0;
     padding: 0;
 }
-.ui-heading-page {
+
+.ui-pageHeader {
     display: flex;
     flex-wrap: wrap;
     padding: var(--spacings-xLarge);
@@ -184,9 +185,9 @@
     justify-content: center;
     margin-bottom: var(--spacings-xLarge);
 }
-.ui-heading-page__back:link,
-.ui-heading-page__back:visited,
-.ui-heading-page__back:hover {
+.ui-pageHeader__back,
+.ui-pageHeader__back:link,
+.ui-pageHeader__back:visited {
     position: absolute;
     left: 0;
     top: 0;
@@ -195,14 +196,18 @@
     text-decoration: none;
     transition: opacity 150ms ease-in;
 
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
     svg {
         margin-right: var(--spacings-medium);
     }
 }
-.ui-heading-page__back:hover {
+.ui-pageHeader__back:hover {
     opacity: 0.6;
 }
-.ui-heading-page__back:active {
+.ui-pageHeader__back:active {
     opacity: 0.5;
 }
 @media (max-width: 600px) {

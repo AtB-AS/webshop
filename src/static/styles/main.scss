@@ -281,7 +281,6 @@ p {
     display: grid;
     grid-gap: var(--spacings-xLarge);
     grid-template-columns: 2fr 1fr;
-
     input[type='time'],
     input[type='date'] {
         box-shadow: none;
@@ -294,7 +293,7 @@ p {
     grid-column: 1/-1;
 }
 .page--login {
-    width: 22.5rem;
+    max-width: 22.5rem;
     margin: 3.25rem auto;
     grid-template-columns: 1fr;
 }
@@ -313,6 +312,11 @@ p {
     }
 }
 
+.pageLogin__header {
+    position: absolute;
+    width: 100%;
+    top: var(--spacings-xLarge);
+}
 .pageLogin__illustration {
     display: block;
     margin: 0 auto;
