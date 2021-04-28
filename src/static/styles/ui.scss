@@ -293,6 +293,7 @@
     display: flex;
     flex: 1;
     cursor: pointer;
+    margin: 0;
 
     border: var(--border-width-medium) solid transparent;
     // Remove border from padding.
