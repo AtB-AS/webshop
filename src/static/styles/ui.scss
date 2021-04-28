@@ -168,6 +168,7 @@
 }
 .ui-heading-page {
     display: flex;
+    flex-wrap: wrap;
     padding: var(--spacings-xLarge);
     position: relative;
     justify-content: center;
@@ -188,8 +189,26 @@
         margin-right: var(--spacings-medium);
     }
 }
-.ui-heading-page__back:active {
+.ui-heading-page__back:hover {
     opacity: 0.6;
+}
+.ui-heading-page__back:active {
+    opacity: 0.5;
+}
+@media (max-width: 600px) {
+    .ui-heading {
+        width: 100%;
+        text-align: center;
+    }
+    .ui-heading-page {
+        padding: 0;
+        justify-content: flex-start;
+    }
+    .ui-heading-page__back:link,
+    .ui-heading-page__back:visited,
+    .ui-heading-page__back:hover {
+        position: relative;
+    }
 }
 
 .ui-input-radio {
