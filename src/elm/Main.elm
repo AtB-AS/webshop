@@ -6,9 +6,10 @@ import Browser.Navigation as Nav
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
-import GlobalActions as GA exposing (GlobalAction)
+import GlobalActions as GA exposing (GlobalAction(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Events as E
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
@@ -102,7 +103,7 @@ setRoute maybeRoute model =
     , case maybeRoute of
         Just Route.Shop ->
             if model.shop == Nothing then
-                TaskUtil.doTask <| RouteTo Route.Home
+                TaskUtil.doTask <| GlobalAction GA.OpenShop
 
             else
                 Cmd.none
@@ -258,7 +259,7 @@ update msg model =
             )
 
         UrlChanged url ->
-            setRoute (Route.fromUrl url) model
+            setRoute (Route.fromUrl (Debug.log "UrlCHanged" url)) model
 
         UrlRequested urlRequest ->
             case urlRequest of
@@ -425,7 +426,29 @@ view model =
 
 header : Model -> Html Msg
 header _ =
-    H.header [ A.class "pageHeader" ] [ Icon.atb ]
+    let
+        links =
+            [ ( "Kjøp billett", Route.Shop )
+            , ( "Kjøpshistorikk", Route.History )
+            , ( "Min profil", Route.Settings )
+            ]
+    in
+        H.header [ A.class "pageHeader" ]
+            [ H.div [ A.class "pageHeader__content" ]
+                [ H.h1 [ A.class "pageHeader__logo" ]
+                    [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
+                    ]
+                , H.nav [ A.class "pageHeader__nav" ]
+                    [ H.ul []
+                        (List.map (\( name, route ) -> H.li [] [ H.a [ Route.href route ] [ H.text name ] ]) links
+                            ++ [ H.li []
+                                    [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
+                                    ]
+                               ]
+                        )
+                    ]
+                ]
+            ]
 
 
 {-| Always show error box, but offset to top and position absolute to animate in/out
