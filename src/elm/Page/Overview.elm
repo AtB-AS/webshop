@@ -201,6 +201,16 @@ viewAccountInfo shared _ =
                 |> B.setIcon (Just Icon.edit)
                 |> B.setOnClick (Just OpenSettings)
                 |> B.tertiary
+            , case Util.Maybe.flatMap .travelCard shared.profile of
+                Just _ ->
+                    Html.Extra.nothing
+
+                _ ->
+                    B.init "Legg til t:kort "
+                        |> B.setDisabled False
+                        |> B.setIcon (Just Icon.travelCard)
+                        |> B.setOnClick (Just OpenSettings)
+                        |> B.tertiary
             ]
 
 
