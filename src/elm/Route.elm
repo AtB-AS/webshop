@@ -1,5 +1,6 @@
 module Route exposing
     ( Route(..)
+    , SettingsRoute(..)
     , fromUrl
     , href
     , modifyUrl
@@ -8,18 +9,32 @@ module Route exposing
     )
 
 import Browser.Navigation as Nav
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute)
 import Html.Attributes as A
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
+
+
+type SettingsRoute
+    = Overview
+    | EditTravelCard
 
 
 type Route
     = Home
     | Shop
     | History
-    | Settings
+    | Settings SettingsRoute
     | NotFound
+
+
+settings : Parser (SettingsRoute -> a) a
+settings =
+    s "settings"
+        </> oneOf
+                [ Parser.map Overview Parser.top
+                , Parser.map EditTravelCard (s "travelCard")
+                ]
 
 
 parser : Parser (Route -> a) a
@@ -28,7 +43,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
         , Parser.map History <| s "history"
-        , Parser.map Settings <| s "settings"
+        , Parser.map Settings settings
         ]
 
 
@@ -46,8 +61,11 @@ routeToString page =
                 History ->
                     [ "history" ]
 
-                Settings ->
+                Settings Overview ->
                     [ "settings" ]
+
+                Settings EditTravelCard ->
+                    [ "settings", "travelCard" ]
 
                 NotFound ->
                     [ "not-found" ]
@@ -76,12 +94,11 @@ newUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl url =
-    case url.fragment of
-        Just fragment ->
-            { url | path = fragment, fragment = Nothing }
+    Maybe.andThen
+        (\fragment ->
+            { url | path = Debug.log "fragment" fragment, fragment = Nothing }
                 |> Parser.parse parser
                 |> Maybe.withDefault NotFound
                 |> Just
-
-        Nothing ->
-            Nothing
+        )
+        url.fragment

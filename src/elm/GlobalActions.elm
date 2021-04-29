@@ -14,6 +14,7 @@ type GlobalAction msg
     | OpenShop
     | CloseShop
     | SetPendingOrder String
+    | FocusItem (Maybe String)
     | Logout
 
 
@@ -40,3 +41,6 @@ map f ga =
 
         Logout ->
             Logout
+
+        FocusItem id ->
+            FocusItem id

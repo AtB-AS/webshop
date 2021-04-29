@@ -38,6 +38,7 @@ type Msg
     | OpenShop
     | OpenHistory
     | OpenSettings
+    | OpenEditTravelCard
     | UpdateTime Time.Posix
     | ToggleTicket String
     | SetPendingOrder String
@@ -132,7 +133,12 @@ update msg env model =
 
         OpenSettings ->
             PageUpdater.init model
-                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Settings)
+                |> PageUpdater.addGlobalAction (GA.RouteTo (Route.Settings Route.Overview))
+
+        OpenEditTravelCard ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction (GA.RouteTo (Route.Settings Route.EditTravelCard))
+                |> PageUpdater.addGlobalAction (GA.FocusItem (Just "tkort"))
 
         UpdateTime posixTime ->
             PageUpdater.init { model | currentTime = posixTime }
@@ -209,7 +215,7 @@ viewAccountInfo shared _ =
                     B.init "Legg til t:kort "
                         |> B.setDisabled False
                         |> B.setIcon (Just Icon.travelCard)
-                        |> B.setOnClick (Just OpenSettings)
+                        |> B.setOnClick (Just OpenEditTravelCard)
                         |> B.tertiary
             ]
 

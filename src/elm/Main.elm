@@ -2,12 +2,13 @@ module Main exposing (main)
 
 import Base exposing (AppInfo)
 import Browser
+import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
 import GlobalActions as GA exposing (GlobalAction)
-import Html as H exposing (Html)
+import Html as H exposing (Html, a)
 import Html.Attributes as A
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
@@ -23,6 +24,7 @@ import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
+import Task
 import Time
 import Ui.GlobalNotifications
 import Ui.Message
@@ -51,6 +53,7 @@ type Msg
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
     | LoggedInError (Result Decode.Error AuthError)
+    | Focus (Result Dom.Error ())
 
 
 type alias Model =
@@ -234,6 +237,9 @@ update msg model =
                     , TaskUtil.doTask <| OverviewMsg <| OverviewPage.SetPendingOrder orderId
                     )
 
+                GA.FocusItem id ->
+                    ( model, focusBox id )
+
                 GA.Logout ->
                     let
                         oldEnvironment =
@@ -378,6 +384,10 @@ update msg model =
                 Err error ->
                     ( { model | authError = AuthErrorSimple <| Decode.errorToString error }, Cmd.none )
 
+        Focus _ ->
+            -- Ignore if failing to focus item.
+            ( model, Cmd.none )
+
 
 view : Model -> Browser.Document Msg
 view model =
@@ -487,7 +497,7 @@ viewPage model =
                     |> H.map HistoryMsg
                     |> wrapSubPage "Kjøpshistorikk"
 
-            Just Route.Settings ->
+            Just (Route.Settings _) ->
                 AccountPage.view env model.appInfo shared model.account model.route
                     |> H.map AccountMsg
                     |> wrapSubPage "Kontoinformasjon"
@@ -591,3 +601,13 @@ doPageUpdate pageUpdater =
             pageUpdater.update
     in
         ( newModel, Cmd.batch (cmd :: List.map (GlobalAction >> TaskUtil.doTask) pageUpdater.globalActions) )
+
+
+focusBox : Maybe String -> Cmd Msg
+focusBox id =
+    case id of
+        Just a ->
+            Task.attempt Focus (Dom.focus a)
+
+        Nothing ->
+            Cmd.none
