@@ -490,8 +490,24 @@
     width: 100%;
     padding: 0;
     border: 0;
-    background: transparent;
+    background-color: transparent;
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+        transition: background-color 5000s ease-in-out 0s;
+        -webkit-text-fill-color: inherit !important;
+    }
 }
+@keyframes autofill {
+    0%,
+    100% {
+        color: inherit;
+        background: transparent;
+    }
+}
+
 .ui-input-text__input:focus {
     outline: 0;
 }
