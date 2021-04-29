@@ -142,9 +142,12 @@ firebase.auth().useDeviceLanguage();
 
 // Observer on user info
 firebase.auth().onAuthStateChanged((user) => {
-    console.log('auth state change');
     if (user) {
         fetchAuthInfo(user);
+    } else {
+        // Not logged in remove logged in flag to be safe to avoid infinite loading.
+        clearRefreshToken();
+        localStorage.removeItem('loggedIn');
     }
 });
 
@@ -207,7 +210,6 @@ async function fetchAuthInfo(user) {
             const email = user.email || '';
             const phone = user.phoneNumber || '';
             const provider = idToken.signInProvider || '';
-            console.log('inside fetch auth info');
 
             enqueueRefreshToken(user, idToken.expirationTime);
 
