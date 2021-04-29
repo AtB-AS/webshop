@@ -10,6 +10,7 @@ import GlobalActions as GA exposing (GlobalAction(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
@@ -400,18 +401,17 @@ view model =
 
             _ ->
                 H.div [ A.class "light container" ]
-                    (viewAuthError model
-                        :: (case model.environment.customerId of
+                    [ viewAuthError model
+                    , header model
+                    , H.main_ [ A.class "app" ]
+                        [ Ui.GlobalNotifications.notifications model.notifications
+                        , H.div [ A.class "content" ]
+                            [ case model.environment.customerId of
                                 Just _ ->
-                                    [ header model
-                                    , H.main_ [ A.class "app" ]
-                                        [ Ui.GlobalNotifications.notifications model.notifications
-                                        , H.div [ A.class "content" ] [ viewPage model ]
-                                        ]
-                                    ]
+                                    viewPage model
 
                                 Nothing ->
-                                    [ case model.onboarding of
+                                    case model.onboarding of
                                         Just onboarding ->
                                             OnboardingPage.view model.environment onboarding
                                                 |> H.map OnboardingMsg
@@ -419,9 +419,9 @@ view model =
                                         Nothing ->
                                             LoginPage.view model.environment model.login
                                                 |> H.map LoginMsg
-                                    ]
-                           )
-                    )
+                            ]
+                        ]
+                    ]
         ]
 
 
@@ -433,31 +433,38 @@ header model =
             , ( "Kjøpshistorikk", Route.History )
             , ( "Min profil", Route.Settings )
             ]
+
+        isLoggedIn =
+            model.environment.customerId /= Nothing
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
                 [ H.h1 [ A.class "pageHeader__logo" ]
                     [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
                     ]
-                , H.nav [ A.class "pageHeader__nav" ]
-                    [ H.ul []
-                        (List.map
-                            (\( name, route ) ->
-                                H.li
-                                    [ A.classList
-                                        [ ( "pageHeader__nav__item", True )
-                                        , ( "pageHeader__nav__item--active", Just route == model.route )
+                , if isLoggedIn then
+                    H.nav [ A.class "pageHeader__nav" ]
+                        [ H.ul []
+                            (List.map
+                                (\( name, route ) ->
+                                    H.li
+                                        [ A.classList
+                                            [ ( "pageHeader__nav__item", True )
+                                            , ( "pageHeader__nav__item--active", Just route == model.route )
+                                            ]
                                         ]
-                                    ]
-                                    [ H.a [ Route.href route ] [ H.text name ] ]
+                                        [ H.a [ Route.href route ] [ H.text name ] ]
+                                )
+                                links
+                                ++ [ H.li []
+                                        [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
+                                        ]
+                                   ]
                             )
-                            links
-                            ++ [ H.li []
-                                    [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
-                                    ]
-                               ]
-                        )
-                    ]
+                        ]
+
+                  else
+                    Html.Extra.nothing
                 ]
             ]
 
