@@ -229,6 +229,20 @@ update msg model =
                             ]
                         )
 
+                GA.OpenEditTravelCard ->
+                    let
+                        accountModel =
+                            model.account
+
+                        newModel =
+                            { accountModel | editSection = Just AccountPage.TravelCardSection }
+                    in
+                        ( { model | account = newModel }
+                        , Cmd.batch
+                            [ Route.newUrl model.navKey Route.Settings
+                            ]
+                        )
+
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
@@ -497,7 +511,7 @@ viewPage model =
                     |> H.map HistoryMsg
                     |> wrapSubPage "Kjøpshistorikk"
 
-            Just (Route.Settings _) ->
+            Just Route.Settings ->
                 AccountPage.view env model.appInfo shared model.account model.route
                     |> H.map AccountMsg
                     |> wrapSubPage "Kontoinformasjon"

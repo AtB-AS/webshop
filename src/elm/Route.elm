@@ -1,6 +1,5 @@
 module Route exposing
     ( Route(..)
-    , SettingsRoute(..)
     , fromUrl
     , href
     , modifyUrl
@@ -15,26 +14,12 @@ import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 
 
-type SettingsRoute
-    = Overview
-    | EditTravelCard
-
-
 type Route
     = Home
     | Shop
     | History
-    | Settings SettingsRoute
+    | Settings
     | NotFound
-
-
-settings : Parser (SettingsRoute -> a) a
-settings =
-    s "settings"
-        </> oneOf
-                [ Parser.map Overview Parser.top
-                , Parser.map EditTravelCard (s "travelCard")
-                ]
 
 
 parser : Parser (Route -> a) a
@@ -43,7 +28,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
         , Parser.map History <| s "history"
-        , Parser.map Settings settings
+        , Parser.map Settings <| s "settings"
         ]
 
 
@@ -61,11 +46,8 @@ routeToString page =
                 History ->
                     [ "history" ]
 
-                Settings Overview ->
+                Settings ->
                     [ "settings" ]
-
-                Settings EditTravelCard ->
-                    [ "settings", "travelCard" ]
 
                 NotFound ->
                     [ "not-found" ]

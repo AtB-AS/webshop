@@ -133,11 +133,11 @@ update msg env model =
 
         OpenSettings ->
             PageUpdater.init model
-                |> PageUpdater.addGlobalAction (GA.RouteTo (Route.Settings Route.Overview))
+                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Settings)
 
         OpenEditTravelCard ->
             PageUpdater.init model
-                |> PageUpdater.addGlobalAction (GA.RouteTo (Route.Settings Route.EditTravelCard))
+                |> PageUpdater.addGlobalAction GA.OpenEditTravelCard
                 |> PageUpdater.addGlobalAction (GA.FocusItem (Just "tkort"))
 
         UpdateTime posixTime ->

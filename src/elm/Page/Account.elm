@@ -1,4 +1,4 @@
-module Page.Account exposing (Model, Msg(..), init, subscriptions, update, view)
+module Page.Account exposing (EditSection(..), Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Browser.Dom as Dom
@@ -252,9 +252,9 @@ focusBox id =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ _ model route =
+view _ _ _ model _ =
     H.div [ A.class "page" ]
-        [ viewMain model route
+        [ viewMain model
         , H.div [] [ viewSidebar model ]
         ]
 
@@ -274,8 +274,8 @@ viewSidebar _ =
         ]
 
 
-viewMain : Model -> Maybe Route -> Html Msg
-viewMain model route =
+viewMain : Model -> Html Msg
+viewMain model =
     H.div [ A.class "main" ]
         [ Ui.Section.view
             (case model.profile of
@@ -283,7 +283,7 @@ viewMain model route =
                     [ Ui.Section.viewHeader "Min konto"
                     , viewProfile profile
                     , viewPhoneNumber profile
-                    , viewTravelCard model route profile
+                    , viewTravelCard model profile
                     , viewEmailAddress model profile
                     ]
 
@@ -387,8 +387,8 @@ travelCardValidator =
         ]
 
 
-viewTravelCard : Model -> Maybe Route -> Profile -> Html Msg
-viewTravelCard model route profile =
+viewTravelCard : Model -> Profile -> Html Msg
+viewTravelCard model profile =
     let
         onSave =
             Just SaveTravelCard
@@ -404,14 +404,6 @@ viewTravelCard model route profile =
 
         disabledButtons =
             model.loadingEditSection == Just TravelCardSection
-
-        routeInEditMode =
-            case route of
-                Just (Route.Settings subRoute) ->
-                    subRoute == Route.EditTravelCard
-
-                _ ->
-                    False
     in
         EditSection.init "Administrer t:kort"
             |> EditSection.setEditButtonType
@@ -423,10 +415,7 @@ viewTravelCard model route profile =
                 )
             |> EditSection.setOnSave onSave
             |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
-            |> EditSection.setInEditMode
-                (fieldInEditMode model.editSection TravelCardSection
-                    || routeInEditMode
-                )
+            |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
             |> EditSection.setButtonGroup
                 (if hasTravelCard then
                     Just <|

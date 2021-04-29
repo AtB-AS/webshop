@@ -12,6 +12,7 @@ type GlobalAction msg
     | ShowNotification (Notification msg)
     | SetCustomerNumber Int
     | OpenShop
+    | OpenEditTravelCard
     | CloseShop
     | SetPendingOrder String
     | FocusItem (Maybe String)
@@ -32,6 +33,9 @@ map f ga =
 
         OpenShop ->
             OpenShop
+
+        OpenEditTravelCard ->
+            OpenEditTravelCard
 
         CloseShop ->
             CloseShop
