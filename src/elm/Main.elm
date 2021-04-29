@@ -426,7 +426,7 @@ view model =
 
 
 header : Model -> Html Msg
-header _ =
+header model =
     let
         links =
             [ ( "Kjøp billett", Route.Shop )
@@ -441,7 +441,17 @@ header _ =
                     ]
                 , H.nav [ A.class "pageHeader__nav" ]
                     [ H.ul []
-                        (List.map (\( name, route ) -> H.li [] [ H.a [ Route.href route ] [ H.text name ] ]) links
+                        (List.map
+                            (\( name, route ) ->
+                                H.li
+                                    [ A.classList
+                                        [ ( "pageHeader__nav__item", True )
+                                        , ( "pageHeader__nav__item--active", Just route == model.route )
+                                        ]
+                                    ]
+                                    [ H.a [ Route.href route ] [ H.text name ] ]
+                            )
+                            links
                             ++ [ H.li []
                                     [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
                                     ]

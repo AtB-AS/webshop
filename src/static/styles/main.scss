@@ -121,6 +121,9 @@ p {
 .pageHeader__nav li:last-child {
     margin-left: auto;
 }
+.pageHeader__nav__item--active {
+    text-decoration: underline;
+}
 .pageHeader__nav a {
     display: block;
     padding: var(--spacings-medium);
