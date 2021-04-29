@@ -247,7 +247,7 @@ update msg model =
                             }
                     in
                         ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-                        , FirebaseAuth.signOut
+                        , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                         )
 
         SetRoute route ->
@@ -259,7 +259,7 @@ update msg model =
             )
 
         UrlChanged url ->
-            setRoute (Route.fromUrl (Debug.log "UrlCHanged" url)) model
+            setRoute (Route.fromUrl url) model
 
         UrlRequested urlRequest ->
             case urlRequest of
@@ -347,7 +347,7 @@ update msg model =
                     }
             in
                 ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-                , FirebaseAuth.signOut
+                , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                 )
 
         LoggedInData result ->
