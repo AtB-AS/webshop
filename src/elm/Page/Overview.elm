@@ -12,6 +12,7 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import PageUpdater exposing (PageUpdater)
@@ -25,6 +26,7 @@ import Ui.Button as B
 import Ui.Heading
 import Ui.Section
 import Util.Format as Format
+import Util.Maybe
 import Util.Status exposing (Status(..))
 
 
@@ -159,7 +161,7 @@ view env _ shared model _ =
     case env.customerId of
         Just _ ->
             H.div [ A.class "page-overview" ]
-                [ viewSidebar env model
+                [ viewSidebar shared model
                 , viewMain shared model
                 ]
 
@@ -167,21 +169,32 @@ view env _ shared model _ =
             H.text ""
 
 
-viewSidebar : Environment -> Model -> Html Msg
-viewSidebar env model =
+viewSidebar : Shared -> Model -> Html Msg
+viewSidebar shared model =
     H.div [ A.class "sidebar" ]
-        [ viewAccountInfo env model
+        [ viewAccountInfo shared model
         , viewActions model
         ]
 
 
-viewAccountInfo : Environment -> Model -> Html Msg
-viewAccountInfo _ _ =
+viewAccountInfo : Shared -> Model -> Html Msg
+viewAccountInfo shared _ =
     Ui.Section.init
         |> Ui.Section.setMarginBottom True
         |> Ui.Section.viewWithOptions
             [ Ui.Section.viewPaddedItem
                 [ Ui.Heading.component "Min profil"
+                , Html.Extra.viewMaybe (\d -> H.p [] [ H.text d.phone ]) shared.profile
+                , shared.profile
+                    |> Util.Maybe.flatMap .travelCard
+                    |> Maybe.map .id
+                    |> Html.Extra.viewMaybe
+                        (\id ->
+                            H.p []
+                                [ H.text "t:kort – "
+                                , H.text <| String.fromInt id
+                                ]
+                        )
                 ]
             , B.init "Rediger profil"
                 |> B.setDisabled False
