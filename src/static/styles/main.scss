@@ -237,6 +237,14 @@ p {
         }
     }
 }
+.pageOverview__empty {
+    text-align: center;
+
+    img {
+        display: block;
+        margin: var(--spacings-xLarge) auto;
+    }
+}
 
 .page-history {
     display: grid;

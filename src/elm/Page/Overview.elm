@@ -246,7 +246,10 @@ viewMain shared model =
     in
         H.div [ A.class "main" ]
             [ if List.isEmpty tickets && model.pending == Nothing then
-                H.div [] [ H.text "Ingen billetter er tilknyttet din konto." ]
+                H.div [ A.class "pageOverview__empty" ]
+                    [ H.img [ A.src "/images/empty-illustration.svg" ] []
+                    , H.text "Ingen billetter er tilknyttet din konto."
+                    ]
 
               else
                 H.div [] (viewPending model :: viewTicketCards shared model)
