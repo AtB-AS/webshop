@@ -483,3 +483,8 @@ window.customElements.define(
         }
     }
 );
+
+// Intercom integration
+window.Intercom('boot', {
+    app_id: 'vdemedo2'
+});

@@ -1,29 +1,70 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <title>AtB Webshop</title>
+    <head>
+        <title>AtB Webshop</title>
 
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#eee">
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#eee" />
 
-    <meta http-equiv="Content-Language" content="en-us" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="AtB Webshop">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="AtB Webshop">
-    <link rel="icon" href="/icon.svg">
+        <meta http-equiv="Content-Language" content="en-us" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="AtB Webshop" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-title" content="AtB Webshop" />
+        <link rel="icon" href="/icon.svg" />
 
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <noscript>
-      <h2>I need to execute some JS to work 😞</h2>
-    </noscript>
-  </body>
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+
+        <script>
+            // We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/vdemedo2'
+            (function () {
+                var w = window;
+                var ic = w.Intercom;
+                if (typeof ic === 'function') {
+                    ic('reattach_activator');
+                    ic('update', w.intercomSettings);
+                } else {
+                    var d = document;
+                    var i = function () {
+                        i.c(arguments);
+                    };
+                    i.q = [];
+                    i.c = function (args) {
+                        i.q.push(args);
+                    };
+                    w.Intercom = i;
+                    var l = function () {
+                        var s = d.createElement('script');
+                        s.type = 'text/javascript';
+                        s.async = true;
+                        s.src = 'https://widget.intercom.io/widget/vdemedo2';
+                        var x = d.getElementsByTagName('script')[0];
+                        x.parentNode.insertBefore(s, x);
+                    };
+                    if (w.attachEvent) {
+                        w.attachEvent('onload', l);
+                    } else {
+                        w.addEventListener('load', l, false);
+                    }
+                }
+            })();
+        </script>
+    </head>
+    <body>
+        <noscript>
+            <h2>I need to execute some JS to work 😞</h2>
+        </noscript>
+    </body>
 </html>
