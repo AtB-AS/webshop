@@ -166,7 +166,7 @@ view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view env _ shared model _ =
     case env.customerId of
         Just _ ->
-            H.div [ A.class "page-overview" ]
+            H.div [ A.class "page page--overview" ]
                 [ viewSidebar shared model
                 , viewMain shared model
                 ]
