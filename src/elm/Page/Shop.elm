@@ -598,7 +598,7 @@ summaryView _ model =
             , marginTop = False
             }
             [ Section.viewHeader "Oppsummering"
-            , Section.viewGenericItem
+            , Section.viewPaddedItem
                 [ H.div [ A.class "summary-price" ]
                     [ H.text totalPrice
                     ]

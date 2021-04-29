@@ -5,6 +5,7 @@ module Ui.Button exposing
     , button
     , coloredIcon
     , init
+    , link
     , primary
     , primaryCompact
     , primaryDefault
@@ -33,6 +34,7 @@ type ButtonMode
     = Primary
     | Secondary
     | Tertiary
+    | Link
     | PrimaryCompact
     | SecondaryCompact
     | TertiaryCompact
@@ -107,7 +109,7 @@ button mode color { text, disabled, icon, onClick, type_, attributes } =
             [ ( buttonModeToClass mode, True )
             , ( "ui-button", True )
             , ( "ui-button--disabled", disabled )
-            , ( themeColorToClass color, mode /= Tertiary )
+            , ( themeColorToClass color, mode /= Tertiary && mode /= Link )
             ]
     in
         H.button
@@ -134,6 +136,11 @@ secondary =
 tertiary : Button msg -> Html msg
 tertiary =
     button Tertiary Primary_2
+
+
+link : Button msg -> Html msg
+link =
+    button Link Primary_2
 
 
 primaryCompact : ThemeColor -> Button msg -> Html msg
@@ -172,6 +179,9 @@ buttonModeToClass mode =
 
         Tertiary ->
             "ui-button--tertiary"
+
+        Link ->
+            "ui-button--link"
 
         PrimaryCompact ->
             "ui-button--primary ui-button--compact"

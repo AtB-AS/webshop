@@ -175,7 +175,9 @@ function getFirebaseConfig(config) {
         return config;
     }
 
-    throw Error("Need to set firebaseConfig in webpack.local.config.js or WEBSHOP_FIREBASE_CONFIG environment variable.");
+    throw Error(
+        'Need to set firebaseConfig in webpack.local.config.js or WEBSHOP_FIREBASE_CONFIG environment variable.'
+    );
 }
 
 // Get languageSwitcher from command line or config file
@@ -290,6 +292,10 @@ const commonConfig = {
             {
                 from: 'src/static/icon.svg',
                 to: 'icon.svg'
+            },
+            {
+                from: 'src/static/images',
+                to: 'images'
             }
         ]),
         new webpack.DefinePlugin({
@@ -386,6 +392,16 @@ if (isDevelopment) {
         entry: entryPath,
         module: {
             rules: [
+                {
+                    test: /\.m?js$/,
+                    exclude: /(node_modules)/,
+                    use: {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env']
+                        }
+                    }
+                },
                 {
                     test: /\.elm$/,
                     exclude: [/elm-stuff/, /node_modules/],

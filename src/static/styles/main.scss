@@ -14,7 +14,7 @@
 
 html,
 body {
-    height: 100%;
+    min-height: 100vh;
 }
 
 body {
@@ -32,6 +32,8 @@ button {
 
 .container {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     color: var(--colors-background_1-color);
     background-color: var(--colors-background_1-backgroundColor);
 
@@ -39,7 +41,10 @@ button {
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
 .app {
+    flex: 1;
     position: relative;
+    background: url('/images/background-illustration.svg') no-repeat center top;
+    background-size: contain;
 }
 .content {
     position: relative;
@@ -58,6 +63,11 @@ a:hover {
     color: #ff9;
 }
 
+p {
+    margin: 0;
+    padding: 0;
+}
+
 .box {
     background-color: transparent;
     color: var(--primary);
@@ -70,7 +80,6 @@ a:hover {
     background-color: var(--primary-2);
 
     display: flex;
-    flex: 1;
     color: white;
 
     > span {
@@ -88,48 +97,19 @@ a:hover {
     }
 }
 
-// Page layouts
+.authErrorBox {
+    position: absolute;
+    width: 100%;
+    top: 0;
 
-.page-login {
-    margin-top: 96px;
-    width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-
-    > div:first-child {
-        margin: 24px auto;
-
-        svg path {
-            fill: black;
-        }
-    }
-
-    input {
-        border: none;
-        outline: none;
-        background: inherit;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-    }
-
-    .button,
-    .no-button {
-        padding: 24px;
-        font-weight: 500;
-        display: flex;
-        cursor: pointer;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button {
-        background-color: #71d6e0;
-        border-radius: 12px;
-    }
+    transition: transform 150ms ease-in;
+    transform: translateY(-100%);
 }
+.authErrorBox--active {
+    transform: translateY(0);
+}
+
+// Page layouts
 
 .button-loading {
     width: 20px;
@@ -312,7 +292,6 @@ a:hover {
     display: grid;
     grid-gap: var(--spacings-xLarge);
     grid-template-columns: 2fr 1fr;
-
     input[type='time'],
     input[type='date'] {
         box-shadow: none;
@@ -321,18 +300,13 @@ a:hover {
         background: inherit;
     }
 }
-
-.page-account {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 1fr 320px;
-
-    .sidebar {
-        width: 320px;
-    }
-
-    .main {
-    }
+.page > :only-child {
+    grid-column: 1/-1;
+}
+.page--login {
+    max-width: 22.5rem;
+    margin: 3.25rem auto;
+    grid-template-columns: 1fr;
 }
 
 // Basic responsiveness for pages
@@ -347,6 +321,17 @@ a:hover {
     .page {
         grid-template-columns: 1fr;
     }
+}
+
+.pageLogin__header {
+    position: absolute;
+    width: 100%;
+    top: var(--spacings-xLarge);
+}
+.pageLogin__illustration {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
 }
 
 // Components
