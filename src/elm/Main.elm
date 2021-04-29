@@ -400,17 +400,18 @@ view model =
 
             _ ->
                 H.div [ A.class "light container" ]
-                    [ viewAuthError model
-                    , header model
-                    , H.main_ [ A.class "app" ]
-                        [ Ui.GlobalNotifications.notifications model.notifications
-                        , H.div [ A.class "content" ]
-                            [ case model.environment.customerId of
+                    (viewAuthError model
+                        :: (case model.environment.customerId of
                                 Just _ ->
-                                    viewPage model
+                                    [ header model
+                                    , H.main_ [ A.class "app" ]
+                                        [ Ui.GlobalNotifications.notifications model.notifications
+                                        , H.div [ A.class "content" ] [ viewPage model ]
+                                        ]
+                                    ]
 
                                 Nothing ->
-                                    case model.onboarding of
+                                    [ case model.onboarding of
                                         Just onboarding ->
                                             OnboardingPage.view model.environment onboarding
                                                 |> H.map OnboardingMsg
@@ -418,9 +419,9 @@ view model =
                                         Nothing ->
                                             LoginPage.view model.environment model.login
                                                 |> H.map LoginMsg
-                            ]
-                        ]
-                    ]
+                                    ]
+                           )
+                    )
         ]
 
 
