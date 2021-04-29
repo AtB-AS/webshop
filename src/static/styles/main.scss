@@ -299,6 +299,14 @@ p {
     }
 }
 
+.accountInfo__item {
+    display: flex;
+    svg {
+        display: block;
+        margin-right: var(--spacings-medium);
+    }
+}
+
 // Basic responsiveness for pages
 
 @media (max-width: 768px) {

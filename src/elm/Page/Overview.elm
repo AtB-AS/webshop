@@ -190,14 +190,16 @@ viewAccountInfo shared _ =
         |> Ui.Section.viewWithOptions
             [ Ui.Section.viewPaddedItem
                 [ Ui.Heading.component "Min profil"
-                , Html.Extra.viewMaybe (\d -> H.p [] [ H.text d.phone ]) shared.profile
+                , Html.Extra.viewMaybe
+                    (\d -> H.p [ A.class "accountInfo__item" ] [ H.text d.phone ])
+                    shared.profile
                 , shared.profile
                     |> Util.Maybe.flatMap .travelCard
                     |> Maybe.map .id
                     |> Html.Extra.viewMaybe
                         (\id ->
-                            H.p []
-                                [ H.text "t:kort – "
+                            H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
+                                [ Icon.travelCard
                                 , H.text <| String.fromInt id
                                 ]
                         )
