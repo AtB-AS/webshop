@@ -97,6 +97,18 @@ p {
     }
 }
 
+.authErrorBox {
+    position: absolute;
+    width: 100%;
+    top: 0;
+
+    transition: transform 150ms ease-in;
+    transform: translateY(-100%);
+}
+.authErrorBox--active {
+    transform: translateY(0);
+}
+
 // Page layouts
 
 .button-loading {

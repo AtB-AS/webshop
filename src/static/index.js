@@ -144,10 +144,16 @@ firebase.auth().useDeviceLanguage();
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         fetchAuthInfo(user);
-    } else {
+    } else if (localStorage.getItem('loggedIn')) {
         // Not logged in remove logged in flag to be safe to avoid infinite loading.
+        console.log('[debug] Logged out due to stale state.');
         clearRefreshToken();
         localStorage.removeItem('loggedIn');
+
+        app.ports.signInError.send({
+            code: -1,
+            message: 'Du er blitt logget ut. Logg inn igjen.'
+        });
     }
 });
 

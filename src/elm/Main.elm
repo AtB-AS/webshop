@@ -25,6 +25,7 @@ import Service.Misc as MiscService
 import Shared exposing (Shared)
 import Time
 import Ui.GlobalNotifications
+import Ui.Message
 import Ui.PageHeader as PH
 import Url exposing (Url)
 import Util.Status exposing (Status(..))
@@ -311,7 +312,7 @@ update msg model =
 
         LoginMsg subMsg ->
             LoginPage.update subMsg model.environment model.login
-                |> PageUpdater.map (\newModel -> { model | login = newModel }) LoginMsg
+                |> PageUpdater.map (\newModel -> { model | login = newModel, authError = AuthErrorNone }) LoginMsg
                 |> doPageUpdate
 
         OnboardingMsg subMsg ->
@@ -371,8 +372,8 @@ update msg model =
 
         LoggedInError result ->
             case result of
-                Ok value ->
-                    ( { model | authError = value }, Cmd.none )
+                Ok authError ->
+                    ( { model | authError = authError }, Cmd.none )
 
                 Err error ->
                     ( { model | authError = AuthErrorSimple <| Decode.errorToString error }, Cmd.none )
@@ -398,7 +399,8 @@ view model =
 
             _ ->
                 H.div [ A.class "light container" ]
-                    [ header model
+                    [ viewAuthError model
+                    , header model
                     , H.main_ [ A.class "app" ]
                         [ Ui.GlobalNotifications.notifications model.notifications
                         , H.div [ A.class "content" ]
@@ -424,6 +426,36 @@ view model =
 header : Model -> Html Msg
 header _ =
     H.header [ A.class "pageHeader" ] [ Icon.atb ]
+
+
+{-| Always show error box, but offset to top and position absolute to animate in/out
+-}
+viewAuthError : Model -> Html Msg
+viewAuthError model =
+    let
+        hasError =
+            model.authError /= AuthErrorNone
+
+        classList =
+            [ ( "authErrorBox", True )
+            , ( "authErrorBox--active", hasError )
+            ]
+
+        classListChild =
+            [ ( "authErrorBox__content", True )
+            , ( "authErrorBox__content--active", hasError )
+            ]
+    in
+        H.div [ A.classList classList ]
+            [ H.div [ A.classList classListChild ]
+                [ case model.authError of
+                    AuthErrorSimple message ->
+                        Ui.Message.error message
+
+                    _ ->
+                        Ui.Message.error ""
+                ]
+            ]
 
 
 viewPage : Model -> Html Msg
@@ -506,7 +538,7 @@ subs model =
             |> Sub.map SharedMsg
         , Time.every 1000 MaybeCloseNotification
         , FirebaseAuth.signInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
-        , FirebaseAuth.signInError (Decode.decodeValue userDataDecoder >> LoggedInData)
+        , FirebaseAuth.signInError (Decode.decodeValue userErrorDecoder >> LoggedInError)
         , MiscService.onboardingStart StartOnboarding
         ]
 
@@ -541,6 +573,11 @@ userDataDecoder =
             )
         |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
+
+
+userErrorDecoder : Decoder AuthError
+userErrorDecoder =
+    Decode.map AuthErrorSimple (Decode.field "message" Decode.string)
 
 
 
