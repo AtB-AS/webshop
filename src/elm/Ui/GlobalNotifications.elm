@@ -13,10 +13,9 @@ notifications messages =
         (messages
             |> List.map .content
             |> List.map
-                (List.singleton
-                    >> Ui.Section.sectionWithOptions
-                        { marginTop = False
-                        , marginBottom = True
-                        }
+                (\e ->
+                    Ui.Section.init
+                        |> Ui.Section.setMarginBottom True
+                        |> Ui.Section.viewWithOptions [ e ]
                 )
         )

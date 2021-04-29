@@ -489,26 +489,25 @@ view _ _ shared model _ =
                 ]
             , H.div []
                 [ summaryView disableButtons model
-                , Section.sectionWithOptions
-                    { marginBottom = True
-                    , marginTop = False
-                    }
-                    [ B.init "Kjøp med bankkort"
-                        |> B.setDisabled disableButtons
-                        |> B.setIcon (Just Icon.creditcard)
-                        |> B.setOnClick (Just (BuyOffers Nets))
-                        |> B.primary Secondary_1
-                    , B.init "Kjøp med Vipps"
-                        |> B.setDisabled disableButtons
-                        |> B.setIcon (Just (B.coloredIcon Icon.vipps))
-                        |> B.setOnClick (Just (BuyOffers Vipps))
-                        |> B.primary Secondary_1
-                    , B.init "Avbryt"
-                        |> B.setDisabled False
-                        |> B.setIcon (Just Icon.cross)
-                        |> B.setOnClick (Just CloseShop)
-                        |> B.tertiary
-                    ]
+                , Section.init
+                    |> Section.setMarginBottom True
+                    |> Section.viewWithOptions
+                        [ B.init "Kjøp med bankkort"
+                            |> B.setDisabled disableButtons
+                            |> B.setIcon (Just Icon.creditcard)
+                            |> B.setOnClick (Just (BuyOffers Nets))
+                            |> B.primary Secondary_1
+                        , B.init "Kjøp med Vipps"
+                            |> B.setDisabled disableButtons
+                            |> B.setIcon (Just (B.coloredIcon Icon.vipps))
+                            |> B.setOnClick (Just (BuyOffers Vipps))
+                            |> B.primary Secondary_1
+                        , B.init "Avbryt"
+                            |> B.setDisabled False
+                            |> B.setIcon (Just Icon.cross)
+                            |> B.setOnClick (Just CloseShop)
+                            |> B.tertiary
+                        ]
                 ]
             ]
 
@@ -593,18 +592,17 @@ summaryView _ model =
                 _ ->
                     "-"
     in
-        Section.sectionWithOptions
-            { marginBottom = True
-            , marginTop = False
-            }
-            [ Section.viewHeader "Oppsummering"
-            , Section.viewPaddedItem
-                [ H.div [ A.class "summary-price" ]
-                    [ H.text totalPrice
+        Section.init
+            |> Section.setMarginBottom True
+            |> Section.viewWithOptions
+                [ Section.viewHeader "Oppsummering"
+                , Section.viewPaddedItem
+                    [ H.div [ A.class "summary-price" ]
+                        [ H.text totalPrice
+                        ]
                     ]
+                , maybeBuyNotice model.users
                 ]
-            , maybeBuyNotice model.users
-            ]
 
 
 hasReducedCost : UserType -> Bool
