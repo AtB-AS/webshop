@@ -216,7 +216,14 @@ update msg env model =
             PageUpdater.init { model | loadingEditSection = section }
 
         Logout ->
-            PageUpdater.init model
+            PageUpdater.init
+                { model
+                    | firstName = model.firstName
+                    , lastName = model.lastName
+                    , email = model.email
+                    , editSection = Nothing
+                    , validationErrors = []
+                }
                 |> PageUpdater.addGlobalAction GA.Logout
 
         ClearValidationError ->
