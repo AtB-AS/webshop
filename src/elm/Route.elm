@@ -96,7 +96,7 @@ fromUrl : Url -> Maybe Route
 fromUrl url =
     Maybe.andThen
         (\fragment ->
-            { url | path = Debug.log "fragment" fragment, fragment = Nothing }
+            { url | path = fragment, fragment = Nothing }
                 |> Parser.parse parser
                 |> Maybe.withDefault NotFound
                 |> Just
