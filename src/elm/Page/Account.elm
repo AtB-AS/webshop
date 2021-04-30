@@ -1,4 +1,4 @@
-module Page.Account exposing (Model, Msg(..), init, subscriptions, update, view)
+module Page.Account exposing (EditSection(..), Model, Msg(..), init, setEditSection, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Browser.Dom as Dom
@@ -216,7 +216,14 @@ update msg env model =
             PageUpdater.init { model | loadingEditSection = section }
 
         Logout ->
-            PageUpdater.init model
+            PageUpdater.init
+                { model
+                    | firstName = model.firstName
+                    , lastName = model.lastName
+                    , email = model.email
+                    , editSection = Nothing
+                    , validationErrors = []
+                }
                 |> PageUpdater.addGlobalAction GA.Logout
 
         ClearValidationError ->
@@ -368,6 +375,11 @@ viewEmailAddress model profile =
                 )
 
 
+setEditSection : Maybe EditSection -> Model -> Model
+setEditSection editSection model =
+    { model | editSection = editSection }
+
+
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
 fieldInEditMode state actual =
     state == Just actual
@@ -442,6 +454,7 @@ viewTravelCard model profile =
                                 |> Text.setError (selectValidationError TravelCard model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateTravelCard)
                                 |> Text.setPlaceholder "Legg til et t:kort nå"
+                                |> Text.setAttributes [ A.autofocus True ]
                                 |> Text.setValue (Just model.travelCard)
                                 |> Text.view
                             ]

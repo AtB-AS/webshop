@@ -1,22 +1,19 @@
 module Ui.Section exposing
     ( Section
-    , sectionWithOptions
+    , init
+    , setMarginBottom
+    , setMarginTop
     , view
     , viewHeader
     , viewItem
     , viewLabelItem
     , viewPaddedItem
+    , viewWithOptions
     )
 
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
-
-
-
--- sectionItem : Html msg -> Html msg
--- sectionItem =
---     List.singleton >> H.div [ A.class "ui-section__item" ]
 
 
 type alias Section =
@@ -25,8 +22,23 @@ type alias Section =
     }
 
 
-sectionWithOptions : Section -> List (Html msg) -> Html msg
-sectionWithOptions options items =
+init : Section
+init =
+    { marginTop = False, marginBottom = False }
+
+
+setMarginTop : Bool -> Section -> Section
+setMarginTop margin opts =
+    { opts | marginTop = margin }
+
+
+setMarginBottom : Bool -> Section -> Section
+setMarginBottom margin opts =
+    { opts | marginBottom = margin }
+
+
+viewWithOptions : List (Html msg) -> Section -> Html msg
+viewWithOptions items options =
     let
         classList =
             [ ( "ui-section", True )
@@ -38,8 +50,8 @@ sectionWithOptions options items =
 
 
 view : List (Html msg) -> Html msg
-view =
-    sectionWithOptions { marginTop = False, marginBottom = False }
+view children =
+    viewWithOptions children init
 
 
 viewPaddedItem : List (Html msg) -> Html msg

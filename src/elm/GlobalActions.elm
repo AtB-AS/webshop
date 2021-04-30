@@ -12,8 +12,10 @@ type GlobalAction msg
     | ShowNotification (Notification msg)
     | SetCustomerNumber Int
     | OpenShop
+    | OpenEditTravelCard
     | CloseShop
     | SetPendingOrder String
+    | FocusItem (Maybe String)
     | Logout
 
 
@@ -32,6 +34,9 @@ map f ga =
         OpenShop ->
             OpenShop
 
+        OpenEditTravelCard ->
+            OpenEditTravelCard
+
         CloseShop ->
             CloseShop
 
@@ -40,3 +45,6 @@ map f ga =
 
         Logout ->
             Logout
+
+        FocusItem id ->
+            FocusItem id

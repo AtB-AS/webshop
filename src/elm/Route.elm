@@ -8,7 +8,7 @@ module Route exposing
     )
 
 import Browser.Navigation as Nav
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute)
 import Html.Attributes as A
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
@@ -76,12 +76,11 @@ newUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl url =
-    case url.fragment of
-        Just fragment ->
+    Maybe.andThen
+        (\fragment ->
             { url | path = fragment, fragment = Nothing }
                 |> Parser.parse parser
                 |> Maybe.withDefault NotFound
                 |> Just
-
-        Nothing ->
-            Nothing
+        )
+        url.fragment

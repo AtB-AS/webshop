@@ -12,37 +12,33 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
-import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
 import Time
+import Ui.Button as B
+import Ui.Heading
+import Ui.Section
 import Util.Format as Format
+import Util.Maybe
 import Util.Status exposing (Status(..))
 
 
 type Msg
     = ReceiveFareContracts (Result Decode.Error (List FareContract))
-    | GetTokens
-    | ReceiveTokens (Result Http.Error (List Token))
-    | UpdateTravelCardId String
-    | AddTravelCard
-    | ReceiveAddTravelCard (Result Http.Error ())
-    | DeleteToken String
-    | ReceiveDeleteToken (Result Http.Error ())
-    | AddQrCode
-    | ReceiveAddQrCode (Result Http.Error ())
     | Receipt String
     | ReceiveReceipt (Result Http.Error ())
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | OpenShop
     | OpenHistory
     | OpenSettings
+    | OpenEditTravelCard
     | UpdateTime Time.Posix
     | ToggleTicket String
     | SetPendingOrder String
@@ -108,53 +104,6 @@ update msg env model =
                 Err _ ->
                     PageUpdater.init model
 
-        GetTokens ->
-            PageUpdater.fromPair ( model, fetchTokens env )
-
-        ReceiveTokens result ->
-            case result of
-                Ok tokens ->
-                    PageUpdater.init { model | tokens = tokens }
-
-                Err _ ->
-                    PageUpdater.init model
-
-        UpdateTravelCardId value ->
-            PageUpdater.init { model | travelCardId = value }
-
-        AddTravelCard ->
-            PageUpdater.fromPair ( model, addTravelCard env model.travelCardId )
-
-        ReceiveAddTravelCard result ->
-            case result of
-                Ok () ->
-                    PageUpdater.fromPair ( { model | travelCardId = "" }, fetchTokens env )
-
-                Err _ ->
-                    PageUpdater.init model
-
-        DeleteToken tokenId ->
-            PageUpdater.fromPair ( model, deleteToken env tokenId )
-
-        ReceiveDeleteToken result ->
-            case result of
-                Ok () ->
-                    PageUpdater.fromPair ( model, fetchTokens env )
-
-                Err _ ->
-                    PageUpdater.init model
-
-        AddQrCode ->
-            PageUpdater.fromPair ( model, addQrCode env )
-
-        ReceiveAddQrCode result ->
-            case result of
-                Ok () ->
-                    PageUpdater.fromPair ( model, fetchTokens env )
-
-                Err _ ->
-                    PageUpdater.init model
-
         Receipt orderId ->
             PageUpdater.fromPair ( model, sendReceipt env orderId )
 
@@ -163,7 +112,7 @@ update msg env model =
                 Ok () ->
                     PageUpdater.init model
 
-                Err err ->
+                Err _ ->
                     PageUpdater.init model
 
         ReceiveTokenPayloads result ->
@@ -185,6 +134,11 @@ update msg env model =
         OpenSettings ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction (GA.RouteTo Route.Settings)
+
+        OpenEditTravelCard ->
+            PageUpdater.init model
+                |> PageUpdater.addGlobalAction GA.OpenEditTravelCard
+                |> PageUpdater.addGlobalAction (GA.FocusItem (Just "tkort"))
 
         UpdateTime posixTime ->
             PageUpdater.init { model | currentTime = posixTime }
@@ -212,7 +166,7 @@ view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view env _ shared model _ =
     case env.customerId of
         Just _ ->
-            H.div [ A.class "page-overview" ]
+            H.div [ A.class "page page--overview" ]
                 [ viewSidebar shared model
                 , viewMain shared model
                 ]
@@ -224,84 +178,64 @@ view env _ shared model _ =
 viewSidebar : Shared -> Model -> Html Msg
 viewSidebar shared model =
     H.div [ A.class "sidebar" ]
-        [ viewAccountInfo model
+        [ viewAccountInfo shared model
         , viewActions model
         ]
 
 
-viewAccountInfo : Model -> Html Msg
-viewAccountInfo model =
-    H.div [ A.class "section-box" ]
-        (richActionButton False
-            (Just OpenSettings)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0" ] [ H.text "Min konto" ]
-                , Icon.traveler
+viewAccountInfo : Shared -> Model -> Html Msg
+viewAccountInfo shared _ =
+    Ui.Section.init
+        |> Ui.Section.setMarginBottom True
+        |> Ui.Section.viewWithOptions
+            [ Ui.Section.viewPaddedItem
+                [ Ui.Heading.component "Min profil"
+                , Html.Extra.viewMaybe
+                    (\d -> H.p [ A.class "accountInfo__item" ] [ H.text d.phone ])
+                    shared.profile
+                , shared.profile
+                    |> Util.Maybe.flatMap .travelCard
+                    |> Maybe.map .id
+                    |> Html.Extra.viewMaybe
+                        (\id ->
+                            H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
+                                [ Icon.travelCard
+                                , H.text <| String.fromInt id
+                                ]
+                        )
                 ]
-            )
-            :: [ H.div [] [ H.text "Ingen reisekort." ] ]
-        )
+            , B.init "Rediger profil"
+                |> B.setDisabled False
+                |> B.setIcon (Just Icon.edit)
+                |> B.setOnClick (Just OpenSettings)
+                |> B.tertiary
+            , case Util.Maybe.flatMap .travelCard shared.profile of
+                Just _ ->
+                    Html.Extra.nothing
+
+                _ ->
+                    B.init "Legg til t:kort "
+                        |> B.setDisabled False
+                        |> B.setIcon (Just Icon.travelCard)
+                        |> B.setOnClick (Just OpenEditTravelCard)
+                        |> B.tertiary
+            ]
 
 
 viewActions : Model -> Html Msg
-viewActions model =
-    H.div [ A.class "section-box" ]
-        [ richActionButton False
-            (Just OpenShop)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Kjøp ny billett" ]
-                , Icon.ticketAdd
-                ]
-            )
-        , richActionButton False
-            (Just OpenHistory)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Kjøpshistorikk" ]
-                , Icon.tickets
-                ]
-            )
-        , richActionButton False
-            (Just OpenHistory)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Gi tilbakemelding til utviklerne" ]
-                , Icon.chat
-                ]
-            )
-        , richActionButton False
-            (Just Logout)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1", A.style "margin" "0 8px" ] [ H.text "Logg ut" ]
-                , Icon.logout
-                ]
-            )
+viewActions _ =
+    Ui.Section.view
+        [ B.init "Kjøp ny billett"
+            |> B.setDisabled False
+            |> B.setIcon (Just Icon.ticketAdd)
+            |> B.setOnClick (Just OpenShop)
+            |> B.tertiary
+        , B.init "Kjøpshistorikk"
+            |> B.setDisabled False
+            |> B.setIcon (Just Icon.tickets)
+            |> B.setOnClick (Just OpenHistory)
+            |> B.tertiary
         ]
-
-
-actionButton : msg -> String -> Html msg
-actionButton action title =
-    H.div [] [ H.button [ A.class "action-button", E.onClick action ] [ H.text title ] ]
-
-
-richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
-richActionButton active maybeAction content =
-    let
-        baseAttributes =
-            [ A.classList
-                [ ( "active", active )
-                , ( "pseudo-button", maybeAction /= Nothing )
-                , ( "pseudo-button-disabled", maybeAction == Nothing )
-                ]
-            ]
-
-        attributes =
-            case maybeAction of
-                Just action ->
-                    E.onClick action :: baseAttributes
-
-                Nothing ->
-                    baseAttributes
-    in
-        H.div attributes [ content ]
 
 
 viewMain : Shared -> Model -> Html Msg
@@ -314,10 +248,13 @@ viewMain shared model =
     in
         H.div [ A.class "main" ]
             [ if List.isEmpty tickets && model.pending == Nothing then
-                H.div [] [ H.text "Ingen billetter er tilknyttet din konto." ]
+                H.div [ A.class "pageOverview__empty" ]
+                    [ H.img [ A.src "/images/empty-illustration.svg" ] []
+                    , H.text "Ingen billetter er tilknyttet din konto."
+                    ]
 
               else
-                H.div [] (viewTicketInfo :: viewPending model :: viewTicketCards shared model)
+                H.div [] (viewPending model :: viewTicketCards shared model)
             ]
 
 
@@ -336,14 +273,6 @@ viewPending model =
 
         Nothing ->
             H.text ""
-
-
-viewTicketInfo : Html msg
-viewTicketInfo =
-    H.div [ A.class "info-box" ]
-        [ Icon.info
-        , H.span [] [ H.text "For å ha gyldig billett i billettkontroll må du vise t:kort. Denne siden er ikke gyldig i billettkontroll." ]
-        ]
 
 
 viewTicketCards : Shared -> Model -> List (Html Msg)
@@ -681,12 +610,6 @@ viewFareProduct shared fareProduct _ =
         |> multiString 1
 
 
-type alias TravelCard =
-    { id : String
-    , expiry : String
-    }
-
-
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
@@ -711,34 +634,6 @@ tokenPayloadDecoder =
 tokenPayloadsDecoder : Decoder (List ( String, String ))
 tokenPayloadsDecoder =
     Decode.list tokenPayloadDecoder
-
-
-fetchTokens : Environment -> Cmd Msg
-fetchTokens env =
-    WebshopService.getTokens env
-        |> Http.toTask
-        |> Task.attempt ReceiveTokens
-
-
-addTravelCard : Environment -> String -> Cmd Msg
-addTravelCard env id =
-    WebshopService.addTravelCard env id
-        |> Http.toTask
-        |> Task.attempt ReceiveAddTravelCard
-
-
-deleteToken : Environment -> String -> Cmd Msg
-deleteToken env tokenId =
-    WebshopService.deleteToken env tokenId
-        |> Http.toTask
-        |> Task.attempt ReceiveDeleteToken
-
-
-addQrCode : Environment -> Cmd Msg
-addQrCode env =
-    WebshopService.addQrCode env
-        |> Http.toTask
-        |> Task.attempt ReceiveAddQrCode
 
 
 sendReceipt : Environment -> String -> Cmd Msg

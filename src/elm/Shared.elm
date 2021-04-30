@@ -3,6 +3,7 @@ module Shared exposing (Msg, Shared, init, subscriptions, update)
 import Data.RefData exposing (FareProduct, Limitation, TariffZone, UserProfile, UserType)
 import List exposing (product)
 import List.Extra
+import Service.Misc as MiscService exposing (Profile)
 import Service.RefData as RefDataService
 
 
@@ -10,6 +11,7 @@ type Msg
     = ReceiveTariffZones (Result () (List TariffZone))
     | ReceiveFareProducts (Result () (List FareProduct))
     | ReceiveUserProfiles (Result () (List UserProfile))
+    | ProfileChange (Maybe Profile)
 
 
 type alias Shared =
@@ -17,6 +19,7 @@ type alias Shared =
     , fareProducts : List FareProduct
     , userProfiles : List UserProfile
     , productLimitations : List Limitation
+    , profile : Maybe Profile
     }
 
 
@@ -26,6 +29,7 @@ init =
     , fareProducts = []
     , userProfiles = []
     , productLimitations = []
+    , profile = Nothing
     }
 
 
@@ -62,6 +66,9 @@ update msg model =
                 Err _ ->
                     model
 
+        ProfileChange profile ->
+            { model | profile = profile }
+
 
 getMappedLimitations : List FareProduct -> List UserProfile -> List Limitation
 getMappedLimitations products userProfiles =
@@ -85,4 +92,5 @@ subscriptions =
         [ RefDataService.onTariffZones ReceiveTariffZones
         , RefDataService.onFareProducts ReceiveFareProducts
         , RefDataService.onUserProfiles ReceiveUserProfiles
+        , MiscService.onProfileChange ProfileChange
         ]

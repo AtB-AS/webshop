@@ -335,6 +335,10 @@
 }
 .ui-button__icon {
     margin-left: var(--spacings-small);
+
+    svg {
+        display: block;
+    }
 }
 .ui-button--link {
     background: transparent;
