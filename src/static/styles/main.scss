@@ -110,6 +110,11 @@ p {
     flex: 1;
     display: flex;
 }
+@media (max-width: 768px) {
+    .pageHeader__nav {
+        display: none;
+    }
+}
 .pageHeader__nav ul {
     display: flex;
     list-style: none;
