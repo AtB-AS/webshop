@@ -25,7 +25,6 @@ const createHashFunction = require('./hash-func.js');
 
 // Node helpers
 const path = require('path');
-const fs = require('fs');
 const execSync = require('child_process').execSync;
 
 // Constants
