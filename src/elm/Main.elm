@@ -6,9 +6,11 @@ import Browser.Navigation as Nav
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
-import GlobalActions as GA exposing (GlobalAction)
+import GlobalActions as GA exposing (GlobalAction(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Events as E
+import Html.Extra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
@@ -102,7 +104,7 @@ setRoute maybeRoute model =
     , case maybeRoute of
         Just Route.Shop ->
             if model.shop == Nothing then
-                TaskUtil.doTask <| RouteTo Route.Home
+                TaskUtil.doTask <| GlobalAction GA.OpenShop
 
             else
                 Cmd.none
@@ -246,7 +248,7 @@ update msg model =
                             }
                     in
                         ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-                        , FirebaseAuth.signOut
+                        , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                         )
 
         SetRoute route ->
@@ -346,7 +348,7 @@ update msg model =
                     }
             in
                 ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
-                , FirebaseAuth.signOut
+                , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                 )
 
         LoggedInData result ->
@@ -424,8 +426,47 @@ view model =
 
 
 header : Model -> Html Msg
-header _ =
-    H.header [ A.class "pageHeader" ] [ Icon.atb ]
+header model =
+    let
+        links =
+            [ ( "Kjøp billett", Route.Shop )
+            , ( "Kjøpshistorikk", Route.History )
+            , ( "Min profil", Route.Settings )
+            ]
+
+        isLoggedIn =
+            model.environment.customerId /= Nothing
+    in
+        H.header [ A.class "pageHeader" ]
+            [ H.div [ A.class "pageHeader__content" ]
+                [ H.h1 [ A.class "pageHeader__logo" ]
+                    [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
+                    ]
+                , if isLoggedIn then
+                    H.nav [ A.class "pageHeader__nav" ]
+                        [ H.ul []
+                            (List.map
+                                (\( name, route ) ->
+                                    H.li
+                                        [ A.classList
+                                            [ ( "pageHeader__nav__item", True )
+                                            , ( "pageHeader__nav__item--active", Just route == model.route )
+                                            ]
+                                        ]
+                                        [ H.a [ Route.href route ] [ H.text name ] ]
+                                )
+                                links
+                                ++ [ H.li []
+                                        [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
+                                        ]
+                                   ]
+                            )
+                        ]
+
+                  else
+                    Html.Extra.nothing
+                ]
+            ]
 
 
 {-| Always show error box, but offset to top and position absolute to animate in/out
