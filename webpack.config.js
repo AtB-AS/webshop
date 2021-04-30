@@ -4,13 +4,11 @@ const webpack = require('webpack');
 // Webpack plugins
 const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const SriPlugin = require('webpack-subresource-integrity');
-const ZopfliPlugin = require('./vendor/zopfli-webpack-plugin').default;
-const BrotliPlugin = require('brotli-webpack-plugin');
-const HashOutput = require('./vendor/webpack-plugin-hash-output');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+// const HashOutput = require('./vendor/webpack-plugin-hash-output');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const dotenv = require('dotenv');
@@ -288,8 +286,7 @@ const commonConfig = {
         splitChunks: {
             name: 'vendor',
             minChunks: 2
-        },
-        noEmitOnErrors: true
+        }
     },
     plugins: [
         new SriPlugin({
@@ -462,92 +459,87 @@ if (isDevelopment) {
                 },
                 {
                     test: /\.(css|scss)$/,
-                    use: ExtractTextPlugin.extract({
-                        fallback: 'style-loader',
-                        use: ['css-loader', 'postcss-loader', 'sass-loader'],
-                        publicPath: '../../'
-                    })
+                    use: [
+                        {
+                            loader: MiniCssExtractPlugin.loader,
+                            options: {
+                                publicPath: '../../'
+                            }
+                        },
+                        'css-loader',
+                        'postcss-loader',
+                        'sass-loader'
+                    ]
                 }
             ]
         },
         plugins: [
-            new webpack.optimize.OccurrenceOrderPlugin(),
-
-            // Minify JavaScript.
-            new TerserPlugin({
-                terserOptions: {
-                    ecma: 5,
-                    compress: {
-                        pure_funcs: [
-                            'F2',
-                            'F3',
-                            'F4',
-                            'F5',
-                            'F6',
-                            'F7',
-                            'F8',
-                            'F9',
-                            'A2',
-                            'A3',
-                            'A4',
-                            'A5',
-                            'A6',
-                            'A7',
-                            'A8',
-                            'A9'
-                        ],
-                        pure_getters: true,
-                        keep_fargs: false,
-                        unsafe_comps: true,
-                        unsafe: true,
-                        passes: 3
-                    }
-                }
-            }),
-
             // Extract CSS into a separate file.
-            new ExtractTextPlugin({
-                filename: 'static/styles/[sha256:contenthash:base64].css',
-                allChunks: true
+            new MiniCssExtractPlugin({
+                filename: 'static/styles/[sha256:contenthash:base64].css'
             }),
 
-            // Minify CSS.
-            new OptimizeCssAssetsPlugin({
-                cssProcessor: require('cssnano'),
-                cssProcessorPluginOptions: {
-                    preset: [
-                        'default',
-                        { discardComments: { removeAll: true } }
-                    ]
-                },
-                canPrint: true
-            }),
-
-            // Hash output _after_ generating them
-            new HashOutput({}),
+            // // Hash output _after_ generating them
+            // new HashOutput({}),
 
             // Set up Workbox
             new WorkboxWebpackPlugin.GenerateSW({
                 exclude: ['index.html']
-            }),
-
-            // Compress everything with Zopfli (gzip)
-            new ZopfliPlugin({
-                asset: '[path].gz[query]',
-                algorithm: 'gzip',
-                test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
-                threshold: 1024,
-                minRatio: 0.8
-            }),
-
-            // Compress everything with Brotli
-            new BrotliPlugin({
-                asset: '[path].br[query]',
-                test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
-                threshold: 1024,
-                minRatio: 0.8
             })
-        ]
+
+            // // Compress everything with Zopfli (gzip)
+            // new ZopfliPlugin({
+            //     asset: '[path].gz[query]',
+            //     algorithm: 'gzip',
+            //     test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
+            //     threshold: 1024,
+            //     minRatio: 0.8
+            // }),
+
+            // // Compress everything with Brotli
+            // new BrotliPlugin({
+            //     asset: '[path].br[query]',
+            //     test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
+            //     threshold: 1024,
+            //     minRatio: 0.8
+            // })
+        ],
+        optimization: {
+            minimize: true,
+            minimizer: [
+                new TerserPlugin({
+                    terserOptions: {
+                        ecma: 5,
+                        compress: {
+                            pure_funcs: [
+                                'F2',
+                                'F3',
+                                'F4',
+                                'F5',
+                                'F6',
+                                'F7',
+                                'F8',
+                                'F9',
+                                'A2',
+                                'A3',
+                                'A4',
+                                'A5',
+                                'A6',
+                                'A7',
+                                'A8',
+                                'A9'
+                            ],
+                            pure_getters: true,
+                            keep_fargs: false,
+                            unsafe_comps: true,
+                            unsafe: true,
+                            passes: 3
+                        }
+                    }
+                }),
+                new CssMinimizerPlugin()
+            ]
+        }
     });
 } else {
     console.log('ERROR: Invalid target environment "' + TARGET_ENV + '".');
