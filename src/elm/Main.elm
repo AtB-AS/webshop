@@ -238,9 +238,7 @@ update msg model =
                             { accountModel | editSection = Just AccountPage.TravelCardSection }
                     in
                         ( { model | account = newModel }
-                        , Cmd.batch
-                            [ Route.newUrl model.navKey Route.Settings
-                            ]
+                        , Route.newUrl model.navKey Route.Settings
                         )
 
                 GA.CloseShop ->
