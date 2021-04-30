@@ -123,6 +123,10 @@ app.ports.signOutHandler.subscribe(async () => {
     clearRefreshToken();
 
     try {
+        // Remove loggedIn before signing out to avoid showing error
+        // below on onAuthStateChanged.
+        localStorage.removeItem('loggedIn');
+
         await firebase.auth().signOut();
 
         unsubscribeFareContractSnapshot && unsubscribeFareContractSnapshot();
@@ -132,8 +136,6 @@ app.ports.signOutHandler.subscribe(async () => {
         unsubscribeFetchUserDataSnapshot = null;
     } catch (e) {
         console.error('[debug] Unable to logout: ', e);
-    } finally {
-        localStorage.removeItem('loggedIn');
     }
 });
 
@@ -152,7 +154,7 @@ firebase.auth().onAuthStateChanged((user) => {
 
         app.ports.signInError.send({
             code: -1,
-            message: 'Du er blitt logget ut. Logg inn igjen.'
+            message: 'Du er blitt logget ut.'
         });
     }
 });
