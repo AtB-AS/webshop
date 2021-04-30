@@ -8,7 +8,7 @@ import Environment exposing (DistributionEnvironment(..), Environment, Language(
 import Error exposing (Error)
 import Fragment.Icon as Icon
 import GlobalActions as GA exposing (GlobalAction)
-import Html as H exposing (Html, a)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
@@ -230,16 +230,9 @@ update msg model =
                         )
 
                 GA.OpenEditTravelCard ->
-                    let
-                        accountModel =
-                            model.account
-
-                        newModel =
-                            { accountModel | editSection = Just AccountPage.TravelCardSection }
-                    in
-                        ( { model | account = newModel }
-                        , Route.newUrl model.navKey Route.Settings
-                        )
+                    ( { model | account = AccountPage.setEditSection (Just AccountPage.TravelCardSection) model.account }
+                    , Route.newUrl model.navKey Route.Settings
+                    )
 
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )

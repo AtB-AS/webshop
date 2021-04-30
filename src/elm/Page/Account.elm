@@ -1,4 +1,4 @@
-module Page.Account exposing (EditSection(..), Model, Msg(..), init, subscriptions, update, view)
+module Page.Account exposing (EditSection(..), Model, Msg(..), init, setEditSection, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Browser.Dom as Dom
@@ -373,6 +373,11 @@ viewEmailAddress model profile =
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
+
+
+setEditSection : Maybe EditSection -> Model -> Model
+setEditSection editSection model =
+    { model | editSection = editSection }
 
 
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
