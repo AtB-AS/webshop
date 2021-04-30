@@ -7,11 +7,18 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const SriPlugin = require('webpack-subresource-integrity');
-// const HashOutput = require('./vendor/webpack-plugin-hash-output');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+<<<<<<< HEAD
 const dotenv = require('dotenv');
+=======
+const CompressionPlugin = require('compression-webpack-plugin');
+
+// Compression stuff
+const zlib = require('zlib');
+const zopfli = require('@gfx/zopfli');
+>>>>>>> 5316c7f (chore: removes unnecessary dependencies and updates outdated old ways)
 
 // Local stuff
 const createHashFunction = require('./hash-func.js');
@@ -68,7 +75,7 @@ const outputPath = path.join(__dirname, 'dist');
 // yarn build -- --debug
 //
 // webpack --debug
-// webpack-dev-server --hot --inline --baseUrl=<url>
+// webpack serve --hot --inline --baseUrl=<url>
 
 // -- Helpers
 
@@ -476,33 +483,38 @@ if (isDevelopment) {
         plugins: [
             // Extract CSS into a separate file.
             new MiniCssExtractPlugin({
-                filename: 'static/styles/[sha256:contenthash:base64].css'
+                filename: 'static/styles/[contenthash].css'
             }),
-
-            // // Hash output _after_ generating them
-            // new HashOutput({}),
 
             // Set up Workbox
             new WorkboxWebpackPlugin.GenerateSW({
                 exclude: ['index.html']
+            }),
+
+            new CompressionPlugin({
+                filename: '[path][base].gz',
+                compressionOptions: {
+                    numiterations: 15
+                },
+                algorithm(input, compressionOptions, callback) {
+                    return zopfli.gzip(input, compressionOptions, callback);
+                },
+                test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/
+            }),
+
+            new CompressionPlugin({
+                filename: '[path][base].br',
+                algorithm: 'brotliCompress',
+                test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
+                compressionOptions: {
+                    params: {
+                        [zlib.constants.BROTLI_PARAM_QUALITY]: 11
+                    }
+                },
+                threshold: 10240,
+                minRatio: 0.8,
+                deleteOriginalAssets: false
             })
-
-            // // Compress everything with Zopfli (gzip)
-            // new ZopfliPlugin({
-            //     asset: '[path].gz[query]',
-            //     algorithm: 'gzip',
-            //     test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
-            //     threshold: 1024,
-            //     minRatio: 0.8
-            // }),
-
-            // // Compress everything with Brotli
-            // new BrotliPlugin({
-            //     asset: '[path].br[query]',
-            //     test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
-            //     threshold: 1024,
-            //     minRatio: 0.8
-            // })
         ],
         optimization: {
             minimize: true,
