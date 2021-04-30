@@ -146,13 +146,9 @@ p {
 }
 .pageHeader__content a,
 .pageHeader__nav__logout {
-    font-size: var(--baseTypo-body__primary--bold-fontSize, 1rem);
-    line-height: var(--baseTypo-body__primary--bold-lineHeight, 1.25rem);
-    letter-spacing: var(
-        --baseTypo-body__primary--bold-letterSpacing,
-        0.03125rem
-    );
-    font-weight: var(--baseTypo-body__primary--bold-fontWeight, 500);
+    font-size: var(--baseTypo-body__primary-fontSize, 1rem);
+    line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
+    letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
     color: var(--colors-primary_2-color);
     text-decoration: none;
     transition: all 150ms ease;
