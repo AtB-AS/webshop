@@ -357,6 +357,7 @@ p {
     display: grid;
     grid-gap: var(--spacings-xLarge);
     grid-template-columns: 2fr 1fr;
+    padding-bottom: 5rem;
 
     input[type='time'],
     input[type='date'] {
