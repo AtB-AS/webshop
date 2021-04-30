@@ -193,6 +193,7 @@ viewConfirm _ model =
                     |> T.setError model.error
                     |> T.setTitle (Just "Engangspassord")
                     |> T.setPlaceholder "Skriv inn engangspassordet"
+                    |> T.setAttributes [ A.autocomplete False ]
                     |> T.view
                 ]
             , B.init "Logg inn"
