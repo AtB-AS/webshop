@@ -215,13 +215,13 @@
         width: 100%;
         text-align: center;
     }
-    .ui-heading-page {
+    .ui-pageHeader {
         padding: 0;
         justify-content: flex-start;
     }
-    .ui-heading-page__back:link,
-    .ui-heading-page__back:visited,
-    .ui-heading-page__back:hover {
+    .ui-pageHeader__back:link,
+    .ui-pageHeader__back:visited,
+    .ui-pageHeader__back:hover {
         position: relative;
     }
 }
