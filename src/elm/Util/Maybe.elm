@@ -1,9 +1,12 @@
 module Util.Maybe exposing (flatMap, join)
 
-{-| flatMap combinator for Maybes
+{-| Utils for operating on Maybes, adding more combinators
+to treat them as functors.
 -}
 
 
+{-| flatMap combinator for Maybes
+-}
 flatMap : (a -> Maybe b) -> Maybe a -> Maybe b
 flatMap f maybe =
     Maybe.map f maybe
