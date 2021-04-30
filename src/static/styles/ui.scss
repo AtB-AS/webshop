@@ -500,13 +500,6 @@
         -webkit-text-fill-color: inherit !important;
     }
 }
-@keyframes autofill {
-    0%,
-    100% {
-        color: inherit;
-        background: transparent;
-    }
-}
 
 .ui-input-text__input:focus {
     outline: 0;
