@@ -2,7 +2,7 @@
 const webpack = require('webpack');
 
 // Webpack plugins
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -311,27 +311,31 @@ const commonConfig = {
                       removeEmptyAttributes: true
                   }
         }),
-        new CopyPlugin([
-            {
-                from: 'src/static/manifest.json',
-                to: 'manifest.json',
-                transform(content, path) {
-                    return JSON.stringify(JSON.parse(content.toString('utf8')));
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'src/static/manifest.json',
+                    to: 'manifest.json',
+                    transform(content, path) {
+                        return JSON.stringify(
+                            JSON.parse(content.toString('utf8'))
+                        );
+                    }
+                },
+                {
+                    from: 'src/static/favicon.ico',
+                    to: 'favicon.ico'
+                },
+                {
+                    from: 'src/static/icon.svg',
+                    to: 'icon.svg'
+                },
+                {
+                    from: 'src/static/images',
+                    to: 'images'
                 }
-            },
-            {
-                from: 'src/static/favicon.ico',
-                to: 'favicon.ico'
-            },
-            {
-                from: 'src/static/icon.svg',
-                to: 'icon.svg'
-            },
-            {
-                from: 'src/static/images',
-                to: 'images'
-            }
-        ]),
+            ]
+        }),
         new webpack.DefinePlugin({
             elmFlags: JSON.stringify({
                 isDevelopment: isDevelopment,

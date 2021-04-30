@@ -1,6 +1,6 @@
 require('./styles/main.scss');
 
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/app';
 import 'firebase/firebase-auth';
 import 'firebase/firebase-firestore';
 import 'firebase/firebase-remote-config';
