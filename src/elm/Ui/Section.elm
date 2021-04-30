@@ -50,8 +50,8 @@ viewWithOptions items options =
 
 
 view : List (Html msg) -> Html msg
-view c =
-    viewWithOptions c init
+view children =
+    viewWithOptions children init
 
 
 viewPaddedItem : List (Html msg) -> Html msg
