@@ -236,24 +236,6 @@ p {
     }
 }
 
-.page-history {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 320px 1fr;
-
-    .sidebar {
-        width: 320px;
-
-        input {
-            border: none;
-            outline: none;
-            background: inherit;
-            margin: 0;
-            padding: 0;
-        }
-    }
-}
-
 .page {
     display: grid;
     grid-gap: var(--spacings-xLarge);
@@ -277,9 +259,12 @@ p {
     grid-template-columns: 1fr;
 }
 
-.page--overview {
+.page--overview,
+.page--history {
     grid-template-columns: 1fr 2fr;
+}
 
+.page--overview {
     .ticket-header {
         display: flex;
 
@@ -350,7 +335,6 @@ p {
         padding: var(--spacings-medium);
     }
 
-    .page-history,
     .page {
         grid-template-columns: 1fr;
     }

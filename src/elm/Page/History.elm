@@ -20,6 +20,7 @@ import Shared exposing (Shared)
 import Task
 import Ui.Button as B
 import Ui.Group
+import Ui.Input.Text as T
 import Ui.Message
 import Ui.Section
 import Util.Format as Format
@@ -118,24 +119,34 @@ update msg env model =
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
-    H.div [ A.class "page-history" ]
-        [ H.div [ A.class "sidebar" ] [ viewSidebar model ]
-        , H.div [ A.class "main" ] [ viewMain shared model ]
+    H.div [ A.class "page page--history" ]
+        [ viewSidebar model
+        , viewMain shared model
         ]
 
 
 viewSidebar : Model -> Html Msg
 viewSidebar model =
-    H.div [ A.class "section-box" ]
-        [ H.div [ A.class "section-header" ] [ H.text "Filtrer på dato" ]
-        , textInput (Maybe.withDefault "" model.from)
-            InputFrom
-            "Fra"
-            "Velg dato"
-        , textInput (Maybe.withDefault "" model.to)
-            InputTo
-            "Til"
-            "Velg dato"
+    Ui.Section.view
+        [ Ui.Section.viewHeader "Filtrer på dato"
+        , Ui.Section.viewItem
+            [ T.init "from"
+                |> T.setValue model.from
+                |> T.setOnInput (Just InputFrom)
+                |> T.setType "date"
+                |> T.setPlaceholder "Velg dato"
+                |> T.setTitle (Just "Fra")
+                |> T.view
+            ]
+        , Ui.Section.viewItem
+            [ T.init "to"
+                |> T.setValue model.to
+                |> T.setOnInput (Just InputTo)
+                |> T.setType "date"
+                |> T.setPlaceholder "Velg dato"
+                |> T.setTitle (Just "Til")
+                |> T.view
+            ]
         ]
 
 
