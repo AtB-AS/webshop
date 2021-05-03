@@ -359,6 +359,9 @@
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
 }
+.ui-button--disabled {
+    cursor: not-allowed;
+}
 .ui-button--disabled > * {
     opacity: 0.2;
 }
