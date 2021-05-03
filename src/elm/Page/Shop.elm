@@ -280,6 +280,7 @@ update msg env model shared =
                             "CAPTURE" ->
                                 PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
                                     |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
+                                    |> addGlobalNotification (Message.Valid "Ny billett lagt til.")
                                     |> PageUpdater.addGlobalAction GA.CloseShop
 
                             "CANCEL" ->
