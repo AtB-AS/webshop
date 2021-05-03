@@ -38,7 +38,7 @@ type Msg
     = FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
     | BuyOffers PaymentType
-    | ReceiveBuyOffers (Result Http.Error Reservation)
+    | ReceiveBuyOffers PaymentType (Result Http.Error Reservation)
     | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
     | CloseShop
     | SetProduct String Bool
@@ -254,13 +254,20 @@ update msg env model shared =
                     _ ->
                         PageUpdater.init model
 
-            ReceiveBuyOffers result ->
+            ReceiveBuyOffers paymentType result ->
                 case result of
                     Ok reservation ->
                         PageUpdater.fromPair
                             ( { model | reservation = Loaded reservation }
                             , Cmd.batch
-                                [ MiscService.openWindow reservation.url
+                                [ reservation.url
+                                    |> (case paymentType of
+                                            Vipps ->
+                                                MiscService.navigateTo
+
+                                            Nets ->
+                                                MiscService.openWindow
+                                       )
                                 , fetchPaymentStatus env reservation.paymentId
                                 ]
                             )
@@ -814,7 +821,7 @@ buyOffers env paymentType offerCounts =
     offerCounts
         |> TicketService.reserve env paymentType
         |> Http.toTask
-        |> Task.attempt ReceiveBuyOffers
+        |> Task.attempt (ReceiveBuyOffers paymentType)
 
 
 fetchPaymentStatus : Environment -> Int -> Cmd Msg

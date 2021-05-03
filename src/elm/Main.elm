@@ -79,6 +79,7 @@ type alias Model =
 
 type alias Flags =
     { isDevelopment : Bool
+    , localUrl : String
     , baseUrl : String
     , ticketUrl : String
     , refDataUrl : String
@@ -133,6 +134,7 @@ init flags url navKey =
         environment : Environment
         environment =
             { distributionEnv = distributionEnv
+            , localUrl = flags.localUrl
             , baseUrl = flags.baseUrl
             , ticketUrl = flags.ticketUrl
             , refDataUrl = flags.refDataUrl
@@ -524,10 +526,6 @@ viewPage model =
             model.shared
     in
         case model.route of
-            Just Route.Home ->
-                OverviewPage.view env model.appInfo shared model.overview model.route
-                    |> H.map OverviewMsg
-
             Just Route.Shop ->
                 case model.shop of
                     Just shop ->
@@ -548,24 +546,9 @@ viewPage model =
                     |> H.map AccountMsg
                     |> wrapSubPage "Kontoinformasjon"
 
-            Just Route.NotFound ->
-                H.div
-                    [ A.class "welcome-container" ]
-                    [ H.div []
-                        [ H.h2 [] [ H.text model.appInfo.title ]
-                        , H.h3 [] [ H.text "Not found." ]
-                        ]
-                    ]
-
-            Nothing ->
-                H.div
-                    [ A.class "welcome-container" ]
-                    [ H.div []
-                        [ H.h2 [] [ H.text model.appInfo.title ]
-                        , H.h3 [] [ H.a [ A.href "#/" ] [ H.text "Go home" ] ]
-                        , H.h3 [] [ H.a [ A.href "#/settings" ] [ H.text "Go to settings" ] ]
-                        ]
-                    ]
+            _ ->
+                OverviewPage.view env model.appInfo shared model.overview model.route
+                    |> H.map OverviewMsg
 
 
 wrapSubPage : String -> Html msg -> Html msg

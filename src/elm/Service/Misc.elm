@@ -3,6 +3,7 @@ port module Service.Misc exposing
     , convertTime
     , convertedTime
     , fareContractDecoder
+    , navigateTo
     , onProfileChange
     , onboardingDone
     , onboardingStart
@@ -19,6 +20,9 @@ import Json.Encode as Encode
 
 
 port openWindow : String -> Cmd msg
+
+
+port navigateTo : String -> Cmd msg
 
 
 port receiveTokens : (Encode.Value -> msg) -> Sub msg

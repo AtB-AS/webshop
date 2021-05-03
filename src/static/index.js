@@ -43,7 +43,8 @@ const app = Elm.Main.init({
     flags: Object.assign(
         {
             installId: installId,
-            loggedIn: localStorage['loggedIn'] === 'loggedIn'
+            loggedIn: localStorage['loggedIn'] === 'loggedIn',
+            localUrl: window.location.origin
         },
         elmFlags
     )
@@ -341,6 +342,10 @@ app.ports.onboardingDone.subscribe(() => {
 
 app.ports.openWindow.subscribe((url) => {
     window.open(url);
+});
+
+app.ports.navigateTo.subscribe((url) => {
+    window.location.assign(url);
 });
 
 if (app.ports.convertTime) {
