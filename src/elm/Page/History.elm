@@ -8,6 +8,7 @@ import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
+import Html.Extra
 import Http
 import Json.Decode as Decode
 import List.Extra
@@ -17,6 +18,10 @@ import Service.Misc as MiscService exposing (Profile)
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
 import Task
+import Ui.Button as B
+import Ui.Group
+import Ui.Message
+import Ui.Section
 import Util.Format as Format exposing (date)
 
 
@@ -218,61 +223,58 @@ viewOrder shared model order =
 
         sendingReceipt =
             List.member order.orderId model.sendingReceipt
+
+        missingEmail =
+            case model.profile of
+                Just profile ->
+                    String.isEmpty profile.email
+
+                Nothing ->
+                    True
     in
-        H.div [ A.class "section-box" ]
-            (H.div [ A.class "order-header", E.onClick (ToggleOrder order.id) ]
-                [ H.div [] [ H.text <| Format.date order.created ++ " - " ++ fareProduct ++ travellers ]
-                , H.div [ A.style "display" "flex" ] <|
-                    if expanded then
-                        [ H.span [ A.style "margin-right" "12px" ] [ H.text "Skjul" ]
-                        , Icon.wrapper 20 Icon.upArrow
-                        ]
+        Ui.Group.view
+            { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
+            , id = order.id
+            , icon = Nothing
+            , value =
+                Just
+                    (if expanded then
+                        "Skjul"
 
-                    else
-                        [ H.span [ A.style "margin-right" "12px" ] [ H.text "Vis" ]
-                        , Icon.wrapper 20 Icon.downArrow
-                        ]
+                     else
+                        "Vis"
+                    )
+            , open = expanded
+            , disabled = False
+            , onOpenClick = Just (ToggleOrder order.id)
+            }
+            [ Ui.Section.viewPaddedItem
+                [ H.label [] [ H.text "Kjøpsinformasjon" ]
+                , H.div [ A.class "metadata-list" ]
+                    [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                    , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
+                    , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
+                    , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
+                    ]
                 ]
-                :: (if expanded then
-                        List.concat
-                            [ [ H.div []
-                                    [ H.label [] [ H.text "Kjøpsinformasjon" ]
-                                    , H.div [ A.class "metadata-list" ]
-                                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                                        , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
-                                        , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
-                                        , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
-                                        ]
-                                    ]
-                              ]
-                            , List.indexedMap
-                                (viewTravelRight shared (List.length order.travelRights))
-                                order.travelRights
-                            , [ H.button
-                                    ([ A.type_ "button"
-                                     , A.class "receipt-button"
-                                     ]
-                                        ++ (if sendingReceipt then
-                                                []
+            , Ui.Section.viewPaddedItem
+                (List.indexedMap
+                    (viewTravelRight shared (List.length order.travelRights))
+                    order.travelRights
+                )
+            , B.init "Be om kvittering på e-post"
+                |> B.setDisabled missingEmail
+                |> B.setOnClick
+                    (if sendingReceipt then
+                        Nothing
 
-                                            else
-                                                [ E.onClick (RequestReceipt order.orderId) ]
-                                           )
-                                    )
-                                    [ H.div [] [ H.text "Be om kvittering på e-post" ]
-                                    , if sendingReceipt then
-                                        H.span [ A.class "button-loading" ] []
-
-                                      else
-                                        Icon.rightArrow
-                                    ]
-                              ]
-                            ]
-
-                    else
-                        []
-                   )
-            )
+                     else
+                        Just (RequestReceipt order.orderId)
+                    )
+                |> B.setIcon (Just Icon.rightArrow)
+                |> B.tertiary
+            , Html.Extra.viewIf missingEmail (Ui.Message.warning "Du må legge til epost via profilen din for å kunne sende kvittering.")
+            ]
 
 
 viewTravelRight : Shared -> Int -> Int -> TravelRight -> Html msg
