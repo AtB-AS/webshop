@@ -52,7 +52,7 @@ routeToString page =
                 NotFound ->
                     [ "not-found" ]
     in
-        "#/" ++ String.join "/" pieces
+        "/" ++ String.join "/" pieces
 
 
 
@@ -76,11 +76,7 @@ newUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl url =
-    Maybe.andThen
-        (\fragment ->
-            { url | path = fragment, fragment = Nothing }
-                |> Parser.parse parser
-                |> Maybe.withDefault NotFound
-                |> Just
-        )
-        url.fragment
+    url
+        |> Parser.parse parser
+        |> Maybe.withDefault NotFound
+        |> Just
