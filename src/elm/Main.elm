@@ -451,15 +451,15 @@ header model =
             , ( "Min profil", Route.Settings )
             ]
 
-        isLoggedIn =
-            model.environment.customerId /= Nothing
+        showHeader =
+            model.environment.customerId /= Nothing && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
                 [ H.h1 [ A.class "pageHeader__logo" ]
                     [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
                     ]
-                , if isLoggedIn then
+                , if showHeader then
                     H.nav [ A.class "pageHeader__nav" ]
                         [ H.ul []
                             (List.map
@@ -546,6 +546,9 @@ viewPage model =
                     |> H.map AccountMsg
                     |> wrapSubPage "Kontoinformasjon"
 
+            Just Route.Thanks ->
+                viewSuccessTicketPage
+
             _ ->
                 OverviewPage.view env model.appInfo shared model.overview model.route
                     |> H.map OverviewMsg
@@ -556,6 +559,14 @@ wrapSubPage title children =
     H.div []
         [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( Route.Home, "Oversikt" ) |> PH.view
         , children
+        ]
+
+
+viewSuccessTicketPage : Html msg
+viewSuccessTicketPage =
+    H.div [ A.class "pageHome__successBuy" ]
+        [ H.img [ A.src "/images/empty-illustration.svg" ] []
+        , H.p [] [ H.text "Takk! Du kan nå lukke vinduet." ]
         ]
 
 
