@@ -1,7 +1,7 @@
 module Page.History exposing (Model, Msg, init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.FareContract exposing (FareContract, FareContractState(..), FareTime, TravelRight(..))
+import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.RefData exposing (LangString(..))
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -22,7 +22,7 @@ import Ui.Button as B
 import Ui.Group
 import Ui.Message
 import Ui.Section
-import Util.Format as Format exposing (date)
+import Util.Format as Format
 
 
 type Msg
@@ -117,7 +117,7 @@ update msg env model =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view env _ shared model _ =
+view _ _ shared model _ =
     H.div [ A.class "page-history" ]
         [ H.div [ A.class "sidebar" ] [ viewSidebar model ]
         , H.div [ A.class "main" ] [ viewMain shared model ]
@@ -343,25 +343,6 @@ textInput value action title placeholder =
                 []
             ]
         ]
-
-
-fareContractStateToString : FareContractState -> String
-fareContractStateToString state =
-    case state of
-        FareContractStateUnspecified ->
-            "Unspecified"
-
-        FareContractStateNotActivated ->
-            "Not activated"
-
-        FareContractStateActivated ->
-            "Activated"
-
-        FareContractStateCancelled ->
-            "Cancelled"
-
-        FareContractStateRefunded ->
-            "Refunded"
 
 
 formatTotal : Maybe String -> String
