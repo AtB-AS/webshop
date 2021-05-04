@@ -451,6 +451,23 @@ header model =
 
         isLoggedIn =
             model.environment.customerId /= Nothing
+
+        navigation =
+            if model.onboarding == Nothing then
+                List.map
+                    (\( name, route ) ->
+                        H.li
+                            [ A.classList
+                                [ ( "pageHeader__nav__item", True )
+                                , ( "pageHeader__nav__item--active", Just route == model.route )
+                                ]
+                            ]
+                            [ H.a [ Route.href route ] [ H.text name ] ]
+                    )
+                    links
+
+            else
+                []
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
@@ -460,17 +477,7 @@ header model =
                 , if isLoggedIn then
                     H.nav [ A.class "pageHeader__nav" ]
                         [ H.ul []
-                            (List.map
-                                (\( name, route ) ->
-                                    H.li
-                                        [ A.classList
-                                            [ ( "pageHeader__nav__item", True )
-                                            , ( "pageHeader__nav__item--active", Just route == model.route )
-                                            ]
-                                        ]
-                                        [ H.a [ Route.href route ] [ H.text name ] ]
-                                )
-                                links
+                            (navigation
                                 ++ [ H.li []
                                         [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
                                         ]
