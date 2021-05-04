@@ -633,6 +633,27 @@ table {
     }
 }
 
+/* temporary */
+
+.onboarding-travelcard {
+    display: grid;
+    width: 632px;
+    grid-template: "a a" "b c" / 1fr 1fr;
+    grid-gap: 24px;
+
+    > :nth-child(1) {
+        grid-area: a;
+    }
+
+    > :nth-child(2) {
+        grid-area: b;
+    }
+
+    > :nth-child(3) {
+        grid-area: c;
+    }
+}
+
 @import 'waiting';
 @import 'ui';
 
