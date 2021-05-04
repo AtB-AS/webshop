@@ -311,12 +311,11 @@
     justify-content: space-between;
     align-items: center;
     transition: filter 150ms ease-in;
-
-    > :not(.ui-button__coloredIcon) {
-        svg,
-        path {
-            fill: currentColor;
-        }
+}
+.ui-button__icon > :not(.ui-button__coloredIcon) {
+    svg,
+    path {
+        fill: currentColor;
     }
 }
 .ui-button:hover {
