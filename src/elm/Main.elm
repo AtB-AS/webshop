@@ -375,8 +375,15 @@ update msg model =
                                 , customerEmail = value.email
                                 , token = value.token
                             }
+
+                        newModel =
+                            { model | userData = Loaded value, environment = newEnvironment }
                     in
-                        ( { model | userData = Loaded value, environment = newEnvironment }
+                        ( if value.stopOnboarding then
+                            { newModel | onboarding = Nothing }
+
+                          else
+                            newModel
                         , Cmd.none
                         )
 
@@ -621,6 +628,7 @@ type alias UserData =
     , userId : String
     , customerId : String
     , provider : FirebaseAuth.Provider
+    , stopOnboarding : Bool
     }
 
 
@@ -636,6 +644,7 @@ userDataDecoder =
             )
         |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
+        |> DecodeP.optional "stopOnboarding" Decode.bool False
 
 
 userErrorDecoder : Decoder AuthError
