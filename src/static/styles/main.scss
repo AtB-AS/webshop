@@ -196,46 +196,6 @@ p {
     }
 }
 
-.page-onboarding {
-    margin-top: 96px;
-    width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-
-    input {
-        border: none;
-        outline: none;
-        background: inherit;
-        margin: 0;
-        padding: 0;
-    }
-
-    .consent {
-        display: flex;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button,
-    .no-button {
-        padding: 24px;
-        font-weight: 500;
-        display: flex;
-        cursor: pointer;
-
-        > :first-child {
-            flex-grow: 1;
-        }
-    }
-
-    .button {
-        background-color: #71d6e0;
-        border-radius: 12px;
-    }
-}
-
 .page-history {
     display: grid;
     grid-gap: 24px;
@@ -637,7 +597,6 @@ table {
 
 .onboarding-travelcard {
     display: grid;
-    width: 632px;
     grid-template: "a a" "b c" / 1fr 1fr;
     grid-gap: 24px;
 
