@@ -210,9 +210,9 @@ view env model =
 
 viewProfileInfo : Environment -> Model -> List (Html Msg)
 viewProfileInfo env model =
-    [ Section.sectionWithOptions { marginBottom = True, marginTop = False }
+    [ Section.view
         [ Section.viewHeader "Profilinformasjon"
-        , Section.viewGenericItem [ H.text "Disse opplysningene vil gjøre det enklere for deg å bruke nettbutikken." ]
+        , Section.viewPaddedItem [ H.text "Disse opplysningene vil gjøre det enklere for deg å bruke nettbutikken." ]
         , sectionTextInput model.firstName
             InputFirstName
             "Fornavn"
@@ -235,9 +235,9 @@ viewProfileInfo env model =
 
 viewConsents : Environment -> Model -> List (Html Msg)
 viewConsents env model =
-    [ Section.sectionWithOptions { marginBottom = True, marginTop = False }
+    [ Section.view
         [ Section.viewHeader "Samtykker"
-        , Section.viewGenericItem
+        , Section.viewPaddedItem
             [ H.p [] [ H.text "Vi trenger komme i kontakt med deg som reisende for å optimalisere opplevelsen av den nye nettbutikken. Vi blir veldig glade om samtykker til dette!" ]
             , H.p [] [ H.a [ A.href "add-this" ] [ H.text "Les vår personvernerklæring" ] ]
             ]
@@ -272,20 +272,20 @@ viewConsents env model =
 viewTravelCard : Environment -> Model -> List (Html Msg)
 viewTravelCard env model =
     [ H.div [ A.class "onboarding-travelcard" ]
-        [ Section.sectionWithOptions { marginBottom = False, marginTop = False }
+        [ Section.view
             [ Section.viewHeader "Legg til t:kort"
             , sectionTextInput model.travelCard
                 InputTravelCard
                 "t:kort-nummer"
                 "Legg til t:kort-nummeret"
             ]
-        , Section.sectionWithOptions { marginBottom = False, marginTop = False }
+        , Section.view
             [ Button.init "Jeg bruker ikke t:kort"
                 |> Button.setIcon (Just Icon.rightArrow)
                 |> Button.setOnClick (Just SkipTravelCard)
                 |> Button.tertiary
             ]
-        , Section.sectionWithOptions { marginBottom = False, marginTop = False }
+        , Section.view
             [ Button.init "Legg til t:kort"
                 |> Button.setIcon (Just Icon.rightArrow)
                 |> Button.setOnClick (Just RegisterTravelCard)
@@ -297,7 +297,7 @@ viewTravelCard env model =
 
 viewAppAdvert : Environment -> Model -> List (Html Msg)
 viewAppAdvert env model =
-    [ Section.sectionWithOptions { marginBottom = False, marginTop = False }
+    [ Section.view
         [ Section.viewHeader "Har du prøvd AtB-appen?"
         , Button.init "Fullfør"
             |> Button.setIcon (Just Icon.rightArrow)
