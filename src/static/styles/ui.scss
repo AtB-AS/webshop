@@ -67,6 +67,7 @@
 .ui-section {
     border-radius: var(--border-radius-regular);
     overflow: hidden;
+    align-self: flex-start;
 }
 .ui-section--marginTop {
     margin-top: var(--spacings-xLarge);
