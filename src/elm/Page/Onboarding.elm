@@ -16,7 +16,9 @@ import Task
 import Ui.Button as Button
 import Ui.Input.Checkbox as Checkbox
 import Ui.Input.Radio
+import Ui.Input.Text as TextInput
 import Ui.Message as Message
+import Ui.PageHeader as PH
 import Ui.Section as Section
 
 
@@ -35,6 +37,7 @@ type Msg
     | SkipTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
     | Finish
+    | CancelOnboarding
 
 
 type Step
@@ -165,6 +168,9 @@ update msg env model =
         Finish ->
             PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
+        CancelOnboarding ->
+            PageUpdater.fromPair ( model, MiscService.onboardingDone () )
+
 
 getError : Http.Error -> Maybe String
 getError error =
@@ -193,38 +199,59 @@ getError error =
 
 view : Environment -> Model -> Html Msg
 view env model =
-    H.div [ A.class "page-onboarding" ] <|
-        case model.step of
-            ProfileInfo ->
-                viewProfileInfo env model
+    case model.step of
+        ProfileInfo ->
+            viewProfileInfo env model
+                |> wrapHeader False "Profilinformasjon (1 av 4)"
 
-            Consents ->
-                viewConsents env model
+        Consents ->
+            viewConsents env model
+                |> wrapHeader False "Samtykker (2 av 4)"
 
-            TravelCard ->
-                viewTravelCard env model
+        TravelCard ->
+            viewTravelCard env model
+                |> wrapHeader True "Legg til t:kort (3 av 4)"
 
-            AppAdvert ->
-                viewAppAdvert env model
+        AppAdvert ->
+            viewAppAdvert env model
+                |> wrapHeader False "Har du prøvd AtB-appen?"
+
+
+wrapHeader : Bool -> String -> List (Html Msg) -> Html Msg
+wrapHeader widePage title children =
+    H.div []
+        [ PH.init
+            |> PH.setTitle (Just title)
+            |> PH.setOnCancel (Just CancelOnboarding)
+            |> PH.view
+        , H.div
+            [ A.classList
+                [ ( "page", True )
+                , ( "page-wide", widePage )
+                ]
+            ]
+            children
+        ]
 
 
 viewProfileInfo : Environment -> Model -> List (Html Msg)
-viewProfileInfo env model =
+viewProfileInfo _ model =
     [ Section.view
-        [ Section.viewHeader "Profilinformasjon"
-        , Section.viewPaddedItem [ H.text "Disse opplysningene vil gjøre det enklere for deg å bruke nettbutikken." ]
+        [ Section.viewPaddedItem
+            [ H.p [] [ H.text "Disse opplysningene vil gjøre det enklere for deg å bruke nettbutikken." ]
+            ]
         , sectionTextInput model.firstName
             InputFirstName
             "Fornavn"
-            "Ditt foravn"
+            "Hva skal vi kalle deg?"
         , sectionTextInput model.lastName
             InputLastName
             "Etternavn"
-            "Ditt etternavn"
+            "Hva skal vi kalle deg?"
         , sectionTextInput model.email
             InputEmail
             "E-postadresse"
-            "Legg inn din e-postadresse"
+            "Hvor skal vi sende kvitteringer?"
         , Button.init "Neste"
             |> Button.setIcon (Just Icon.rightArrow)
             |> Button.setOnClick (Just SkipRegister)
@@ -234,10 +261,9 @@ viewProfileInfo env model =
 
 
 viewConsents : Environment -> Model -> List (Html Msg)
-viewConsents env model =
+viewConsents _ model =
     [ Section.view
-        [ Section.viewHeader "Samtykker"
-        , Section.viewPaddedItem
+        [ Section.viewPaddedItem
             [ H.p [] [ H.text "Vi trenger komme i kontakt med deg som reisende for å optimalisere opplevelsen av den nye nettbutikken. Vi blir veldig glade om samtykker til dette!" ]
             , H.p [] [ H.a [ A.href "add-this" ] [ H.text "Les vår personvernerklæring" ] ]
             ]
@@ -270,11 +296,10 @@ viewConsents env model =
 
 
 viewTravelCard : Environment -> Model -> List (Html Msg)
-viewTravelCard env model =
+viewTravelCard _ model =
     [ H.div [ A.class "onboarding-travelcard" ]
         [ Section.view
-            [ Section.viewHeader "Legg til t:kort"
-            , sectionTextInput model.travelCard
+            [ sectionTextInput model.travelCard
                 InputTravelCard
                 "t:kort-nummer"
                 "Legg til t:kort-nummeret"
@@ -296,9 +321,9 @@ viewTravelCard env model =
 
 
 viewAppAdvert : Environment -> Model -> List (Html Msg)
-viewAppAdvert env model =
+viewAppAdvert _ _ =
     [ Section.view
-        [ Section.viewHeader "Har du prøvd AtB-appen?"
+        [ Section.viewPaddedItem [ H.text "reklame kommer her" ]
         , Button.init "Fullfør"
             |> Button.setIcon (Just Icon.rightArrow)
             |> Button.setOnClick (Just Finish)
@@ -309,14 +334,13 @@ viewAppAdvert env model =
 
 sectionTextInput : String -> (String -> msg) -> String -> String -> Html msg
 sectionTextInput value action title placeholder =
-    Section.viewLabelItem title
-        [ H.input
-            [ A.type_ "text"
-            , A.placeholder placeholder
-            , E.onInput action
-            , A.value value
-            ]
-            []
+    Section.viewItem
+        [ TextInput.init ""
+            |> TextInput.setTitle (Just title)
+            |> TextInput.setPlaceholder placeholder
+            |> TextInput.setOnInput (Just action)
+            |> TextInput.setValue (Just value)
+            |> TextInput.view
         ]
 
 
