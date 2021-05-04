@@ -236,56 +236,6 @@ p {
     }
 }
 
-.page-history {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 320px 1fr;
-
-    .sidebar {
-        width: 320px;
-
-        input {
-            border: none;
-            outline: none;
-            background: inherit;
-            margin: 0;
-            padding: 0;
-        }
-    }
-
-    .main {
-        .order-header {
-            display: flex;
-            font-weight: 500;
-            cursor: pointer;
-
-            > div {
-                &:first-child {
-                    flex-grow: 1;
-                }
-            }
-        }
-    }
-
-    .receipt-button {
-        display: flex;
-        cursor: pointer;
-        background-color: inherit;
-        border: none;
-        width: 100%;
-        padding: 1.5rem;
-        border-radius: 0.25rem;
-        appearance: none;
-        text-align: left;
-        align-items: center;
-
-        > div:first-child {
-            flex-grow: 1;
-            font-weight: 500;
-        }
-    }
-}
-
 .page {
     display: grid;
     grid-gap: var(--spacings-xLarge);
@@ -309,9 +259,12 @@ p {
     grid-template-columns: 1fr;
 }
 
-.page--overview {
+.page--overview,
+.page--history {
     grid-template-columns: 1fr 2fr;
+}
 
+.page--overview {
     .ticket-header {
         display: flex;
 
@@ -382,7 +335,6 @@ p {
         padding: var(--spacings-medium);
     }
 
-    .page-history,
     .page {
         grid-template-columns: 1fr;
     }

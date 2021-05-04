@@ -67,6 +67,7 @@
 .ui-section {
     border-radius: var(--border-radius-regular);
     overflow: hidden;
+    align-self: flex-start;
 }
 .ui-section--marginTop {
     margin-top: var(--spacings-xLarge);
@@ -358,6 +359,9 @@
 .ui-button--tertiary {
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
+}
+.ui-button--disabled {
+    cursor: not-allowed;
 }
 .ui-button--disabled > * {
     opacity: 0.2;
