@@ -280,6 +280,7 @@ update msg env model shared =
                             "CAPTURE" ->
                                 PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
                                     |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
+                                    |> addGlobalNotification (Message.Valid "Ny billett lagt til.")
                                     |> PageUpdater.addGlobalAction GA.CloseShop
 
                             "CANCEL" ->
@@ -417,19 +418,29 @@ richActionButton active maybeAction content =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
     let
-        disableButtons =
-            case model.reservation of
-                Loading _ ->
-                    True
-
-                Loaded _ ->
-                    True
-
-                _ ->
-                    False
-
         summary =
             modelSummary shared model
+
+        errorMessage =
+            case model.offers of
+                Failed message ->
+                    Just message
+
+                _ ->
+                    Nothing
+
+        disableButtons =
+            (errorMessage /= Nothing)
+                || (case model.reservation of
+                        Loading _ ->
+                            True
+
+                        Loaded _ ->
+                            True
+
+                        _ ->
+                            False
+                   )
     in
         H.div [ A.class "page" ]
             [ H.div []
@@ -492,7 +503,8 @@ view _ _ shared model _ =
                 , Section.init
                     |> Section.setMarginBottom True
                     |> Section.viewWithOptions
-                        [ B.init "Kjøp med bankkort"
+                        [ Html.Extra.viewMaybe Message.error errorMessage
+                        , B.init "Kjøp med bankkort"
                             |> B.setDisabled disableButtons
                             |> B.setIcon (Just Icon.creditcard)
                             |> B.setOnClick (Just (BuyOffers Nets))
