@@ -296,6 +296,34 @@
     clip: rect(0 0 0 0);
 }
 
+/* Checkbox */
+
+.ui-input-checkbox {
+    display: flex;
+    width: 100%;
+    color: var(--colors-background_0-color);
+}
+.ui-input-checkbox:active {
+    background: var(--colors-background_3-backgroundColor);
+    color: var(--colors-background_3-color);
+}
+.ui-input-checkbox__input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+}
+.ui-input-checkbox__box {
+    height: 1.25rem;
+    width: 1.25rem;
+    padding-right: 1rem;
+}
+.ui-input-checkbox__title {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+/* Button */
+
 .ui-button {
     display: flex;
     flex: 1;
