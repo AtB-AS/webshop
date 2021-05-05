@@ -508,6 +508,9 @@ p {
 
 .summary-price {
     font-size: 2rem;
+    line-height: 1;
+    display: flex;
+    align-items: flex-end;
     small {
         font-size: 1rem;
     }
