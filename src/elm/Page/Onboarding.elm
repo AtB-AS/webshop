@@ -80,7 +80,7 @@ update msg env model =
         SkipRegister ->
             PageUpdater.fromPair
                 ( model
-                , skipRegister { env | token = model.token }
+                , skipRegister { env | token = model.token } model.phone
                 )
 
         ReceiveRegister result ->
@@ -237,9 +237,9 @@ register env firstName lastName phone email =
         |> Task.attempt ReceiveRegister
 
 
-skipRegister : Environment -> Cmd Msg
-skipRegister env =
-    WebshopService.register env "_" "_" Nothing Nothing
+skipRegister : Environment -> String -> Cmd Msg
+skipRegister env phone =
+    WebshopService.register env "_" "_" (Just phone) Nothing
         |> Http.toTask
         |> Task.attempt ReceiveRegister
 
