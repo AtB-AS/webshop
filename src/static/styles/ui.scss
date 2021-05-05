@@ -92,6 +92,9 @@
 .ui-section__item__label {
     margin-bottom: var(--spacings-medium);
 }
+.ui-section__item__label--compact {
+    margin-bottom: var(--spacings-xSmall);
+}
 .ui-section__child:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
         var(--colors-background_1-backgroundColor);
@@ -100,6 +103,23 @@
     padding: 0;
     margin: 0;
 }
+
+// Style for ./src/Ui/LabelItem.elm
+.ui-labelItem__label {
+    margin-bottom: var(--spacings-medium);
+}
+.ui-labelItem--horizontal {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.ui-labelItem + .ui-labelItem {
+    margin-top: var(--spacings-medium);
+}
+.ui-labelItem__label--compact {
+    margin-bottom: var(--spacings-xSmall);
+}
+// End: Style for LabelItem.elm
 
 .ui-group {
     width: 100%;

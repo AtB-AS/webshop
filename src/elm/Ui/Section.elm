@@ -4,6 +4,7 @@ module Ui.Section exposing
     , setMarginBottom
     , setMarginTop
     , view
+    , viewCompactLabelItem
     , viewHeader
     , viewItem
     , viewLabelItem
@@ -68,6 +69,16 @@ viewLabelItem : String -> List (Html msg) -> Html msg
 viewLabelItem label children =
     viewPaddedItem
         (H.div [ A.class "ui-section__item__label" ]
+            [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
+            ]
+            :: children
+        )
+
+
+viewCompactLabelItem : String -> List (Html msg) -> Html msg
+viewCompactLabelItem label children =
+    viewPaddedItem
+        (H.div [ A.class "ui-section__item__label ui-section__item__label--compact" ]
             [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
             ]
             :: children

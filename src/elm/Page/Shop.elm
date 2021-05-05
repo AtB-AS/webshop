@@ -25,6 +25,7 @@ import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input.Radio as Radio
+import Ui.LabelItem
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Format
@@ -599,7 +600,7 @@ summaryView _ model =
                         |> List.map (calculateOfferPrice model.users)
                         |> List.sum
                         |> round
-                        |> (\price -> "kr " ++ Util.Format.int price 2)
+                        |> (\price -> Util.Format.int price 2)
 
                 _ ->
                     "-"
@@ -609,8 +610,22 @@ summaryView _ model =
             |> Section.viewWithOptions
                 [ Section.viewHeader "Oppsummering"
                 , Section.viewPaddedItem
-                    [ H.div [ A.class "summary-price" ]
-                        [ H.text totalPrice
+                    [ Ui.LabelItem.viewHorizontal "Total:"
+                        [ H.div [ A.class "summary-price" ]
+                            [ H.text totalPrice
+                            , H.small [] [ H.text "kr" ]
+                            ]
+                        ]
+                    , Ui.LabelItem.viewHorizontal "Hvorav mva:"
+                        [ H.text "20 kr"
+                        ]
+                    ]
+                , Section.viewPaddedItem
+                    [ Ui.LabelItem.viewCompact "Gyldig fra"
+                        [ H.p [] [ H.text "321321" ]
+                        ]
+                    , Ui.LabelItem.viewCompact "Gyldig til"
+                        [ H.p [] [ H.text "321321" ]
                         ]
                     ]
                 , maybeBuyNotice model.users

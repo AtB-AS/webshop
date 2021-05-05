@@ -507,9 +507,10 @@ p {
 }
 
 .summary-price {
-    text-align: right;
-    font-size: 32px;
-    place-items: center end;
+    font-size: 2rem;
+    small {
+        font-size: 1rem;
+    }
 }
 
 @keyframes ticket-progress-move {
