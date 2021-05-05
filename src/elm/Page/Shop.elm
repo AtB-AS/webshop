@@ -594,6 +594,14 @@ modelSummary shared model =
 summaryView : Shared -> Model -> ModelSummary -> Html Msg
 summaryView shared model summary =
     let
+        errorLoading =
+            case model.offers of
+                Failed _ ->
+                    True
+
+                _ ->
+                    False
+
         totalPrice =
             case model.offers of
                 Loaded offers ->
@@ -614,24 +622,28 @@ summaryView shared model summary =
             |> Section.setMarginBottom True
             |> Section.viewWithOptions
                 [ Section.viewHeader "Oppsummering"
-                , Section.viewPaddedItem
-                    [ Ui.LabelItem.viewHorizontal "Total:"
-                        [ H.div [ A.class "summary-price" ]
-                            [ totalPrice
+                , if errorLoading then
+                    Message.error "Fikk ikke lastet pris for denne billetten."
+
+                  else
+                    Section.viewPaddedItem
+                        [ Ui.LabelItem.viewHorizontal "Total:"
+                            [ H.div [ A.class "summary-price" ]
+                                [ totalPrice
+                                    |> Maybe.map (Func.flip Util.Format.float 2)
+                                    |> Maybe.map H.text
+                                    |> Maybe.withDefault (Ui.LoadingText.view "2rem" "5rem")
+                                , H.small [] [ H.text "kr" ]
+                                ]
+                            ]
+                        , Ui.LabelItem.viewHorizontal "Hvorav mva:"
+                            [ vatAmount
                                 |> Maybe.map (Func.flip Util.Format.float 2)
+                                |> Maybe.map (Func.flip (++) "kr")
                                 |> Maybe.map H.text
-                                |> Maybe.withDefault (Ui.LoadingText.view "2rem" "5rem")
-                            , H.small [] [ H.text "kr" ]
+                                |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                             ]
                         ]
-                    , Ui.LabelItem.viewHorizontal "Hvorav mva:"
-                        [ vatAmount
-                            |> Maybe.map (Func.flip Util.Format.float 2)
-                            |> Maybe.map (Func.flip (++) "kr")
-                            |> Maybe.map H.text
-                            |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
-                        ]
-                    ]
                 , Section.viewPaddedItem
                     [ Ui.LabelItem.viewCompact "Gyldig fra"
                         [ H.p [] [ H.text <| Maybe.withDefault "" summary.start ]
