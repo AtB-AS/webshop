@@ -418,12 +418,12 @@ function handlePhoneError(error) {
             break;
         case 'auth/invalid-verification-code':
             app.ports.phoneError.send(
-                'Passordet stemmer ikke, vennligst prøv på nytt eler be om et nytt engangspassord.'
+                'Passordet stemmer ikke, vennligst prøv på nytt eller be om et nytt engangspassord.'
             );
             break;
         case 'auth/code-expired':
             app.ports.phoneError.send(
-                'Engangspassordet har utløpt. Vennligst prøv på nytt eler be om et nytt engangspassord.'
+                'Engangspassordet har utløpt. Vennligst prøv på nytt eller be om et nytt engangspassord.'
             );
             break;
         default:
