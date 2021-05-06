@@ -111,13 +111,13 @@ decimals digits num =
 isoStringToFullHumanized : Time.Zone -> String -> Maybe String
 isoStringToFullHumanized zone dateString =
     case Iso8601.toTime dateString of
-        Err deadEnds ->
+        Err _ ->
             Nothing
 
         Ok timePosix ->
-            Just <| DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy, HH:mm" zone timePosix
+            Just <| DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone timePosix
 
 
 posixToFullHumanized : Time.Zone -> Time.Posix -> String
 posixToFullHumanized zone date_ =
-    DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy, HH:mm" zone date_
+    DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone date_

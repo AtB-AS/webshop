@@ -235,6 +235,13 @@
             rgba(0, 0, 0, 0) 14px,
             var(--colors-background_0-backgroundColor) 15px
         );
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+    .ui-labelItem {
+        margin: 0;
+    }
 }
 .ui-ticketDetails__metaDataitem--open {
     border-radius: 0;
@@ -250,6 +257,14 @@
 .ui-ticketDetails__item:last-child {
     border-bottom-left-radius: var(--border-radius-regular);
     border-bottom-right-radius: var(--border-radius-regular);
+}
+.ui-ticketDetails__item--horizontal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+    .ui-labelItem {
+        margin: 0;
+    }
 }
 
 .ui-ticketDetails__headerButton {

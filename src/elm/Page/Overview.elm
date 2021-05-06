@@ -284,11 +284,11 @@ viewPending model =
 
 viewTicketCards : Shared -> Model -> List (Html Msg)
 viewTicketCards shared model =
-    (model.tickets
+    model.tickets
         |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
         |> List.map
             (\f ->
-                Ui.TicketDetails.view
+                Ui.TicketDetails.view shared
                     { fareContract = f
                     , open = model.expanded == Just f.orderId
                     , onOpenClick = Just (ToggleTicket f.orderId)
@@ -296,11 +296,13 @@ viewTicketCards shared model =
                     }
                     []
             )
-    )
-        ++ (model.tickets
-                |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
-                |> List.map (viewTicketCard shared model)
-           )
+
+
+
+-- ++ (model.tickets
+--         |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
+--         |> List.map (viewTicketCard shared model)
+--    )
 
 
 timeLeft : Int -> String

@@ -1,15 +1,19 @@
 module Ui.TicketDetails exposing (view, viewItem)
 
 import Data.FareContract exposing (FareContract, TravelRight(..))
+import Data.RefData exposing (LangString(..))
+import Dict exposing (Dict)
 import Fragment.Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (DetailedCompletion(..))
 import Html.Attributes.Extra as Attr
 import Html.Events as E
-import Time
+import Shared exposing (Shared)
+import Time exposing (Posix)
+import Ui.LabelItem
 import Ui.TextContainer
-import Util.Format
+import Util.Format exposing (posixToFullHumanized)
 
 
 type alias TicketDetails msg =
@@ -20,8 +24,8 @@ type alias TicketDetails msg =
     }
 
 
-view : TicketDetails msg -> List (Html msg) -> Html msg
-view { fareContract, open, onOpenClick, currentTime } children =
+view : Shared -> TicketDetails msg -> List (Html msg) -> Html msg
+view shared { fareContract, open, onOpenClick, currentTime } children =
     let
         id =
             fareContract.orderId
@@ -61,6 +65,53 @@ view { fareContract, open, onOpenClick, currentTime } children =
         isCurrentlyActive =
             fareContract.validFrom > now
 
+        fareProduct =
+            fareContract.travelRights
+                |> List.filterMap
+                    (\type_ ->
+                        case type_ of
+                            SingleTicket ticket ->
+                                Just ticket.fareProductRef
+
+                            PeriodTicket ticket ->
+                                Just ticket.fareProductRef
+
+                            UnknownTicket _ ->
+                                Nothing
+                    )
+                |> frequency
+                |> Dict.map (viewFareProduct shared)
+                |> Dict.values
+                |> List.filter ((/=) "")
+                |> String.join ", "
+
+        zones =
+            fareContract.travelRights
+                |> List.filterMap
+                    (\type_ ->
+                        case type_ of
+                            SingleTicket ticket ->
+                                Just ticket.tariffZoneRefs
+
+                            PeriodTicket ticket ->
+                                Just ticket.tariffZoneRefs
+
+                            UnknownTicket _ ->
+                                Nothing
+                    )
+                |> List.concat
+                |> frequency
+                |> Dict.map
+                    (\ref _ ->
+                        shared.tariffZones
+                            |> List.filter (.id >> (==) ref)
+                            |> List.head
+                            |> Maybe.map (\zone -> "Sone " ++ langString zone.name)
+                            |> Maybe.withDefault ""
+                    )
+                |> Dict.values
+                |> List.filter ((/=) "")
+
         icon =
             if isCurrentlyActive then
                 Fragment.Icon.ticketLargeValid
@@ -95,7 +146,9 @@ view { fareContract, open, onOpenClick, currentTime } children =
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
-                    [ H.p [] [ H.text "dsajdklsajkdjshakj" ] ]
+                    [ H.p [] [ H.text fareProduct ]
+                    , H.p [] [ H.text <| String.join "," zones ]
+                    ]
                 , H.div
                     [ A.classList classListContent
                     , A.attribute "aria-labelledby" id
@@ -103,16 +156,49 @@ view { fareContract, open, onOpenClick, currentTime } children =
                     , A.id regionId
                     , Attr.attributeIf (not open) (A.attribute "inert" "true")
                     ]
-                    [ viewItem
-                        []
+                    [ viewHorizontalItem
+                        [ viewLabelTime "Gyldig fra" fareContract.validFrom
+                        , viewLabelTime "Gyldig til" fareContract.validTo
+                        ]
+                    , viewHorizontalItem
+                        [ Ui.LabelItem.viewCompact "Kjøpstidspunkt" [ H.text <| Util.Format.dateTime fareContract.created ]
+                        , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType fareContract.paymentType ]
+                        , Ui.LabelItem.viewCompact "Ordre-ID" [ H.text fareContract.orderId ]
+                        ]
                     ]
                 ]
             ]
 
 
+viewLabelTime : String -> Int -> Html msg
+viewLabelTime title dateTime =
+    Ui.LabelItem.viewCompact title [ H.text <| Util.Format.posixToFullHumanized Time.utc <| Time.millisToPosix <| dateTime ]
+
+
 viewItem : List (Html msg) -> Html msg
 viewItem =
     H.div [ A.class "ui-ticketDetails__item" ]
+
+
+viewHorizontalItem : List (Html msg) -> Html msg
+viewHorizontalItem =
+    H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal" ]
+
+
+formatPaymentType : List String -> String
+formatPaymentType types =
+    case types of
+        [] ->
+            "??"
+
+        [ "VIPPS" ] ->
+            "Vipps"
+
+        [ "VISA" ] ->
+            "Bankkort"
+
+        _ ->
+            "??"
 
 
 boolAsString : Bool -> String
@@ -122,6 +208,31 @@ boolAsString b =
 
     else
         "false"
+
+
+viewFareProduct : Shared -> String -> Int -> String
+viewFareProduct shared fareProduct _ =
+    shared.fareProducts
+        |> List.filter
+            (\entry ->
+                entry.id == fareProduct
+            )
+        |> List.map (.name >> langString)
+        |> List.head
+        |> Maybe.withDefault ""
+        |> multiString 1
+
+
+multiString : Int -> String -> String
+multiString count str =
+    if String.isEmpty str || count < 1 then
+        ""
+
+    else if count == 1 then
+        str
+
+    else
+        String.fromInt count ++ "× " ++ str
 
 
 viewValidity : Int -> Int -> Time.Posix -> Html msg
@@ -183,3 +294,17 @@ pluralFormat value singular plural =
             else
                 plural
            )
+
+
+frequency : List comparable -> Dict comparable Int
+frequency =
+    List.foldl
+        (\item ->
+            Dict.update item (Maybe.map ((+) 1) >> Maybe.withDefault 1 >> Just)
+        )
+        Dict.empty
+
+
+langString : LangString -> String
+langString (LangString _ value) =
+    value
