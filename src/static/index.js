@@ -70,6 +70,19 @@ function fetchRemoteConfigData(port, key) {
     port.send(data);
 }
 
+function sendRemoteConfigVatPercent(port) {
+    if (!port) {
+        return;
+    }
+
+    const value = remoteConfig.getNumber('vat_percent');
+    if (value == null) {
+        return;
+    }
+
+    app.ports.remoteConfigVatPercent.send(value);
+}
+
 // NOTE: Only change this for testing.
 remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
 //remoteConfig.settings.minimumFetchIntervalMillis = 60000;
@@ -88,7 +101,7 @@ remoteConfig
             app.ports.remoteConfigTariffZones,
             'tariff_zones'
         );
-        //fetchRemoteConfigData(app.ports.remoteConfigSalesPackages, 'sales_packages');
+        sendRemoteConfigVatPercent();
     })
     .catch((err) => {
         // ...

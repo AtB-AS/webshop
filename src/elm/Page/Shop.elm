@@ -25,6 +25,8 @@ import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input.Radio as Radio
+import Ui.LabelItem
+import Ui.LoadingText
 import Ui.Message as Message
 import Ui.Section as Section
 import Util.Format
@@ -499,7 +501,7 @@ view _ _ shared model _ =
                     [ viewZones model shared.tariffZones ]
                 ]
             , H.div []
-                [ summaryView disableButtons model
+                [ summaryView shared model summary
                 , Section.init
                     |> Section.setMarginBottom True
                     |> Section.viewWithOptions
@@ -589,9 +591,17 @@ modelSummary shared model =
     }
 
 
-summaryView : Bool -> Model -> Html Msg
-summaryView _ model =
+summaryView : Shared -> Model -> ModelSummary -> Html Msg
+summaryView shared model summary =
     let
+        errorLoading =
+            case model.offers of
+                Failed _ ->
+                    True
+
+                _ ->
+                    False
+
         totalPrice =
             case model.offers of
                 Loaded offers ->
@@ -599,18 +609,45 @@ summaryView _ model =
                         |> List.map (calculateOfferPrice model.users)
                         |> List.sum
                         |> round
-                        |> (\price -> "kr " ++ Util.Format.int price 2)
+                        |> toFloat
+                        |> Just
 
                 _ ->
-                    "-"
+                    Nothing
+
+        vatAmount =
+            Maybe.map ((*) (toFloat shared.remoteConfig.vat_percent / 100)) totalPrice
     in
         Section.init
             |> Section.setMarginBottom True
             |> Section.viewWithOptions
                 [ Section.viewHeader "Oppsummering"
+                , if errorLoading then
+                    Message.error "Fikk ikke lastet pris for denne billetten."
+
+                  else
+                    Section.viewPaddedItem
+                        [ Ui.LabelItem.viewHorizontal
+                            "Total:"
+                            [ H.div [ A.class "summary-price" ]
+                                [ totalPrice
+                                    |> Maybe.map (Func.flip Util.Format.float 2)
+                                    |> Maybe.map H.text
+                                    |> Maybe.withDefault (Ui.LoadingText.view "1.6875rem" "5rem")
+                                , H.small [] [ H.text "kr" ]
+                                ]
+                            ]
+                        , Ui.LabelItem.viewHorizontal "Hvorav mva:"
+                            [ vatAmount
+                                |> Maybe.map (Func.flip Util.Format.float 2)
+                                |> Maybe.map (Func.flip (++) " kr")
+                                |> Maybe.map H.text
+                                |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
+                            ]
+                        ]
                 , Section.viewPaddedItem
-                    [ H.div [ A.class "summary-price" ]
-                        [ H.text totalPrice
+                    [ Ui.LabelItem.viewCompact "Gyldig fra"
+                        [ H.p [] [ H.text <| Maybe.withDefault "" summary.start ]
                         ]
                     ]
                 , maybeBuyNotice model.users
