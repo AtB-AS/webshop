@@ -403,6 +403,48 @@ window.customElements.define(
     }
 );
 
+function handlePhoneError(error) {
+    if (!error) {
+        app.ports.phoneError.send('En ukjent feil oppstod.');
+    }
+
+    switch (error.code) {
+        case 'auth/invalid-phone-number':
+            app.ports.phoneError.send('Ugyldig telefonnummer.');
+            break;
+        case 'auth/too-many-requests':
+            app.ports.phoneError.send(
+                'Du har prøvd å logge inn for mange ganger uten hell. Vent noen minutter og prøv igjen.'
+            );
+            break;
+        case 'auth/captcha-check-failed':
+            app.ports.phoneError.send(
+                'Feil i valg i ReCaptcha. Prøv en gang til.'
+            );
+            break;
+        case 'auth/missing-phone-number':
+            app.ports.phoneError.send('Ugyldig telefonnummer.');
+            break;
+        case 'auth/user-disabled':
+            app.ports.phoneError.send(
+                'Brukeren din ser ut til å være deaktivert. Ta kontakt med kundeservice.'
+            );
+            break;
+        case 'auth/invalid-verification-code':
+            app.ports.phoneError.send(
+                'Passordet stemmer ikke, vennligst prøv på nytt eller be om et nytt engangspassord.'
+            );
+            break;
+        case 'auth/code-expired':
+            app.ports.phoneError.send(
+                'Engangspassordet har utløpt. Vennligst prøv på nytt eller be om et nytt engangspassord.'
+            );
+            break;
+        default:
+            app.ports.phoneError.send('En ukjent feil oppstod.');
+    }
+}
+
 app.ports.phoneLogin.subscribe((phone) => {
     if (!phone) {
         return;
@@ -422,17 +464,7 @@ app.ports.phoneLogin.subscribe((phone) => {
                 JSON.stringify(error)
             );
 
-            if (error && error.code === 'auth/invalid-phone-number') {
-                app.ports.phoneError.send('Ugyldig telefonnummer.');
-            } else if (error && error.code === 'auth/too-many-requests') {
-                app.ports.phoneError.send(
-                    'Du har prøvd å logge inn for mange ganger uten hell. Vent noen minutter og prøv igjen.'
-                );
-            } else if (error.message) {
-                app.ports.phoneError.send(error.message);
-            } else {
-                app.ports.phoneError.send('En ukjent feil oppstod.');
-            }
+            handlePhoneError(error);
         });
 });
 
@@ -453,24 +485,7 @@ app.ports.phoneConfirm.subscribe((code) => {
                 JSON.stringify(error)
             );
 
-            if (error && error.code === 'auth/invalid-phone-number') {
-                app.ports.phoneError.send('Ugyldig telefonnummer.');
-            } else if (
-                error &&
-                error.code === 'auth/invalid-verification-code'
-            ) {
-                app.ports.phoneError.send(
-                    'Passordet stemmer ikke, vennligst prøv på nytt eler be om et nytt engangspassord.'
-                );
-            } else if (error && error.code === 'auth/code-expired') {
-                app.ports.phoneError.send(
-                    'Engangspassordet har utløpt. Vennligst prøv på nytt eler be om et nytt engangspassord.'
-                );
-            } else if (error.message) {
-                app.ports.phoneError.send(error.message);
-            } else {
-                app.ports.phoneError.send('En ukjent feil oppstod.');
-            }
+            handlePhoneError(error);
         });
 });
 

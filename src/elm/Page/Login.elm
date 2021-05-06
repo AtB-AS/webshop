@@ -69,7 +69,7 @@ update msg _ model =
             PageUpdater.init { model | code = value }
 
         BackLogin ->
-            PageUpdater.init { model | step = StepLogin }
+            PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
 
         Login ->
             updateLogin model
