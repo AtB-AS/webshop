@@ -449,13 +449,11 @@
 
 .ui-input-text {
     display: block;
-    transition: all 150ms ease-in-out;
+    transition: border 150ms ease-in-out, background 100ms ease;
     border: var(--border-width-medium) solid transparent;
 
     // Remove border from padding.
     padding: calc(var(--spacings-xLarge) - var(--border-width-medium));
-
-    transition: all 150ms ease-in-out;
 
     svg,
     path {

@@ -5,6 +5,7 @@ import Data.FareContract exposing (FareContract, FareContractState(..), TravelRi
 import Data.RefData exposing (LangString(..))
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
+import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
@@ -12,6 +13,7 @@ import Html.Extra
 import Http
 import Json.Decode as Decode
 import List.Extra
+import Notification as Notification
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
@@ -21,7 +23,7 @@ import Task
 import Ui.Button as B
 import Ui.Group
 import Ui.Input.Text as T
-import Ui.Message
+import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
 
@@ -115,6 +117,13 @@ update msg env model =
         ReceiveReceipt orderId _ ->
             -- TODO: Show error
             PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
+                |> ("Kvitteringen ble sendt til din e-post."
+                        |> Message.Valid
+                        |> Message.message
+                        |> (\s -> Notification.setContent s Notification.init)
+                        |> GA.ShowNotification
+                        |> PageUpdater.addGlobalAction
+                   )
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -284,7 +293,7 @@ viewOrder shared model order =
                     )
                 |> B.setIcon (Just Icon.rightArrow)
                 |> B.tertiary
-            , Html.Extra.viewIf missingEmail (Ui.Message.warning "Du må legge til epost via profilen din for å kunne sende kvittering.")
+            , Html.Extra.viewIf missingEmail (Message.warning "Du må legge til epost via profilen din for å kunne sende kvittering.")
             ]
 
 
