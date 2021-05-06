@@ -627,19 +627,20 @@ summaryView shared model summary =
 
                   else
                     Section.viewPaddedItem
-                        [ Ui.LabelItem.viewHorizontal "Total:"
+                        [ Ui.LabelItem.viewHorizontal
+                            "Total:"
                             [ H.div [ A.class "summary-price" ]
                                 [ totalPrice
                                     |> Maybe.map (Func.flip Util.Format.float 2)
                                     |> Maybe.map H.text
-                                    |> Maybe.withDefault (Ui.LoadingText.view "2rem" "5rem")
+                                    |> Maybe.withDefault (Ui.LoadingText.view "1.6875rem" "5rem")
                                 , H.small [] [ H.text "kr" ]
                                 ]
                             ]
                         , Ui.LabelItem.viewHorizontal "Hvorav mva:"
                             [ vatAmount
                                 |> Maybe.map (Func.flip Util.Format.float 2)
-                                |> Maybe.map (Func.flip (++) "kr")
+                                |> Maybe.map (Func.flip (++) " kr")
                                 |> Maybe.map H.text
                                 |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                             ]
