@@ -10,15 +10,12 @@ const SriPlugin = require('webpack-subresource-integrity');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-<<<<<<< HEAD
 const dotenv = require('dotenv');
-=======
 const CompressionPlugin = require('compression-webpack-plugin');
 
 // Compression stuff
 const zlib = require('zlib');
 const zopfli = require('@gfx/zopfli');
->>>>>>> 5316c7f (chore: removes unnecessary dependencies and updates outdated old ways)
 
 // Local stuff
 const createHashFunction = require('./hash-func.js');
