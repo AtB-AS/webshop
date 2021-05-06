@@ -23,6 +23,7 @@ const createHashFunction = require('./hash-func.js');
 // Node helpers
 const path = require('path');
 const execSync = require('child_process').execSync;
+const fs = require('fs');
 
 // Constants
 const entryPath = path.join(__dirname, 'src/static/index.js');
