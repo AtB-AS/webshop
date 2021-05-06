@@ -85,8 +85,6 @@
     flex: 1;
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
-    display: grid;
-    gap: var(--spacings-medium);
 }
 .ui-section__item--padded {
     padding: var(--spacings-xLarge);
@@ -450,6 +448,7 @@
 }
 
 .ui-input-text {
+    display: block;
     transition: border 150ms ease-in-out, background 100ms ease;
     border: var(--border-width-medium) solid transparent;
 
