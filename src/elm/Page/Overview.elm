@@ -24,6 +24,7 @@ import Task
 import Time
 import Ui.Button as B
 import Ui.Heading
+import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
 import Util.Maybe
@@ -245,6 +246,11 @@ viewMain shared model =
             List.filter
                 (\{ validTo } -> isValid validTo model.currentTime)
                 model.tickets
+
+        infoMessage =
+            Ui.Section.init
+                |> Ui.Section.setMarginBottom True
+                |> Ui.Section.viewWithOptions [ Message.info "Billettene som vises her kan ikke brukes i en eventuell kontroll." ]
     in
         H.div [ A.class "main" ]
             [ if List.isEmpty tickets && model.pending == Nothing then
@@ -254,7 +260,7 @@ viewMain shared model =
                     ]
 
               else
-                H.div [] (viewPending model :: viewTicketCards shared model)
+                H.div [] (infoMessage :: viewPending model :: viewTicketCards shared model)
             ]
 
 
