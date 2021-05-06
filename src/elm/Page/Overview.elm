@@ -26,6 +26,7 @@ import Ui.Button as B
 import Ui.Heading
 import Ui.Message as Message
 import Ui.Section
+import Ui.TicketDetails
 import Util.Format as Format
 import Util.Maybe
 import Util.Status exposing (Status(..))
@@ -283,9 +284,23 @@ viewPending model =
 
 viewTicketCards : Shared -> Model -> List (Html Msg)
 viewTicketCards shared model =
-    model.tickets
+    (model.tickets
         |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
-        |> List.map (viewTicketCard shared model)
+        |> List.map
+            (\f ->
+                Ui.TicketDetails.view
+                    { fareContract = f
+                    , open = model.expanded == Just f.orderId
+                    , onOpenClick = Just (ToggleTicket f.orderId)
+                    , currentTime = model.currentTime
+                    }
+                    []
+            )
+    )
+        ++ (model.tickets
+                |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
+                |> List.map (viewTicketCard shared model)
+           )
 
 
 timeLeft : Int -> String
