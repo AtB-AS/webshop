@@ -251,11 +251,6 @@ viewValidity from to posixNow =
             H.text <| timeLeftFormat <| (to - now) // 1000
 
 
-timeToFormat : Int -> String
-timeToFormat time =
-    "Gyldig  " ++ timeFormat time "" "få strakser"
-
-
 timeLeftFormat : Int -> String
 timeLeftFormat time =
     timeFormat time "igjen" "utløper straks"
