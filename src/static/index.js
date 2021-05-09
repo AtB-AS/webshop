@@ -281,6 +281,8 @@ async function fetchAuthInfo(user) {
 
 // Convert a Firebase Time type to something that's easier to work with.
 function convert_time(firebaseTime) {
+    if (!firebaseTime) return firebaseTime;
+
     const timestamp = parseInt(firebaseTime.toMillis(), 10);
     const date = new Date(timestamp);
     const parts = [];
@@ -310,7 +312,6 @@ function loadFareContracts(accountId) {
     unsubscribeFareContractSnapshot = db.collection(tokenPath).onSnapshot(
         (docs) => {
             const fareContracts = [];
-
             docs.forEach((doc) => {
                 const payload = doc.data();
 
@@ -325,16 +326,18 @@ function loadFareContracts(accountId) {
                     payload.validFrom =
                         Math.min.apply(
                             null,
-                            payload.travelRights.map(
-                                (x) => x.startDateTime.timestamp
-                            )
+                            payload.travelRights.map((x) => {
+                                if (!x.startDateTime) return 0;
+                                return x.startDateTime.timestamp;
+                            })
                         ) || 0;
                     payload.validTo =
                         Math.max.apply(
                             null,
-                            payload.travelRights.map(
-                                (x) => x.endDateTime.timestamp
-                            )
+                            payload.travelRights.map((x) => {
+                                if (!x.endDateTime) return 0;
+                                return x.endDateTime.timestamp;
+                            })
                         ) || 0;
 
                     fareContracts.push(payload);

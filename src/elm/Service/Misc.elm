@@ -202,7 +202,7 @@ travelRightDecoder =
                 _ ->
                     Decode.succeed TravelRightBase
                         |> DecodeP.required "id" Decode.string
-                        |> DecodeP.required "status" Decode.int
+                        |> DecodeP.optional "status" (Decode.nullable Decode.int) Nothing
                         |> Decode.map UnknownTicket
         )
         (Decode.field "type" Decode.string)
