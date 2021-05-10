@@ -335,9 +335,6 @@ onlyTravelRightFull travelRights =
 formatPaymentType : List String -> String
 formatPaymentType types =
     case types of
-        [] ->
-            "??"
-
         [ "VIPPS" ] ->
             "Vipps"
 
@@ -345,7 +342,7 @@ formatPaymentType types =
             "Bankkort"
 
         _ ->
-            "??"
+            "Ukjent"
 
 
 boolAsString : Bool -> String
