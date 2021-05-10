@@ -274,6 +274,17 @@
         margin: 0;
     }
 }
+.ui-ticketDetails__item--statusLine {
+    padding: 0;
+    grid-template-columns: 1fr 1fr auto;
+
+    .ui-labelItem {
+        padding: var(--spacings-xLarge);
+    }
+    .ui-labelItem + .ui-labelItem {
+        border-left: 1px solid var(--border-primary);
+    }
+}
 
 .ui-ticketDetails__headerButton {
     font-family: var(--font-main);

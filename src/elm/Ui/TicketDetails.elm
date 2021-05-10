@@ -128,7 +128,7 @@ view shared { fareContract, open, onOpenClick, currentTime } =
                         [ viewLabelTime "Gyldig fra" fareContract.validFrom
                         , viewLabelTime "Gyldig til" fareContract.validTo
                         ]
-                    , viewHorizontalItem
+                    , H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal ui-ticketDetails__item--statusLine" ]
                         [ Ui.LabelItem.viewCompact "Kjøpstidspunkt" [ H.text <| Util.Format.dateTime fareContract.created ]
                         , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType fareContract.paymentType ]
                         , Ui.LabelItem.viewCompact "Ordre-ID" [ H.text fareContract.orderId ]
