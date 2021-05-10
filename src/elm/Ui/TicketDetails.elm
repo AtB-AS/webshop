@@ -1,7 +1,8 @@
-module Ui.TicketDetails exposing (view, viewItem)
+module Ui.TicketDetails exposing (view, viewActivation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
 import Data.RefData exposing (LangString(..))
+import Data.Ticket exposing (ActiveReservation)
 import Dict exposing (Dict)
 import Dict.Extra
 import Fragment.Icon
@@ -135,6 +136,52 @@ view shared { fareContract, open, onOpenClick, currentTime } =
             ]
 
 
+viewActivation : ActiveReservation -> Html msg
+viewActivation activeReservation =
+    let
+        classList =
+            [ ( "ui-ticketDetails", True )
+            ]
+
+        classListMetadata =
+            [ ( "ui-ticketDetails__metaDataitem", True )
+            , ( "ui-ticketDetails__metaDataitem--padded", True )
+            ]
+
+        icon =
+            Fragment.Icon.ticketLargeValid
+
+        reservation =
+            activeReservation.reservation
+
+        paymentType =
+            activeReservation.paymentStatus
+                |> Maybe.map .paymentType
+                |> Maybe.withDefault ""
+    in
+        Ui.TextContainer.primary
+            [ H.section
+                [ A.classList classList ]
+                [ H.h2 [ A.class "ui-ticketDetails__header" ]
+                    [ H.div [ A.class "ui-ticketDetails__headerButton" ]
+                        [ H.div [ A.class "ui-ticketDetails__headerButton__icon" ]
+                            [ icon ]
+                        , H.div [ A.class "ui-ticketDetails__headerButton__title" ]
+                            [ H.text "Utsteder billett..." ]
+                        ]
+                    ]
+                , H.div [ A.classList classListMetadata ]
+                    [ Ui.LabelItem.viewCompact
+                        "Ordre-ID"
+                        [ H.text reservation.orderId ]
+                    , Ui.LabelItem.viewCompact
+                        "Betales med"
+                        [ H.text paymentType ]
+                    ]
+                ]
+            ]
+
+
 viewTravelRightSummary : Shared -> TravelRightSummary -> Html msg
 viewTravelRightSummary shared travelRight =
     let
@@ -232,11 +279,6 @@ viewLabelTime title dateTime =
             |> Util.Format.posixToFullHumanized Time.utc
             |> H.text
         ]
-
-
-viewItem : List (Html msg) -> Html msg
-viewItem =
-    H.div [ A.class "ui-ticketDetails__item" ]
 
 
 viewHorizontalItem : List (Html msg) -> Html msg

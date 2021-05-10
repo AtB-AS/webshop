@@ -251,6 +251,9 @@
 .ui-ticketDetails__metaDataitem--open {
     border-radius: 0;
 }
+.ui-ticketDetails__metaDataitem--padded {
+    padding: var(--spacings-xLarge);
+}
 
 .ui-ticketDetails__item {
     background: var(--colors-background_0-backgroundColor);

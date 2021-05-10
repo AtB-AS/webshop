@@ -3,9 +3,9 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.RefData exposing (LangString(..))
+import Data.Ticket exposing (ActiveReservation)
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
-import Fragment.Button as Button
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
@@ -41,7 +41,7 @@ type Msg
     | OpenEditTravelCard
     | UpdateTime Time.Posix
     | ToggleTicket String
-    | SetPendingOrder String
+    | AddActiveReservation ActiveReservation
     | Logout
 
 
@@ -53,7 +53,7 @@ type alias Model =
     , inspection : Status Inspection
     , currentTime : Time.Posix
     , expanded : Maybe String
-    , pending : Maybe String
+    , reservations : List ActiveReservation
     }
 
 
@@ -66,7 +66,7 @@ init =
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
       , expanded = Nothing
-      , pending = Nothing
+      , reservations = []
       }
     , Cmd.none
     )
@@ -81,25 +81,19 @@ update msg env model =
                     let
                         -- Only store tickets that are valid into the future.
                         tickets =
-                            Debug.log "fareContracts" fareContracts
-                                -- |> List.filter (.state >> (==) FareContractStateActivated)
+                            fareContracts
+                                |> Util.FareContract.filterValidNow model.currentTime
                                 |> List.sortBy (.created >> .timestamp)
                                 |> List.reverse
 
-                        pendingDone =
-                            fareContracts
-                                |> List.filter (\{ orderId } -> model.pending == Just orderId)
-                                |> List.isEmpty
-                                |> not
+                        orderIds =
+                            List.map .orderId tickets
 
-                        newPending =
-                            if pendingDone then
-                                Nothing
-
-                            else
-                                model.pending
+                        activeReservations =
+                            model.reservations
+                                |> List.filter (\{ reservation } -> not <| List.member reservation.orderId orderIds)
                     in
-                        PageUpdater.init { model | tickets = tickets, pending = newPending }
+                        PageUpdater.init { model | tickets = tickets, reservations = activeReservations }
 
                 Err _ ->
                     PageUpdater.init model
@@ -154,8 +148,8 @@ update msg env model =
                             Just id
                 }
 
-        SetPendingOrder orderId ->
-            PageUpdater.init { model | pending = Just orderId }
+        AddActiveReservation active ->
+            PageUpdater.init { model | reservations = active :: model.reservations }
 
         Logout ->
             PageUpdater.init model
@@ -241,7 +235,7 @@ viewActions _ =
 viewMain : Shared -> Model -> Html Msg
 viewMain shared model =
     let
-        tickets =
+        validTickets =
             Util.FareContract.filterValidNow model.currentTime model.tickets
 
         infoMessage =
@@ -250,38 +244,26 @@ viewMain shared model =
                 |> Ui.Section.viewWithOptions [ Message.info "Billettene som vises her kan ikke brukes i en eventuell kontroll." ]
     in
         H.div [ A.class "main" ]
-            [ if List.isEmpty tickets && model.pending == Nothing then
+            [ if List.isEmpty validTickets && List.isEmpty model.reservations then
                 H.div [ A.class "pageOverview__empty" ]
                     [ H.img [ A.src "/images/empty-illustration.svg" ] []
                     , H.text "Ingen billetter er tilknyttet din konto."
                     ]
 
               else
-                H.div [] (infoMessage :: viewPending model :: viewTicketCards shared tickets model)
+                H.div [] (infoMessage :: viewPending model ++ viewTicketCards shared validTickets model)
             ]
 
 
-viewPending : Model -> Html msg
+viewPending : Model -> List (Html msg)
 viewPending model =
-    case model.pending of
-        Just _ ->
-            H.div [ A.class "section-box" ]
-                [ H.div [ A.class "ticket-header" ]
-                    [ Icon.wrapper 20 Icon.bus
-                    , H.div [ A.class "product-name" ] [ H.text "Utsteder billett..." ]
-                    ]
-                , H.div [ A.class "ticket-progress" ] []
-                , H.div [ A.class "ticket-waiting" ] [ Button.loading ]
-                ]
-
-        Nothing ->
-            H.text ""
+    model.reservations
+        |> List.map Ui.TicketDetails.viewActivation
 
 
 viewTicketCards : Shared -> List FareContract -> Model -> List (Html Msg)
-viewTicketCards shared tickets model =
-    tickets
-        |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
+viewTicketCards shared validTickets model =
+    validTickets
         |> List.map
             (\f ->
                 Ui.TicketDetails.view shared
@@ -291,11 +273,6 @@ viewTicketCards shared tickets model =
                     , currentTime = model.currentTime
                     }
             )
-
-
-isValid : Int -> Time.Posix -> Bool
-isValid to posixNow =
-    to >= Time.posixToMillis posixNow
 
 
 subscriptions : Model -> Sub Msg
