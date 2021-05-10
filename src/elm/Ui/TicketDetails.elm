@@ -73,7 +73,7 @@ view shared { fareContract, open, onOpenClick, currentTime } =
             Time.posixToMillis currentTime
 
         isCurrentlyActive =
-            fareContract.validFrom > now
+            fareContract.validFrom < now
 
         icon =
             if isCurrentlyActive then
