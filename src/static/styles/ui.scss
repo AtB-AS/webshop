@@ -200,6 +200,8 @@
     border-radius: var(--border-radius-regular);
     color: var(--colors-background_0-color);
     margin-bottom: var(--spacings-medium);
+
+    --minWidthItems: 200px;
 }
 .ui-ticketDetails__header {
     margin: 0;
@@ -211,7 +213,7 @@
     transition: max-height 300ms ease;
 }
 .ui-ticketDetails__content--open {
-    max-height: 195px;
+    max-height: 320px;
     overflow: auto;
 }
 .ui-ticketDetails__metaDataitem {
@@ -238,7 +240,7 @@
         );
 
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--minWidthItems), 1fr));
 
     .ui-labelItem {
         margin: 0;
@@ -268,7 +270,7 @@
 }
 .ui-ticketDetails__item--horizontal {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--minWidthItems), 1fr));
 
     .ui-labelItem {
         margin: 0;
@@ -285,6 +287,19 @@
         border-left: 1px solid var(--border-primary);
     }
 }
+@media (max-width: 500px) {
+    .ui-ticketDetails__item--statusLine {
+        grid-template-columns: 1fr;
+        padding: var(--spacings-xLarge);
+
+        .ui-labelItem {
+            padding: 0;
+        }
+        .ui-labelItem + .ui-labelItem {
+            border-left: 0;
+        }
+    }
+}
 
 .ui-ticketDetails__headerButton {
     font-family: var(--font-main);
@@ -294,6 +309,7 @@
     border: 0;
     justify-content: space-between;
     align-items: center;
+    font-weight: normal;
 
     transition: all 150ms ease-in-out;
     padding: var(--spacings-xLarge);
@@ -358,8 +374,21 @@
     font-size: 2rem;
     line-height: 1.25;
 }
+@media (max-width: 768px) {
+    .ui-ticketDetails__headerButton__title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.25;
+    }
+}
 .ui-ticketDetails__headerButton__toggleText {
     margin: 0 var(--spacings-medium);
+}
+
+@media (max-width: 500px) {
+    .ui-ticketDetails__headerButton__toggleText {
+        display: none;
+    }
 }
 
 .ui-ticketDetails__summaryBox p + p {
