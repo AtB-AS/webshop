@@ -3,6 +3,7 @@ module Ui.TicketDetails exposing (view, viewItem)
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
 import Data.RefData exposing (LangString(..))
 import Dict exposing (Dict)
+import Dict.Extra
 import Fragment.Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -23,6 +24,13 @@ type alias TicketDetails msg =
     , open : Bool
     , onOpenClick : Maybe msg
     , currentTime : Time.Posix
+    }
+
+
+type alias TravelRightSummary =
+    { zones : List String
+    , fareProductRef : String
+    , userProfilesRefs : List ( String, Int )
     }
 
 
@@ -101,9 +109,10 @@ view shared { fareContract, open, onOpenClick, currentTime } =
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
-                    (List.map
-                        (viewTravelRight shared)
-                        fareContract.travelRights
+                    (fareContract.travelRights
+                        |> onlyTravelRightFull
+                        |> groupTravelRights
+                        |> List.map (viewTravelRightSummary shared)
                     )
                 , H.div
                     [ A.classList classListContent
@@ -126,21 +135,8 @@ view shared { fareContract, open, onOpenClick, currentTime } =
             ]
 
 
-viewTravelRight : Shared -> TravelRight -> Html msg
-viewTravelRight shared travelRight =
-    case travelRight of
-        UnknownTicket _ ->
-            Html.Extra.nothing
-
-        SingleTicket ticket ->
-            viewTravelRightFull shared ticket
-
-        PeriodTicket ticket ->
-            viewTravelRightFull shared ticket
-
-
-viewTravelRightFull : Shared -> TravelRightFull -> Html msg
-viewTravelRightFull shared travelRight =
+viewTravelRightSummary : Shared -> TravelRightSummary -> Html msg
+viewTravelRightSummary shared travelRight =
     let
         product =
             shared.fareProducts
@@ -148,26 +144,72 @@ viewTravelRightFull shared travelRight =
                     (\entry ->
                         entry.id == travelRight.fareProductRef
                     )
+    in
+        case product of
+            Nothing ->
+                Html.Extra.nothing
 
+            Just p ->
+                viewHorizontalItem
+                    [ H.div []
+                        [ H.p [] [ H.text <| langString p.name ]
+                        , viewZones shared travelRight.zones
+                        ]
+                    , H.div []
+                        (viewUserProfiles
+                            shared
+                            travelRight.userProfilesRefs
+                        )
+                    ]
+
+
+viewUserProfiles : Shared -> List ( String, Int ) -> List (Html msg)
+viewUserProfiles shared userProfileRefs =
+    let
+        maybeUserProfile =
+            userProfileRefs
+                |> List.map
+                    (Tuple.mapFirst
+                        (\ref ->
+                            shared.userProfiles
+                                |> List.Extra.find
+                                    (\entry ->
+                                        entry.id == ref
+                                    )
+                        )
+                    )
+    in
+        maybeUserProfile
+            |> List.map
+                (\( maybeUser, count ) ->
+                    case maybeUser of
+                        Nothing ->
+                            Html.Extra.nothing
+
+                        Just userProfile ->
+                            H.p [] [ H.text <| (String.fromInt count ++ " " ++ langString userProfile.name) ]
+                )
+
+
+viewZones : Shared -> List String -> Html msg
+viewZones shared zoneRefs =
+    let
         zones =
-            travelRight.tariffZoneRefs
-                |> frequency
-                |> Dict.map
-                    (\ref _ ->
+            zoneRefs
+                |> List.map
+                    (\ref ->
                         shared.tariffZones
-                            |> List.filter (.id >> (==) ref)
-                            |> List.head
+                            |> List.Extra.find (.id >> (==) ref)
                             |> Maybe.map (\zone -> langString zone.name)
                             |> Maybe.withDefault ""
                     )
-                |> Dict.values
                 |> List.filter ((/=) "")
 
         numZones =
             List.length zones
 
         firstZone =
-            List.head (Debug.log "zoneNames" zones)
+            List.head zones
 
         lastZone =
             List.Extra.last zones
@@ -179,18 +221,7 @@ viewTravelRightFull shared travelRight =
             else
                 "Reise i " ++ pluralFormat numZones "sone" "soner" ++ " (Sone " ++ Maybe.withDefault "" firstZone ++ " til " ++ Maybe.withDefault "" lastZone ++ ")"
     in
-        case product of
-            Nothing ->
-                Html.Extra.nothing
-
-            Just p ->
-                viewHorizontalItem
-                    [ H.div []
-                        [ H.p [] [ H.text <| langString p.name ]
-                        , H.p [] [ H.text zoneString ]
-                        ]
-                    , H.div [] [ H.text "dsa" ]
-                    ]
+        H.p [] [ H.text zoneString ]
 
 
 viewLabelTime : String -> Int -> Html msg
@@ -211,6 +242,50 @@ viewItem =
 viewHorizontalItem : List (Html msg) -> Html msg
 viewHorizontalItem =
     H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal" ]
+
+
+groupTravelRights : List TravelRightFull -> List TravelRightSummary
+groupTravelRights travelRights =
+    travelRights
+        |> Dict.Extra.groupBy (\travelRight -> travelRight.fareProductRef)
+        |> Dict.map
+            (\key value ->
+                let
+                    userProfileCount =
+                        value
+                            |> List.map .userProfileRef
+                            |> frequency
+                            |> Dict.toList
+
+                    zones =
+                        value
+                            |> List.head
+                            |> Maybe.map .tariffZoneRefs
+                            |> Maybe.withDefault []
+                in
+                    { zones = zones
+                    , fareProductRef = key
+                    , userProfilesRefs = userProfileCount
+                    }
+            )
+        |> Dict.values
+
+
+onlyTravelRightFull : List TravelRight -> List TravelRightFull
+onlyTravelRightFull travelRights =
+    List.filterMap
+        (\travelRight ->
+            case travelRight of
+                SingleTicket x ->
+                    Just x
+
+                PeriodTicket x ->
+                    Just x
+
+                UnknownTicket _ ->
+                    Nothing
+        )
+        travelRights
 
 
 formatPaymentType : List String -> String
