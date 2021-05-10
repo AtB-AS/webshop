@@ -99,12 +99,14 @@ view shared { fareContract, open, onOpenClick, currentTime } =
                         , H.div [ A.class "ui-ticketDetails__headerButton__title" ]
                             [ viewValidity fareContract.validFrom fareContract.validTo currentTime ]
                         , H.div [ A.class "ui-ticketDetails__headerButton__toggleText" ]
-                            [ H.text <|
-                                if open then
-                                    "Skjul detaljer"
+                            [ Ui.TextContainer.tertiary
+                                [ H.text <|
+                                    if open then
+                                        "Skjul detaljer"
 
-                                else
-                                    "Vis detaljer"
+                                    else
+                                        "Vis detaljer"
+                                ]
                             ]
                         , chevronIcon
                         ]
@@ -149,7 +151,7 @@ viewActivation activeReservation =
             ]
 
         icon =
-            Fragment.Icon.ticketLargeValid
+            activeReservationLoading
 
         reservation =
             activeReservation.reservation
@@ -423,3 +425,8 @@ frequency =
 langString : LangString -> String
 langString (LangString _ value) =
     value
+
+
+activeReservationLoading : Html msg
+activeReservationLoading =
+    H.div [ A.class "ui-ticketDetails__activeReservationLoading" ] []

@@ -334,6 +334,11 @@
         );
     color: var(--colors-background_3-color);
 }
+.ui-ticketDetails__headerButton__icon {
+    svg {
+        display: block;
+    }
+}
 .ui-ticketDetails__headerButton__title {
     display: block;
     flex: 1;
@@ -344,6 +349,37 @@
 }
 .ui-ticketDetails__headerButton__toggleText {
     margin: 0 var(--spacings-medium);
+}
+
+.ui-ticketDetails__activeReservationLoading {
+    --loaderSize: 2.75rem;
+    --loaderWidth: 0.6rem;
+
+    font-size: 10px;
+    position: relative;
+    text-indent: -9999em;
+    border: var(--loaderWidth) solid var(--colors-primary_3-backgroundColor);
+    border-left-color: var(--text-colors-disabled);
+    transform: translateZ(0);
+    animation: loadReservation 2s infinite linear;
+
+    border-radius: 50%;
+    width: var(--loaderSize);
+    height: var(--loaderSize);
+
+    &:after {
+        border-radius: 50%;
+        width: var(--loaderSize);
+        height: var(--loaderSize);
+    }
+}
+@keyframes loadReservation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .ui-heading {
