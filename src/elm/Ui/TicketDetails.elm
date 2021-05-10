@@ -200,7 +200,7 @@ viewTravelRightSummary shared travelRight =
 
             Just p ->
                 viewHorizontalItem
-                    [ H.div []
+                    [ H.div [ A.class "ui-ticketDetails__summaryBox" ]
                         [ H.p [] [ H.text <| langString p.name ]
                         , viewZones shared travelRight.zones
                         ]

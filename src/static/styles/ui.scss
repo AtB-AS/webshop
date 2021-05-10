@@ -351,6 +351,10 @@
     margin: 0 var(--spacings-medium);
 }
 
+.ui-ticketDetails__summaryBox p + p {
+    margin-top: var(--spacings-medium);
+}
+
 .ui-ticketDetails__activeReservationLoading {
     --loaderSize: 2.75rem;
     --loaderWidth: 0.6rem;
