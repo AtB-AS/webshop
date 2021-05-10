@@ -215,10 +215,11 @@
     overflow: auto;
 }
 .ui-ticketDetails__metaDataitem {
-    padding: var(--spacings-xLarge);
+    padding-top: var(--spacings-xLarge);
     margin: var(--border-width-slim) 0;
 
-    background-position: top left, top right;
+    background-position-y: top;
+    background-position-x: left, right;
     background-size: 50% 100%;
     background-repeat: no-repeat;
 
@@ -241,6 +242,10 @@
 
     .ui-labelItem {
         margin: 0;
+    }
+
+    > :first-child {
+        padding-top: 0;
     }
 }
 .ui-ticketDetails__metaDataitem--open {

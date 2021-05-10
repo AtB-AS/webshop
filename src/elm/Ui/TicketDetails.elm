@@ -1,6 +1,6 @@
 module Ui.TicketDetails exposing (view, viewItem)
 
-import Data.FareContract exposing (FareContract, TravelRight(..))
+import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
 import Data.RefData exposing (LangString(..))
 import Dict exposing (Dict)
 import Fragment.Icon
@@ -9,11 +9,13 @@ import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (DetailedCompletion(..))
 import Html.Attributes.Extra as Attr
 import Html.Events as E
+import Html.Extra
+import List.Extra
 import Shared exposing (Shared)
-import Time exposing (Posix)
+import Time
 import Ui.LabelItem
 import Ui.TextContainer
-import Util.Format exposing (posixToFullHumanized)
+import Util.Format
 
 
 type alias TicketDetails msg =
@@ -24,8 +26,8 @@ type alias TicketDetails msg =
     }
 
 
-view : Shared -> TicketDetails msg -> List (Html msg) -> Html msg
-view shared { fareContract, open, onOpenClick, currentTime } children =
+view : Shared -> TicketDetails msg -> Html msg
+view shared { fareContract, open, onOpenClick, currentTime } =
     let
         id =
             fareContract.orderId
@@ -65,53 +67,6 @@ view shared { fareContract, open, onOpenClick, currentTime } children =
         isCurrentlyActive =
             fareContract.validFrom > now
 
-        fareProduct =
-            fareContract.travelRights
-                |> List.filterMap
-                    (\type_ ->
-                        case type_ of
-                            SingleTicket ticket ->
-                                Just ticket.fareProductRef
-
-                            PeriodTicket ticket ->
-                                Just ticket.fareProductRef
-
-                            UnknownTicket _ ->
-                                Nothing
-                    )
-                |> frequency
-                |> Dict.map (viewFareProduct shared)
-                |> Dict.values
-                |> List.filter ((/=) "")
-                |> String.join ", "
-
-        zones =
-            fareContract.travelRights
-                |> List.filterMap
-                    (\type_ ->
-                        case type_ of
-                            SingleTicket ticket ->
-                                Just ticket.tariffZoneRefs
-
-                            PeriodTicket ticket ->
-                                Just ticket.tariffZoneRefs
-
-                            UnknownTicket _ ->
-                                Nothing
-                    )
-                |> List.concat
-                |> frequency
-                |> Dict.map
-                    (\ref _ ->
-                        shared.tariffZones
-                            |> List.filter (.id >> (==) ref)
-                            |> List.head
-                            |> Maybe.map (\zone -> "Sone " ++ langString zone.name)
-                            |> Maybe.withDefault ""
-                    )
-                |> Dict.values
-                |> List.filter ((/=) "")
-
         icon =
             if isCurrentlyActive then
                 Fragment.Icon.ticketLargeValid
@@ -146,9 +101,10 @@ view shared { fareContract, open, onOpenClick, currentTime } children =
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
-                    [ H.p [] [ H.text fareProduct ]
-                    , H.p [] [ H.text <| String.join "," zones ]
-                    ]
+                    (List.map
+                        (viewTravelRight shared)
+                        fareContract.travelRights
+                    )
                 , H.div
                     [ A.classList classListContent
                     , A.attribute "aria-labelledby" id
@@ -170,9 +126,81 @@ view shared { fareContract, open, onOpenClick, currentTime } children =
             ]
 
 
+viewTravelRight : Shared -> TravelRight -> Html msg
+viewTravelRight shared travelRight =
+    case travelRight of
+        UnknownTicket _ ->
+            Html.Extra.nothing
+
+        SingleTicket ticket ->
+            viewTravelRightFull shared ticket
+
+        PeriodTicket ticket ->
+            viewTravelRightFull shared ticket
+
+
+viewTravelRightFull : Shared -> TravelRightFull -> Html msg
+viewTravelRightFull shared travelRight =
+    let
+        product =
+            shared.fareProducts
+                |> List.Extra.find
+                    (\entry ->
+                        entry.id == travelRight.fareProductRef
+                    )
+
+        zones =
+            travelRight.tariffZoneRefs
+                |> frequency
+                |> Dict.map
+                    (\ref _ ->
+                        shared.tariffZones
+                            |> List.filter (.id >> (==) ref)
+                            |> List.head
+                            |> Maybe.map (\zone -> langString zone.name)
+                            |> Maybe.withDefault ""
+                    )
+                |> Dict.values
+                |> List.filter ((/=) "")
+
+        numZones =
+            List.length zones
+
+        firstZone =
+            List.head (Debug.log "zoneNames" zones)
+
+        lastZone =
+            List.Extra.last zones
+
+        zoneString =
+            if firstZone == lastZone || lastZone == Nothing then
+                "Reise i 1 sone (Sone " ++ Maybe.withDefault "" firstZone ++ ")"
+
+            else
+                "Reise i " ++ pluralFormat numZones "sone" "soner" ++ " (Sone " ++ Maybe.withDefault "" firstZone ++ " til " ++ Maybe.withDefault "" lastZone ++ ")"
+    in
+        case product of
+            Nothing ->
+                Html.Extra.nothing
+
+            Just p ->
+                viewHorizontalItem
+                    [ H.div []
+                        [ H.p [] [ H.text <| langString p.name ]
+                        , H.p [] [ H.text zoneString ]
+                        ]
+                    , H.div [] [ H.text "dsa" ]
+                    ]
+
+
 viewLabelTime : String -> Int -> Html msg
 viewLabelTime title dateTime =
-    Ui.LabelItem.viewCompact title [ H.text <| Util.Format.posixToFullHumanized Time.utc <| Time.millisToPosix <| dateTime ]
+    Ui.LabelItem.viewCompact title
+        [ dateTime
+            |> Time.millisToPosix
+            |> Util.Format.posixToFullHumanized Time.utc
+            |> H.text
+        ]
 
 
 viewItem : List (Html msg) -> Html msg
@@ -208,31 +236,6 @@ boolAsString b =
 
     else
         "false"
-
-
-viewFareProduct : Shared -> String -> Int -> String
-viewFareProduct shared fareProduct _ =
-    shared.fareProducts
-        |> List.filter
-            (\entry ->
-                entry.id == fareProduct
-            )
-        |> List.map (.name >> langString)
-        |> List.head
-        |> Maybe.withDefault ""
-        |> multiString 1
-
-
-multiString : Int -> String -> String
-multiString count str =
-    if String.isEmpty str || count < 1 then
-        ""
-
-    else if count == 1 then
-        str
-
-    else
-        String.fromInt count ++ "× " ++ str
 
 
 viewValidity : Int -> Int -> Time.Posix -> Html msg

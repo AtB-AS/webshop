@@ -294,7 +294,6 @@ viewTicketCards shared model =
                     , onOpenClick = Just (ToggleTicket f.orderId)
                     , currentTime = model.currentTime
                     }
-                    []
             )
 
 
@@ -303,49 +302,6 @@ viewTicketCards shared model =
 --         |> List.filter (\{ validTo } -> isValid validTo model.currentTime)
 --         |> List.map (viewTicketCard shared model)
 --    )
-
-
-timeLeft : Int -> String
-timeLeft time =
-    let
-        days =
-            time // 86400
-
-        hr =
-            (time - days * 86400) // 3600
-
-        min =
-            (time - days * 86400 - hr * 3600) // 60
-
-        sec =
-            time - days * 86400 - hr * 3600 - min * 60
-
-        toStr v suffix =
-            if v > 0 then
-                String.fromInt v ++ suffix
-
-            else
-                ""
-    in
-        String.join " " [ toStr days "d", toStr hr "h", toStr min "m", toStr sec "s" ]
-
-
-timeAgo : Int -> String
-timeAgo time =
-    if time >= 86400 then
-        String.fromInt (time // 86400) ++ "d"
-
-    else if time >= 3600 then
-        String.fromInt (time // 3600) ++ "h"
-
-    else if time >= 60 then
-        String.fromInt (time // 60) ++ "m"
-
-    else if time >= 1 then
-        String.fromInt time ++ "s"
-
-    else
-        "just now"
 
 
 pluralFormat : Int -> String -> String -> String
