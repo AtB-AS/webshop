@@ -230,12 +230,12 @@
 
     background-image: radial-gradient(
             circle at 0 0,
-            rgba(0, 0, 0, 0) 14px,
+            rgba(0, 0, 0, 0) 15px,
             var(--colors-background_0-backgroundColor) 15px
         ),
         radial-gradient(
             circle at 100% 0,
-            rgba(0, 0, 0, 0) 14px,
+            rgba(0, 0, 0, 0) 15px,
             var(--colors-background_0-backgroundColor) 15px
         );
 
@@ -321,24 +321,24 @@
 
     background-image: radial-gradient(
             circle at 0 100%,
-            rgba(0, 0, 0, 0) 14px,
+            rgba(0, 0, 0, 0) 15px,
             var(--colors-background_0-backgroundColor) 15px
         ),
         radial-gradient(
             circle at 100% 100%,
-            rgba(0, 0, 0, 0) 14px,
+            rgba(0, 0, 0, 0) 15px,
             var(--colors-background_0-backgroundColor) 15px
         );
 }
 .ui-ticketDetails__headerButton:hover {
     background-image: radial-gradient(
             circle at 0 100%,
-            rgba(0, 0, 0, 0) 14px,
+            rgba(0, 0, 0, 0) 15px,
             var(--colors-background_2-backgroundColor) 15px
         ),
         radial-gradient(
             circle at 100% 100%,
-            rgba(0, 0, 0, 0) 14px,
+            rgba(0, 0, 0, 0) 15px,
             var(--colors-background_2-backgroundColor) 15px
         );
     color: var(--colors-background_2-color);
