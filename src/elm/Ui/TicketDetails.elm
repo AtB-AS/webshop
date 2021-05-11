@@ -42,6 +42,12 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
         id =
             fareContract.orderId
 
+        now =
+            Time.posixToMillis currentTime
+
+        isCurrentlyActive =
+            fareContract.validFrom < now
+
         classList =
             [ ( "ui-ticketDetails", True )
             , ( "ui-ticketDetails--open", open )
@@ -61,6 +67,11 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             [ ( "ui-ticketDetails__headerButton", True )
             ]
 
+        classListButtonTitle =
+            [ ( "ui-ticketDetails__headerButton__title", True )
+            , ( "ui-ticketDetails__headerButton__title--active", isCurrentlyActive )
+            ]
+
         chevronIcon =
             if open then
                 Fragment.Icon.upArrow
@@ -70,12 +81,6 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
 
         regionId =
             id ++ "region"
-
-        now =
-            Time.posixToMillis currentTime
-
-        isCurrentlyActive =
-            fareContract.validFrom < now
 
         icon =
             if isCurrentlyActive then
@@ -97,7 +102,7 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
                         ]
                         [ H.div [ A.class "ui-ticketDetails__headerButton__icon" ]
                             [ icon ]
-                        , H.div [ A.class "ui-ticketDetails__headerButton__title" ]
+                        , H.div [ A.classList classListButtonTitle ]
                             [ viewValidity fareContract.validFrom fareContract.validTo currentTime timeZone ]
                         , H.div [ A.class "ui-ticketDetails__headerButton__toggleText" ]
                             [ Ui.TextContainer.tertiary
