@@ -40,6 +40,7 @@ type Msg
     | OpenSettings
     | OpenEditTravelCard
     | UpdateTime Time.Posix
+    | AdjustTimeZone Time.Zone
     | ToggleTicket String
     | AddActiveReservation ActiveReservation
     | Logout
@@ -54,6 +55,7 @@ type alias Model =
     , currentTime : Time.Posix
     , expanded : Maybe String
     , reservations : List ActiveReservation
+    , timeZone : Time.Zone
     }
 
 
@@ -67,8 +69,9 @@ init =
       , currentTime = Time.millisToPosix 0
       , expanded = Nothing
       , reservations = []
+      , timeZone = Time.utc
       }
-    , Cmd.none
+    , Task.perform AdjustTimeZone Time.here
     )
 
 
@@ -154,6 +157,9 @@ update msg env model =
         Logout ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.Logout
+
+        AdjustTimeZone zone ->
+            PageUpdater.init { model | timeZone = zone }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -271,6 +277,7 @@ viewTicketCards shared validTickets model =
                     , open = model.expanded == Just f.orderId
                     , onOpenClick = Just (ToggleTicket f.orderId)
                     , currentTime = model.currentTime
+                    , timeZone = model.timeZone
                     }
             )
 

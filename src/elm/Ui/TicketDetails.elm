@@ -25,6 +25,7 @@ type alias TicketDetails msg =
     , open : Bool
     , onOpenClick : Maybe msg
     , currentTime : Time.Posix
+    , timeZone : Time.Zone
     }
 
 
@@ -36,7 +37,7 @@ type alias TravelRightSummary =
 
 
 view : Shared -> TicketDetails msg -> Html msg
-view shared { fareContract, open, onOpenClick, currentTime } =
+view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
     let
         id =
             fareContract.orderId
@@ -97,7 +98,7 @@ view shared { fareContract, open, onOpenClick, currentTime } =
                         [ H.div [ A.class "ui-ticketDetails__headerButton__icon" ]
                             [ icon ]
                         , H.div [ A.class "ui-ticketDetails__headerButton__title" ]
-                            [ viewValidity fareContract.validFrom fareContract.validTo currentTime ]
+                            [ viewValidity fareContract.validFrom fareContract.validTo currentTime timeZone ]
                         , H.div [ A.class "ui-ticketDetails__headerButton__toggleText" ]
                             [ Ui.TextContainer.tertiary
                                 [ H.text <|
@@ -125,8 +126,8 @@ view shared { fareContract, open, onOpenClick, currentTime } =
                     , Attr.attributeIf (not open) (A.attribute "inert" "true")
                     ]
                     [ viewHorizontalItem
-                        [ viewLabelTime "Gyldig fra" fareContract.validFrom
-                        , viewLabelTime "Gyldig til" fareContract.validTo
+                        [ viewLabelTime "Gyldig fra" fareContract.validFrom timeZone
+                        , viewLabelTime "Gyldig til" fareContract.validTo timeZone
                         ]
                     , H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal ui-ticketDetails__item--statusLine" ]
                         [ Ui.LabelItem.viewCompact "Kjøpstidspunkt" [ H.text <| Util.Format.dateTime fareContract.created ]
@@ -273,12 +274,12 @@ viewZones shared zoneRefs =
         H.p [] [ H.text zoneString ]
 
 
-viewLabelTime : String -> Int -> Html msg
-viewLabelTime title dateTime =
+viewLabelTime : String -> Int -> Time.Zone -> Html msg
+viewLabelTime title dateTime timeZone =
     Ui.LabelItem.viewCompact title
         [ dateTime
             |> Time.millisToPosix
-            |> Util.Format.posixToFullHumanized Time.utc
+            |> Util.Format.posixToFullHumanized timeZone
             |> H.text
         ]
 
@@ -354,14 +355,14 @@ boolAsString b =
         "false"
 
 
-viewValidity : Int -> Int -> Time.Posix -> Html msg
-viewValidity from to posixNow =
+viewValidity : Int -> Int -> Time.Posix -> Time.Zone -> Html msg
+viewValidity from to posixNow timeZone =
     let
         now =
             Time.posixToMillis posixNow
     in
         if from > now then
-            H.text <| "Gyldig fra " ++ Util.Format.posixToFullHumanized Time.utc (Time.millisToPosix from)
+            H.text <| "Gyldig fra " ++ Util.Format.posixToFullHumanized timeZone (Time.millisToPosix from)
 
         else if now > to then
             H.text <| timeAgoFormat <| (now - to) // 1000
