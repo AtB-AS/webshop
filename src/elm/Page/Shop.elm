@@ -24,6 +24,7 @@ import Task
 import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
+import Ui.Input.DropDown as Dropdown exposing (DropDown)
 import Ui.Input.Radio as Radio
 import Ui.LabelItem
 import Ui.LoadingText
@@ -149,10 +150,14 @@ update msg env model shared =
                     )
 
             SetToZone zone ->
-                PageUpdater.fromPair
-                    ( { model | toZone = zone }
-                    , TaskUtil.doTask FetchOffers
-                    )
+                let
+                    foo =
+                        Debug.log "zone" zone
+                in
+                    PageUpdater.fromPair
+                        ( { model | toZone = zone }
+                        , TaskUtil.doTask FetchOffers
+                        )
 
             SetUser userType _ ->
                 PageUpdater.fromPair
@@ -782,11 +787,17 @@ viewZones model zones =
                 )
                 zones
     in
-        H.div [ A.class "section-box" ]
-            [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
-            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
-            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
-            , H.div [ A.class "section-block" ] [ H.node "atb-map" [] [] ]
+        Section.viewItem
+            [ Dropdown.init
+                |> Dropdown.setTitle "Fra sone"
+                |> Dropdown.setOnChange (Just SetFromZone)
+                |> Dropdown.setOptions (List.map (\item -> ( item.id, langString item.name )) sortedZones)
+                |> Dropdown.view
+            , Dropdown.init
+                |> Dropdown.setTitle "Til sone"
+                |> Dropdown.setOnChange (Just SetToZone)
+                |> Dropdown.setOptions (List.map (\item -> ( item.id, langString item.name )) sortedZones)
+                |> Dropdown.view
             ]
 
 
