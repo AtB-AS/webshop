@@ -241,9 +241,9 @@ update msg model =
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
-                GA.SetPendingOrder orderId ->
+                GA.AddActiveReservation reservation ->
                     ( model
-                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.SetPendingOrder orderId
+                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
                     )
 
                 GA.FocusItem id ->

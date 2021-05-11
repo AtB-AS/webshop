@@ -5,15 +5,16 @@ module Util.Format exposing
     , int
     , isoStringToFullHumanized
     , padZero
+    , posixToFullHumanized
     , time
     )
 
 import Data.FareContract exposing (FareTime)
 import DateFormat
 import FormatNumber
-import FormatNumber.Locales exposing (Locale)
+import FormatNumber.Locales
 import Iso8601
-import Time exposing (Posix)
+import Time
 
 
 {-| Pad a string with a number of zeroes on the left side.
@@ -110,8 +111,13 @@ decimals digits num =
 isoStringToFullHumanized : Time.Zone -> String -> Maybe String
 isoStringToFullHumanized zone dateString =
     case Iso8601.toTime dateString of
-        Err deadEnds ->
+        Err _ ->
             Nothing
 
         Ok timePosix ->
-            Just <| DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy, HH:mm" zone timePosix
+            Just <| DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone timePosix
+
+
+posixToFullHumanized : Time.Zone -> Time.Posix -> String
+posixToFullHumanized zone date_ =
+    DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone date_
