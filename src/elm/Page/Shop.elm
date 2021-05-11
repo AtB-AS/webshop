@@ -100,7 +100,7 @@ init shared =
                 |> Maybe.withDefault ""
     in
         ( { product =
-                shared.fareProducts
+                shared.availableFareProducts
                     |> List.head
                     |> Maybe.map .id
                     |> Maybe.withDefault ""
@@ -465,7 +465,7 @@ view _ _ shared model _ =
                     , onOpenClick = Just (ShowView Duration)
                     , id = "varighet"
                     }
-                    [ viewProducts model shared.fareProducts ]
+                    [ viewProducts model shared.availableFareProducts ]
                 , Ui.Group.view
                     { title = "Reisende"
                     , icon = Just Icon.bus

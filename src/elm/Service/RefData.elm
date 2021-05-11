@@ -7,7 +7,7 @@ port module Service.RefData exposing
     , onUserProfiles
     )
 
-import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -53,8 +53,26 @@ fareProductDecoder =
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "name" langStringDecoder
         |> DecodeP.optional "description" langStringDecoder (LangString "" "")
+        |> DecodeP.required "type" productTypeDecoder
         |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
         |> DecodeP.required "limitations" limitationsDecoder
+
+
+productTypeDecoder : Decoder ProductType
+productTypeDecoder =
+    Decode.andThen
+        (\userType ->
+            case userType of
+                "period" ->
+                    Decode.succeed ProductTypePeriod
+
+                "single" ->
+                    Decode.succeed ProductTypeSingle
+
+                _ ->
+                    Decode.fail "Invalid product type"
+        )
+        Decode.string
 
 
 userProfileDecoder : Decoder UserProfile
