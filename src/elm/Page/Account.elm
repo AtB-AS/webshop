@@ -11,7 +11,6 @@ import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode exposing (Error(..))
-import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
@@ -24,7 +23,8 @@ import Ui.Input.EditSection as EditSection
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
-import Validate as Validate
+import Util.Validation as Validation exposing (FormError, ValidationErrors)
+import Validate exposing (Valid)
 
 
 type EditSection
@@ -38,10 +38,6 @@ type FieldName
     | Email
     | FirstName
     | LastName
-
-
-type alias FormError =
-    ( FieldName, String )
 
 
 type Msg
@@ -74,7 +70,7 @@ type alias Model =
     , profile : Maybe Profile
     , editSection : Maybe EditSection
     , loadingEditSection : Maybe EditSection
-    , validationErrors : List FormError
+    , validationErrors : ValidationErrors FieldName
     }
 
 
@@ -109,7 +105,7 @@ update msg env model =
             PageUpdater.init
                 { model
                     | travelCard = value
-                    , validationErrors = clearValidationError TravelCard model.validationErrors
+                    , validationErrors = Validation.clearValidationError TravelCard model.validationErrors
                 }
 
         UpdateProfile ->
@@ -127,7 +123,7 @@ update msg env model =
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
-                            , validationErrors = addValidationError field (errorToString error) model.validationErrors
+                            , validationErrors = Validation.addValidationError field (errorToString error) model.validationErrors
                         }
 
         EditName ->
@@ -157,18 +153,18 @@ update msg env model =
             PageUpdater.fromPair
                 ( { model
                     | loadingEditSection = Just TravelCardSection
-                    , validationErrors = clearValidationError TravelCard model.validationErrors
+                    , validationErrors = Validation.clearValidationError TravelCard model.validationErrors
                   }
                 , removeTravelCard env model.travelCard
                 )
 
         SaveEmail ->
-            case Validate.validate emailValidator model of
+            case validateEmail model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model
                             | loadingEditSection = Just EmailSection
-                            , validationErrors = clearValidationError Email model.validationErrors
+                            , validationErrors = Validation.clearValidationError Email model.validationErrors
                           }
                         , updateEmail env model.email
                         )
@@ -177,12 +173,12 @@ update msg env model =
                     PageUpdater.init { model | validationErrors = errors }
 
         SaveTravelCard ->
-            case Validate.validate travelCardValidator model of
+            case validateTravelCard model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model
                             | loadingEditSection = Just TravelCardSection
-                            , validationErrors = clearValidationError TravelCard model.validationErrors
+                            , validationErrors = Validation.clearValidationError TravelCard model.validationErrors
                           }
                         , updateTravelCard env model.travelCard
                         )
@@ -236,19 +232,14 @@ update msg env model =
             PageUpdater.init model
 
 
-selectValidationError : FieldName -> List FormError -> Maybe String
-selectValidationError fieldName =
-    List.Extra.find (Tuple.first >> (==) fieldName) >> Maybe.map Tuple.second
+validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail =
+    Validation.validate (Validation.travelCardValidator Email .email)
 
 
-clearValidationError : FieldName -> List FormError -> List FormError
-clearValidationError fieldName =
-    List.filter (Tuple.first >> (/=) fieldName)
-
-
-addValidationError : List FieldName -> String -> List FormError -> List FormError
-addValidationError fields error =
-    (++) (fields |> List.map (\a -> ( a, error )))
+validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateTravelCard =
+    Validation.validate (Validation.travelCardValidator TravelCard .travelCard)
 
 
 focusBox : Maybe String -> Cmd Msg
@@ -313,13 +304,6 @@ viewPhoneNumber profile =
     Ui.Section.viewLabelItem "Telefonnummer" [ viewField profile.phone ]
 
 
-emailValidator : Validate.Validator FormError Model
-emailValidator =
-    Validate.firstError
-        [ Validate.ifInvalidEmail .email (\_ -> ( Email, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
-        ]
-
-
 viewEmailAddress : Model -> Profile -> Html Msg
 viewEmailAddress model profile =
     let
@@ -359,7 +343,7 @@ viewEmailAddress model profile =
                         EditSection.horizontalGroup
                             [ Text.init "email"
                                 |> Text.setTitle (Just "E-post")
-                                |> Text.setError (selectValidationError Email model.validationErrors)
+                                |> Text.setError (Validation.selectValidationError Email model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateEmail)
                                 |> Text.setPlaceholder "Legg til et e-post"
                                 |> Text.setValue (Just model.email)
@@ -369,7 +353,7 @@ viewEmailAddress model profile =
                     else
                         [ Ui.Section.viewLabelItem "E-post" [ viewField profile.email ]
                         , model.validationErrors
-                            |> selectValidationError Email
+                            |> Validation.selectValidationError Email
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
@@ -383,20 +367,6 @@ setEditSection editSection model =
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
 fieldInEditMode state actual =
     state == Just actual
-
-
-ifNotLength : Int -> (subject -> String) -> error -> Validate.Validator error subject
-ifNotLength stringLength subjectToString error =
-    Validate.ifTrue (\subject -> String.length (subjectToString subject) /= stringLength) error
-
-
-travelCardValidator : Validate.Validator FormError Model
-travelCardValidator =
-    Validate.firstError
-        [ Validate.ifBlank .travelCard ( TravelCard, "t:kort id kan ikke være tomt." )
-        , ifNotLength 9 .travelCard ( TravelCard, "t:kort id ser ut til å være feil." )
-        , Validate.ifNotInt .travelCard (\_ -> ( TravelCard, "t:kort id må være et tall." ))
-        ]
 
 
 viewTravelCard : Model -> Profile -> Html Msg
@@ -451,7 +421,7 @@ viewTravelCard model profile =
                         EditSection.horizontalGroup
                             [ Text.init "tkort"
                                 |> Text.setTitle (Just "t:kort")
-                                |> Text.setError (selectValidationError TravelCard model.validationErrors)
+                                |> Text.setError (Validation.selectValidationError TravelCard model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateTravelCard)
                                 |> Text.setPlaceholder "Legg til et t:kort nå"
                                 |> Text.setAttributes [ A.autofocus True ]
@@ -467,7 +437,7 @@ viewTravelCard model profile =
                                 |> H.text
                             ]
                         , model.validationErrors
-                            |> selectValidationError TravelCard
+                            |> Validation.selectValidationError TravelCard
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
