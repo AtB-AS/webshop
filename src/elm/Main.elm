@@ -410,12 +410,18 @@ view model =
     Browser.Document model.appInfo.title
         [ case model.userData of
             Loading _ ->
-                H.ul [ A.class "waiting-room" ]
-                    [ H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    ]
+                case model.onboarding of
+                    Just onboarding ->
+                        OnboardingPage.view model.environment onboarding
+                            |> H.map OnboardingMsg
+
+                    Nothing ->
+                        H.ul [ A.class "waiting-room" ]
+                            [ H.li [] []
+                            , H.li [] []
+                            , H.li [] []
+                            , H.li [] []
+                            ]
 
             _ ->
                 H.div [ A.class "light container" ]
@@ -473,7 +479,7 @@ header model =
                 []
 
         showHeader =
-            model.environment.customerId /= Nothing && model.route /= Just Route.Thanks
+            isLoggedIn && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]

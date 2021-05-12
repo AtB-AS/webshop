@@ -544,6 +544,9 @@
         margin-right: var(--spacings-medium);
     }
 }
+.ui-input-text--bordered {
+    border-color: var(--border-primary);
+}
 .ui-input-text--error {
     border-color: var(--status-error-main-backgroundColor);
 }

@@ -298,13 +298,26 @@ viewConsents _ model =
 
 viewTravelCard : Environment -> Model -> List (Html Msg)
 viewTravelCard _ model =
-    [ H.div [ A.class "onboarding-travelcard" ]
+    [ H.div [ A.class "onboarding__travelCard" ]
         [ Section.view
-            [ sectionTextInput "travelCard"
-                model.travelCard
-                InputTravelCard
-                "t:kort-nummer"
-                "Legg til t:kort-nummeret"
+            [ Section.viewItem
+                [ H.div [ A.class "onboarding__travelCard__input" ]
+                    [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                    , TextInput.init "travelCard"
+                        |> TextInput.setTitle (Just "t:kort-nummer")
+                        |> TextInput.setPlaceholder "Legg til t:kort-nummeret"
+                        |> TextInput.setOnInput (Just InputTravelCard)
+                        |> TextInput.setValue (Just model.travelCard)
+                        |> TextInput.setBordered True
+                        |> TextInput.view
+                    ]
+                ]
+            , H.img
+                [ A.src "/images/travelcard-help-illustration.svg"
+                , A.class "onboarding__travelCard__illustration"
+                , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                ]
+                []
             ]
         , Section.view
             [ Button.init "Jeg bruker ikke t:kort"

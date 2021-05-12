@@ -1,6 +1,7 @@
 module Ui.Input.Text exposing
     ( init
     , setAttributes
+    , setBordered
     , setError
     , setId
     , setOnBlur
@@ -34,6 +35,7 @@ type alias Text msg =
     , onInput : Maybe (String -> msg)
     , onBlur : Maybe msg
     , attributes : List (H.Attribute msg)
+    , bordered : Bool
     }
 
 
@@ -49,6 +51,7 @@ init id =
     , onInput = Nothing
     , onBlur = Nothing
     , attributes = []
+    , bordered = False
     }
 
 
@@ -102,11 +105,19 @@ setOnBlur onBlur opts =
     { opts | onBlur = onBlur }
 
 
+setBordered : Bool -> Text msg -> Text msg
+setBordered bordered opts =
+    { opts | bordered = bordered }
+
+
 view : Text msg -> Html msg
-view { id, title, value, type_, error, placeholder, onInput, required, onBlur } =
+view { id, title, value, type_, error, placeholder, onInput, required, onBlur, bordered } =
     let
         classList =
-            [ ( "ui-input-text", True ), ( "ui-input-text--error", error /= Nothing ) ]
+            [ ( "ui-input-text", True )
+            , ( "ui-input-text--error", error /= Nothing )
+            , ( "ui-input-text--bordered", bordered )
+            ]
     in
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe

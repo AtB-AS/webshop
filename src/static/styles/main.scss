@@ -605,10 +605,14 @@ table {
 
 /* temporary */
 
-.onboarding-travelcard {
+.onboarding__travelCard {
     display: grid;
     grid-template: 'a a' 'b c' / 1fr 1fr;
-    grid-gap: 24px;
+    grid-gap: var(--spacings-xLarge);
+    max-width: 41.5rem;
+    margin: 0 auto;
+
+    position: relative;
 
     > :nth-child(1) {
         grid-area: a;
@@ -621,6 +625,21 @@ table {
     > :nth-child(3) {
         grid-area: c;
     }
+}
+.onboarding__travelCard__input {
+    position: absolute;
+
+    right: 7%;
+    top: 7%;
+    width: 80%;
+    grid-gap: var(--spacings-xLarge);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+.onboarding__travelCard__illustration {
+    width: 100%;
+    display: block;
 }
 
 @import 'waiting';
