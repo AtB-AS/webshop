@@ -14,6 +14,11 @@
     --maxPageWidth: 976px;
 }
 
+* {
+    margin: 0;
+    padding: 0;
+}
+
 html,
 body {
     min-height: 100vh;
@@ -196,53 +201,43 @@ p {
     }
 }
 
-.page-history {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 320px 1fr;
+.page-onboarding {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
 
-    .sidebar {
-        width: 320px;
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+    }
 
-        input {
-            border: none;
-            outline: none;
-            background: inherit;
-            margin: 0;
-            padding: 0;
+    .consent {
+        display: flex;
+
+        > :first-child {
+            flex-grow: 1;
         }
     }
 
-    .main {
-        .order-header {
-            display: flex;
-            font-weight: 500;
-            cursor: pointer;
-
-            > div {
-                &:first-child {
-                    flex-grow: 1;
-                }
-            }
-        }
-    }
-
-    .receipt-button {
+    .button,
+    .no-button {
+        padding: 24px;
+        font-weight: 500;
         display: flex;
         cursor: pointer;
-        background-color: inherit;
-        border: none;
-        width: 100%;
-        padding: 1.5rem;
-        border-radius: 0.25rem;
-        appearance: none;
-        text-align: left;
-        align-items: center;
 
-        > div:first-child {
+        > :first-child {
             flex-grow: 1;
-            font-weight: 500;
         }
+    }
+
+    .button {
+        background-color: #71d6e0;
+        border-radius: 12px;
     }
 }
 
@@ -269,9 +264,12 @@ p {
     grid-template-columns: 1fr;
 }
 
-.page--overview {
+.page--overview,
+.page--history {
     grid-template-columns: 1fr 2fr;
+}
 
+.page--overview {
     .ticket-header {
         display: flex;
 
@@ -342,7 +340,6 @@ p {
         padding: var(--spacings-medium);
     }
 
-    .page-history,
     .page {
         grid-template-columns: 1fr;
     }
@@ -357,6 +354,15 @@ p {
     display: block;
     margin: 0 auto;
     max-width: 100%;
+}
+
+.pageHome__successBuy {
+    text-align: center;
+
+    img {
+        display: block;
+        margin: 0 auto;
+    }
 }
 
 // Components
@@ -501,9 +507,13 @@ p {
 }
 
 .summary-price {
-    text-align: right;
-    font-size: 32px;
-    place-items: center end;
+    font-size: 2rem;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    small {
+        font-size: 1rem;
+    }
 }
 
 @keyframes ticket-progress-move {
@@ -597,7 +607,7 @@ table {
 
 .onboarding-travelcard {
     display: grid;
-    grid-template: "a a" "b c" / 1fr 1fr;
+    grid-template: 'a a' 'b c' / 1fr 1fr;
     grid-gap: 24px;
 
     > :nth-child(1) {

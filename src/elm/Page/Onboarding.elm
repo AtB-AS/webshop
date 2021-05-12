@@ -139,8 +139,7 @@ update msg env model =
         RegisterTravelCard ->
             PageUpdater.fromPair
                 ( model
-                , Cmd.none
-                  -- registerTravelCard
+                , skipRegisterProfile { env | token = model.token } model.phone
                 )
 
         ReceiveRegisterTravelCard result ->
@@ -360,9 +359,9 @@ registerProfile env firstName lastName phone email =
         |> Task.attempt ReceiveRegisterProfile
 
 
-skipRegisterProfile : Environment -> Cmd Msg
-skipRegisterProfile env =
-    WebshopService.register env "_" "_" Nothing Nothing
+skipRegisterProfile : Environment -> String -> Cmd Msg
+skipRegisterProfile env phone =
+    WebshopService.register env "_" "_" (Just phone) Nothing
         |> Http.toTask
         |> Task.attempt ReceiveRegisterProfile
 

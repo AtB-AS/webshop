@@ -19,6 +19,7 @@ type DistributionEnvironment
 
 type alias Environment =
     { distributionEnv : DistributionEnvironment
+    , localUrl : String
     , baseUrl : String
     , ticketUrl : String
     , refDataUrl : String

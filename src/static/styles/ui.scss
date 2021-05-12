@@ -67,6 +67,7 @@
 .ui-section {
     border-radius: var(--border-radius-regular);
     overflow: hidden;
+    align-self: flex-start;
 }
 .ui-section--marginTop {
     margin-top: var(--spacings-xLarge);
@@ -84,14 +85,15 @@
     flex: 1;
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
-    display: grid;
-    gap: var(--spacings-medium);
 }
 .ui-section__item--padded {
     padding: var(--spacings-xLarge);
 }
 .ui-section__item__label {
     margin-bottom: var(--spacings-medium);
+}
+.ui-section__item__label--compact {
+    margin-bottom: var(--spacings-xSmall);
 }
 .ui-section__child:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
@@ -101,6 +103,28 @@
     padding: 0;
     margin: 0;
 }
+
+// Style for ./src/Ui/LabelItem.elm
+.ui-labelItem__label {
+    margin-bottom: var(--spacings-medium);
+}
+.ui-labelItem--horizontal {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: baseline;
+
+    .ui-labelItem__label {
+        margin-bottom: 0;
+    }
+}
+.ui-labelItem + .ui-labelItem {
+    margin-top: var(--spacings-medium);
+}
+.ui-labelItem__label--compact {
+    margin-bottom: var(--spacings-xSmall);
+}
+// End: Style for LabelItem.elm
 
 .ui-group {
     width: 100%;
@@ -138,7 +162,6 @@
     align-items: center;
 
     transition: all 150ms ease-in-out;
-    border-radius: var(--border-radius-regular);
     border: var(--border-width-medium) solid transparent;
     // Remove border from padding.
     padding: calc(var(--spacings-xLarge) - 2 * var(--border-width-medium));
@@ -365,12 +388,11 @@
     justify-content: space-between;
     align-items: center;
     transition: filter 150ms ease-in;
-
-    > :not(.ui-button__coloredIcon) {
-        svg,
-        path {
-            fill: currentColor;
-        }
+}
+.ui-button__icon > :not(.ui-button__coloredIcon) {
+    svg,
+    path {
+        fill: currentColor;
     }
 }
 .ui-button:hover {
@@ -383,7 +405,6 @@
     outline: 0;
     border: var(--border-width-medium) solid
         var(--colors-primary_2-backgroundColor);
-    border-radius: var(--border-radius-regular);
 }
 .ui-button:not(.ui-button--compact) {
     width: 100%;
@@ -408,11 +429,13 @@
     outline: 0;
     border: var(--border-width-medium) solid
         var(--colors-primary_2-backgroundColor);
-    border-radius: var(--border-radius-regular);
 }
 .ui-button--tertiary {
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
+}
+.ui-button--disabled {
+    cursor: not-allowed;
 }
 .ui-button--disabled > * {
     opacity: 0.2;
@@ -505,13 +528,12 @@
 }
 
 .ui-input-text {
-    transition: all 150ms ease-in-out;
+    display: block;
+    transition: border 150ms ease-in-out, background-color 100ms ease;
     border: var(--border-width-medium) solid transparent;
 
     // Remove border from padding.
     padding: calc(var(--spacings-xLarge) - var(--border-width-medium));
-
-    transition: all 150ms ease-in-out;
 
     svg,
     path {
@@ -570,6 +592,41 @@
     30% {
         opacity: 0.4;
         transform: translateY(0);
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+// LoadingText.elm
+
+.ui-loadingText {
+    animation: placeHolderShimmer 1s linear infinite forwards,
+        opacityIn 400ms ease;
+    background: var(--colors-background_0-backgroundColor);
+    background: linear-gradient(
+        to right,
+        var(--colors-background_2-backgroundColor) 8%,
+        var(--colors-background_0-backgroundColor) 18%,
+        var(--colors-background_2-backgroundColor) 33%
+    );
+    background-size: 800px 104px;
+    height: 1rem;
+    position: relative;
+    display: inline-block;
+    margin: 0 var(--spacings-xSmall);
+}
+@keyframes placeHolderShimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+@keyframes opacityIn {
+    0% {
+        opacity: 0;
     }
     100% {
         opacity: 1;
