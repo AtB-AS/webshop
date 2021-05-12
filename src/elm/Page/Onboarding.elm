@@ -251,7 +251,7 @@ viewProfileInfo _ model =
             model.email
             InputEmail
             "E-postadresse"
-            "Hvor skal vi sende kvitteringer og varsler?"
+            "Hvor skal vi sende kvitteringer?"
         , Button.init "Neste"
             |> Button.setIcon (Just Icon.rightArrow)
             |> Button.setOnClick (Just SkipRegister)
