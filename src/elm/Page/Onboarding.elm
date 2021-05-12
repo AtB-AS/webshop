@@ -5,7 +5,6 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
-import Html.Events as E
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Notification
@@ -239,15 +238,18 @@ viewProfileInfo _ model =
         [ Section.viewPaddedItem
             [ H.p [] [ H.text "Disse opplysningene vil gjøre det enklere for deg å bruke nettbutikken." ]
             ]
-        , sectionTextInput model.firstName
+        , sectionTextInput "firstname"
+            model.firstName
             InputFirstName
             "Fornavn"
             "Hva skal vi kalle deg?"
-        , sectionTextInput model.lastName
+        , sectionTextInput "lastname"
+            model.lastName
             InputLastName
             "Etternavn"
             "Hva skal vi kalle deg?"
-        , sectionTextInput model.email
+        , sectionTextInput "email"
+            model.email
             InputEmail
             "E-postadresse"
             "Hvor skal vi sende kvitteringer?"
@@ -279,7 +281,8 @@ viewConsents _ model =
                 |> Checkbox.view
             ]
         , if model.consent1 || model.consent2 then
-            sectionTextInput model.email
+            sectionTextInput "consent-email"
+                model.email
                 InputEmail
                 "E-postadresse"
                 "Legg inn din e-postadresse"
@@ -298,7 +301,8 @@ viewTravelCard : Environment -> Model -> List (Html Msg)
 viewTravelCard _ model =
     [ H.div [ A.class "onboarding-travelcard" ]
         [ Section.view
-            [ sectionTextInput model.travelCard
+            [ sectionTextInput "travelCard"
+                model.travelCard
                 InputTravelCard
                 "t:kort-nummer"
                 "Legg til t:kort-nummeret"
@@ -331,10 +335,10 @@ viewAppAdvert _ _ =
     ]
 
 
-sectionTextInput : String -> (String -> msg) -> String -> String -> Html msg
-sectionTextInput value action title placeholder =
+sectionTextInput : String -> String -> (String -> msg) -> String -> String -> Html msg
+sectionTextInput id value action title placeholder =
     Section.viewItem
-        [ TextInput.init ""
+        [ TextInput.init id
             |> TextInput.setTitle (Just title)
             |> TextInput.setPlaceholder placeholder
             |> TextInput.setOnInput (Just action)
