@@ -3,10 +3,10 @@ module Page.Onboarding exposing (Model, Msg, init, subscriptions, update, view)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
-import Html as H exposing (Attribute, Html)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Http
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.Misc as MiscService
@@ -14,7 +14,6 @@ import Service.Webshop as WebshopService
 import Task
 import Ui.Button as Button
 import Ui.Input.Checkbox as Checkbox
-import Ui.Input.Radio
 import Ui.Input.Text as TextInput
 import Ui.Message as Message
 import Ui.PageHeader as PH
