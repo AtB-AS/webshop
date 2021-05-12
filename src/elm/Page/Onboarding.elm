@@ -200,23 +200,23 @@ view env model =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
-                |> wrapHeader False "Profilinformasjon (1 av 4)"
+                |> wrapHeader True "Profilinformasjon (1 av 4)"
 
         Consents ->
             viewConsents env model
-                |> wrapHeader False "Samtykker (2 av 4)"
+                |> wrapHeader True "Samtykker (2 av 4)"
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader True "Legg til t:kort (3 av 4)"
+                |> wrapHeader False "Legg til t:kort (3 av 4)"
 
         AppAdvert ->
             viewAppAdvert env model
-                |> wrapHeader False "Har du prøvd AtB-appen?"
+                |> wrapHeader True "Har du prøvd AtB-appen?"
 
 
 wrapHeader : Bool -> String -> List (Html Msg) -> Html Msg
-wrapHeader widePage title children =
+wrapHeader narrowPage title children =
     H.div []
         [ PH.init
             |> PH.setTitle (Just title)
@@ -225,7 +225,7 @@ wrapHeader widePage title children =
         , H.div
             [ A.classList
                 [ ( "page", True )
-                , ( "page-wide", widePage )
+                , ( "page--narrow", narrowPage )
                 ]
             ]
             children
@@ -236,23 +236,23 @@ viewProfileInfo : Environment -> Model -> List (Html Msg)
 viewProfileInfo _ model =
     [ Section.view
         [ Section.viewPaddedItem
-            [ H.p [] [ H.text "Disse opplysningene vil gjøre det enklere for deg å bruke nettbutikken." ]
+            [ H.p [] [ H.text "Her ber vi om noen opplysninger som vil forenkle bruken av nettbutikken." ]
             ]
         , sectionTextInput "firstname"
             model.firstName
             InputFirstName
             "Fornavn"
-            "Hva skal vi kalle deg?"
+            "Skriv inn fornavnet ditt"
         , sectionTextInput "lastname"
             model.lastName
             InputLastName
             "Etternavn"
-            "Hva skal vi kalle deg?"
+            "Skriv inn etternavnet ditt"
         , sectionTextInput "email"
             model.email
             InputEmail
             "E-postadresse"
-            "Hvor skal vi sende kvitteringer?"
+            "Hvor skal vi sende kvitteringer og varsler?"
         , Button.init "Neste"
             |> Button.setIcon (Just Icon.rightArrow)
             |> Button.setOnClick (Just SkipRegister)
