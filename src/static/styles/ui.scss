@@ -195,6 +195,239 @@
     margin: 0 var(--spacings-medium);
 }
 
+.ui-ticketDetails {
+    width: 100%;
+    border-radius: var(--border-radius-regular);
+    color: var(--colors-background_0-color);
+    margin-bottom: var(--spacings-medium);
+
+    --minWidthItems: 200px;
+}
+.ui-ticketDetails__header {
+    margin: 0;
+    padding: 0;
+}
+.ui-ticketDetails__content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 300ms ease;
+}
+.ui-ticketDetails__content--open {
+    max-height: 320px;
+    overflow: auto;
+}
+.ui-ticketDetails__metaDataitem {
+    padding-top: var(--spacings-xLarge);
+    margin: var(--border-width-slim) 0;
+
+    background-position-y: top;
+    background-position-x: left, right;
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+
+    border-radius: var(--border-radius-regular);
+    transition: border-radius 400ms ease;
+
+    background-image: radial-gradient(
+            circle at 0 0,
+            rgba(0, 0, 0, 0) 15px,
+            var(--colors-background_0-backgroundColor) 15px
+        ),
+        radial-gradient(
+            circle at 100% 0,
+            rgba(0, 0, 0, 0) 15px,
+            var(--colors-background_0-backgroundColor) 15px
+        );
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--minWidthItems), 1fr));
+
+    .ui-labelItem {
+        margin: 0;
+    }
+
+    > :first-child {
+        padding-top: 0;
+    }
+}
+.ui-ticketDetails__metaDataitem--open {
+    border-radius: 0;
+}
+.ui-ticketDetails__metaDataitem--padded {
+    padding: var(--spacings-xLarge);
+}
+
+.ui-ticketDetails__item {
+    background: var(--colors-background_0-backgroundColor);
+    padding: var(--spacings-xLarge);
+}
+.ui-ticketDetails__item + .ui-ticketDetails__item {
+    margin-top: var(--border-width-slim);
+}
+.ui-ticketDetails__item:last-child {
+    border-bottom-left-radius: var(--border-radius-regular);
+    border-bottom-right-radius: var(--border-radius-regular);
+}
+.ui-ticketDetails__item--horizontal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--minWidthItems), 1fr));
+
+    .ui-labelItem {
+        margin: 0;
+    }
+}
+.ui-ticketDetails__item--statusLine {
+    padding: 0;
+    grid-template-columns: 1fr 1fr auto;
+
+    .ui-labelItem {
+        padding: var(--spacings-xLarge);
+    }
+    .ui-labelItem + .ui-labelItem {
+        border-left: 1px solid var(--border-primary);
+    }
+}
+@media (max-width: 500px) {
+    .ui-ticketDetails__item--statusLine {
+        grid-template-columns: 1fr;
+        padding: var(--spacings-xLarge);
+
+        .ui-labelItem {
+            padding: 0;
+        }
+        .ui-labelItem + .ui-labelItem {
+            border-left: 0;
+        }
+    }
+}
+
+.ui-ticketDetails__headerButton {
+    font-family: var(--font-main);
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+    border: 0;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: normal;
+
+    transition: all 150ms ease-in-out;
+    padding: var(--spacings-xLarge);
+    border-radius: var(--border-radius-regular);
+
+    background-position: bottom left, bottom right;
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+
+    background-image: radial-gradient(
+            circle at 0 100%,
+            rgba(0, 0, 0, 0) 15px,
+            var(--colors-background_0-backgroundColor) 15px
+        ),
+        radial-gradient(
+            circle at 100% 100%,
+            rgba(0, 0, 0, 0) 15px,
+            var(--colors-background_0-backgroundColor) 15px
+        );
+}
+.ui-ticketDetails__headerButton:hover {
+    background-image: radial-gradient(
+            circle at 0 100%,
+            rgba(0, 0, 0, 0) 15px,
+            var(--colors-background_2-backgroundColor) 15px
+        ),
+        radial-gradient(
+            circle at 100% 100%,
+            rgba(0, 0, 0, 0) 15px,
+            var(--colors-background_2-backgroundColor) 15px
+        );
+    color: var(--colors-background_2-color);
+}
+.ui-ticketDetails__headerButton:focus {
+    outline: 0;
+    box-shadow: 0 0 0 var(--border-width-medium)
+        var(--colors-primary_2-backgroundColor);
+}
+.ui-ticketDetails__headerButton:active {
+    background-image: radial-gradient(
+            circle at 0 100%,
+            rgba(0, 0, 0, 0) 14px,
+            var(--colors-background_3-backgroundColor) 15px
+        ),
+        radial-gradient(
+            circle at 100% 100%,
+            rgba(0, 0, 0, 0) 14px,
+            var(--colors-background_3-backgroundColor) 15px
+        );
+    color: var(--colors-background_3-color);
+}
+.ui-ticketDetails__headerButton__icon {
+    svg {
+        display: block;
+    }
+}
+.ui-ticketDetails__headerButton__title {
+    display: block;
+    flex: 1;
+    text-align: left;
+    padding: 0 var(--spacings-xLarge);
+    line-height: 1.25;
+}
+.ui-ticketDetails__headerButton__title--active {
+    font-size: 2rem;
+}
+@media (max-width: 768px) {
+    .ui-ticketDetails__headerButton__title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.25;
+    }
+}
+.ui-ticketDetails__headerButton__toggleText {
+    margin: 0 var(--spacings-medium);
+}
+
+@media (max-width: 500px) {
+    .ui-ticketDetails__headerButton__toggleText {
+        display: none;
+    }
+}
+
+.ui-ticketDetails__summaryBox p + p {
+    margin-top: var(--spacings-medium);
+}
+
+.ui-ticketDetails__activeReservationLoading {
+    --loaderSize: 2.75rem;
+    --loaderWidth: 0.6rem;
+
+    font-size: 10px;
+    position: relative;
+    text-indent: -9999em;
+    border: var(--loaderWidth) solid var(--colors-primary_3-backgroundColor);
+    border-left-color: var(--text-colors-disabled);
+    transform: translateZ(0);
+    animation: loadReservation 2s infinite linear;
+
+    border-radius: 50%;
+    width: var(--loaderSize);
+    height: var(--loaderSize);
+
+    &:after {
+        border-radius: 50%;
+        width: var(--loaderSize);
+        height: var(--loaderSize);
+    }
+}
+@keyframes loadReservation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .ui-heading {
     margin: 0;
     padding: 0;

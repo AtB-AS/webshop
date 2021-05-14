@@ -268,54 +268,6 @@ p {
 .page--history {
     grid-template-columns: 1fr 2fr;
 }
-
-.page--overview {
-    .ticket-header {
-        display: flex;
-
-        > div.product-name {
-            font-weight: 500;
-            flex-grow: 1;
-            padding-left: 12px;
-        }
-    }
-
-    .ticket-progress {
-        height: 8px;
-        min-height: 8px;
-        background-color: #a2ad00;
-        background-image: linear-gradient(
-            -45deg,
-            transparent 12px,
-            rgba(0, 0, 0, 0.6) 12px,
-            rgba(0, 0, 0, 0.6) 20px,
-            transparent 20px,
-            transparent
-        );
-        background-size: 60px 8px;
-        animation: ticket-progress-move 2s linear infinite;
-        margin: 0;
-        padding: 0;
-    }
-
-    .ticket-info {
-        font-size: 32px;
-        line-height: 40px;
-        margin: 0;
-        padding: 0;
-    }
-
-    .ticket-waiting {
-        display: grid;
-        place-items: center;
-
-        svg {
-            fill: var(--primary-2);
-            height: 30px;
-            width: 120px;
-        }
-    }
-}
 .pageOverview__empty {
     text-align: center;
 

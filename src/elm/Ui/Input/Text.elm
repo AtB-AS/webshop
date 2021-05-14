@@ -111,7 +111,7 @@ setBordered bordered opts =
 
 
 view : Text msg -> Html msg
-view { id, title, value, type_, error, placeholder, onInput, required, onBlur, bordered } =
+view { id, title, value, type_, error, placeholder, onInput, required, onBlur, attributes, bordered } =
     let
         classList =
             [ ( "ui-input-text", True )
@@ -126,16 +126,18 @@ view { id, title, value, type_, error, placeholder, onInput, required, onBlur, b
                 )
                 title
             , H.input
-                [ A.type_ "text"
-                , A.id id
-                , A.placeholder placeholder
-                , A.type_ type_
-                , A.required required
-                , A.value <| Maybe.withDefault "" value
-                , A.class "ui-input-text__input"
-                , Html.Attributes.Extra.attributeMaybe (\action -> E.onInput action) onInput
-                , Html.Attributes.Extra.attributeMaybe (\action -> E.onBlur action) onBlur
-                ]
+                ([ A.type_ "text"
+                 , A.id id
+                 , A.placeholder placeholder
+                 , A.type_ type_
+                 , A.required required
+                 , A.value <| Maybe.withDefault "" value
+                 , A.class "ui-input-text__input"
+                 , Html.Attributes.Extra.attributeMaybe (\action -> E.onInput action) onInput
+                 , Html.Attributes.Extra.attributeMaybe (\action -> E.onBlur action) onBlur
+                 ]
+                    ++ attributes
+                )
                 []
             , Html.Extra.viewMaybe
                 (\t ->

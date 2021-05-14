@@ -276,12 +276,18 @@ update msg env model shared =
                                 |> addGlobalNotification (Message.Error errorMessage)
 
             ReceivePaymentStatus paymentId result ->
-                case ( model.reservation, result ) of
-                    ( Loaded { orderId }, Ok paymentStatus ) ->
+                case ( model.reservation, model.offers, result ) of
+                    ( Loaded reservation, Loaded offers, Ok paymentStatus ) ->
                         case paymentStatus.status of
                             "CAPTURE" ->
                                 PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
-                                    |> PageUpdater.addGlobalAction (GA.SetPendingOrder orderId)
+                                    |> PageUpdater.addGlobalAction
+                                        (GA.AddActiveReservation
+                                            { reservation = reservation
+                                            , offers = offers
+                                            , paymentStatus = Just paymentStatus
+                                            }
+                                        )
                                     |> addGlobalNotification (Message.Valid "Ny billett lagt til.")
                                     |> PageUpdater.addGlobalAction GA.CloseShop
 
