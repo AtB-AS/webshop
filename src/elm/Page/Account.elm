@@ -24,6 +24,7 @@ import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
+import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
 
@@ -497,7 +498,9 @@ updateEmail env email =
 
 updateTravelCard : Environment -> String -> Cmd Msg
 updateTravelCard env travelCard =
-    WebshopService.addTravelCard env travelCard
+    travelCard
+        |> Util.TravelCard.extractDigits
+        |> WebshopService.addTravelCard env
         |> Http.toTask
         |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
 

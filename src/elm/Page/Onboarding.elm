@@ -19,6 +19,7 @@ import Ui.Input.Text as TextInput
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
+import Util.TravelCard
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
 
@@ -400,7 +401,9 @@ skipRegisterProfile env phone =
 
 registerTravelCard : Environment -> String -> Cmd Msg
 registerTravelCard env travelCardId =
-    WebshopService.addTravelCard env travelCardId
+    travelCardId
+        |> Util.TravelCard.extractDigits
+        |> WebshopService.addTravelCard env
         |> Http.toTask
         |> Task.attempt ReceiveRegisterTravelCard
 
