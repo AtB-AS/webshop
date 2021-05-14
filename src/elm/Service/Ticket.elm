@@ -6,7 +6,7 @@ module Service.Ticket exposing
     )
 
 import Data.RefData exposing (UserType(..))
-import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation, Ticket)
+import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)

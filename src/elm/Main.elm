@@ -241,9 +241,9 @@ update msg model =
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
-                GA.SetPendingOrder orderId ->
+                GA.AddActiveReservation reservation ->
                     ( model
-                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.SetPendingOrder orderId
+                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
                     )
 
                 GA.FocusItem id ->
@@ -408,38 +408,54 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document model.appInfo.title
-        [ case model.userData of
-            Loading _ ->
-                H.ul [ A.class "waiting-room" ]
-                    [ H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    , H.li [] []
-                    ]
+        [ wrapPage
+            model
+            (case model.userData of
+                Loading _ ->
+                    case model.onboarding of
+                        Just onboarding ->
+                            [ OnboardingPage.view model.environment onboarding
+                                |> H.map OnboardingMsg
+                            ]
 
-            _ ->
-                H.div [ A.class "light container" ]
-                    [ viewAuthError model
-                    , header model
-                    , H.main_ [ A.class "app" ]
-                        [ Ui.GlobalNotifications.notifications model.notifications
-                        , H.div [ A.class "content" ]
-                            [ case model.onboarding of
-                                Just onboarding ->
-                                    OnboardingPage.view model.environment onboarding
-                                        |> H.map OnboardingMsg
+                        Nothing ->
+                            [ H.ul [ A.class "waiting-room" ]
+                                [ H.li [] []
+                                , H.li [] []
+                                , H.li [] []
+                                , H.li [] []
+                                ]
+                            ]
+
+                _ ->
+                    [ case model.onboarding of
+                        Just onboarding ->
+                            OnboardingPage.view model.environment onboarding
+                                |> H.map OnboardingMsg
+
+                        Nothing ->
+                            case model.environment.customerId of
+                                Just _ ->
+                                    viewPage model
 
                                 Nothing ->
-                                    case model.environment.customerId of
-                                        Just _ ->
-                                            viewPage model
-
-                                        Nothing ->
-                                            LoginPage.view model.environment model.login
-                                                |> H.map LoginMsg
-                            ]
-                        ]
+                                    LoginPage.view model.environment model.login
+                                        |> H.map LoginMsg
                     ]
+            )
+        ]
+
+
+wrapPage : Model -> List (Html Msg) -> Html Msg
+wrapPage model children =
+    H.div [ A.class "light container" ]
+        [ viewAuthError model
+        , header model
+        , H.main_ [ A.class "app" ]
+            [ Ui.GlobalNotifications.notifications model.notifications
+            , H.div [ A.class "content" ]
+                children
+            ]
         ]
 
 
@@ -473,7 +489,7 @@ header model =
                 []
 
         showHeader =
-            model.environment.customerId /= Nothing && model.route /= Just Route.Thanks
+            isLoggedIn && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
@@ -568,7 +584,7 @@ viewPage model =
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( Route.Home, "Oversikt" ) |> PH.view
+        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( "Oversikt", Route.Home ) |> PH.view
         , children
         ]
 
