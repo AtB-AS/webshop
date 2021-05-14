@@ -418,7 +418,7 @@ view model =
                             ]
 
             _ ->
-                H.div [ A.class "container" ]
+                H.div [ A.class "light container" ]
                     [ viewAuthError model
                     , header model
                     , H.main_ [ A.class "app" ]
