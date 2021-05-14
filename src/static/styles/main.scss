@@ -43,6 +43,8 @@ button {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: var(--colors-background_1-color);
+    background-color: var(--colors-background_1-backgroundColor);
 
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
