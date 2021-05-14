@@ -105,7 +105,7 @@ update msg env model =
             PageUpdater.init
                 { model
                     | travelCard = value
-                    , validationErrors = Validation.clearValidationError TravelCard model.validationErrors
+                    , validationErrors = Validation.remove TravelCard model.validationErrors
                 }
 
         UpdateProfile ->
@@ -123,7 +123,7 @@ update msg env model =
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
-                            , validationErrors = Validation.addValidationError field (errorToString error) model.validationErrors
+                            , validationErrors = Validation.add field (errorToString error) model.validationErrors
                         }
 
         EditName ->
@@ -153,7 +153,7 @@ update msg env model =
             PageUpdater.fromPair
                 ( { model
                     | loadingEditSection = Just TravelCardSection
-                    , validationErrors = Validation.clearValidationError TravelCard model.validationErrors
+                    , validationErrors = Validation.remove TravelCard model.validationErrors
                   }
                 , removeTravelCard env model.travelCard
                 )
@@ -164,7 +164,7 @@ update msg env model =
                     PageUpdater.fromPair
                         ( { model
                             | loadingEditSection = Just EmailSection
-                            , validationErrors = Validation.clearValidationError Email model.validationErrors
+                            , validationErrors = Validation.remove Email model.validationErrors
                           }
                         , updateEmail env model.email
                         )
@@ -178,7 +178,7 @@ update msg env model =
                     PageUpdater.fromPair
                         ( { model
                             | loadingEditSection = Just TravelCardSection
-                            , validationErrors = Validation.clearValidationError TravelCard model.validationErrors
+                            , validationErrors = Validation.remove TravelCard model.validationErrors
                           }
                         , updateTravelCard env model.travelCard
                         )
@@ -343,7 +343,7 @@ viewEmailAddress model profile =
                         EditSection.horizontalGroup
                             [ Text.init "email"
                                 |> Text.setTitle (Just "E-post")
-                                |> Text.setError (Validation.selectValidationError Email model.validationErrors)
+                                |> Text.setError (Validation.select Email model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateEmail)
                                 |> Text.setPlaceholder "Legg til et e-post"
                                 |> Text.setValue (Just model.email)
@@ -353,7 +353,7 @@ viewEmailAddress model profile =
                     else
                         [ Ui.Section.viewLabelItem "E-post" [ viewField profile.email ]
                         , model.validationErrors
-                            |> Validation.selectValidationError Email
+                            |> Validation.select Email
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
@@ -421,7 +421,7 @@ viewTravelCard model profile =
                         EditSection.horizontalGroup
                             [ Text.init "tkort"
                                 |> Text.setTitle (Just "t:kort")
-                                |> Text.setError (Validation.selectValidationError TravelCard model.validationErrors)
+                                |> Text.setError (Validation.select TravelCard model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateTravelCard)
                                 |> Text.setPlaceholder "Legg til et t:kort nå"
                                 |> Text.setAttributes [ A.autofocus True ]
@@ -437,7 +437,7 @@ viewTravelCard model profile =
                                 |> H.text
                             ]
                         , model.validationErrors
-                            |> Validation.selectValidationError TravelCard
+                            |> Validation.select TravelCard
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )

@@ -5,7 +5,8 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Http
+import Html.Extra
+import Http exposing (Error(..))
 import Json.Decode as Decode
 import Notification
 import PageUpdater exposing (PageUpdater)
@@ -18,6 +19,8 @@ import Ui.Input.Text as TextInput
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
+import Util.Validation as V exposing (FormError, ValidationErrors)
+import Validate exposing (Valid)
 
 
 type Msg
@@ -45,6 +48,10 @@ type Step
     | AppAdvert
 
 
+type FieldName
+    = TravelCardField
+
+
 type alias Model =
     { token : String
     , firstName : String
@@ -53,9 +60,9 @@ type alias Model =
     , phone : String
     , consent1 : Bool
     , consent2 : Bool
-    , error : Maybe String
     , step : Step
     , travelCard : String
+    , validationErrors : ValidationErrors FieldName
     }
 
 
@@ -68,9 +75,9 @@ init token email phone =
     , phone = phone
     , consent1 = False
     , consent2 = False
-    , error = Nothing
     , step = ProfileInfo
     , travelCard = ""
+    , validationErrors = []
     }
 
 
@@ -102,17 +109,10 @@ update msg env model =
                     model.email
                 )
 
-        SkipRegister ->
-            PageUpdater.fromPair
-                ( { model | error = Nothing, step = Consents }
-                , Cmd.none
-                  -- skipRegisterProfile { env | token = model.token }
-                )
-
         ReceiveRegisterProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | error = Nothing, step = TravelCard }
+                    PageUpdater.init { model | validationErrors = V.init, step = TravelCard }
 
                 Err error ->
                     PageUpdater.init model
@@ -128,39 +128,44 @@ update msg env model =
                                 |> GA.ShowNotification
                             )
 
-        SkipConsents ->
-            PageUpdater.init { model | error = Nothing, step = TravelCard }
-
         InputTravelCard value ->
-            PageUpdater.init { model | travelCard = value }
+            PageUpdater.init { model | travelCard = value, validationErrors = V.remove TravelCardField model.validationErrors }
 
         RegisterTravelCard ->
-            PageUpdater.fromPair
-                ( model
-                , skipRegisterProfile { env | token = model.token } model.phone
-                )
+            case validateTravelCard model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model | validationErrors = V.remove TravelCardField model.validationErrors }
+                        , registerTravelCard { env | token = model.token } model.travelCard
+                        )
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
 
         ReceiveRegisterTravelCard result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | error = Nothing, step = TravelCard }
+                    PageUpdater.init { model | validationErrors = V.init, step = TravelCard }
 
                 Err error ->
-                    PageUpdater.init model
-                        |> PageUpdater.addGlobalAction
-                            (error
-                                |> getError
-                                |> Maybe.withDefault "Det oppstod en feil, prøv på nytt."
-                                |> Message.Error
-                                |> Message.message
-                                |> (\s ->
-                                        Notification.setContent s Notification.init
-                                   )
-                                |> GA.ShowNotification
-                            )
+                    PageUpdater.init
+                        { model
+                            | validationErrors =
+                                V.add [ TravelCardField ] (errorToString error) model.validationErrors
+                        }
+
+        SkipRegister ->
+            PageUpdater.fromPair
+                ( { model | validationErrors = V.init, step = Consents }
+                , Cmd.none
+                  -- skipRegisterProfile { env | token = model.token }
+                )
+
+        SkipConsents ->
+            PageUpdater.init { model | validationErrors = V.init, step = TravelCard }
 
         SkipTravelCard ->
-            PageUpdater.init { model | error = Nothing, step = AppAdvert }
+            PageUpdater.init { model | validationErrors = V.init, step = AppAdvert }
 
         Finish ->
             PageUpdater.fromPair ( model, MiscService.onboardingDone () )
@@ -192,6 +197,11 @@ getError error =
 
         _ ->
             Nothing
+
+
+validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateTravelCard =
+    V.validate (V.travelCardValidator TravelCardField .travelCard)
 
 
 view : Environment -> Model -> Html Msg
@@ -301,23 +311,26 @@ viewTravelCard _ model =
     [ H.div [ A.class "onboarding__travelCard" ]
         [ Section.view
             [ Section.viewItem
-                [ H.div [ A.class "onboarding__travelCard__input" ]
-                    [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                    , TextInput.init "travelCard"
-                        |> TextInput.setTitle (Just "t:kort-nummer")
-                        |> TextInput.setPlaceholder "Legg til t:kort-nummeret"
-                        |> TextInput.setOnInput (Just InputTravelCard)
-                        |> TextInput.setValue (Just model.travelCard)
-                        |> TextInput.setBordered True
-                        |> TextInput.view
+                [ H.div [ A.class "onboarding__travelCard__content" ]
+                    [ H.div [ A.class "onboarding__travelCard__input" ]
+                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                        , TextInput.init "travelCard"
+                            |> TextInput.setTitle (Just "t:kortnummer (16-siffer)")
+                            |> TextInput.setPlaceholder "Skriv inn t:kort-nummer"
+                            |> TextInput.setOnInput (Just InputTravelCard)
+                            |> TextInput.setValue (Just model.travelCard)
+                            |> TextInput.setBordered True
+                            |> TextInput.view
+                        ]
+                    , H.img
+                        [ A.src "/images/travelcard-help-illustration.svg"
+                        , A.class "onboarding__travelCard__illustration"
+                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        ]
+                        []
                     ]
                 ]
-            , H.img
-                [ A.src "/images/travelcard-help-illustration.svg"
-                , A.class "onboarding__travelCard__illustration"
-                , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
-                ]
-                []
+            , Html.Extra.viewMaybe Message.error (V.select TravelCardField model.validationErrors)
             ]
         , Section.view
             [ Button.init "Jeg bruker ikke t:kort"
@@ -387,3 +400,32 @@ registerTravelCard env travelCardId =
     WebshopService.addTravelCard env travelCardId
         |> Http.toTask
         |> Task.attempt ReceiveRegisterTravelCard
+
+
+{-| TODO this should be deduplicated from Account.elm page and reused.
+But currently unsure where mappers like this fit in the current layered arcitechture
+-}
+errorToString : Http.Error -> String
+errorToString error =
+    case error of
+        BadStatus { status, body } ->
+            case status.code of
+                500 ->
+                    "Det skjedde en feil med tjenesten. Prøv igjen senere."
+
+                409 ->
+                    "Dette t:kortet eksisterer ikke eller er allerede registrert."
+
+                400 ->
+                    case WebshopService.travelCardErrorDecoder body of
+                        Ok errorMessage ->
+                            "Feilmelding fra tjenesten: " ++ errorMessage
+
+                        _ ->
+                            "Innsendt informasjon ser ut til å ikke stemme. Prøv igjen er du snill."
+
+                _ ->
+                    "Unknown error"
+
+        _ ->
+            "Fikk ikke kontakt med tjenesten. Sjekk om du er på nett og prøv igjen."

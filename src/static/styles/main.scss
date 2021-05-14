@@ -578,11 +578,14 @@ table {
         grid-area: c;
     }
 }
+.onboarding__travelCard__content {
+    position: relative;
+}
 .onboarding__travelCard__input {
     position: absolute;
 
     right: 7%;
-    top: 7%;
+    top: 10%;
     width: 80%;
     grid-gap: var(--spacings-xLarge);
 

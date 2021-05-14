@@ -1,11 +1,12 @@
 module Util.Validation exposing
     ( FormError
     , ValidationErrors
-    , addValidationError
-    , clearValidationError
+    , add
     , emailValidator
+    , init
     , nameValidator
-    , selectValidationError
+    , remove
+    , select
     , travelCardValidator
     , validate
     )
@@ -22,18 +23,23 @@ type alias ValidationErrors a =
     List (FormError a)
 
 
-selectValidationError : a -> ValidationErrors a -> Maybe String
-selectValidationError fieldName =
+select : a -> ValidationErrors a -> Maybe String
+select fieldName =
     List.Extra.find (Tuple.first >> (==) fieldName) >> Maybe.map Tuple.second
 
 
-clearValidationError : a -> ValidationErrors a -> ValidationErrors a
-clearValidationError fieldName =
+remove : a -> ValidationErrors a -> ValidationErrors a
+remove fieldName =
     List.filter (Tuple.first >> (/=) fieldName)
 
 
-addValidationError : List a -> String -> ValidationErrors a -> ValidationErrors a
-addValidationError fields error =
+init : ValidationErrors a
+init =
+    []
+
+
+add : List a -> String -> ValidationErrors a -> ValidationErrors a
+add fields error =
     (++) (fields |> List.map (\a -> ( a, error )))
 
 
