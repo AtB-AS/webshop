@@ -16,6 +16,7 @@ import Ui.Button as Button
 import Ui.Input.Checkbox as Checkbox
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as TextInput
+import Ui.LabelItem
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
@@ -34,11 +35,9 @@ type Msg
     | Register
     | ReceiveRegisterProfile (Result Http.Error ())
     | SkipRegister
-    | SkipConsents
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
     | RegisterTravelCard
-    | SkipTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
     | Finish
     | NextStep
@@ -64,12 +63,12 @@ type alias Model =
     , lastName : String
     , email : String
     , phone : String
-    , savedProfile : Bool
     , consent1 : Bool
     , consent2 : Bool
     , step : Step
     , travelCard : String
     , travelCardState : MaskedInput.State
+    , travelCardSaved : Bool
     , validationErrors : ValidationErrors FieldName
     }
 
@@ -81,12 +80,12 @@ init token email phone =
     , lastName = ""
     , email = email
     , phone = phone
-    , savedProfile = False
     , consent1 = False
     , consent2 = False
     , step = ProfileInfo
     , travelCardState = MaskedInput.initState
     , travelCard = ""
+    , travelCardSaved = False
     , validationErrors = []
     }
 
@@ -131,7 +130,7 @@ update msg env model =
         ReceiveRegisterProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | validationErrors = V.init, savedProfile = True }
+                    PageUpdater.init { model | validationErrors = V.init, travelCardSaved = True }
                         |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
@@ -161,7 +160,8 @@ update msg env model =
         ReceiveRegisterTravelCard result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | validationErrors = V.init, step = TravelCard }
+                    PageUpdater.init { model | validationErrors = V.init, travelCardSaved = True }
+                        |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
                     PageUpdater.init
@@ -176,12 +176,6 @@ update msg env model =
                 , Cmd.none
                   -- skipRegisterProfile { env | token = model.token }
                 )
-
-        SkipConsents ->
-            PageUpdater.init { model | validationErrors = V.init, step = TravelCard }
-
-        SkipTravelCard ->
-            PageUpdater.init { model | validationErrors = V.init, step = AppAdvert }
 
         Finish ->
             PageUpdater.fromPair ( model, MiscService.onboardingDone () )
@@ -358,7 +352,7 @@ viewConsents _ model =
             H.text ""
         , Button.init "Lagre samtykker"
             |> Button.setIcon (Just Icon.rightArrow)
-            |> Button.setOnClick (Just SkipConsents)
+            |> Button.setOnClick (Just NextStep)
             |> Button.primaryDefault
         ]
     ]
@@ -366,41 +360,73 @@ viewConsents _ model =
 
 viewTravelCard : Environment -> Model -> List (Html Msg)
 viewTravelCard _ model =
-    [ H.div [ A.class "onboarding__travelCard" ]
-        [ Section.view
-            [ Section.viewPaddedItem
-                [ H.div [ A.class "onboarding__travelCard__input" ]
-                    [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                    , MaskedInput.init "travelCard" InputTravelCard StateTravelCard
-                        |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
-                        |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
-                        |> MaskedInput.setPattern "#### #### ########"
-                        |> MaskedInput.setBordered True
-                        |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
-                        |> MaskedInput.view model.travelCardState model.travelCard
+    if model.travelCardSaved then
+        [ H.div [ A.class "onboarding__travelCard" ]
+            [ Section.view
+                [ Message.info "Du har alt lagt til et t:kort."
+                , Section.viewPaddedItem
+                    [ H.div [ A.class "onboarding__travelCard__input" ]
+                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                        , Section.viewPaddedItem
+                            [ Ui.LabelItem.view "t:kortnummer (16-siffer)"
+                                [ H.text (Util.TravelCard.format model.travelCard)
+                                ]
+                            ]
+                        ]
+                    , H.img
+                        [ A.src "/images/travelcard-help-illustration.svg"
+                        , A.class "onboarding__travelCard__illustration"
+                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        ]
+                        []
                     ]
-                , H.img
-                    [ A.src "/images/travelcard-help-illustration.svg"
-                    , A.class "onboarding__travelCard__illustration"
-                    , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
-                    ]
-                    []
+                ]
+            , H.div [] []
+            , Section.view
+                [ Button.init "Neste"
+                    |> Button.setIcon (Just Icon.rightArrow)
+                    |> Button.setOnClick (Just NextStep)
+                    |> Button.primaryDefault
                 ]
             ]
-        , Section.view
-            [ Button.init "Jeg bruker ikke t:kort"
-                |> Button.setIcon (Just Icon.rightArrow)
-                |> Button.setOnClick (Just SkipTravelCard)
-                |> Button.tertiary
-            ]
-        , Section.view
-            [ Button.init "Legg til t:kort"
-                |> Button.setIcon (Just Icon.rightArrow)
-                |> Button.setOnClick (Just RegisterTravelCard)
-                |> Button.primaryDefault
+        ]
+
+    else
+        [ H.div [ A.class "onboarding__travelCard" ]
+            [ Section.view
+                [ Section.viewPaddedItem
+                    [ H.div [ A.class "onboarding__travelCard__input" ]
+                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                        , MaskedInput.init "travelCard" InputTravelCard StateTravelCard
+                            |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                            |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                            |> MaskedInput.setPattern "#### #### ########"
+                            |> MaskedInput.setBordered True
+                            |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
+                            |> MaskedInput.view model.travelCardState model.travelCard
+                        ]
+                    , H.img
+                        [ A.src "/images/travelcard-help-illustration.svg"
+                        , A.class "onboarding__travelCard__illustration"
+                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        ]
+                        []
+                    ]
+                ]
+            , Section.view
+                [ Button.init "Jeg bruker ikke t:kort"
+                    |> Button.setIcon (Just Icon.rightArrow)
+                    |> Button.setOnClick (Just NextStep)
+                    |> Button.tertiary
+                ]
+            , Section.view
+                [ Button.init "Legg til t:kort"
+                    |> Button.setIcon (Just Icon.rightArrow)
+                    |> Button.setOnClick (Just RegisterTravelCard)
+                    |> Button.primaryDefault
+                ]
             ]
         ]
-    ]
 
 
 viewAppAdvert : Environment -> Model -> List (Html Msg)

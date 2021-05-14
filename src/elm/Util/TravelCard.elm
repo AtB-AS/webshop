@@ -1,8 +1,12 @@
-module Util.TravelCard exposing (extractDigits)
+module Util.TravelCard exposing (extractDigits, format)
 
-{-| Utils for mapping and handling TravelCard Logic.
+import Util.NumberFormater as NF
 
-TODO Find better placement for these types of reusable domain logic modules.
+
+
+{- Utils for mapping and handling TravelCard Logic.
+
+   TODO Find better placement for these types of reusable domain logic modules.
 
 -}
 
@@ -12,3 +16,8 @@ TODO Find better placement for these types of reusable domain logic modules.
 extractDigits : String -> String
 extractDigits =
     String.right 10 >> String.left 9
+
+
+format : String -> String
+format =
+    NF.formatString [ NF.Digits 4, NF.Space, NF.Digits 4, NF.Space, NF.Digits 8 ]
