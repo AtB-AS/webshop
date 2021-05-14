@@ -47,8 +47,8 @@ travelCardValidator : a -> (subject -> String) -> Validate.Validator (FormError 
 travelCardValidator field toValue =
     Validate.firstError
         [ Validate.ifBlank toValue ( field, "t:kort id kan ikke være tomt." )
-        , ifNotLength 9 toValue ( field, "t:kort id ser ut til å være feil." )
-        , Validate.ifNotInt toValue (\_ -> ( field, "t:kort id må være et tall." ))
+        , ifNotLength 16 toValue ( field, "t:kort id ser ut til å være feil." )
+        , Validate.ifNotInt toValue (\_ -> ( field, "t:kort id må være et tall på 16 siffer." ))
         ]
 
 

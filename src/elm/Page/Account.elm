@@ -20,6 +20,7 @@ import Task
 import Time exposing (Month(..), ZoneName(..))
 import Ui.Button as B
 import Ui.Input.EditSection as EditSection
+import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
@@ -44,7 +45,8 @@ type Msg
     = UpdateFirstName String
     | UpdateLastName String
     | UpdateEmail String
-    | UpdateTravelCard String
+    | InputTravelCard String
+    | StateTravelCard MaskedInput.State
     | UpdateProfile
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
     | EditName
@@ -67,6 +69,7 @@ type alias Model =
     , lastName : String
     , email : String
     , travelCard : String
+    , travelCardState : MaskedInput.State
     , profile : Maybe Profile
     , editSection : Maybe EditSection
     , loadingEditSection : Maybe EditSection
@@ -80,6 +83,7 @@ init =
       , lastName = ""
       , email = ""
       , travelCard = ""
+      , travelCardState = MaskedInput.initState
       , profile = Nothing
       , editSection = Nothing
       , loadingEditSection = Nothing
@@ -101,12 +105,16 @@ update msg env model =
         UpdateEmail value ->
             PageUpdater.init { model | email = value }
 
-        UpdateTravelCard value ->
+        InputTravelCard value ->
             PageUpdater.init
                 { model
                     | travelCard = value
                     , validationErrors = Validation.remove TravelCard model.validationErrors
                 }
+
+        StateTravelCard state ->
+            PageUpdater.init
+                { model | travelCardState = state }
 
         UpdateProfile ->
             PageUpdater.fromPair
@@ -419,14 +427,13 @@ viewTravelCard model profile =
                 (\inEditMode ->
                     if inEditMode && not hasTravelCard then
                         EditSection.horizontalGroup
-                            [ Text.init "tkort"
-                                |> Text.setTitle (Just "t:kort")
-                                |> Text.setError (Validation.select TravelCard model.validationErrors)
-                                |> Text.setOnInput (Just <| UpdateTravelCard)
-                                |> Text.setPlaceholder "Legg til et t:kort nå"
-                                |> Text.setAttributes [ A.autofocus True ]
-                                |> Text.setValue (Just model.travelCard)
-                                |> Text.view
+                            [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
+                                |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
+                                |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                |> MaskedInput.setPattern "#### #### ########"
+                                |> MaskedInput.setAttributes [ A.autofocus True ]
+                                |> MaskedInput.view model.travelCardState model.travelCard
                             ]
 
                     else

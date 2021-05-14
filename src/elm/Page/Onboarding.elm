@@ -321,7 +321,7 @@ viewTravelCard _ model =
                     [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
                     , MaskedInput.init "travelCard" InputTravelCard StateTravelCard
                         |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
-                        |> MaskedInput.setPlaceholder "Skriv inn t:kort-nummer"
+                        |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
                         |> MaskedInput.setPattern "#### #### ########"
                         |> MaskedInput.setBordered True
                         |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
