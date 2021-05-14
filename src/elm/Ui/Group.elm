@@ -63,7 +63,7 @@ view { open, disabled, onOpenClick, icon, id, title, value } children =
                         , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                         ]
                         [ viewMaybe icon
-                        , H.div [ A.class "ui-group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
+                        , H.span [ A.class "ui-group__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
                         , viewMaybeValue value
                         , chevronIcon
                         ]

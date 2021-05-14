@@ -566,7 +566,7 @@ wrapSubPage title children =
 viewSuccessTicketPage : Html msg
 viewSuccessTicketPage =
     H.div [ A.class "pageHome__successBuy" ]
-        [ H.img [ A.src "/images/empty-illustration.svg" ] []
+        [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
         , H.p [] [ H.text "Takk! Du kan nå lukke vinduet." ]
         ]
 
