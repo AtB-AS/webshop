@@ -8,6 +8,7 @@ module Util.Validation exposing
     , select
     , travelCardValidator
     , validate
+    , void
     )
 
 import List.Extra
@@ -56,6 +57,12 @@ emailValidator field toValue =
     Validate.firstError
         [ Validate.ifInvalidEmail toValue (\_ -> ( field, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
         ]
+
+
+void : Validate.Validator (FormError a) subject
+void =
+    Validate.firstError
+        []
 
 
 validate : Validator error subject -> subject -> Result (List error) (Valid subject)

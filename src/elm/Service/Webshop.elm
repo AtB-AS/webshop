@@ -8,7 +8,7 @@ module Service.Webshop exposing
     , getToken
     , getTokens
     , inspectQrCode
-    , register
+    , save
     , travelCardErrorDecoder
     , updateEmail
     , updateProfile
@@ -106,8 +106,8 @@ getFareContracts env =
     HttpUtil.get env (env.baseUrl ++ "/api/v1/fare-contracts") (Http.expectJson (Decode.list fareContractDecoder))
 
 
-register : Environment -> String -> String -> Maybe String -> Maybe String -> Http.Request ()
-register env firstName lastName phone email =
+save : Environment -> String -> String -> Maybe String -> Maybe String -> Http.Request ()
+save env firstName lastName phone email =
     let
         payload =
             Encode.object

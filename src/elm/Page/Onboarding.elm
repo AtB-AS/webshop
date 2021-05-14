@@ -2,12 +2,12 @@ module Page.Onboarding exposing (Model, Msg, init, subscriptions, update, view)
 
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
-import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Events as E
+import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode
-import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.Misc as MiscService
 import Service.Webshop as WebshopService
@@ -19,6 +19,7 @@ import Ui.Input.Text as TextInput
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
+import Util.Task
 import Util.TravelCard
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
@@ -31,8 +32,8 @@ type Msg
     | ToggleConsent1 Bool
     | ToggleConsent2 Bool
     | Register
-    | SkipRegister
     | ReceiveRegisterProfile (Result Http.Error ())
+    | SkipRegister
     | SkipConsents
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
@@ -40,7 +41,8 @@ type Msg
     | SkipTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
     | Finish
-    | SkipStep
+    | NextStep
+    | PrevStep
 
 
 type Step
@@ -52,6 +54,8 @@ type Step
 
 type FieldName
     = TravelCardField
+    | EmailField
+    | RegisterForm
 
 
 type alias Model =
@@ -60,6 +64,7 @@ type alias Model =
     , lastName : String
     , email : String
     , phone : String
+    , savedProfile : Bool
     , consent1 : Bool
     , consent2 : Bool
     , step : Step
@@ -76,6 +81,7 @@ init token email phone =
     , lastName = ""
     , email = email
     , phone = phone
+    , savedProfile = False
     , consent1 = False
     , consent2 = False
     , step = ProfileInfo
@@ -89,13 +95,17 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         InputEmail value ->
-            PageUpdater.init { model | email = value }
+            PageUpdater.init
+                { model
+                    | email = value
+                    , validationErrors = (V.remove EmailField >> V.remove RegisterForm) model.validationErrors
+                }
 
         InputFirstName value ->
-            PageUpdater.init { model | firstName = value }
+            PageUpdater.init { model | firstName = value, validationErrors = V.remove RegisterForm model.validationErrors }
 
         InputLastName value ->
-            PageUpdater.init { model | lastName = value }
+            PageUpdater.init { model | lastName = value, validationErrors = V.remove RegisterForm model.validationErrors }
 
         ToggleConsent1 value ->
             PageUpdater.init { model | consent1 = value }
@@ -104,33 +114,32 @@ update msg env model =
             PageUpdater.init { model | consent2 = value }
 
         Register ->
-            PageUpdater.fromPair
-                ( model
-                , registerProfile { env | token = model.token }
-                    model.firstName
-                    model.lastName
-                    model.phone
-                    model.email
-                )
+            case validateEmail model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model | validationErrors = V.init }
+                        , saveProfile { env | token = model.token }
+                            model.firstName
+                            model.lastName
+                            model.phone
+                            model.email
+                        )
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
 
         ReceiveRegisterProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | validationErrors = V.init, step = TravelCard }
+                    PageUpdater.init { model | validationErrors = V.init, savedProfile = True }
+                        |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
-                    PageUpdater.init model
-                        |> PageUpdater.addGlobalAction
-                            (error
-                                |> getError
-                                |> Maybe.withDefault "Det oppstod en feil, prøv på nytt."
-                                |> Message.Error
-                                |> Message.message
-                                |> (\s ->
-                                        Notification.setContent s Notification.init
-                                   )
-                                |> GA.ShowNotification
-                            )
+                    let
+                        errorMessage =
+                            getError error |> Maybe.withDefault "Ukjent feil"
+                    in
+                        PageUpdater.init { model | validationErrors = V.add [ RegisterForm ] errorMessage model.validationErrors }
 
         InputTravelCard value ->
             PageUpdater.init { model | travelCard = value }
@@ -177,7 +186,7 @@ update msg env model =
         Finish ->
             PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
-        SkipStep ->
+        NextStep ->
             let
                 maybeNextStep =
                     nextStep model.step
@@ -187,7 +196,19 @@ update msg env model =
                         PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
                     Just next ->
-                        PageUpdater.init { model | step = next }
+                        PageUpdater.init { model | step = next, validationErrors = V.init }
+
+        PrevStep ->
+            let
+                maybePrevStep =
+                    prevStep model.step
+            in
+                case maybePrevStep of
+                    Nothing ->
+                        PageUpdater.init model
+
+                    Just prev ->
+                        PageUpdater.init { model | step = prev, validationErrors = V.init }
 
 
 getError : Http.Error -> Maybe String
@@ -220,32 +241,48 @@ validateTravelCard =
     V.validate (V.travelCardValidator TravelCardField .travelCard)
 
 
+validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail model =
+    if String.isEmpty model.email then
+        V.validate V.void model
+
+    else
+        V.validate (V.emailValidator EmailField .email) model
+
+
 view : Environment -> Model -> Html Msg
 view env model =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
-                |> wrapHeader True "Profilinformasjon (1 av 4)"
+                |> wrapHeader model True "Profilinformasjon (1 av 4)"
 
         Consents ->
             viewConsents env model
-                |> wrapHeader True "Samtykker (2 av 4)"
+                |> wrapHeader model True "Samtykker (2 av 4)"
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader False "Legg til t:kort (3 av 4)"
+                |> wrapHeader model False "Legg til t:kort (3 av 4)"
 
         AppAdvert ->
             viewAppAdvert env model
-                |> wrapHeader True "Har du prøvd AtB-appen?"
+                |> wrapHeader model True "Har du prøvd AtB-appen?"
 
 
-wrapHeader : Bool -> String -> List (Html Msg) -> Html Msg
-wrapHeader narrowPage title children =
+wrapHeader : Model -> Bool -> String -> List (Html Msg) -> Html Msg
+wrapHeader model narrowPage title children =
     H.div []
         [ PH.init
             |> PH.setTitle (Just title)
-            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, SkipStep ))
+            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, NextStep ))
+            |> PH.setBackButton
+                (if model.step == ProfileInfo then
+                    Nothing
+
+                 else
+                    Just ( "Tilbake", E.onClick PrevStep )
+                )
             |> PH.view
         , H.div
             [ A.classList
@@ -273,14 +310,19 @@ viewProfileInfo _ model =
             InputLastName
             "Etternavn"
             "Skriv inn etternavnet ditt"
-        , sectionTextInput "email"
-            model.email
-            InputEmail
-            "E-postadresse"
-            "Hvor skal vi sende kvitteringer?"
+        , Section.viewItem
+            [ TextInput.init "email"
+                |> TextInput.setTitle (Just "E-postadresse")
+                |> TextInput.setPlaceholder "Hvor skal vi sende kvitteringer?"
+                |> TextInput.setOnInput (Just InputEmail)
+                |> TextInput.setValue (Just model.email)
+                |> TextInput.setError (V.select EmailField model.validationErrors)
+                |> TextInput.view
+            ]
+        , Html.Extra.viewMaybe Message.error <| V.select RegisterForm model.validationErrors
         , Button.init "Neste"
             |> Button.setIcon (Just Icon.rightArrow)
-            |> Button.setOnClick (Just SkipRegister)
+            |> Button.setOnClick (Just Register)
             |> Button.primaryDefault
         ]
     ]
@@ -415,6 +457,22 @@ nextStep step =
             Nothing
 
 
+prevStep : Step -> Maybe Step
+prevStep step =
+    case step of
+        Consents ->
+            Just ProfileInfo
+
+        TravelCard ->
+            Just Consents
+
+        AppAdvert ->
+            Just TravelCard
+
+        _ ->
+            Nothing
+
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
@@ -424,16 +482,16 @@ subscriptions _ =
 -- INTERNAL
 
 
-registerProfile : Environment -> String -> String -> String -> String -> Cmd Msg
-registerProfile env firstName lastName phone email =
-    WebshopService.register env firstName lastName (Just phone) (Just email)
+saveProfile : Environment -> String -> String -> String -> String -> Cmd Msg
+saveProfile env firstName lastName phone email =
+    WebshopService.save env firstName lastName (Just phone) (Just email)
         |> Http.toTask
         |> Task.attempt ReceiveRegisterProfile
 
 
 skipRegisterProfile : Environment -> String -> Cmd Msg
 skipRegisterProfile env phone =
-    WebshopService.register env "_" "_" (Just phone) Nothing
+    WebshopService.save env "_" "_" (Just phone) Nothing
         |> Http.toTask
         |> Task.attempt ReceiveRegisterProfile
 

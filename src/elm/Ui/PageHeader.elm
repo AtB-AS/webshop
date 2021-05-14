@@ -14,6 +14,7 @@ import Html.Events as E
 import Html.Extra
 import Route exposing (Route)
 import Ui.Heading
+import Util.Encode exposing (maybe)
 
 
 type alias PageHeader msg =
@@ -31,9 +32,13 @@ init =
     }
 
 
-setBackButton : ( String, Attribute msg ) -> PageHeader msg -> PageHeader msg
-setBackButton ( text, action ) opts =
-    { opts | back = Just ( text, action, H.button ) }
+setBackButton : Maybe ( String, Attribute msg ) -> PageHeader msg -> PageHeader msg
+setBackButton maybeAction opts =
+    let
+        newBack =
+            Maybe.map (\( text, action ) -> ( text, action, H.button )) maybeAction
+    in
+        { opts | back = newBack }
 
 
 setBackRoute : ( String, Route ) -> PageHeader msg -> PageHeader msg
