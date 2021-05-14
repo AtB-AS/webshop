@@ -36,7 +36,7 @@ type Msg
     | ReceiveRegisterProfile (Result Http.Error ())
     | SkipRegister
     | InputTravelCard String
-    | StateTravelCard MaskedInput.State
+    | InputStateTravelCard MaskedInput.State
     | RegisterTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
     | Finish
@@ -61,6 +61,7 @@ type alias Model =
     { token : String
     , firstName : String
     , lastName : String
+    , profileSaved : Bool
     , email : String
     , phone : String
     , consent1 : Bool
@@ -79,6 +80,7 @@ init token email phone =
     , firstName = ""
     , lastName = ""
     , email = email
+    , profileSaved = False
     , phone = phone
     , consent1 = False
     , consent2 = False
@@ -130,7 +132,7 @@ update msg env model =
         ReceiveRegisterProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | validationErrors = V.init, travelCardSaved = True }
+                    PageUpdater.init { model | validationErrors = V.init, profileSaved = True }
                         |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
@@ -143,7 +145,7 @@ update msg env model =
         InputTravelCard value ->
             PageUpdater.init { model | travelCard = value }
 
-        StateTravelCard state ->
+        InputStateTravelCard state ->
             PageUpdater.init { model | travelCardState = state, validationErrors = V.remove TravelCardField model.validationErrors }
 
         RegisterTravelCard ->
@@ -172,9 +174,8 @@ update msg env model =
 
         SkipRegister ->
             PageUpdater.fromPair
-                ( { model | validationErrors = V.init, step = Consents }
-                , Cmd.none
-                  -- skipRegisterProfile { env | token = model.token }
+                ( { model | validationErrors = V.init }
+                , skipRegisterProfile { env | token = model.token } model.phone
                 )
 
         Finish ->
@@ -186,6 +187,14 @@ update msg env model =
                     nextStep model.step
             in
                 case maybeNextStep of
+                    Just Consents ->
+                        if model.profileSaved then
+                            PageUpdater.init { model | step = Consents, validationErrors = V.init }
+
+                        else
+                            PageUpdater.init model
+                                |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
+
                     Nothing ->
                         PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
@@ -397,7 +406,7 @@ viewTravelCard _ model =
                 [ Section.viewPaddedItem
                     [ H.div [ A.class "onboarding__travelCard__input" ]
                         [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                        , MaskedInput.init "travelCard" InputTravelCard StateTravelCard
+                        , MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
                             |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
                             |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
                             |> MaskedInput.setPattern "#### #### ########"
