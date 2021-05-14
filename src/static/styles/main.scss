@@ -68,11 +68,12 @@ button {
 a:link,
 a:active,
 a:visited {
-    color: #fc6;
+    color: var(--text-colors-primary);
+    text-decoration: underline;
 }
 
 a:hover {
-    color: #ff9;
+    text-decoration: none;
 }
 
 p {
@@ -82,6 +83,9 @@ p {
     font-size: var(--baseTypo-body__primary-fontSize, 1rem);
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
+}
+p + p {
+    margin-top: var(--spacings-medium);
 }
 
 .box {
