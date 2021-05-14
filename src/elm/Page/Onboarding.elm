@@ -40,7 +40,7 @@ type Msg
     | SkipTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
     | Finish
-    | CancelOnboarding
+    | SkipStep
 
 
 type Step
@@ -177,8 +177,17 @@ update msg env model =
         Finish ->
             PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
-        CancelOnboarding ->
-            PageUpdater.fromPair ( model, MiscService.onboardingDone () )
+        SkipStep ->
+            let
+                maybeNextStep =
+                    nextStep model.step
+            in
+                case maybeNextStep of
+                    Nothing ->
+                        PageUpdater.fromPair ( model, MiscService.onboardingDone () )
+
+                    Just next ->
+                        PageUpdater.init { model | step = next }
 
 
 getError : Http.Error -> Maybe String
@@ -236,7 +245,7 @@ wrapHeader narrowPage title children =
     H.div []
         [ PH.init
             |> PH.setTitle (Just title)
-            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, CancelOnboarding ))
+            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, SkipStep ))
             |> PH.view
         , H.div
             [ A.classList
@@ -374,6 +383,22 @@ sectionTextInput id value action title placeholder =
             |> TextInput.setValue (Just value)
             |> TextInput.view
         ]
+
+
+nextStep : Step -> Maybe Step
+nextStep step =
+    case step of
+        ProfileInfo ->
+            Just Consents
+
+        Consents ->
+            Just TravelCard
+
+        TravelCard ->
+            Just AppAdvert
+
+        AppAdvert ->
+            Nothing
 
 
 subscriptions : Model -> Sub Msg
