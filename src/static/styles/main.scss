@@ -73,6 +73,10 @@ a:hover {
 p {
     margin: 0;
     padding: 0;
+
+    font-size: var(--baseTypo-body__primary-fontSize, 1rem);
+    line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
+    letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
 
 .box {
@@ -591,6 +595,18 @@ table {
 .onboarding__travelCard__illustration {
     width: 100%;
     display: block;
+}
+.onboarding__appIllustration {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+.onboarding__badgeButtons {
+    margin-top: var(--spacings-xLarge);
+    display: flex;
+    justify-content: center;
+    gap: var(--spacings-xLarge);
+    flex-wrap: wrap;
 }
 
 @import 'waiting';
