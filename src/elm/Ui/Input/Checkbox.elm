@@ -83,12 +83,11 @@ view { id, name, title, onCheck, checked, attributes } =
             []
         , H.label [ A.for id, A.class "ui-input-checkbox" ]
             [ H.div [ A.class "ui-input-checkbox__box" ]
-                [ case checked of
-                    True ->
-                        Icon.checkOn
+                [ if checked then
+                    Icon.checkOn
 
-                    False ->
-                        Icon.checkOff
+                  else
+                    Icon.checkOff
                 ]
             , H.div [ A.class "ui-input-checkbox__title" ] [ H.text title ]
             ]

@@ -13,6 +13,7 @@ const HashOutput = require('./vendor/webpack-plugin-hash-output');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const dotenv = require('dotenv');
 
 // Local stuff
 const createHashFunction = require('./hash-func.js');
@@ -77,22 +78,52 @@ const production = 'env-production';
 const development = 'env-development';
 const debug = 'env-debug';
 
+// Try to load .env file in root directory.
+function loadDotenv() {
+    const dotenvPath = path.join(__dirname, '.env');
+
+    if (!fs.existsSync(dotenvPath)) {
+        return;
+    }
+
+    const result = dotenv.config({
+        path: dotenvPath
+    });
+
+    if (result.error) {
+        console.error('.env file is invalid: ', result.error);
+        throw new Error('.env file is invalid');
+    }
+
+    console.log('Loaded .env file');
+}
+
 // Try to load local config file, otherwise use default config.
 function loadConfig() {
-    try {
-        const localConfig = require('./webpack.local.config');
-        console.log('Loaded local config.');
-        return localConfig;
-    } catch (ex) {
-        if (ex && ex.code === 'MODULE_NOT_FOUND') {
-            console.error('Error loading local config: \n', ex);
-            console.error('Loading default config instead.');
+    const localConfigPath = path.join(__dirname, 'webpack.local.config.js');
+
+    if (fs.existsSync(localConfigPath)) {
+        try {
+            const localConfig = require(localConfigPath);
+            console.log('Loaded local config.');
+            return localConfig;
+        } catch (ex) {
+            console.error('Local config is invalid');
+
+            if (ex) {
+                throw ex;
+            } else {
+                throw new Error('Local config is invalid');
+            }
         }
-        return {
-            host: '0.0.0.0',
-            port: 8000
-        };
+    } else {
+        console.log('Local config not found, using default config.');
     }
+
+    return {
+        host: '0.0.0.0',
+        port: 8000
+    };
 }
 
 // Get option from command line.
@@ -215,6 +246,9 @@ function gitCommitHash() {
 // -- Webpack setup
 
 console.log('Initializing...');
+
+// Load .env
+loadDotenv();
 
 // Local config
 const localConfig = loadConfig();

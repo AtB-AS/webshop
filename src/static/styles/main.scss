@@ -11,7 +11,12 @@
     --primary: #000;
     --section-background: #fff;
 
-    --maxPageWidth: 976px;
+    --maxPageWidth: 1024px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
 }
 
 html,
@@ -68,6 +73,10 @@ a:hover {
 p {
     margin: 0;
     padding: 0;
+
+    font-size: var(--baseTypo-body__primary-fontSize, 1rem);
+    line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
+    letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
 
 .box {
@@ -196,53 +205,43 @@ p {
     }
 }
 
-.page-history {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 320px 1fr;
+.page-onboarding {
+    margin-top: 96px;
+    width: 320px;
+    margin-left: auto;
+    margin-right: auto;
 
-    .sidebar {
-        width: 320px;
+    input {
+        border: none;
+        outline: none;
+        background: inherit;
+        margin: 0;
+        padding: 0;
+    }
 
-        input {
-            border: none;
-            outline: none;
-            background: inherit;
-            margin: 0;
-            padding: 0;
+    .consent {
+        display: flex;
+
+        > :first-child {
+            flex-grow: 1;
         }
     }
 
-    .main {
-        .order-header {
-            display: flex;
-            font-weight: 500;
-            cursor: pointer;
-
-            > div {
-                &:first-child {
-                    flex-grow: 1;
-                }
-            }
-        }
-    }
-
-    .receipt-button {
+    .button,
+    .no-button {
+        padding: 24px;
+        font-weight: 500;
         display: flex;
         cursor: pointer;
-        background-color: inherit;
-        border: none;
-        width: 100%;
-        padding: 1.5rem;
-        border-radius: 0.25rem;
-        appearance: none;
-        text-align: left;
-        align-items: center;
 
-        > div:first-child {
+        > :first-child {
             flex-grow: 1;
-            font-weight: 500;
         }
+    }
+
+    .button {
+        background-color: #71d6e0;
+        border-radius: 12px;
     }
 }
 
@@ -263,60 +262,15 @@ p {
 .page > :only-child {
     grid-column: 1/-1;
 }
-.page--login {
+.page--narrow {
     max-width: 22.5rem;
     margin: 3.25rem auto;
     grid-template-columns: 1fr;
 }
 
-.page--overview {
+.page--overview,
+.page--history {
     grid-template-columns: 1fr 2fr;
-
-    .ticket-header {
-        display: flex;
-
-        > div.product-name {
-            font-weight: 500;
-            flex-grow: 1;
-            padding-left: 12px;
-        }
-    }
-
-    .ticket-progress {
-        height: 8px;
-        min-height: 8px;
-        background-color: #a2ad00;
-        background-image: linear-gradient(
-            -45deg,
-            transparent 12px,
-            rgba(0, 0, 0, 0.6) 12px,
-            rgba(0, 0, 0, 0.6) 20px,
-            transparent 20px,
-            transparent
-        );
-        background-size: 60px 8px;
-        animation: ticket-progress-move 2s linear infinite;
-        margin: 0;
-        padding: 0;
-    }
-
-    .ticket-info {
-        font-size: 32px;
-        line-height: 40px;
-        margin: 0;
-        padding: 0;
-    }
-
-    .ticket-waiting {
-        display: grid;
-        place-items: center;
-
-        svg {
-            fill: var(--primary-2);
-            height: 30px;
-            width: 120px;
-        }
-    }
 }
 .pageOverview__empty {
     text-align: center;
@@ -342,7 +296,6 @@ p {
         padding: var(--spacings-medium);
     }
 
-    .page-history,
     .page {
         grid-template-columns: 1fr;
     }
@@ -357,6 +310,15 @@ p {
     display: block;
     margin: 0 auto;
     max-width: 100%;
+}
+
+.pageHome__successBuy {
+    text-align: center;
+
+    img {
+        display: block;
+        margin: 0 auto;
+    }
 }
 
 // Components
@@ -501,9 +463,13 @@ p {
 }
 
 .summary-price {
-    text-align: right;
-    font-size: 32px;
-    place-items: center end;
+    font-size: 2rem;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    small {
+        font-size: 1rem;
+    }
 }
 
 @keyframes ticket-progress-move {
@@ -595,10 +561,14 @@ table {
 
 /* temporary */
 
-.onboarding-travelcard {
+.onboarding__travelCard {
     display: grid;
-    grid-template: "a a" "b c" / 1fr 1fr;
-    grid-gap: 24px;
+    grid-template: 'a a' 'b c' / 1fr 1fr;
+    grid-gap: var(--spacings-xLarge);
+    max-width: 41.5rem;
+    margin: 0 auto;
+
+    position: relative;
 
     > :nth-child(1) {
         grid-area: a;
@@ -611,6 +581,32 @@ table {
     > :nth-child(3) {
         grid-area: c;
     }
+}
+.onboarding__travelCard__input {
+    padding-left: calc(2rem + var(--spacings-xLarge));
+    grid-gap: var(--spacings-xLarge);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    background: url('/images/travelcard-help-icons.svg') left center no-repeat;
+    margin-bottom: calc(2 * var(--spacings-xLarge));
+}
+.onboarding__travelCard__illustration {
+    width: 100%;
+    display: block;
+}
+.onboarding__appIllustration {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+.onboarding__badgeButtons {
+    margin-top: var(--spacings-xLarge);
+    display: flex;
+    justify-content: center;
+    gap: var(--spacings-xLarge);
+    flex-wrap: wrap;
 }
 
 @import 'waiting';

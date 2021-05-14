@@ -6,7 +6,7 @@ module Service.Ticket exposing
     )
 
 import Data.RefData exposing (UserType(..))
-import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation, Ticket)
+import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -54,7 +54,7 @@ reserve env paymentType offers =
             Encode.object
                 [ ( "offers", Encode.list encodeOffer offers )
                 , ( "payment_type", encodePaymentType paymentType )
-                , ( "payment_redirect_url", Encode.string (env.ticketUrl ++ "/thanks") )
+                , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/thanks") )
                 ]
     in
         HttpUtil.post env url (Http.jsonBody body) (Http.expectJson reservationDecoder)

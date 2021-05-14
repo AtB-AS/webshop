@@ -69,7 +69,7 @@ update msg _ model =
             PageUpdater.init { model | code = value }
 
         BackLogin ->
-            PageUpdater.init { model | step = StepLogin }
+            PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
 
         Login ->
             updateLogin model
@@ -142,8 +142,12 @@ view env model =
                 Html.Extra.nothing
 
             StepConfirm ->
-                PH.init |> PH.setBackButton ( E.onClick BackLogin, "Avbryt" ) |> PH.view |> List.singleton |> H.div [ A.class "pageLogin__header" ]
-        , H.div [ A.class "page page--login" ]
+                PH.init
+                    |> PH.setBackButton ( "Avbryt", E.onClick BackLogin )
+                    |> PH.view
+                    |> List.singleton
+                    |> H.div [ A.class "pageLogin__header" ]
+        , H.div [ A.class "page page--narrow" ]
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
             , case model.step of
                 StepLogin ->
@@ -193,7 +197,11 @@ viewConfirm _ model =
                     |> T.setError model.error
                     |> T.setTitle (Just "Engangspassord")
                     |> T.setPlaceholder "Skriv inn engangspassordet"
-                    |> T.setAttributes [ A.autocomplete False ]
+                    |> T.setAttributes
+                        [ A.attribute "autocomplete" "one-time-code"
+                        , A.pattern "[0-9]*"
+                        , A.attribute "inputmode" "numeric"
+                        ]
                     |> T.view
                 ]
             , B.init "Logg inn"

@@ -1,16 +1,19 @@
 module Shared exposing (Msg, Shared, init, subscriptions, update)
 
 import Data.RefData exposing (FareProduct, Limitation, TariffZone, UserProfile, UserType)
+import Data.RemoteConfig exposing (RemoteConfig)
 import List exposing (product)
 import List.Extra
 import Service.Misc as MiscService exposing (Profile)
 import Service.RefData as RefDataService
+import Service.RemoteConfig as RCConfig
 
 
 type Msg
     = ReceiveTariffZones (Result () (List TariffZone))
     | ReceiveFareProducts (Result () (List FareProduct))
     | ReceiveUserProfiles (Result () (List UserProfile))
+    | ReceiveRemoteConfig (Result () RemoteConfig)
     | ProfileChange (Maybe Profile)
 
 
@@ -18,6 +21,7 @@ type alias Shared =
     { tariffZones : List TariffZone
     , fareProducts : List FareProduct
     , userProfiles : List UserProfile
+    , remoteConfig : RemoteConfig
     , productLimitations : List Limitation
     , profile : Maybe Profile
     }
@@ -30,6 +34,7 @@ init =
     , userProfiles = []
     , productLimitations = []
     , profile = Nothing
+    , remoteConfig = RCConfig.init
     }
 
 
@@ -66,6 +71,14 @@ update msg model =
                 Err _ ->
                     model
 
+        ReceiveRemoteConfig result ->
+            case result of
+                Ok value ->
+                    { model | remoteConfig = value }
+
+                Err _ ->
+                    model
+
         ProfileChange profile ->
             { model | profile = profile }
 
@@ -92,5 +105,6 @@ subscriptions =
         [ RefDataService.onTariffZones ReceiveTariffZones
         , RefDataService.onFareProducts ReceiveFareProducts
         , RefDataService.onUserProfiles ReceiveUserProfiles
+        , RCConfig.onRemoteConfig ReceiveRemoteConfig
         , MiscService.onProfileChange ProfileChange
         ]

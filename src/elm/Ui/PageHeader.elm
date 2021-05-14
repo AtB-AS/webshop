@@ -17,9 +17,9 @@ import Ui.Heading
 
 
 type alias PageHeader msg =
-    { back : Maybe ( Attribute msg, String, List (Attribute msg) -> List (Html msg) -> Html msg )
+    { back : Maybe ( String, Attribute msg, List (Attribute msg) -> List (Html msg) -> Html msg )
     , title : Maybe String
-    , onCancel : Maybe msg
+    , onCancel : Maybe ( String, Html msg, msg )
     }
 
 
@@ -31,14 +31,14 @@ init =
     }
 
 
-setBackButton : ( Attribute msg, String ) -> PageHeader msg -> PageHeader msg
-setBackButton ( action, text ) opts =
-    { opts | back = Just ( action, text, H.button ) }
+setBackButton : ( String, Attribute msg ) -> PageHeader msg -> PageHeader msg
+setBackButton ( text, action ) opts =
+    { opts | back = Just ( text, action, H.button ) }
 
 
-setBackRoute : ( Route, String ) -> PageHeader msg -> PageHeader msg
-setBackRoute ( route, backText ) opts =
-    { opts | back = Just ( Route.href route, backText, H.a ) }
+setBackRoute : ( String, Route ) -> PageHeader msg -> PageHeader msg
+setBackRoute ( backText, route ) opts =
+    { opts | back = Just ( backText, Route.href route, H.a ) }
 
 
 setTitle : Maybe String -> PageHeader msg -> PageHeader msg
@@ -46,7 +46,7 @@ setTitle title opts =
     { opts | title = title }
 
 
-setOnCancel : Maybe msg -> PageHeader msg -> PageHeader msg
+setOnCancel : Maybe ( String, Html msg, msg ) -> PageHeader msg -> PageHeader msg
 setOnCancel onCancel opts =
     { opts | onCancel = onCancel }
 
@@ -55,19 +55,19 @@ view : PageHeader msg -> Html msg
 view { back, title, onCancel } =
     H.div [ A.class "ui-pageHeader" ]
         [ case back of
-            Just ( action, backTitle, el ) ->
+            Just ( backTitle, action, el ) ->
                 el [ action, A.class "ui-pageHeader__back" ] [ Icon.leftArrow, H.text backTitle ]
 
             Nothing ->
                 Html.Extra.nothing
         , Html.Extra.viewMaybe (Ui.Heading.titleWithEl H.h2) title
         , case onCancel of
-            Just cancelAction ->
+            Just ( text, icon, action ) ->
                 H.div
-                    [ E.onClick cancelAction
+                    [ E.onClick action
                     , A.class "ui-pageHeader__cancel"
                     ]
-                    [ H.text "Avbryt", Icon.cross ]
+                    [ H.text text, icon ]
 
             Nothing ->
                 Html.Extra.nothing

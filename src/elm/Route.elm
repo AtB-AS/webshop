@@ -17,6 +17,7 @@ import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
 type Route
     = Home
     | Shop
+    | Thanks
     | History
     | Settings
     | NotFound
@@ -28,6 +29,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
         , Parser.map History <| s "history"
+        , Parser.map Thanks <| s "thanks"
         , Parser.map Settings <| s "settings"
         ]
 
@@ -43,6 +45,9 @@ routeToString page =
                 Shop ->
                     [ "shop" ]
 
+                Thanks ->
+                    [ "thanks" ]
+
                 History ->
                     [ "history" ]
 
@@ -52,7 +57,7 @@ routeToString page =
                 NotFound ->
                     [ "not-found" ]
     in
-        "#/" ++ String.join "/" pieces
+        "/" ++ String.join "/" pieces
 
 
 
@@ -76,11 +81,7 @@ newUrl key route =
 
 fromUrl : Url -> Maybe Route
 fromUrl url =
-    Maybe.andThen
-        (\fragment ->
-            { url | path = fragment, fragment = Nothing }
-                |> Parser.parse parser
-                |> Maybe.withDefault NotFound
-                |> Just
-        )
-        url.fragment
+    url
+        |> Parser.parse parser
+        |> Maybe.withDefault NotFound
+        |> Just

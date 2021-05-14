@@ -79,6 +79,7 @@ type alias Model =
 
 type alias Flags =
     { isDevelopment : Bool
+    , localUrl : String
     , baseUrl : String
     , ticketUrl : String
     , refDataUrl : String
@@ -133,6 +134,7 @@ init flags url navKey =
         environment : Environment
         environment =
             { distributionEnv = distributionEnv
+            , localUrl = flags.localUrl
             , baseUrl = flags.baseUrl
             , ticketUrl = flags.ticketUrl
             , refDataUrl = flags.refDataUrl
@@ -239,9 +241,9 @@ update msg model =
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
-                GA.SetPendingOrder orderId ->
+                GA.AddActiveReservation reservation ->
                     ( model
-                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.SetPendingOrder orderId
+                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
                     )
 
                 GA.FocusItem id ->
@@ -406,44 +408,54 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document model.appInfo.title
-        [ case model.userData of
-            Loading _ ->
-                case model.onboarding of
-                    Just onboarding ->
-                        OnboardingPage.view model.environment onboarding
-                            |> H.map OnboardingMsg
-
-                    Nothing ->
-                        H.ul [ A.class "waiting-room" ]
-                            [ H.li [] []
-                            , H.li [] []
-                            , H.li [] []
-                            , H.li [] []
+        [ wrapPage
+            model
+            (case model.userData of
+                Loading _ ->
+                    case model.onboarding of
+                        Just onboarding ->
+                            [ OnboardingPage.view model.environment onboarding
+                                |> H.map OnboardingMsg
                             ]
 
-            _ ->
-                H.div [ A.class "light container" ]
-                    [ viewAuthError model
-                    , header model
-                    , H.main_ [ A.class "app" ]
-                        [ Ui.GlobalNotifications.notifications model.notifications
-                        , H.div [ A.class "content" ]
-                            [ case model.onboarding of
-                                Just onboarding ->
-                                    OnboardingPage.view model.environment onboarding
-                                        |> H.map OnboardingMsg
+                        Nothing ->
+                            [ H.ul [ A.class "waiting-room" ]
+                                [ H.li [] []
+                                , H.li [] []
+                                , H.li [] []
+                                , H.li [] []
+                                ]
+                            ]
+
+                _ ->
+                    [ case model.onboarding of
+                        Just onboarding ->
+                            OnboardingPage.view model.environment onboarding
+                                |> H.map OnboardingMsg
+
+                        Nothing ->
+                            case model.environment.customerId of
+                                Just _ ->
+                                    viewPage model
 
                                 Nothing ->
-                                    case model.environment.customerId of
-                                        Just _ ->
-                                            viewPage model
-
-                                        Nothing ->
-                                            LoginPage.view model.environment model.login
-                                                |> H.map LoginMsg
-                            ]
-                        ]
+                                    LoginPage.view model.environment model.login
+                                        |> H.map LoginMsg
                     ]
+            )
+        ]
+
+
+wrapPage : Model -> List (Html Msg) -> Html Msg
+wrapPage model children =
+    H.div [ A.class "light container" ]
+        [ viewAuthError model
+        , header model
+        , H.main_ [ A.class "app" ]
+            [ Ui.GlobalNotifications.notifications model.notifications
+            , H.div [ A.class "content" ]
+                children
+            ]
         ]
 
 
@@ -475,13 +487,16 @@ header model =
 
             else
                 []
+
+        showHeader =
+            isLoggedIn && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
                 [ H.h1 [ A.class "pageHeader__logo" ]
                     [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
                     ]
-                , if isLoggedIn then
+                , if showHeader then
                     H.nav [ A.class "pageHeader__nav" ]
                         [ H.ul []
                             (navigation
@@ -538,10 +553,6 @@ viewPage model =
             model.shared
     in
         case model.route of
-            Just Route.Home ->
-                OverviewPage.view env model.appInfo shared model.overview model.route
-                    |> H.map OverviewMsg
-
             Just Route.Shop ->
                 case model.shop of
                     Just shop ->
@@ -562,31 +573,27 @@ viewPage model =
                     |> H.map AccountMsg
                     |> wrapSubPage "Kontoinformasjon"
 
-            Just Route.NotFound ->
-                H.div
-                    [ A.class "welcome-container" ]
-                    [ H.div []
-                        [ H.h2 [] [ H.text model.appInfo.title ]
-                        , H.h3 [] [ H.text "Not found." ]
-                        ]
-                    ]
+            Just Route.Thanks ->
+                viewSuccessTicketPage
 
-            Nothing ->
-                H.div
-                    [ A.class "welcome-container" ]
-                    [ H.div []
-                        [ H.h2 [] [ H.text model.appInfo.title ]
-                        , H.h3 [] [ H.a [ A.href "#/" ] [ H.text "Go home" ] ]
-                        , H.h3 [] [ H.a [ A.href "#/settings" ] [ H.text "Go to settings" ] ]
-                        ]
-                    ]
+            _ ->
+                OverviewPage.view env model.appInfo shared model.overview model.route
+                    |> H.map OverviewMsg
 
 
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( Route.Home, "Oversikt" ) |> PH.view
+        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( "Oversikt", Route.Home ) |> PH.view
         , children
+        ]
+
+
+viewSuccessTicketPage : Html msg
+viewSuccessTicketPage =
+    H.div [ A.class "pageHome__successBuy" ]
+        [ H.img [ A.src "/images/empty-illustration.svg" ] []
+        , H.p [] [ H.text "Takk! Du kan nå lukke vinduet." ]
         ]
 
 

@@ -29,7 +29,7 @@ type alias TravelRightFull =
 
 type alias TravelRightBase =
     { id : String
-    , status : Int
+    , status : Maybe Int
     }
 
 
