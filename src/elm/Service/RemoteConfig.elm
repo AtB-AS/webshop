@@ -1,12 +1,9 @@
 port module Service.RemoteConfig exposing (init, onRemoteConfig)
 
-import Data.RefData exposing (FareProduct, LangString(..), TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (LangString(..), UserType(..))
 import Data.RemoteConfig exposing (RemoteConfig)
-import Environment exposing (Environment)
-import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
-import Util.Http as HttpUtil
 
 
 init : RemoteConfig

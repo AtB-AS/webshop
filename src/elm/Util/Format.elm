@@ -79,35 +79,6 @@ float num dec =
         FormatNumber.format { locale | decimals = dec } num
 
 
-
--- INTERNAL
-
-
-splitThousands : Int -> List String
-splitThousands num =
-    if num >= 1000 then
-        [ modBy 1000 num ]
-            |> List.map String.fromInt
-            |> List.map (padZero 3)
-            |> List.append (splitThousands <| num // 1000)
-
-    else
-        [ String.fromInt num ]
-
-
-decimals : Int -> Float -> String
-decimals digits num =
-    digits
-        |> toFloat
-        |> (^) 10
-        |> (*) num
-        |> round
-        |> splitThousands
-        |> String.concat
-        |> String.right digits
-        |> padZero digits
-
-
 isoStringToFullHumanized : Time.Zone -> String -> Maybe String
 isoStringToFullHumanized zone dateString =
     case Iso8601.toTime dateString of
