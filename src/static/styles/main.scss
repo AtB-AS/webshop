@@ -601,6 +601,17 @@ table {
     background: url('/images/travelcard-help-icons.svg') left center no-repeat;
     margin-bottom: calc(2 * var(--spacings-xLarge));
 }
+
+@media (max-width: 600px) {
+    .onboarding__travelCard {
+        grid-template: 'a' 'b' 'c' / 1fr;
+    }
+    .onboarding__travelCard__input {
+        padding-left: 0;
+        background: none;
+        grid-template-columns: 1fr;
+    }
+}
 .onboarding__travelCard__illustration {
     width: 100%;
     display: block;
