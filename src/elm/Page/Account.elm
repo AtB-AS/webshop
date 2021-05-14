@@ -243,7 +243,7 @@ update msg env model =
 
 validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
 validateEmail =
-    Validation.validate (Validation.travelCardValidator Email .email)
+    Validation.validate (Validation.emailValidator Email .email)
 
 
 validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)

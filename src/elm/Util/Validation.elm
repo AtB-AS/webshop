@@ -4,7 +4,6 @@ module Util.Validation exposing
     , add
     , emailValidator
     , init
-    , nameValidator
     , remove
     , select
     , travelCardValidator
@@ -56,13 +55,6 @@ emailValidator : a -> (subject -> String) -> Validate.Validator (FormError a) su
 emailValidator field toValue =
     Validate.firstError
         [ Validate.ifInvalidEmail toValue (\_ -> ( field, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
-        ]
-
-
-nameValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
-nameValidator field toValue =
-    Validate.firstError
-        [ Validate.ifBlank toValue ( field, "E-posten du har skrevet ser ikke ut til å være gyldig" )
         ]
 
 
