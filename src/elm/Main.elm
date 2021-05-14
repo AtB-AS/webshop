@@ -584,7 +584,7 @@ viewPage model =
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( Route.Home, "Oversikt" ) |> PH.view
+        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( "Oversikt", Route.Home ) |> PH.view
         , children
         ]
 

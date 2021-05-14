@@ -229,7 +229,7 @@ wrapHeader narrowPage title children =
     H.div []
         [ PH.init
             |> PH.setTitle (Just title)
-            |> PH.setOnCancel (Just CancelOnboarding)
+            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, CancelOnboarding ))
             |> PH.view
         , H.div
             [ A.classList

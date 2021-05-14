@@ -482,8 +482,11 @@
     background: transparent;
     cursor: pointer;
 
+    display: flex;
+
     svg {
         margin-left: var(--spacings-medium);
+        display: block;
     }
 }
 .ui-pageHeader__cancel:hover {
@@ -493,7 +496,7 @@
     opacity: 0.5;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .ui-heading {
         width: 100%;
         text-align: center;
@@ -504,8 +507,16 @@
     }
     .ui-pageHeader__back:link,
     .ui-pageHeader__back:visited,
-    .ui-pageHeader__back:hover {
+    .ui-pageHeader__back:hover,
+    .ui-pageHeader__cancel,
+    .ui-pageHeader__cancel:link,
+    .ui-pageHeader__cancel:visited,
+    .ui-pageHeader__cancel:hover {
         position: relative;
+        order: -1;
+    }
+    .ui-pageHeader__cancel {
+        margin-left: auto;
     }
 }
 
