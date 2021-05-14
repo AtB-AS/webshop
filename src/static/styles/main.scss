@@ -578,19 +578,15 @@ table {
         grid-area: c;
     }
 }
-.onboarding__travelCard__content {
-    position: relative;
-}
 .onboarding__travelCard__input {
-    position: absolute;
-
-    right: 7%;
-    top: 10%;
-    width: 80%;
+    padding-left: calc(2rem + var(--spacings-xLarge));
     grid-gap: var(--spacings-xLarge);
 
     display: grid;
     grid-template-columns: 1fr 1fr;
+
+    background: url('/images/travelcard-help-icons.svg') left center no-repeat;
+    margin-bottom: calc(2 * var(--spacings-xLarge));
 }
 .onboarding__travelCard__illustration {
     width: 100%;

@@ -5,7 +5,6 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode
 import Notification
@@ -310,27 +309,25 @@ viewTravelCard : Environment -> Model -> List (Html Msg)
 viewTravelCard _ model =
     [ H.div [ A.class "onboarding__travelCard" ]
         [ Section.view
-            [ Section.viewItem
-                [ H.div [ A.class "onboarding__travelCard__content" ]
-                    [ H.div [ A.class "onboarding__travelCard__input" ]
-                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                        , TextInput.init "travelCard"
-                            |> TextInput.setTitle (Just "t:kortnummer (16-siffer)")
-                            |> TextInput.setPlaceholder "Skriv inn t:kort-nummer"
-                            |> TextInput.setOnInput (Just InputTravelCard)
-                            |> TextInput.setValue (Just model.travelCard)
-                            |> TextInput.setBordered True
-                            |> TextInput.view
-                        ]
-                    , H.img
-                        [ A.src "/images/travelcard-help-illustration.svg"
-                        , A.class "onboarding__travelCard__illustration"
-                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
-                        ]
-                        []
+            [ Section.viewPaddedItem
+                [ H.div [ A.class "onboarding__travelCard__input" ]
+                    [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                    , TextInput.init "travelCard"
+                        |> TextInput.setTitle (Just "t:kortnummer (16-siffer)")
+                        |> TextInput.setPlaceholder "Skriv inn t:kort-nummer"
+                        |> TextInput.setOnInput (Just InputTravelCard)
+                        |> TextInput.setValue (Just model.travelCard)
+                        |> TextInput.setBordered True
+                        |> TextInput.setError (V.select TravelCardField model.validationErrors)
+                        |> TextInput.view
                     ]
+                , H.img
+                    [ A.src "/images/travelcard-help-illustration.svg"
+                    , A.class "onboarding__travelCard__illustration"
+                    , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                    ]
+                    []
                 ]
-            , Html.Extra.viewMaybe Message.error (V.select TravelCardField model.validationErrors)
             ]
         , Section.view
             [ Button.init "Jeg bruker ikke t:kort"
