@@ -19,7 +19,6 @@ import Ui.Input.Text as TextInput
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
-import Util.Format as Format
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
 
