@@ -50,8 +50,9 @@ const app = Elm.Main.init({
     )
 });
 
-// Set class name through JS as Elm doesn't support it (?)
-document.body.classList.add('light');
+app.ports.bodyClass.subscribe(function (className) {
+    document.body.className = className;
+});
 
 function fetchRemoteConfigData(port, key) {
     if (!port) {

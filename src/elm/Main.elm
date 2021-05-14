@@ -196,6 +196,7 @@ init flags url navKey =
             , Cmd.map AccountMsg accountCmd
             , Cmd.map LoginMsg loginCmd
             , routeCmd
+            , MiscService.bodyClass "light"
             ]
         )
 
