@@ -14,10 +14,12 @@ import Service.Webshop as WebshopService
 import Task
 import Ui.Button as Button
 import Ui.Input.Checkbox as Checkbox
+import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as TextInput
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
+import Util.Format as Format
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
 
@@ -33,6 +35,7 @@ type Msg
     | ReceiveRegisterProfile (Result Http.Error ())
     | SkipConsents
     | InputTravelCard String
+    | StateTravelCard MaskedInput.State
     | RegisterTravelCard
     | SkipTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
@@ -61,6 +64,7 @@ type alias Model =
     , consent2 : Bool
     , step : Step
     , travelCard : String
+    , travelCardState : MaskedInput.State
     , validationErrors : ValidationErrors FieldName
     }
 
@@ -75,6 +79,7 @@ init token email phone =
     , consent1 = False
     , consent2 = False
     , step = ProfileInfo
+    , travelCardState = MaskedInput.initState
     , travelCard = ""
     , validationErrors = []
     }
@@ -128,7 +133,10 @@ update msg env model =
                             )
 
         InputTravelCard value ->
-            PageUpdater.init { model | travelCard = value, validationErrors = V.remove TravelCardField model.validationErrors }
+            PageUpdater.init { model | travelCard = value }
+
+        StateTravelCard state ->
+            PageUpdater.init { model | travelCardState = state, validationErrors = V.remove TravelCardField model.validationErrors }
 
         RegisterTravelCard ->
             case validateTravelCard model of
@@ -312,14 +320,13 @@ viewTravelCard _ model =
             [ Section.viewPaddedItem
                 [ H.div [ A.class "onboarding__travelCard__input" ]
                     [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                    , TextInput.init "travelCard"
-                        |> TextInput.setTitle (Just "t:kortnummer (16-siffer)")
-                        |> TextInput.setPlaceholder "Skriv inn t:kort-nummer"
-                        |> TextInput.setOnInput (Just InputTravelCard)
-                        |> TextInput.setValue (Just model.travelCard)
-                        |> TextInput.setBordered True
-                        |> TextInput.setError (V.select TravelCardField model.validationErrors)
-                        |> TextInput.view
+                    , MaskedInput.init "travelCard" InputTravelCard StateTravelCard
+                        |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                        |> MaskedInput.setPlaceholder "Skriv inn t:kort-nummer"
+                        |> MaskedInput.setPattern "#### #### ########"
+                        |> MaskedInput.setBordered True
+                        |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
+                        |> MaskedInput.view model.travelCardState model.travelCard
                     ]
                 , H.img
                     [ A.src "/images/travelcard-help-illustration.svg"
