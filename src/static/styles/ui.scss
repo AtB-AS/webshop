@@ -142,6 +142,7 @@
     overflow: hidden;
     max-height: 0;
     transition: max-height 200ms ease-in-out;
+    position: relative;
 }
 .ui-group__item:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
