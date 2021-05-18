@@ -11,7 +11,12 @@
     --primary: #000;
     --section-background: #fff;
 
-    --maxPageWidth: 976px;
+    --maxPageWidth: 1024px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
 }
 
 * {
@@ -65,16 +70,24 @@ button {
 a:link,
 a:active,
 a:visited {
-    color: #fc6;
+    color: var(--text-colors-primary);
+    text-decoration: underline;
 }
 
 a:hover {
-    color: #ff9;
+    text-decoration: none;
 }
 
 p {
     margin: 0;
     padding: 0;
+
+    font-size: var(--baseTypo-body__primary-fontSize, 1rem);
+    line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
+    letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
+}
+p + p {
+    margin-top: var(--spacings-medium);
 }
 
 .box {
@@ -260,7 +273,7 @@ p {
 .page > :only-child {
     grid-column: 1/-1;
 }
-.page--login {
+.page--narrow {
     max-width: 22.5rem;
     margin: 3.25rem auto;
     grid-template-columns: 1fr;
@@ -555,6 +568,67 @@ table {
             fill: #fff;
         }
     }
+}
+
+/* temporary */
+
+.onboarding__travelCard {
+    display: grid;
+    grid-template: 'a a' 'b c' / 1fr 1fr;
+    grid-gap: var(--spacings-xLarge);
+    max-width: 41.5rem;
+    margin: 0 auto;
+
+    position: relative;
+
+    > :nth-child(1) {
+        grid-area: a;
+    }
+
+    > :nth-child(2) {
+        grid-area: b;
+    }
+
+    > :nth-child(3) {
+        grid-area: c;
+    }
+}
+.onboarding__travelCard__input {
+    padding-left: calc(2rem + var(--spacings-xLarge));
+    grid-gap: var(--spacings-xLarge);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    background: url('/images/travelcard-help-icons.svg') left center no-repeat;
+    margin-bottom: calc(2 * var(--spacings-xLarge));
+}
+
+@media (max-width: 600px) {
+    .onboarding__travelCard {
+        grid-template: 'a' 'b' 'c' / 1fr;
+    }
+    .onboarding__travelCard__input {
+        padding-left: 0;
+        background: none;
+        grid-template-columns: 1fr;
+    }
+}
+.onboarding__travelCard__illustration {
+    width: 100%;
+    display: block;
+}
+.onboarding__appIllustration {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+.onboarding__badgeButtons {
+    margin-top: var(--spacings-xLarge);
+    display: flex;
+    justify-content: center;
+    gap: var(--spacings-xLarge);
+    flex-wrap: wrap;
 }
 
 @import 'waiting';

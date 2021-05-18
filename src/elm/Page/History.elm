@@ -8,7 +8,6 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Events as E
 import Html.Extra
 import Http
 import Json.Decode as Decode
@@ -347,22 +346,6 @@ subscriptions _ =
 
 
 -- INTERNAL
-
-
-textInput : String -> (String -> msg) -> String -> String -> Html msg
-textInput value action title placeholder =
-    H.div []
-        [ H.label [] [ H.text title ]
-        , H.div []
-            [ H.input
-                [ A.type_ "text"
-                , A.placeholder placeholder
-                , E.onInput action
-                , A.value value
-                ]
-                []
-            ]
-        ]
 
 
 formatTotal : Maybe String -> String

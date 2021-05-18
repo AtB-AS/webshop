@@ -1,16 +1,18 @@
-module Ui.Input.Text exposing
-    ( init
+module Ui.Input.MaskedText exposing
+    ( State
+    , init
+    , initState
     , setAttributes
     , setBordered
     , setError
     , setId
     , setOnBlur
     , setOnInput
+    , setPattern
     , setPlaceholder
     , setRequired
     , setTitle
     , setType
-    , setValue
     , view
     )
 
@@ -18,37 +20,49 @@ import Fragment.Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra
-import Html.Events as E
+import Html.Events as E exposing (onInput)
 import Html.Extra
+import MaskedInput.Text
 import Ui.Button exposing (ButtonMode(..))
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
+type alias State =
+    MaskedInput.Text.State
+
+
+initState : MaskedInput.Text.State
+initState =
+    MaskedInput.Text.initialState
+
+
 type alias Text msg =
     { id : String
+    , pattern : String
     , title : Maybe String
     , error : Maybe String
-    , value : Maybe String
     , type_ : String
     , required : Bool
     , placeholder : String
-    , onInput : Maybe (String -> msg)
+    , onInput : String -> msg
+    , onState : State -> msg
     , onBlur : Maybe msg
     , attributes : List (H.Attribute msg)
     , bordered : Bool
     }
 
 
-init : String -> Text msg
-init id =
+init : String -> (String -> msg) -> (State -> msg) -> Text msg
+init id onInput onState =
     { id = id
+    , pattern = ""
+    , onState = onState
     , title = Nothing
     , error = Nothing
-    , value = Nothing
     , placeholder = ""
     , type_ = "text"
     , required = True
-    , onInput = Nothing
+    , onInput = onInput
     , onBlur = Nothing
     , attributes = []
     , bordered = False
@@ -75,14 +89,14 @@ setError error opts =
     { opts | error = error }
 
 
-setValue : Maybe String -> Text msg -> Text msg
-setValue value opts =
-    { opts | value = value }
-
-
 setType : String -> Text msg -> Text msg
 setType type_ opts =
     { opts | type_ = type_ }
+
+
+setPattern : String -> Text msg -> Text msg
+setPattern pattern opts =
+    { opts | pattern = pattern }
 
 
 setRequired : Bool -> Text msg -> Text msg
@@ -95,7 +109,7 @@ setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
-setOnInput : Maybe (String -> msg) -> Text msg -> Text msg
+setOnInput : (String -> msg) -> Text msg -> Text msg
 setOnInput onInput opts =
     { opts | onInput = onInput }
 
@@ -110,14 +124,28 @@ setBordered bordered opts =
     { opts | bordered = bordered }
 
 
-view : Text msg -> Html msg
-view { id, title, value, type_, error, placeholder, onInput, required, onBlur, attributes, bordered } =
+view : State -> String -> Text msg -> Html msg
+view state value { id, title, type_, error, placeholder, onInput, onState, pattern, required, onBlur, attributes, bordered } =
     let
         classList =
             [ ( "ui-input-text", True )
             , ( "ui-input-text--error", error /= Nothing )
             , ( "ui-input-text--bordered", bordered )
             ]
+
+        -- {
+        --     , onInput : String -> msg
+        --     , toMsg : State -> msg
+        --     , hasFocus : Maybe (Bool -> msg)
+        --     }
+        maskedOptions : MaskedInput.Text.Options msg
+        maskedOptions =
+            { pattern = pattern
+            , inputCharacter = '#'
+            , onInput = onInput
+            , toMsg = onState
+            , hasFocus = Nothing
+            }
     in
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe
@@ -125,20 +153,19 @@ view { id, title, value, type_, error, placeholder, onInput, required, onBlur, a
                     H.span [ A.class "ui-input-text__label" ] [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
                 )
                 title
-            , H.input
+            , MaskedInput.Text.input maskedOptions
                 ([ A.type_ "text"
                  , A.id id
                  , A.placeholder placeholder
                  , A.type_ type_
                  , A.required required
-                 , A.value <| Maybe.withDefault "" value
                  , A.class "ui-input-text__input"
-                 , Html.Attributes.Extra.attributeMaybe (\action -> E.onInput action) onInput
                  , Html.Attributes.Extra.attributeMaybe (\action -> E.onBlur action) onBlur
                  ]
                     ++ attributes
                 )
-                []
+                state
+                value
             , Html.Extra.viewMaybe
                 (\t ->
                     Text.textContainer H.span (Just Text.DestructiveColor) <|

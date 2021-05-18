@@ -11,7 +11,6 @@ import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode exposing (Error(..))
-import List.Extra
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
@@ -21,10 +20,13 @@ import Task
 import Time exposing (Month(..), ZoneName(..))
 import Ui.Button as B
 import Ui.Input.EditSection as EditSection
+import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
-import Validate as Validate
+import Util.TravelCard
+import Util.Validation as Validation exposing (FormError, ValidationErrors)
+import Validate exposing (Valid)
 
 
 type EditSection
@@ -40,15 +42,12 @@ type FieldName
     | LastName
 
 
-type alias FormError =
-    ( FieldName, String )
-
-
 type Msg
     = UpdateFirstName String
     | UpdateLastName String
     | UpdateEmail String
-    | UpdateTravelCard String
+    | InputTravelCard String
+    | StateTravelCard MaskedInput.State
     | UpdateProfile
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
     | EditName
@@ -71,10 +70,11 @@ type alias Model =
     , lastName : String
     , email : String
     , travelCard : String
+    , travelCardState : MaskedInput.State
     , profile : Maybe Profile
     , editSection : Maybe EditSection
     , loadingEditSection : Maybe EditSection
-    , validationErrors : List FormError
+    , validationErrors : ValidationErrors FieldName
     }
 
 
@@ -84,6 +84,7 @@ init =
       , lastName = ""
       , email = ""
       , travelCard = ""
+      , travelCardState = MaskedInput.initState
       , profile = Nothing
       , editSection = Nothing
       , loadingEditSection = Nothing
@@ -105,12 +106,16 @@ update msg env model =
         UpdateEmail value ->
             PageUpdater.init { model | email = value }
 
-        UpdateTravelCard value ->
+        InputTravelCard value ->
             PageUpdater.init
                 { model
                     | travelCard = value
-                    , validationErrors = clearValidationError TravelCard model.validationErrors
+                    , validationErrors = Validation.remove TravelCard model.validationErrors
                 }
+
+        StateTravelCard state ->
+            PageUpdater.init
+                { model | travelCardState = state }
 
         UpdateProfile ->
             PageUpdater.fromPair
@@ -127,7 +132,7 @@ update msg env model =
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
-                            , validationErrors = addValidationError field (errorToString error) model.validationErrors
+                            , validationErrors = Validation.add field (errorToString error) model.validationErrors
                         }
 
         EditName ->
@@ -157,18 +162,18 @@ update msg env model =
             PageUpdater.fromPair
                 ( { model
                     | loadingEditSection = Just TravelCardSection
-                    , validationErrors = clearValidationError TravelCard model.validationErrors
+                    , validationErrors = Validation.remove TravelCard model.validationErrors
                   }
                 , removeTravelCard env model.travelCard
                 )
 
         SaveEmail ->
-            case Validate.validate emailValidator model of
+            case validateEmail model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model
                             | loadingEditSection = Just EmailSection
-                            , validationErrors = clearValidationError Email model.validationErrors
+                            , validationErrors = Validation.remove Email model.validationErrors
                           }
                         , updateEmail env model.email
                         )
@@ -177,12 +182,12 @@ update msg env model =
                     PageUpdater.init { model | validationErrors = errors }
 
         SaveTravelCard ->
-            case Validate.validate travelCardValidator model of
+            case validateTravelCard model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model
                             | loadingEditSection = Just TravelCardSection
-                            , validationErrors = clearValidationError TravelCard model.validationErrors
+                            , validationErrors = Validation.remove TravelCard model.validationErrors
                           }
                         , updateTravelCard env model.travelCard
                         )
@@ -236,19 +241,14 @@ update msg env model =
             PageUpdater.init model
 
 
-selectValidationError : FieldName -> List FormError -> Maybe String
-selectValidationError fieldName =
-    List.Extra.find (Tuple.first >> (==) fieldName) >> Maybe.map Tuple.second
+validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail =
+    Validation.validate (Validation.emailValidator Email .email)
 
 
-clearValidationError : FieldName -> List FormError -> List FormError
-clearValidationError fieldName =
-    List.filter (Tuple.first >> (/=) fieldName)
-
-
-addValidationError : List FieldName -> String -> List FormError -> List FormError
-addValidationError fields error =
-    (++) (fields |> List.map (\a -> ( a, error )))
+validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateTravelCard =
+    Validation.validate (Validation.travelCardValidator TravelCard .travelCard)
 
 
 focusBox : Maybe String -> Cmd Msg
@@ -313,13 +313,6 @@ viewPhoneNumber profile =
     Ui.Section.viewLabelItem "Telefonnummer" [ viewField profile.phone ]
 
 
-emailValidator : Validate.Validator FormError Model
-emailValidator =
-    Validate.firstError
-        [ Validate.ifInvalidEmail .email (\_ -> ( Email, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
-        ]
-
-
 viewEmailAddress : Model -> Profile -> Html Msg
 viewEmailAddress model profile =
     let
@@ -359,7 +352,7 @@ viewEmailAddress model profile =
                         EditSection.horizontalGroup
                             [ Text.init "email"
                                 |> Text.setTitle (Just "E-post")
-                                |> Text.setError (selectValidationError Email model.validationErrors)
+                                |> Text.setError (Validation.select Email model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateEmail)
                                 |> Text.setPlaceholder "Legg til et e-post"
                                 |> Text.setValue (Just model.email)
@@ -369,7 +362,7 @@ viewEmailAddress model profile =
                     else
                         [ Ui.Section.viewLabelItem "E-post" [ viewField profile.email ]
                         , model.validationErrors
-                            |> selectValidationError Email
+                            |> Validation.select Email
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
@@ -383,20 +376,6 @@ setEditSection editSection model =
 fieldInEditMode : Maybe EditSection -> EditSection -> Bool
 fieldInEditMode state actual =
     state == Just actual
-
-
-ifNotLength : Int -> (subject -> String) -> error -> Validate.Validator error subject
-ifNotLength stringLength subjectToString error =
-    Validate.ifTrue (\subject -> String.length (subjectToString subject) /= stringLength) error
-
-
-travelCardValidator : Validate.Validator FormError Model
-travelCardValidator =
-    Validate.firstError
-        [ Validate.ifBlank .travelCard ( TravelCard, "t:kort id kan ikke være tomt." )
-        , ifNotLength 9 .travelCard ( TravelCard, "t:kort id ser ut til å være feil." )
-        , Validate.ifNotInt .travelCard (\_ -> ( TravelCard, "t:kort id må være et tall." ))
-        ]
 
 
 viewTravelCard : Model -> Profile -> Html Msg
@@ -449,14 +428,13 @@ viewTravelCard model profile =
                 (\inEditMode ->
                     if inEditMode && not hasTravelCard then
                         EditSection.horizontalGroup
-                            [ Text.init "tkort"
-                                |> Text.setTitle (Just "t:kort")
-                                |> Text.setError (selectValidationError TravelCard model.validationErrors)
-                                |> Text.setOnInput (Just <| UpdateTravelCard)
-                                |> Text.setPlaceholder "Legg til et t:kort nå"
-                                |> Text.setAttributes [ A.autofocus True ]
-                                |> Text.setValue (Just model.travelCard)
-                                |> Text.view
+                            [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
+                                |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
+                                |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                |> MaskedInput.setPattern "#### #### ########"
+                                |> MaskedInput.setAttributes [ A.autofocus True ]
+                                |> MaskedInput.view model.travelCardState model.travelCard
                             ]
 
                     else
@@ -467,7 +445,7 @@ viewTravelCard model profile =
                                 |> H.text
                             ]
                         , model.validationErrors
-                            |> selectValidationError TravelCard
+                            |> Validation.select TravelCard
                             |> Html.Extra.viewMaybe Ui.Message.error
                         ]
                 )
@@ -520,7 +498,9 @@ updateEmail env email =
 
 updateTravelCard : Environment -> String -> Cmd Msg
 updateTravelCard env travelCard =
-    WebshopService.addTravelCard env travelCard
+    travelCard
+        |> Util.TravelCard.extractDigits
+        |> WebshopService.addTravelCard env
         |> Http.toTask
         |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
 

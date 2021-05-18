@@ -1,10 +1,5 @@
 ul.waiting-room {
-    position: absolute;
-    margin: auto;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    margin: 10vh auto 0;
     width: 150px;
     height: 150px;
     padding: 0;
@@ -39,7 +34,8 @@ ul.waiting-room {
     from {
         transform: rotate(-360deg);
     }
-    30%, 60% {
+    30%,
+    60% {
         transform: rotate(20deg);
     }
     80% {
@@ -51,7 +47,8 @@ ul.waiting-room {
     from {
         transform: rotate(-360deg);
     }
-    30%, 60% {
+    30%,
+    60% {
         transform: rotate(45deg);
     }
     80% {
@@ -63,7 +60,8 @@ ul.waiting-room {
     from {
         transform: rotate(-360deg);
     }
-    30%, 60% {
+    30%,
+    60% {
         transform: rotate(75deg);
     }
     80% {

@@ -5,12 +5,25 @@ import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
-import Http
-import Json.Decode as Decode exposing (Decoder)
+import Html.Extra
+import Http exposing (Error(..))
+import Json.Decode as Decode
 import PageUpdater exposing (PageUpdater)
 import Service.Misc as MiscService
 import Service.Webshop as WebshopService
 import Task
+import Ui.Button as Button
+import Ui.Input.Checkbox as Checkbox
+import Ui.Input.MaskedText as MaskedInput
+import Ui.Input.Text as TextInput
+import Ui.LabelItem
+import Ui.Message as Message
+import Ui.PageHeader as PH
+import Ui.Section as Section
+import Util.Task
+import Util.TravelCard
+import Util.Validation as V exposing (FormError, ValidationErrors)
+import Validate exposing (Valid)
 
 
 type Msg
@@ -20,19 +33,44 @@ type Msg
     | ToggleConsent1 Bool
     | ToggleConsent2 Bool
     | Register
+    | ReceiveRegisterProfile (Result Http.Error ())
     | SkipRegister
-    | ReceiveRegister (Result Http.Error ())
+    | InputTravelCard String
+    | InputStateTravelCard MaskedInput.State
+    | RegisterTravelCard
+    | ReceiveRegisterTravelCard (Result Http.Error ())
+    | Finish
+    | NextStep
+    | PrevStep
+
+
+type Step
+    = ProfileInfo
+    | Consents
+    | TravelCard
+    | AppAdvert
+
+
+type FieldName
+    = TravelCardField
+    | EmailField
+    | RegisterForm
 
 
 type alias Model =
     { token : String
     , firstName : String
     , lastName : String
+    , profileSaved : Bool
     , email : String
     , phone : String
     , consent1 : Bool
     , consent2 : Bool
-    , error : Maybe String
+    , step : Step
+    , travelCard : String
+    , travelCardState : MaskedInput.State
+    , travelCardSaved : Bool
+    , validationErrors : ValidationErrors FieldName
     }
 
 
@@ -42,10 +80,15 @@ init token email phone =
     , firstName = ""
     , lastName = ""
     , email = email
+    , profileSaved = False
     , phone = phone
     , consent1 = False
     , consent2 = False
-    , error = Nothing
+    , step = ProfileInfo
+    , travelCardState = MaskedInput.initState
+    , travelCard = ""
+    , travelCardSaved = False
+    , validationErrors = []
     }
 
 
@@ -53,13 +96,17 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         InputEmail value ->
-            PageUpdater.init { model | email = value }
+            PageUpdater.init
+                { model
+                    | email = value
+                    , validationErrors = (V.remove EmailField >> V.remove RegisterForm) model.validationErrors
+                }
 
         InputFirstName value ->
-            PageUpdater.init { model | firstName = value }
+            PageUpdater.init { model | firstName = value, validationErrors = V.remove RegisterForm model.validationErrors }
 
         InputLastName value ->
-            PageUpdater.init { model | lastName = value }
+            PageUpdater.init { model | lastName = value, validationErrors = V.remove RegisterForm model.validationErrors }
 
         ToggleConsent1 value ->
             PageUpdater.init { model | consent1 = value }
@@ -68,34 +115,111 @@ update msg env model =
             PageUpdater.init { model | consent2 = value }
 
         Register ->
-            PageUpdater.fromPair
-                ( model
-                , register { env | token = model.token }
-                    model.firstName
-                    model.lastName
-                    model.phone
-                    model.email
-                )
+            case validateEmail model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model | validationErrors = V.init }
+                        , saveProfile { env | token = model.token }
+                            model.firstName
+                            model.lastName
+                            model.phone
+                            model.email
+                        )
 
-        SkipRegister ->
-            PageUpdater.fromPair
-                ( model
-                , skipRegister { env | token = model.token } model.phone
-                )
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
 
-        ReceiveRegister result ->
+        ReceiveRegisterProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.fromPair ( { model | error = Nothing }, MiscService.onboardingDone () )
+                    PageUpdater.init { model | validationErrors = V.init, profileSaved = True }
+                        |> PageUpdater.addCmd (Util.Task.doTask NextStep)
+
+                Err error ->
+                    let
+                        errorMessage =
+                            getError error |> Maybe.withDefault "Ukjent feil"
+                    in
+                        PageUpdater.init { model | validationErrors = V.add [ RegisterForm ] errorMessage model.validationErrors }
+
+        InputTravelCard value ->
+            PageUpdater.init { model | travelCard = value }
+
+        InputStateTravelCard state ->
+            PageUpdater.init { model | travelCardState = state, validationErrors = V.remove TravelCardField model.validationErrors }
+
+        RegisterTravelCard ->
+            case validateTravelCard model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model | validationErrors = V.remove TravelCardField model.validationErrors }
+                        , registerTravelCard { env | token = model.token } model.travelCard
+                        )
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
+
+        ReceiveRegisterTravelCard result ->
+            case result of
+                Ok () ->
+                    PageUpdater.init { model | validationErrors = V.init, travelCardSaved = True }
+                        |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
                     PageUpdater.init
                         { model
-                            | error =
-                                getError error
-                                    |> Maybe.withDefault "Det oppstod en feil, prøv på nytt."
-                                    |> Just
+                            | validationErrors =
+                                V.add [ TravelCardField ] (errorToString error) model.validationErrors
                         }
+
+        SkipRegister ->
+            PageUpdater.fromPair
+                ( { model | validationErrors = V.init }
+                , skipRegisterProfile { env | token = model.token } model.phone
+                )
+
+        Finish ->
+            PageUpdater.fromPair ( model, MiscService.onboardingDone () )
+
+        NextStep ->
+            let
+                maybeNextStep =
+                    nextStep model.step
+            in
+                case maybeNextStep of
+                    -- if next step is travel card and we are not saved, save an empty profile with phone.
+                    Just TravelCard ->
+                        if model.profileSaved then
+                            PageUpdater.init { model | step = TravelCard, validationErrors = V.init }
+
+                        else
+                            PageUpdater.init model
+                                |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
+
+                    -- TODO Deactivated consent for now.
+                    -- Just Consents ->
+                    --     if model.profileSaved then
+                    --         PageUpdater.init { model | step = Consents, validationErrors = V.init }
+                    --     else
+                    --         PageUpdater.init model
+                    --             |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
+                    Nothing ->
+                        PageUpdater.fromPair ( model, MiscService.onboardingDone () )
+
+                    Just next ->
+                        PageUpdater.init { model | step = next, validationErrors = V.init }
+
+        PrevStep ->
+            let
+                maybePrevStep =
+                    prevStep model.step
+            in
+                case maybePrevStep of
+                    Nothing ->
+                        PageUpdater.init model
+
+                    Just prev ->
+                        PageUpdater.init { model | step = prev, validationErrors = V.init }
 
 
 getError : Http.Error -> Maybe String
@@ -123,102 +247,279 @@ getError error =
             Nothing
 
 
+validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateTravelCard =
+    V.validate (V.travelCardValidator TravelCardField .travelCard)
+
+
+validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail model =
+    if String.isEmpty model.email then
+        V.validate V.void model
+
+    else
+        V.validate (V.emailValidator EmailField .email) model
+
+
 view : Environment -> Model -> Html Msg
 view env model =
-    H.div [ A.class "page-onboarding" ]
-        [ H.div [ A.class "section-box", A.style "width" "320px" ]
-            [ H.div []
-                [ H.div [ A.style "font-weight" "500", A.style "margin-bottom" "10px" ] [ H.text "Samtykker" ]
-                , H.div [] [ H.text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec imperdiet ante sit amet purus vulputate luctus. Donec nec urna ut nisl tincidunt congue in in ex. " ]
+    case model.step of
+        ProfileInfo ->
+            viewProfileInfo env model
+                |> wrapHeader model True "Profilinformasjon (1 av 3)"
+
+        Consents ->
+            viewConsents env model
+                |> wrapHeader model True "Samtykker (2 av 4)"
+
+        TravelCard ->
+            viewTravelCard env model
+                |> wrapHeader model False "Legg til t:kort (2 av 3)"
+
+        AppAdvert ->
+            viewAppAdvert env model
+                |> wrapHeader model True "Har du prøvd AtB-appen?"
+
+
+wrapHeader : Model -> Bool -> String -> List (Html Msg) -> Html Msg
+wrapHeader model narrowPage title children =
+    H.div []
+        [ PH.init
+            |> PH.setTitle (Just title)
+            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, NextStep ))
+            |> PH.setBackButton
+                (if model.step == ProfileInfo then
+                    Nothing
+
+                 else
+                    Just ( "Tilbake", E.onClick PrevStep )
+                )
+            |> PH.view
+        , H.div
+            [ A.classList
+                [ ( "page", True )
+                , ( "page--narrow", narrowPage )
                 ]
-            , textInput model.firstName
-                InputFirstName
-                "Fornavn"
-                "Ditt foravn"
-            , textInput model.lastName
-                InputLastName
-                "Etternavn"
-                "Ditt etternavn"
-            , textInput model.email
+            ]
+            children
+        ]
+
+
+viewProfileInfo : Environment -> Model -> List (Html Msg)
+viewProfileInfo _ model =
+    [ Section.view
+        [ Section.viewPaddedItem
+            [ H.p [] [ H.text "Her ber vi om noen opplysninger som vil forenkle bruken av nettbutikken." ]
+            ]
+        , sectionTextInput "firstname"
+            model.firstName
+            InputFirstName
+            "Fornavn"
+            "Skriv inn fornavnet ditt"
+        , sectionTextInput "lastname"
+            model.lastName
+            InputLastName
+            "Etternavn"
+            "Skriv inn etternavnet ditt"
+        , Section.viewItem
+            [ TextInput.init "email"
+                |> TextInput.setTitle (Just "E-postadresse")
+                |> TextInput.setPlaceholder "Hvor skal vi sende kvitteringer?"
+                |> TextInput.setOnInput (Just InputEmail)
+                |> TextInput.setValue (Just model.email)
+                |> TextInput.setError (V.select EmailField model.validationErrors)
+                |> TextInput.view
+            ]
+        , Html.Extra.viewMaybe Message.error <| V.select RegisterForm model.validationErrors
+        , Button.init "Neste"
+            |> Button.setIcon (Just Icon.rightArrow)
+            |> Button.setOnClick (Just Register)
+            |> Button.primaryDefault
+        ]
+    ]
+
+
+viewConsents : Environment -> Model -> List (Html Msg)
+viewConsents _ model =
+    [ Section.view
+        [ Section.viewPaddedItem
+            [ H.p [] [ H.text "Vi trenger komme i kontakt med deg som reisende for å optimalisere opplevelsen av den nye nettbutikken. Vi blir veldig glade om samtykker til dette!" ]
+            , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
+            ]
+        , Section.viewLabelItem "Samtykker"
+            [ Checkbox.init "consent1"
+                |> Checkbox.setChecked model.consent1
+                |> Checkbox.setOnCheck (Just ToggleConsent1)
+                |> Checkbox.setTitle "Jeg ønsker å bli kontaktet når endringer skjer i nettbutikken"
+                |> Checkbox.view
+            , Checkbox.init "consent2"
+                |> Checkbox.setChecked model.consent2
+                |> Checkbox.setOnCheck (Just ToggleConsent2)
+                |> Checkbox.setTitle "Jeg ønsker å delta på brukertester"
+                |> Checkbox.view
+            ]
+        , if model.consent1 || model.consent2 then
+            sectionTextInput "consent-email"
+                model.email
                 InputEmail
                 "E-postadresse"
                 "Legg inn din e-postadresse"
-            , consent "consent1"
-                model.consent1
-                ToggleConsent1
-                "Jeg ønsker å bli kontaktet når endringer skjer i nettbutikken"
-            , consent "consent2"
-                model.consent2
-                ToggleConsent2
-                "Jeg ønsker å delta på brukertester"
-            ]
-        , button True Register "Lagre samtykker"
-        , button False SkipRegister "Hopp over"
-        , case model.error of
-            Just error ->
-                H.div [] [ H.text error ]
 
-            Nothing ->
-                H.text ""
+          else
+            H.text ""
+        , Button.init "Lagre samtykker"
+            |> Button.setIcon (Just Icon.rightArrow)
+            |> Button.setOnClick (Just NextStep)
+            |> Button.primaryDefault
         ]
+    ]
 
 
-button : Bool -> msg -> String -> Html msg
-button primary action title =
-    H.div
-        [ A.classList
-            [ ( "button", primary )
-            , ( "no-button", not primary )
-            ]
-        , E.onClick action
-        ]
-        [ H.div [] [ H.text title ]
-        , Icon.rightArrow
-        ]
-
-
-textInput : String -> (String -> msg) -> String -> String -> Html msg
-textInput value action title placeholder =
-    H.div []
-        [ H.div
-            [ A.style "font-weight" "400"
-            , A.style "font-size" "12px"
-            , A.style "margin-bottom" "10px"
-            ]
-            [ H.text title ]
-        , H.div []
-            [ H.input
-                [ A.type_ "text"
-                , A.placeholder placeholder
-                , E.onInput action
-                , A.value value
+viewTravelCard : Environment -> Model -> List (Html Msg)
+viewTravelCard _ model =
+    if model.travelCardSaved then
+        [ H.div [ A.class "onboarding__travelCard" ]
+            [ Section.view
+                [ Message.info "Du har alt lagt til et t:kort."
+                , Section.viewPaddedItem
+                    [ H.div [ A.class "onboarding__travelCard__input" ]
+                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                        , Section.viewPaddedItem
+                            [ Ui.LabelItem.view "t:kortnummer (16-siffer)"
+                                [ H.text (Util.TravelCard.format model.travelCard)
+                                ]
+                            ]
+                        ]
+                    , H.img
+                        [ A.src "/images/travelcard-help-illustration.svg"
+                        , A.class "onboarding__travelCard__illustration"
+                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        ]
+                        []
+                    ]
                 ]
-                []
+            , H.div [] []
+            , Section.view
+                [ Button.init "Neste"
+                    |> Button.setIcon (Just Icon.rightArrow)
+                    |> Button.setOnClick (Just NextStep)
+                    |> Button.primaryDefault
+                ]
+            ]
+        ]
+
+    else
+        [ H.div [ A.class "onboarding__travelCard" ]
+            [ Section.view
+                [ Section.viewPaddedItem
+                    [ H.div [ A.class "onboarding__travelCard__input" ]
+                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
+                        , MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
+                            |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                            |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                            |> MaskedInput.setPattern "#### #### ########"
+                            |> MaskedInput.setBordered True
+                            |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
+                            |> MaskedInput.view model.travelCardState model.travelCard
+                        ]
+                    , H.img
+                        [ A.src "/images/travelcard-help-illustration.svg"
+                        , A.class "onboarding__travelCard__illustration"
+                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        ]
+                        []
+                    ]
+                ]
+            , Section.view
+                [ Button.init "Jeg bruker ikke t:kort"
+                    |> Button.setIcon (Just Icon.rightArrow)
+                    |> Button.setOnClick (Just NextStep)
+                    |> Button.tertiary
+                ]
+            , Section.view
+                [ Button.init "Legg til t:kort"
+                    |> Button.setIcon (Just Icon.rightArrow)
+                    |> Button.setOnClick (Just RegisterTravelCard)
+                    |> Button.primaryDefault
+                ]
             ]
         ]
 
 
-consent : String -> Bool -> (Bool -> msg) -> String -> Html msg
-consent id value action title =
-    H.div [ A.class "consent" ]
-        [ H.div [] [ H.text title ]
-        , toggle id value action
-        ]
-
-
-toggle : String -> Bool -> (Bool -> msg) -> Html msg
-toggle id value action =
-    H.div []
-        [ H.input [ A.id id, A.type_ "checkbox", A.checked value, E.onCheck action ] []
-        , H.label [ A.for id, A.class "toggle" ]
-            [ case value of
-                True ->
-                    Icon.toggleOn
-
-                False ->
-                    Icon.toggleOff
+viewAppAdvert : Environment -> Model -> List (Html Msg)
+viewAppAdvert _ _ =
+    [ H.div []
+        [ H.img [ A.class "onboarding__appIllustration", A.src "/images/app.png", A.alt "Eksempelvisning av hvordan app-en ser ut" ] []
+        , Section.view
+            [ Section.viewPaddedItem
+                [ H.p [] [ H.text "Her kan du planlegge reiser, kjøpe enkelt- eller periodebillett og vise billett ved kontroll. Alt samlet i en app. Billetter du kjøper i nettbutikken vil også være tilgjengelig i appen din." ]
+                , H.div
+                    [ A.class "onboarding__badgeButtons" ]
+                    [ H.a
+                        [ A.href "https://apps.apple.com/us/app/id1502395251", A.rel "noopener", A.title "Se AtB beta i App Store", A.target "_blank" ]
+                        [ H.img [ A.src "/images/badge-ios.svg", A.alt "iOS badge" ] [] ]
+                    , H.a
+                        [ A.href "https://play.google.com/store/apps/details?id=no.mittatb.store", A.rel "noopener", A.title "Se AtB beta i Google Play Store", A.target "_blank" ]
+                        [ H.img [ A.src "/images/badge-android.svg", A.alt "Android badge" ] [] ]
+                    ]
+                ]
+            , Button.init "Fullfør"
+                |> Button.setIcon (Just Icon.rightArrow)
+                |> Button.setOnClick (Just Finish)
+                |> Button.primaryDefault
             ]
         ]
+    ]
+
+
+sectionTextInput : String -> String -> (String -> msg) -> String -> String -> Html msg
+sectionTextInput id value action title placeholder =
+    Section.viewItem
+        [ TextInput.init id
+            |> TextInput.setTitle (Just title)
+            |> TextInput.setPlaceholder placeholder
+            |> TextInput.setOnInput (Just action)
+            |> TextInput.setValue (Just value)
+            |> TextInput.view
+        ]
+
+
+nextStep : Step -> Maybe Step
+nextStep step =
+    case step of
+        -- TODO Temporary disable consent
+        -- ProfileInfo ->
+        --     Just Consents
+        ProfileInfo ->
+            Just TravelCard
+
+        Consents ->
+            Just TravelCard
+
+        TravelCard ->
+            Just AppAdvert
+
+        AppAdvert ->
+            Nothing
+
+
+prevStep : Step -> Maybe Step
+prevStep step =
+    case step of
+        Consents ->
+            Just ProfileInfo
+
+        -- TODO Temporary disable Consent
+        -- TravelCard ->
+        --     Just Consents
+        TravelCard ->
+            Just ProfileInfo
+
+        AppAdvert ->
+            Just TravelCard
+
+        _ ->
+            Nothing
 
 
 subscriptions : Model -> Sub Msg
@@ -230,46 +531,53 @@ subscriptions _ =
 -- INTERNAL
 
 
-register : Environment -> String -> String -> String -> String -> Cmd Msg
-register env firstName lastName phone email =
-    WebshopService.register env firstName lastName (Just phone) (Just email)
+saveProfile : Environment -> String -> String -> String -> String -> Cmd Msg
+saveProfile env firstName lastName phone email =
+    WebshopService.save env firstName lastName (Just phone) (Just email)
         |> Http.toTask
-        |> Task.attempt ReceiveRegister
+        |> Task.attempt ReceiveRegisterProfile
 
 
-skipRegister : Environment -> String -> Cmd Msg
-skipRegister env phone =
-    WebshopService.register env "_" "_" (Just phone) Nothing
+skipRegisterProfile : Environment -> String -> Cmd Msg
+skipRegisterProfile env phone =
+    WebshopService.save env "_" "_" (Just phone) Nothing
         |> Http.toTask
-        |> Task.attempt ReceiveRegister
+        |> Task.attempt ReceiveRegisterProfile
 
 
+registerTravelCard : Environment -> String -> Cmd Msg
+registerTravelCard env travelCardId =
+    travelCardId
+        |> Util.TravelCard.extractDigits
+        |> WebshopService.addTravelCard env
+        |> Http.toTask
+        |> Task.attempt ReceiveRegisterTravelCard
 
--- INTERNAL COMPONENTS
 
+{-| TODO this should be deduplicated from Account.elm page and reused.
+But currently unsure where mappers like this fit in the current layered arcitechture
+-}
+errorToString : Http.Error -> String
+errorToString error =
+    case error of
+        BadStatus { status, body } ->
+            case status.code of
+                500 ->
+                    "Det skjedde en feil med tjenesten. Prøv igjen senere."
 
-actionButton : msg -> String -> Html msg
-actionButton action title =
-    H.div [] [ H.button [ A.class "action-button", E.onClick action ] [ H.text title ] ]
+                409 ->
+                    "Dette t:kortet eksisterer ikke eller er allerede registrert."
 
+                400 ->
+                    case WebshopService.travelCardErrorDecoder body of
+                        Ok errorMessage ->
+                            "Feilmelding fra tjenesten: " ++ errorMessage
 
-richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
-richActionButton active maybeAction content =
-    let
-        baseAttributes =
-            [ A.classList
-                [ ( "active", active )
-                , ( "pseudo-button", maybeAction /= Nothing )
-                , ( "pseudo-button-disabled", maybeAction == Nothing )
-                ]
-            ]
+                        _ ->
+                            "Innsendt informasjon ser ut til å ikke stemme. Prøv igjen er du snill."
 
-        attributes =
-            case maybeAction of
-                Just action ->
-                    E.onClick action :: baseAttributes
+                _ ->
+                    "Unknown error"
 
-                Nothing ->
-                    baseAttributes
-    in
-        H.div attributes [ content ]
+        _ ->
+            "Fikk ikke kontakt med tjenesten. Sjekk om du er på nett og prøv igjen."

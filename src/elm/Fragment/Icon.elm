@@ -2,6 +2,8 @@ module Fragment.Icon exposing
     ( atb
     , bus
     , chat
+    , checkOff
+    , checkOn
     , checkmark
     , checkmarkCircle
     , creditcard
@@ -507,6 +509,37 @@ toggleOn =
             , SA.clipRule "evenodd"
             , SA.d "M26 18C30.4183 18 34 14.4183 34 10C34 5.58172 30.4183 2 26 2C21.5817 2 18 5.58172 18 10C18 14.4183 21.5817 18 26 18Z"
             , SA.fill "white"
+            ]
+            []
+        ]
+
+
+checkOff : Html msg
+checkOff =
+    S.svg [ SA.width "20", SA.height "20", SA.viewBox "0 0 20 20", SA.fill "none" ]
+        [ S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M3 0C1.34315 0 0 1.34315 0 3V17C0 18.6569 1.34315 20 3 20H17C18.6569 20 20 18.6569 20 17V3C20 1.34315 18.6569 0 17 0H3ZM2 3C2 2.44772 2.44772 2 3 2H17C17.5523 2 18 2.44772 18 3V17C18 17.5523 17.5523 18 17 18H3C2.44772 18 2 17.5523 2 17V3Z"
+            , SA.fill "black"
+            ]
+            []
+        ]
+
+
+checkOn : Html msg
+checkOn =
+    S.svg [ SA.width "20", SA.height "20", SA.viewBox "0 0 20 20", SA.fill "none" ]
+        [ S.path
+            [ SA.d "M15.2929 5.29289L8 12.5858L4.70711 9.29289L3.29289 10.7071L7.29289 14.7071C7.48043 14.8946 7.73478 15 8 15C8.26521 15 8.51957 14.8946 8.7071 14.7071L16.7071 6.70711L15.2929 5.29289Z"
+            , SA.fill "black"
+            ]
+            []
+        , S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M3 0C1.34315 0 0 1.34315 0 3V17C0 18.6569 1.34315 20 3 20H17C18.6569 20 20 18.6569 20 17V3C20 1.34315 18.6569 0 17 0H3ZM2 3C2 2.44772 2.44772 2 3 2H17C17.5523 2 18 2.44772 18 3V17C18 17.5523 17.5523 18 17 18H3C2.44772 18 2 17.5523 2 17V3Z"
+            , SA.fill "black"
             ]
             []
         ]

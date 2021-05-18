@@ -467,7 +467,37 @@
 .ui-pageHeader__back:active {
     opacity: 0.5;
 }
-@media (max-width: 600px) {
+
+.ui-pageHeader__cancel,
+.ui-pageHeader__cancel:link,
+.ui-pageHeader__cancel:visited {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: var(--spacings-xLarge);
+    color: var(--text-colors-primary);
+    text-decoration: none;
+    transition: opacity 150ms ease-in;
+
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    display: flex;
+
+    svg {
+        margin-left: var(--spacings-medium);
+        display: block;
+    }
+}
+.ui-pageHeader__cancel:hover {
+    opacity: 0.6;
+}
+.ui-pageHeader__cancel:active {
+    opacity: 0.5;
+}
+
+@media (max-width: 700px) {
     .ui-heading {
         width: 100%;
         text-align: center;
@@ -478,8 +508,16 @@
     }
     .ui-pageHeader__back:link,
     .ui-pageHeader__back:visited,
-    .ui-pageHeader__back:hover {
+    .ui-pageHeader__back:hover,
+    .ui-pageHeader__cancel,
+    .ui-pageHeader__cancel:link,
+    .ui-pageHeader__cancel:visited,
+    .ui-pageHeader__cancel:hover {
         position: relative;
+        order: -1;
+    }
+    .ui-pageHeader__cancel {
+        margin-left: auto;
     }
 }
 
@@ -557,6 +595,34 @@
     position: absolute;
     clip: rect(0 0 0 0);
 }
+
+/* Checkbox */
+
+.ui-input-checkbox {
+    display: flex;
+    width: 100%;
+    color: var(--colors-background_0-color);
+}
+.ui-input-checkbox:active {
+    background: var(--colors-background_3-backgroundColor);
+    color: var(--colors-background_3-color);
+}
+.ui-input-checkbox__input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+}
+.ui-input-checkbox__box {
+    height: 1.25rem;
+    width: 1.25rem;
+    padding-right: 1rem;
+}
+.ui-input-checkbox__title {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+/* Button */
 
 .ui-button {
     display: flex;
@@ -729,11 +795,20 @@
         margin-right: var(--spacings-medium);
     }
 }
+.ui-input-text--bordered {
+    border-color: var(--border-primary);
+}
 .ui-input-text--error {
     border-color: var(--status-error-main-backgroundColor);
 }
 .ui-input-text__errorMessage {
     margin-top: var(--spacings-medium);
+    display: flex;
+
+    svg {
+        display: block;
+        flex-shrink: 0;
+    }
 }
 .ui-input-text:hover {
     background: var(--colors-background_2-backgroundColor);
@@ -748,6 +823,7 @@
 }
 .ui-input-text__label {
     margin-bottom: var(--spacings-medium);
+    display: block;
 }
 .ui-input-text__input {
     display: block;

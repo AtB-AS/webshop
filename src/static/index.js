@@ -213,7 +213,7 @@ function enqueueRefreshToken(user, expirationString) {
     refreshTokenTimer = setTimeout(fetchAuthInfo.bind(null, user), refreshTime);
 }
 
-async function fetchAuthInfo(user) {
+async function fetchAuthInfo(user, stopOnboarding) {
     clearRefreshToken();
     // Unsubscribe previous listener.
     unsubscribeFetchUserDataSnapshot && unsubscribeFetchUserDataSnapshot();
@@ -222,62 +222,57 @@ async function fetchAuthInfo(user) {
     try {
         const idToken = await user.getIdTokenResult(true);
 
-        if (
-            !idToken ||
-            !idToken.claims ||
-            !idToken.claims['sub'] ||
-            typeof idToken.claims['sub'] !== 'string'
-        ) {
-            // Start onboarding process
-            onboardingUser = user;
-            app.ports.onboardingStart.send(idToken.token);
-        } else {
-            const accountId = idToken.claims['sub'];
-            const email = user.email || '';
-            const phone = user.phoneNumber || '';
-            const provider = idToken.signInProvider || '';
-
-            enqueueRefreshToken(user, idToken.expirationTime);
-
-            localStorage.setItem('loggedIn', 'loggedIn');
-
-            unsubscribeFetchUserDataSnapshot = db
-                .collection('customers')
-                .doc(accountId)
-                .onSnapshot((doc) => {
-                    const profile = doc.data();
-
-                    if (!profile) {
-                        onboardingUser = user;
-                        app.ports.onboardingStart.send([
-                            idToken.token,
-                            email,
-                            phone
-                        ]);
-                    } else {
-                        app.ports.signInInfo.send({
-                            token: idToken.token,
-                            email: email,
-                            phone: phone,
-                            uid: accountId,
-                            provider: provider
-                        });
-
-                        if (
-                            typeof profile.travelcard === 'object' &&
-                            profile.travelcard !== null
-                        ) {
-                            profile.travelcard.expires = convert_time(
-                                profile.travelcard.expires
-                            );
-                        }
-
-                        app.ports.firestoreReadProfile.send(profile);
-
-                        loadFareContracts(accountId);
-                    }
-                });
+        if (!idToken || !idToken.claims) {
+            console.error('No idToken');
+            return;
         }
+
+        const accountId = idToken.claims['sub'];
+        const email = user.email || '';
+        const phone = user.phoneNumber || '';
+        const provider = idToken.signInProvider || '';
+
+        enqueueRefreshToken(user, idToken.expirationTime);
+
+        localStorage.setItem('loggedIn', 'loggedIn');
+
+        unsubscribeFetchUserDataSnapshot = db
+            .collection('customers')
+            .doc(accountId)
+            .onSnapshot((doc) => {
+                const profile = doc.data();
+
+                if (!profile) {
+                    onboardingUser = user;
+                    app.ports.onboardingStart.send([
+                        idToken.token,
+                        email,
+                        phone
+                    ]);
+                } else {
+                    app.ports.signInInfo.send({
+                        token: idToken.token,
+                        email: email,
+                        phone: phone,
+                        uid: accountId,
+                        provider: provider,
+                        stopOnboarding: !!stopOnboarding
+                    });
+
+                    if (
+                        typeof profile.travelcard === 'object' &&
+                        profile.travelcard !== null
+                    ) {
+                        profile.travelcard.expires = convert_time(
+                            profile.travelcard.expires
+                        );
+                    }
+
+                    app.ports.firestoreReadProfile.send(profile);
+
+                    loadFareContracts(accountId);
+                }
+            });
     } catch (error) {
         console.log('Error when retrieving cached user', error);
     }
@@ -357,7 +352,9 @@ function loadFareContracts(accountId) {
 }
 
 app.ports.onboardingDone.subscribe(() => {
-    setTimeout(() => fetchAuthInfo(onboardingUser), 500);
+    setTimeout(() => {
+        fetchAuthInfo(onboardingUser, true);
+    }, 500);
 });
 
 app.ports.openWindow.subscribe((url) => {

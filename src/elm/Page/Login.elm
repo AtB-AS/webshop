@@ -142,8 +142,12 @@ view env model =
                 Html.Extra.nothing
 
             StepConfirm ->
-                PH.init |> PH.setBackButton ( E.onClick BackLogin, "Avbryt" ) |> PH.view |> List.singleton |> H.div [ A.class "pageLogin__header" ]
-        , H.div [ A.class "page page--login" ]
+                PH.init
+                    |> PH.setBackButton (Just ( "Avbryt", E.onClick BackLogin ))
+                    |> PH.view
+                    |> List.singleton
+                    |> H.div [ A.class "pageLogin__header" ]
+        , H.div [ A.class "page page--narrow" ]
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
             , case model.step of
                 StepLogin ->

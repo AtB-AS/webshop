@@ -261,7 +261,7 @@ update msg model =
                                 , token = ""
                             }
                     in
-                        ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                        ( { model | userData = NotLoaded, environment = newEnvironment, onboarding = Nothing, authError = AuthErrorNone }
                         , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                         )
 
@@ -361,7 +361,7 @@ update msg model =
                         , token = ""
                     }
             in
-                ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                ( { model | userData = NotLoaded, environment = newEnvironment, onboarding = Nothing, authError = AuthErrorNone }
                 , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                 )
 
@@ -378,8 +378,15 @@ update msg model =
                                 , customerEmail = value.email
                                 , token = value.token
                             }
+
+                        newModel =
+                            { model | userData = Loaded value, environment = newEnvironment }
                     in
-                        ( { model | userData = Loaded value, environment = newEnvironment }
+                        ( if value.stopOnboarding then
+                            { newModel | onboarding = Nothing }
+
+                          else
+                            newModel
                         , Cmd.none
                         )
 
@@ -402,44 +409,54 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document model.appInfo.title
-        [ case model.userData of
-            Loading _ ->
-                case model.onboarding of
-                    Just onboarding ->
-                        OnboardingPage.view model.environment onboarding
-                            |> H.map OnboardingMsg
-
-                    Nothing ->
-                        H.ul [ A.class "waiting-room" ]
-                            [ H.li [] []
-                            , H.li [] []
-                            , H.li [] []
-                            , H.li [] []
+        [ wrapPage
+            model
+            (case model.userData of
+                Loading _ ->
+                    case model.onboarding of
+                        Just onboarding ->
+                            [ OnboardingPage.view model.environment onboarding
+                                |> H.map OnboardingMsg
                             ]
 
-            _ ->
-                H.div [ A.class "light container" ]
-                    [ viewAuthError model
-                    , header model
-                    , H.main_ [ A.class "app" ]
-                        [ Ui.GlobalNotifications.notifications model.notifications
-                        , H.div [ A.class "content" ]
-                            [ case model.environment.customerId of
+                        Nothing ->
+                            [ H.ul [ A.class "waiting-room" ]
+                                [ H.li [] []
+                                , H.li [] []
+                                , H.li [] []
+                                , H.li [] []
+                                ]
+                            ]
+
+                _ ->
+                    [ case model.onboarding of
+                        Just onboarding ->
+                            OnboardingPage.view model.environment onboarding
+                                |> H.map OnboardingMsg
+
+                        Nothing ->
+                            case model.environment.customerId of
                                 Just _ ->
                                     viewPage model
 
                                 Nothing ->
-                                    case model.onboarding of
-                                        Just onboarding ->
-                                            OnboardingPage.view model.environment onboarding
-                                                |> H.map OnboardingMsg
-
-                                        Nothing ->
-                                            LoginPage.view model.environment model.login
-                                                |> H.map LoginMsg
-                            ]
-                        ]
+                                    LoginPage.view model.environment model.login
+                                        |> H.map LoginMsg
                     ]
+            )
+        ]
+
+
+wrapPage : Model -> List (Html Msg) -> Html Msg
+wrapPage model children =
+    H.div [ A.class "light container" ]
+        [ viewAuthError model
+        , header model
+        , H.main_ [ A.class "app" ]
+            [ Ui.GlobalNotifications.notifications model.notifications
+            , H.div [ A.class "content" ]
+                children
+            ]
         ]
 
 
@@ -452,8 +469,28 @@ header model =
             , ( "Min profil", Route.Settings )
             ]
 
+        showLogout =
+            model.environment.customerId /= Nothing || model.onboarding /= Nothing
+
+        navigation =
+            if model.onboarding == Nothing then
+                List.map
+                    (\( name, route ) ->
+                        H.li
+                            [ A.classList
+                                [ ( "pageHeader__nav__item", True )
+                                , ( "pageHeader__nav__item--active", Just route == model.route )
+                                ]
+                            ]
+                            [ H.a [ Route.href route ] [ H.text name ] ]
+                    )
+                    links
+
+            else
+                []
+
         showHeader =
-            model.environment.customerId /= Nothing && model.route /= Just Route.Thanks
+            showLogout && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
@@ -463,17 +500,7 @@ header model =
                 , if showHeader then
                     H.nav [ A.class "pageHeader__nav" ]
                         [ H.ul []
-                            (List.map
-                                (\( name, route ) ->
-                                    H.li
-                                        [ A.classList
-                                            [ ( "pageHeader__nav__item", True )
-                                            , ( "pageHeader__nav__item--active", Just route == model.route )
-                                            ]
-                                        ]
-                                        [ H.a [ Route.href route ] [ H.text name ] ]
-                                )
-                                links
+                            (navigation
                                 ++ [ H.li []
                                         [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
                                         ]
@@ -558,7 +585,7 @@ viewPage model =
 wrapSubPage : String -> Html msg -> Html msg
 wrapSubPage title children =
     H.div []
-        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( Route.Home, "Oversikt" ) |> PH.view
+        [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( "Oversikt", Route.Home ) |> PH.view
         , children
         ]
 
@@ -609,6 +636,7 @@ type alias UserData =
     , userId : String
     , customerId : String
     , provider : FirebaseAuth.Provider
+    , stopOnboarding : Bool
     }
 
 
@@ -624,6 +652,7 @@ userDataDecoder =
             )
         |> DecodeP.required "uid" Decode.string
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
+        |> DecodeP.optional "stopOnboarding" Decode.bool False
 
 
 userErrorDecoder : Decoder AuthError
