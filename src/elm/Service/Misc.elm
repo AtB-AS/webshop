@@ -1,5 +1,6 @@
 port module Service.Misc exposing
     ( Profile
+    , bodyClass
     , convertTime
     , convertedTime
     , fareContractDecoder
@@ -19,6 +20,9 @@ import Json.Encode as Encode
 
 
 port openWindow : String -> Cmd msg
+
+
+port bodyClass : String -> Cmd msg
 
 
 port receiveTokens : (Encode.Value -> msg) -> Sub msg

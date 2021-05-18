@@ -68,7 +68,7 @@ viewLabelItem : String -> List (Html msg) -> Html msg
 viewLabelItem label children =
     viewPaddedItem
         (H.div [ A.class "ui-section__item__label" ]
-            [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
+            [ Text.textContainer H.div (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
             ]
             :: children
         )

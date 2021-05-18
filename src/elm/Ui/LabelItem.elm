@@ -32,7 +32,7 @@ internalView : List (Attribute msg) -> List (Attribute msg) -> String -> List (H
 internalView attrs attrsChild label children =
     H.div (A.class "ui-labelItem" :: attrs)
         (H.div (A.class "ui-labelItem__label" :: attrsChild)
-            [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
+            [ Text.textContainer H.div (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
             ]
             :: children
         )

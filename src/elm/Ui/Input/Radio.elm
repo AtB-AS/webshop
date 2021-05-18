@@ -104,11 +104,15 @@ view { id, name, title, onCheck, checked, subtitle, attributes } =
             )
             []
         , H.label [ A.for id, A.class "ui-input-radio" ]
-            [ H.div [ A.class "ui-input-radio__title" ]
-                [ H.div [] [ H.text title ]
-                , Html.Extra.viewMaybe (\t -> Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ]) subtitle
+            [ H.span [ A.class "ui-input-radio__title" ]
+                [ H.span [] [ H.text title ]
+                , Html.Extra.viewMaybe
+                    (\t ->
+                        H.span [ A.class "ui-input-radio__subtitle" ] [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
+                    )
+                    subtitle
                 ]
-            , H.div [ A.class "ui-input-radio__box" ] []
+            , H.span [ A.class "ui-input-radio__box" ] []
             ]
         ]
 
