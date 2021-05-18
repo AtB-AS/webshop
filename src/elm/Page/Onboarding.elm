@@ -266,7 +266,7 @@ view env model =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
-                |> wrapHeader model True "Profilinformasjon (1 av 4)"
+                |> wrapHeader model True "Profilinformasjon (1 av 3)"
 
         Consents ->
             viewConsents env model
@@ -274,7 +274,7 @@ view env model =
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader model False "Legg til t:kort (3 av 4)"
+                |> wrapHeader model False "Legg til t:kort (2 av 3)"
 
         AppAdvert ->
             viewAppAdvert env model
