@@ -142,6 +142,7 @@
     overflow: hidden;
     max-height: 0;
     transition: max-height 200ms ease-in-out;
+    position: relative;
 }
 .ui-group__item:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
@@ -513,6 +514,7 @@
     position: absolute;
     white-space: nowrap;
     width: 1px;
+    display: block;
 }
 .ui-input-radio__input:focus + .ui-input-radio {
     outline: 0;
@@ -520,6 +522,7 @@
         var(--colors-primary_2-backgroundColor);
 }
 .ui-input-radio__box {
+    display: block;
     border-radius: 50%;
     height: 1.25rem;
     width: 1.25rem;
@@ -540,6 +543,9 @@
 }
 .ui-input-radio__title {
     flex: 1;
+}
+.ui-input-radio__subtitle {
+    display: block;
 }
 
 .ui-input-radioGroup {
@@ -589,6 +595,7 @@
 }
 .ui-button__icon {
     margin-left: var(--spacings-small);
+    display: block;
 
     svg {
         display: block;

@@ -252,7 +252,7 @@ viewMain shared model =
         H.div [ A.class "main" ]
             [ if List.isEmpty validTickets && List.isEmpty model.reservations then
                 H.div [ A.class "pageOverview__empty" ]
-                    [ H.img [ A.src "/images/empty-illustration.svg" ] []
+                    [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
                     , H.text "Ingen billetter er tilknyttet din konto."
                     ]
 

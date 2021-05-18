@@ -3,16 +3,24 @@ module Ui.TextContainer exposing
     , TextContainer(..)
     , primary
     , primaryBold
+    , primaryBoldInline
+    , primaryInline
     , primaryJumbo
+    , primaryJumboInline
     , primaryUnderline
+    , primaryUnderlineInline
     , secondary
     , secondaryBold
+    , secondaryBoldInline
+    , secondaryInline
     , tertiary
+    , tertiaryInline
     , tertiaryStrike
+    , tertiaryStrikeInline
     , textContainer
     )
 
-import Html as H exposing (Html)
+import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 
 
@@ -80,50 +88,90 @@ toClassChildrenPair head color =
                 ( "typo-body__tertiary--strike ui-textContainer " ++ textColorClass, text )
 
 
-textContainer : Maybe TextColor -> TextContainer msg -> Html msg
-textContainer color msg =
+textContainer : (List (Attribute msg) -> List (Html msg) -> Html msg) -> Maybe TextColor -> TextContainer msg -> Html msg
+textContainer el color msg =
     let
         ( class, children ) =
             toClassChildrenPair msg color
     in
-        H.span [ A.class class ] children
+        el [ A.class class ] children
 
 
 primary : List (Html msg) -> Html msg
 primary =
-    Primary >> textContainer Nothing
+    Primary >> textContainer H.div Nothing
 
 
 primaryBold : List (Html msg) -> Html msg
 primaryBold =
-    PrimaryBold >> textContainer Nothing
+    PrimaryBold >> textContainer H.div Nothing
 
 
 primaryUnderline : List (Html msg) -> Html msg
 primaryUnderline =
-    PrimaryUnderline >> textContainer Nothing
+    PrimaryUnderline >> textContainer H.div Nothing
 
 
 primaryJumbo : List (Html msg) -> Html msg
 primaryJumbo =
-    PrimaryJumbo >> textContainer Nothing
+    PrimaryJumbo >> textContainer H.div Nothing
 
 
 secondary : List (Html msg) -> Html msg
 secondary =
-    Secondary >> textContainer Nothing
+    Secondary >> textContainer H.div Nothing
 
 
 secondaryBold : List (Html msg) -> Html msg
 secondaryBold =
-    SecondaryBold >> textContainer Nothing
+    SecondaryBold >> textContainer H.div Nothing
 
 
 tertiary : List (Html msg) -> Html msg
 tertiary =
-    Tertiary >> textContainer Nothing
+    Tertiary >> textContainer H.div Nothing
 
 
 tertiaryStrike : List (Html msg) -> Html msg
 tertiaryStrike =
-    TertiaryStrike >> textContainer Nothing
+    TertiaryStrike >> textContainer H.div Nothing
+
+
+primaryInline : List (Html msg) -> Html msg
+primaryInline =
+    Primary >> textContainer H.span Nothing
+
+
+primaryBoldInline : List (Html msg) -> Html msg
+primaryBoldInline =
+    PrimaryBold >> textContainer H.span Nothing
+
+
+primaryUnderlineInline : List (Html msg) -> Html msg
+primaryUnderlineInline =
+    PrimaryUnderline >> textContainer H.span Nothing
+
+
+primaryJumboInline : List (Html msg) -> Html msg
+primaryJumboInline =
+    PrimaryJumbo >> textContainer H.span Nothing
+
+
+secondaryInline : List (Html msg) -> Html msg
+secondaryInline =
+    Secondary >> textContainer H.span Nothing
+
+
+secondaryBoldInline : List (Html msg) -> Html msg
+secondaryBoldInline =
+    SecondaryBold >> textContainer H.span Nothing
+
+
+tertiaryInline : List (Html msg) -> Html msg
+tertiaryInline =
+    Tertiary >> textContainer H.span Nothing
+
+
+tertiaryStrikeInline : List (Html msg) -> Html msg
+tertiaryStrikeInline =
+    TertiaryStrike >> textContainer H.span Nothing

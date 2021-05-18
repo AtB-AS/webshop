@@ -50,6 +50,10 @@ const app = Elm.Main.init({
     )
 });
 
+app.ports.bodyClass.subscribe(function (className) {
+    document.body.className = className;
+});
+
 function fetchRemoteConfigData(port, key) {
     if (!port) {
         return;
