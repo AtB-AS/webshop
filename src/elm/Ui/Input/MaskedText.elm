@@ -150,7 +150,7 @@ view state value { id, title, type_, error, placeholder, onInput, onState, patte
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe
                 (\t ->
-                    H.div [ A.class "ui-input-text__label" ] [ Text.textContainer (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
+                    H.span [ A.class "ui-input-text__label" ] [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
                 )
                 title
             , MaskedInput.Text.input maskedOptions
@@ -168,10 +168,8 @@ view state value { id, title, type_, error, placeholder, onInput, onState, patte
                 value
             , Html.Extra.viewMaybe
                 (\t ->
-                    H.div [ A.class "ui-input-text__errorMessage" ]
-                        [ Text.textContainer (Just Text.DestructiveColor) <|
-                            Text.Primary [ Fragment.Icon.error, H.text t ]
-                        ]
+                    Text.textContainer H.span (Just Text.DestructiveColor) <|
+                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage" ] [ Fragment.Icon.error, H.text t ] ]
                 )
                 error
             ]

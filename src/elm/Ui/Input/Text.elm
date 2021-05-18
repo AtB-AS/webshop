@@ -122,7 +122,7 @@ view { id, title, value, type_, error, placeholder, onInput, required, onBlur, a
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe
                 (\t ->
-                    H.div [ A.class "ui-input-text__label" ] [ Text.textContainer H.div (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
+                    H.span [ A.class "ui-input-text__label" ] [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
                 )
                 title
             , H.input
@@ -141,10 +141,8 @@ view { id, title, value, type_, error, placeholder, onInput, required, onBlur, a
                 []
             , Html.Extra.viewMaybe
                 (\t ->
-                    H.div [ A.class "ui-input-text__errorMessage" ]
-                        [ Text.textContainer H.div (Just Text.DestructiveColor) <|
-                            Text.Primary [ Fragment.Icon.error, H.text t ]
-                        ]
+                    Text.textContainer H.span (Just Text.DestructiveColor) <|
+                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage" ] [ Fragment.Icon.error, H.text t ] ]
                 )
                 error
             ]

@@ -803,6 +803,12 @@
 }
 .ui-input-text__errorMessage {
     margin-top: var(--spacings-medium);
+    display: flex;
+
+    svg {
+        display: block;
+        flex-shrink: 0;
+    }
 }
 .ui-input-text:hover {
     background: var(--colors-background_2-backgroundColor);
@@ -817,6 +823,7 @@
 }
 .ui-input-text__label {
     margin-bottom: var(--spacings-medium);
+    display: block;
 }
 .ui-input-text__input {
     display: block;
