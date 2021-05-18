@@ -261,7 +261,7 @@ update msg model =
                                 , token = ""
                             }
                     in
-                        ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                        ( { model | userData = NotLoaded, environment = newEnvironment, onboarding = Nothing, authError = AuthErrorNone }
                         , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                         )
 
@@ -361,7 +361,7 @@ update msg model =
                         , token = ""
                     }
             in
-                ( { model | userData = NotLoaded, environment = newEnvironment, authError = AuthErrorNone }
+                ( { model | userData = NotLoaded, environment = newEnvironment, onboarding = Nothing, authError = AuthErrorNone }
                 , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                 )
 
@@ -469,8 +469,8 @@ header model =
             , ( "Min profil", Route.Settings )
             ]
 
-        isLoggedIn =
-            model.environment.customerId /= Nothing
+        showLogout =
+            model.environment.customerId /= Nothing || model.onboarding /= Nothing
 
         navigation =
             if model.onboarding == Nothing then
@@ -490,7 +490,7 @@ header model =
                 []
 
         showHeader =
-            isLoggedIn && model.route /= Just Route.Thanks
+            showLogout && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
