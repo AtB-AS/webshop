@@ -161,7 +161,7 @@ viewLogin _ model =
     H.form [ E.onSubmit Login ]
         [ Ui.Section.view
             [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
-            , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Da oppretter vi den automatisk for deg når du skriver inn telefonnummer og velger ", H.strong [] [ H.text "Logg inn." ] ] ]
+            , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor." ] ]
             , Ui.Section.viewItem
                 [ T.init "phone"
                     |> T.setValue (Just model.phone)
