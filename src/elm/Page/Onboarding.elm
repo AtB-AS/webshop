@@ -187,14 +187,22 @@ update msg env model =
                     nextStep model.step
             in
                 case maybeNextStep of
-                    Just Consents ->
+                    -- if next step is travel card and we are not saved, save an empty profile with phone.
+                    Just TravelCard ->
                         if model.profileSaved then
-                            PageUpdater.init { model | step = Consents, validationErrors = V.init }
+                            PageUpdater.init { model | step = TravelCard, validationErrors = V.init }
 
                         else
                             PageUpdater.init model
                                 |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
 
+                    -- TODO Deactivated consent for now.
+                    -- Just Consents ->
+                    --     if model.profileSaved then
+                    --         PageUpdater.init { model | step = Consents, validationErrors = V.init }
+                    --     else
+                    --         PageUpdater.init model
+                    --             |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
                     Nothing ->
                         PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
@@ -479,8 +487,11 @@ sectionTextInput id value action title placeholder =
 nextStep : Step -> Maybe Step
 nextStep step =
     case step of
+        -- TODO Temporary disable consent
+        -- ProfileInfo ->
+        --     Just Consents
         ProfileInfo ->
-            Just Consents
+            Just TravelCard
 
         Consents ->
             Just TravelCard
@@ -498,8 +509,11 @@ prevStep step =
         Consents ->
             Just ProfileInfo
 
+        -- TODO Temporary disable Consent
+        -- TravelCard ->
+        --     Just Consents
         TravelCard ->
-            Just Consents
+            Just ProfileInfo
 
         AppAdvert ->
             Just TravelCard
