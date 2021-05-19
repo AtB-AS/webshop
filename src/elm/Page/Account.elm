@@ -24,6 +24,7 @@ import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
+import Util.PhoneNumber
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
@@ -349,8 +350,8 @@ viewProfile model profile =
                                 ]
 
                              else
-                                [ Ui.Section.viewLabelItem "Fornavn" [ viewField profile.firstName ]
-                                , Ui.Section.viewLabelItem "Etternavn" [ viewField profile.lastName ]
+                                [ Ui.Section.viewLabelItem "Fornavn" [ viewField identity profile.firstName ]
+                                , Ui.Section.viewLabelItem "Etternavn" [ viewField identity profile.lastName ]
                                 ]
                             )
                     )
@@ -358,7 +359,7 @@ viewProfile model profile =
             , Ui.Section.viewWithIcon Icon.signInMethodLarge
                 [ Ui.Section.viewLabelItem "Innloggingsmetode"
                     [ H.text "Engangspassord på SMS til "
-                    , viewField profile.phone
+                    , viewField Util.PhoneNumber.format profile.phone
                     ]
                 ]
             ]
@@ -412,7 +413,7 @@ viewEmailAddress model profile =
                             ]
 
                     else
-                        [ Ui.Section.viewLabelItem "E-post" [ viewField profile.email ]
+                        [ Ui.Section.viewLabelItem "E-post" [ viewField identity profile.email ]
                         , model.validationErrors
                             |> Validation.select Email
                             |> Html.Extra.viewMaybe Ui.Message.error
@@ -525,10 +526,10 @@ hasField x =
 
 {-| Show the field as normal if it is valid, otherwise say that it's not filled out.
 -}
-viewField : String -> Html msg
-viewField x =
+viewField : (String -> String) -> String -> Html msg
+viewField fn x =
     if hasField x then
-        H.span [] [ H.text x ]
+        H.span [] [ H.text <| fn x ]
 
     else
         H.span
