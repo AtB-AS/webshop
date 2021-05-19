@@ -49,14 +49,11 @@ type Msg
     | UpdateEmail String
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
-    | SaveNames
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
-    | EditName
-    | EditPhoneNumber
     | RemoveTravelCard
     | Logout
-    | DeleteAccount
     | ProfileChange (Maybe Profile)
+    | SaveNames
     | SaveEmail
     | SaveTravelCard
     | SetEditSection (Maybe EditSection) (Maybe String)
@@ -143,15 +140,6 @@ update msg env model =
                             | loadingEditSection = Nothing
                             , validationErrors = Validation.add field (errorToString error) model.validationErrors
                         }
-
-        EditName ->
-            PageUpdater.init model
-
-        EditPhoneNumber ->
-            PageUpdater.init model
-
-        DeleteAccount ->
-            PageUpdater.init model
 
         ProfileChange (Just profile) ->
             PageUpdater.init
