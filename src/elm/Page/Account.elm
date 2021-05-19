@@ -495,6 +495,7 @@ viewTravelCard model profile =
                             [ Ui.Section.viewLabelItem "t:kortnummer"
                                 [ profile.travelCard
                                     |> Maybe.map (.id >> String.fromInt)
+                                    |> Maybe.map Util.TravelCard.formatAnonymized
                                     |> Maybe.withDefault "Ingen t:kort lagt til"
                                     |> H.text
                                 ]
