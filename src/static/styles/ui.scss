@@ -101,6 +101,20 @@
     padding: var(--spacings-xLarge);
 }
 
+.ui-section__itemWithIcon {
+    display: flex;
+    flex: 1;
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+}
+.ui-section__itemWithIcon__icon {
+    padding: var(--spacings-xLarge);
+
+    svg {
+        display: block;
+    }
+}
+
 // Style for ./src/Ui/LabelItem.elm
 .ui-labelItem {
     display: block;

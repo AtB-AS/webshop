@@ -9,13 +9,13 @@ module Ui.Section exposing
     , viewItem
     , viewLabelItem
     , viewPaddedItem
+    , viewWithIcon
     , viewWithOptions
     )
 
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Ui.LabelItem
-import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
 type alias Section =
@@ -62,6 +62,12 @@ viewGroup title children =
         (H.h2 [ A.class "ui-section__headerTitle ui-section__headerTitle--padded typo-heading__component" ] [ H.text title ]
             :: children
         )
+
+
+viewWithIcon : Html msg -> List (Html msg) -> Html msg
+viewWithIcon icon children =
+    H.div [ A.class "ui-section__itemWithIcon" ]
+        [ H.div [ A.class "ui-section__itemWithIcon__icon" ] [ icon ], H.div [ A.class "ui-section__itemWithIcon__content" ] children ]
 
 
 viewPaddedItem : List (Html msg) -> Html msg

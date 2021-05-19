@@ -285,9 +285,7 @@ viewMain model =
             (case model.profile of
                 Just profile ->
                     [ viewProfile model profile
-                    , viewPhoneNumber profile
                     , viewTravelCard model profile
-                    , viewEmailAddress model profile
                     ]
 
                 Nothing ->
@@ -351,12 +349,14 @@ viewProfile model profile =
                                 ]
                             )
                     )
+            , viewEmailAddress model profile
+            , Ui.Section.viewWithIcon Icon.signInMethodLarge
+                [ Ui.Section.viewLabelItem "Innloggingsmetode"
+                    [ H.text "Engangspassord på SMS til "
+                    , viewField profile.phone
+                    ]
+                ]
             ]
-
-
-viewPhoneNumber : Profile -> Html msg
-viewPhoneNumber profile =
-    Ui.Section.viewLabelItem "Telefonnummer" [ viewField profile.phone ]
 
 
 viewEmailAddress : Model -> Profile -> Html Msg
@@ -385,6 +385,7 @@ viewEmailAddress model profile =
             |> EditSection.setOnSave onSave
             |> EditSection.setOnEdit (Just <| SetEditSection (Just EmailSection) (Just "email"))
             |> EditSection.setInEditMode (fieldInEditMode model.editSection EmailSection)
+            |> EditSection.setIcon (Just Icon.emailLarge)
             |> EditSection.setButtonGroup
                 (Just <|
                     EditSection.cancelConfirmGroup
