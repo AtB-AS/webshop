@@ -286,6 +286,11 @@ viewMain model =
                 Just profile ->
                     [ viewProfile model profile
                     , viewTravelCard model profile
+                    , Ui.Section.viewGroup "Personvern"
+                        [ Ui.Section.viewPaddedItem
+                            [ H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
+                            ]
+                        ]
                     ]
 
                 Nothing ->
