@@ -801,11 +801,6 @@
 .ui-editSection__horizontalGroup {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-
-    & > * {
-        // @FIXME dette er bare midlertidig. FIKS DETTE SKIKKELIG FØR PR
-        margin-top: 0 !important;
-    }
 }
 .ui-editSection__horizontalGroup__icon {
     padding: var(--spacings-xLarge);
