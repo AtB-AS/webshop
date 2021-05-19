@@ -443,59 +443,62 @@ viewTravelCard model profile =
         disabledButtons =
             model.loadingEditSection == Just TravelCardSection
     in
-        EditSection.init "Administrer t:kort"
-            |> EditSection.setEditButtonType
-                (if hasTravelCard then
-                    ( "Fjern t:kort", Icon.delete )
+        Ui.Section.viewGroup "Billettbærere"
+            [ EditSection.init "Administrer t:kort"
+                |> EditSection.setEditButtonType
+                    (if hasTravelCard then
+                        ( "Fjern t:kort", Icon.delete )
 
-                 else
-                    ( "Legg til t:kort", Icon.edit )
-                )
-            |> EditSection.setOnSave onSave
-            |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
-            |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
-            |> EditSection.setButtonGroup
-                (if hasTravelCard then
-                    Just <|
-                        EditSection.destructiveGroup
-                            { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
-                            , onCancel = onCancel
-                            , onDestroy = onRemove
-                            , disabled = disabledButtons
-                            }
+                     else
+                        ( "Legg til t:kort", Icon.edit )
+                    )
+                |> EditSection.setIcon (Just Icon.ticketLarge)
+                |> EditSection.setOnSave onSave
+                |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
+                |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
+                |> EditSection.setButtonGroup
+                    (if hasTravelCard then
+                        Just <|
+                            EditSection.destructiveGroup
+                                { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                                , onCancel = onCancel
+                                , onDestroy = onRemove
+                                , disabled = disabledButtons
+                                }
 
-                 else
-                    Just <|
-                        EditSection.cancelConfirmGroup
-                            { onCancel = onCancel
-                            , disabled = disabledButtons
-                            }
-                )
-            |> EditSection.editSection
-                (\inEditMode ->
-                    if inEditMode && not hasTravelCard then
-                        EditSection.horizontalGroup
-                            [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
-                                |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
-                                |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
-                                |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
-                                |> MaskedInput.setPattern "#### #### ########"
-                                |> MaskedInput.setAttributes [ A.autofocus True ]
-                                |> MaskedInput.view model.travelCardState model.travelCard
+                     else
+                        Just <|
+                            EditSection.cancelConfirmGroup
+                                { onCancel = onCancel
+                                , disabled = disabledButtons
+                                }
+                    )
+                |> EditSection.editSection
+                    (\inEditMode ->
+                        if inEditMode && not hasTravelCard then
+                            EditSection.horizontalGroup
+                                [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
+                                    |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                    |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
+                                    |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                    |> MaskedInput.setPattern "#### #### ########"
+                                    |> MaskedInput.setAttributes [ A.autofocus True ]
+                                    |> MaskedInput.view model.travelCardState model.travelCard
+                                ]
+
+                        else
+                            [ Ui.Section.viewLabelItem "t:kort"
+                                [ profile.travelCard
+                                    |> Maybe.map (.id >> String.fromInt)
+                                    |> Maybe.withDefault "Ingen t:kort lagt til"
+                                    |> H.text
+                                ]
+                            , model.validationErrors
+                                |> Validation.select TravelCard
+                                |> Html.Extra.viewMaybe Ui.Message.error
                             ]
-
-                    else
-                        [ Ui.Section.viewLabelItem "t:kort"
-                            [ profile.travelCard
-                                |> Maybe.map (.id >> String.fromInt)
-                                |> Maybe.withDefault "Ingen t:kort lagt til"
-                                |> H.text
-                            ]
-                        , model.validationErrors
-                            |> Validation.select TravelCard
-                            |> Html.Extra.viewMaybe Ui.Message.error
-                        ]
-                )
+                    )
+            ]
 
 
 subscriptions : Model -> Sub Msg
