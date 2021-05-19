@@ -40,6 +40,7 @@ type FieldName
     | Email
     | FirstName
     | LastName
+    | NameFields
 
 
 type Msg
@@ -119,14 +120,22 @@ update msg env model =
 
         SaveNames ->
             PageUpdater.fromPair
-                ( { model | loadingEditSection = Just NameSection }
+                ( { model
+                    | loadingEditSection = Just NameSection
+                    , validationErrors = Validation.removeAll [ FirstName, LastName, NameFields ] model.validationErrors
+                  }
                 , updateProfile env model.firstName model.lastName
                 )
 
         ReceiveUpdateProfile field result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
+                    PageUpdater.init
+                        { model
+                            | loadingEditSection = Nothing
+                            , editSection = Nothing
+                            , validationErrors = Validation.removeAll field model.validationErrors
+                        }
 
                 Err error ->
                     PageUpdater.init
@@ -312,7 +321,8 @@ viewProfile model profile =
             model.loadingEditSection == Just EmailSection
     in
         Ui.Section.viewGroup "Profilinformasjon"
-            [ EditSection.init
+            [ Html.Extra.viewMaybe Ui.Message.error (Validation.select NameFields model.validationErrors)
+            , EditSection.init
                 "Administrer profilinformasjon"
                 |> EditSection.setEditButtonType
                     ( "Endre navn", Icon.edit )
@@ -534,7 +544,7 @@ updateProfile : Environment -> String -> String -> Cmd Msg
 updateProfile env firstName lastName =
     WebshopService.updateProfile env firstName lastName
         |> Http.toTask
-        |> Task.attempt (ReceiveUpdateProfile [ FirstName, LastName ])
+        |> Task.attempt (ReceiveUpdateProfile [ NameFields ])
 
 
 updateEmail : Environment -> String -> Cmd Msg
