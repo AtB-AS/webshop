@@ -1,4 +1,4 @@
-module Util.PhoneNumber exposing (..)
+module Util.PhoneNumber exposing (format)
 
 import Util.NumberFormater as NF
 
