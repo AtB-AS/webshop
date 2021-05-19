@@ -99,7 +99,11 @@
 }
 
 // Style for ./src/Ui/LabelItem.elm
+.ui-labelItem {
+    display: block;
+}
 .ui-labelItem__label {
+    display: block;
     margin-bottom: var(--spacings-medium);
 }
 .ui-labelItem--horizontal {
@@ -816,8 +820,14 @@
     border-color: var(--colors-primary_2-backgroundColor);
 }
 .ui-input-text__label {
+    // All text labels for inputs needs to be set as blocks
+    // to compansate for using spans instead of divs (html validation).
     margin-bottom: var(--spacings-medium);
     display: block;
+
+    & > span {
+        display: block;
+    }
 }
 .ui-input-text__input {
     display: block;
