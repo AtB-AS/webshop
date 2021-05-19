@@ -89,12 +89,6 @@
 .ui-section__item--padded {
     padding: var(--spacings-xLarge);
 }
-.ui-section__item__label {
-    margin-bottom: var(--spacings-medium);
-}
-.ui-section__item__label--compact {
-    margin-bottom: var(--spacings-xSmall);
-}
 .ui-section__child:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
         var(--colors-background_1-backgroundColor);
