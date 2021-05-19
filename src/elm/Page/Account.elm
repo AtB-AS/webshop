@@ -48,7 +48,7 @@ type Msg
     | UpdateEmail String
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
-    | UpdateProfile
+    | SaveNames
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
     | EditName
     | EditPhoneNumber
@@ -117,7 +117,7 @@ update msg env model =
             PageUpdater.init
                 { model | travelCardState = state }
 
-        UpdateProfile ->
+        SaveNames ->
             PageUpdater.fromPair
                 ( { model | loadingEditSection = Just NameSection }
                 , updateProfile env model.firstName model.lastName
@@ -287,8 +287,7 @@ viewMain model =
         [ Ui.Section.view
             (case model.profile of
                 Just profile ->
-                    [ Ui.Section.viewHeader "Min konto"
-                    , viewProfile profile
+                    [ viewProfile model profile
                     , viewPhoneNumber profile
                     , viewTravelCard model profile
                     , viewEmailAddress model profile
@@ -300,12 +299,61 @@ viewMain model =
         ]
 
 
-viewProfile : Profile -> Html msg
-viewProfile profile =
-    H.div []
-        [ Ui.Section.viewLabelItem "Fornavn" [ viewField profile.firstName ]
-        , Ui.Section.viewLabelItem "Etternavn" [ viewField profile.lastName ]
-        ]
+viewProfile : Model -> Profile -> Html Msg
+viewProfile model profile =
+    let
+        onSave =
+            Just SaveNames
+
+        onCancel =
+            Just <| SetEditSection Nothing Nothing
+
+        disabledButtons =
+            model.loadingEditSection == Just EmailSection
+    in
+        Ui.Section.viewGroup "Profilinformasjon"
+            [ EditSection.init
+                "Administrer profilinformasjon"
+                |> EditSection.setEditButtonType
+                    ( "Endre navn", Icon.edit )
+                |> EditSection.setOnSave onSave
+                |> EditSection.setOnEdit (Just <| SetEditSection (Just NameSection) (Just "firstname"))
+                |> EditSection.setInEditMode (fieldInEditMode model.editSection NameSection)
+                |> EditSection.setIcon (Just Icon.profileLarge)
+                |> EditSection.setButtonGroup
+                    (Just <|
+                        EditSection.cancelConfirmGroup
+                            { onCancel = onCancel
+                            , disabled = disabledButtons
+                            }
+                    )
+                |> EditSection.editSection
+                    (\inEditMode ->
+                        EditSection.horizontalGroup
+                            (if inEditMode then
+                                [ Text.init "firstname"
+                                    |> Text.setTitle (Just "Fornavn")
+                                    |> Text.setError (Validation.select FirstName model.validationErrors)
+                                    |> Text.setOnInput (Just <| UpdateFirstName)
+                                    |> Text.setPlaceholder "Legg til et fornavn"
+                                    |> Text.setValue (Just model.firstName)
+                                    |> Text.view
+                                , Text.init "lastname"
+                                    |> Text.setTitle (Just "Etternavn")
+                                    |> Text.setError (Validation.select LastName model.validationErrors)
+                                    |> Text.setOnInput (Just <| UpdateLastName)
+                                    |> Text.setPlaceholder "Legg til et etternavn"
+                                    |> Text.setValue (Just model.lastName)
+                                    |> Text.view
+                                ]
+
+                             else
+                                [ Ui.Section.viewLabelItem "Fornavn" [ viewField profile.firstName ]
+                                , Ui.Section.viewLabelItem "Etternavn" [ viewField profile.lastName ]
+                                ]
+                            )
+                    )
+            ]
 
 
 viewPhoneNumber : Profile -> Html msg

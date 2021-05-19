@@ -58,8 +58,8 @@ view children =
 
 viewGroup : String -> List (Html msg) -> Html msg
 viewGroup title children =
-    viewPaddedItem
-        (H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ]
+    viewItem
+        (H.h2 [ A.class "ui-section__headerTitle ui-section__headerTitle--padded typo-heading__component" ] [ H.text title ]
             :: children
         )
 

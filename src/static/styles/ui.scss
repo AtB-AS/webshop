@@ -97,6 +97,9 @@
     padding: 0;
     margin: 0;
 }
+.ui-section__headerTitle--padded {
+    padding: var(--spacings-xLarge);
+}
 
 // Style for ./src/Ui/LabelItem.elm
 .ui-labelItem {
@@ -733,17 +736,27 @@
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
 }
+.ui-editSection__icon {
+    padding: var(--spacings-xLarge);
+    align-self: flex-start;
+}
 .ui-editSection__editButton {
     margin: var(--spacings-medium);
+    margin-left: auto;
+    font-weight: normal;
+}
+.ui-editSection__editButton--hidden {
+    visibility: hidden;
+    pointer-events: none;
 }
 .ui-editSection__container {
     display: flex;
     align-items: flex-end;
-    justify-content: flex-end;
     flex-wrap: wrap;
 }
 .ui-editSection__content {
     flex: 1;
+    min-width: 15.625rem;
 }
 .ui-editSection__fieldset {
     border: 0;
@@ -773,7 +786,19 @@
 
 .ui-editSection__horizontalGroup {
     display: grid;
-    gap: var(--spacings-medium);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+    & > * {
+        // @FIXME dette er bare midlertidig. FIKS DETTE SKIKKELIG FØR PR
+        margin-top: 0 !important;
+    }
+}
+.ui-editSection__horizontalGroup__icon {
+    padding: var(--spacings-xLarge);
+
+    svg {
+        display: block;
+    }
 }
 
 .ui-input-text {
