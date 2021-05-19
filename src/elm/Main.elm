@@ -572,7 +572,7 @@ viewPage model =
             Just Route.Settings ->
                 AccountPage.view env model.appInfo shared model.account model.route
                     |> H.map AccountMsg
-                    |> wrapSubPage "Kontoinformasjon"
+                    |> wrapSubPage "Min profil"
 
             Just Route.Thanks ->
                 viewSuccessTicketPage

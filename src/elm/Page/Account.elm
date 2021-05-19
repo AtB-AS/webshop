@@ -382,10 +382,10 @@ viewEmailAddress model profile =
         EditSection.init "Administrer e-post"
             |> EditSection.setEditButtonType
                 (if hasEmail then
-                    ( "Rediger e-post", Icon.delete )
+                    ( "Endre epostadresse", Icon.delete )
 
                  else
-                    ( "Legg til e-post", Icon.edit )
+                    ( "Legg til epostadresse", Icon.edit )
                 )
             |> EditSection.setOnSave onSave
             |> EditSection.setOnEdit (Just <| SetEditSection (Just EmailSection) (Just "email"))
@@ -492,7 +492,7 @@ viewTravelCard model profile =
                                 ]
 
                         else
-                            [ Ui.Section.viewLabelItem "t:kort"
+                            [ Ui.Section.viewLabelItem "t:kortnummer"
                                 [ profile.travelCard
                                     |> Maybe.map (.id >> String.fromInt)
                                     |> Maybe.withDefault "Ingen t:kort lagt til"
