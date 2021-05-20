@@ -1,4 +1,4 @@
-module Util.TravelCard exposing (extractDigits, format)
+module Util.TravelCard exposing (extractDigits, format, formatAnonymized)
 
 import Util.NumberFormater as NF
 
@@ -21,3 +21,8 @@ extractDigits =
 format : String -> String
 format =
     NF.formatString [ NF.Digits 4, NF.Space, NF.Digits 4, NF.Space, NF.Digits 8 ]
+
+
+formatAnonymized : String -> String
+formatAnonymized =
+    NF.formatString [ NF.Str "XXXX", NF.Space, NF.Str "XX", NF.Digits 2, NF.Space, NF.Digits 7, NF.Str "X" ]

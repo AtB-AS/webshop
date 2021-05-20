@@ -5,6 +5,7 @@ module Util.Validation exposing
     , emailValidator
     , init
     , remove
+    , removeAll
     , select
     , travelCardValidator
     , validate
@@ -31,6 +32,11 @@ select fieldName =
 remove : a -> ValidationErrors a -> ValidationErrors a
 remove fieldName =
     List.filter (Tuple.first >> (/=) fieldName)
+
+
+removeAll : List a -> ValidationErrors a -> ValidationErrors a
+removeAll fieldNames =
+    List.filter (\item -> not <| List.member (Tuple.first item) fieldNames)
 
 
 init : ValidationErrors a

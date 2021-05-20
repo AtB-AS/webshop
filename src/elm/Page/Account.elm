@@ -10,7 +10,7 @@ import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
 import Html.Extra
 import Http exposing (Error(..))
-import Json.Decode exposing (Error(..))
+import Json.Decode as Decode exposing (Error(..))
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
@@ -24,6 +24,8 @@ import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
+import Util.Maybe
+import Util.PhoneNumber
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
@@ -40,6 +42,7 @@ type FieldName
     | Email
     | FirstName
     | LastName
+    | NameFields
 
 
 type Msg
@@ -48,20 +51,18 @@ type Msg
     | UpdateEmail String
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
-    | UpdateProfile
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
-    | EditName
-    | EditPhoneNumber
     | RemoveTravelCard
     | Logout
-    | DeleteAccount
     | ProfileChange (Maybe Profile)
+    | SaveNames
     | SaveEmail
     | SaveTravelCard
     | SetEditSection (Maybe EditSection) (Maybe String)
     | LoadingEditSection (Maybe EditSection)
     | ClearValidationError
     | FocusItem String
+    | ResetState
     | NoOp
 
 
@@ -97,6 +98,23 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
+        ResetState ->
+            let
+                mapWithDefault s =
+                    model.profile |> Maybe.map s |> Maybe.withDefault ""
+            in
+                PageUpdater.init
+                    { model
+                        | editSection = Nothing
+                        , firstName = mapWithDefault .firstName
+                        , lastName = mapWithDefault .lastName
+                        , email = mapWithDefault .email
+                        , travelCardState = MaskedInput.initState
+                        , travelCard = model.profile |> Util.Maybe.flatMap .travelCard |> Maybe.map (.id >> String.fromInt) |> Maybe.withDefault ""
+                        , loadingEditSection = Nothing
+                        , validationErrors = []
+                    }
+
         UpdateFirstName value ->
             PageUpdater.init { model | firstName = value }
 
@@ -117,16 +135,24 @@ update msg env model =
             PageUpdater.init
                 { model | travelCardState = state }
 
-        UpdateProfile ->
+        SaveNames ->
             PageUpdater.fromPair
-                ( { model | loadingEditSection = Just NameSection }
+                ( { model
+                    | loadingEditSection = Just NameSection
+                    , validationErrors = Validation.removeAll [ FirstName, LastName, NameFields ] model.validationErrors
+                  }
                 , updateProfile env model.firstName model.lastName
                 )
 
         ReceiveUpdateProfile field result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | loadingEditSection = Nothing, editSection = Nothing }
+                    PageUpdater.init
+                        { model
+                            | loadingEditSection = Nothing
+                            , editSection = Nothing
+                            , validationErrors = Validation.removeAll field model.validationErrors
+                        }
 
                 Err error ->
                     PageUpdater.init
@@ -134,15 +160,6 @@ update msg env model =
                             | loadingEditSection = Nothing
                             , validationErrors = Validation.add field (errorToString error) model.validationErrors
                         }
-
-        EditName ->
-            PageUpdater.init model
-
-        EditPhoneNumber ->
-            PageUpdater.init model
-
-        DeleteAccount ->
-            PageUpdater.init model
 
         ProfileChange (Just profile) ->
             PageUpdater.init
@@ -287,11 +304,13 @@ viewMain model =
         [ Ui.Section.view
             (case model.profile of
                 Just profile ->
-                    [ Ui.Section.viewHeader "Min konto"
-                    , viewProfile profile
-                    , viewPhoneNumber profile
+                    [ viewProfile model profile
                     , viewTravelCard model profile
-                    , viewEmailAddress model profile
+                    , Ui.Section.viewGroup "Personvern"
+                        [ Ui.Section.viewPaddedItem
+                            [ H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
+                            ]
+                        ]
                     ]
 
                 Nothing ->
@@ -300,17 +319,69 @@ viewMain model =
         ]
 
 
-viewProfile : Profile -> Html msg
-viewProfile profile =
-    H.div []
-        [ Ui.Section.viewLabelItem "Fornavn" [ viewField profile.firstName ]
-        , Ui.Section.viewLabelItem "Etternavn" [ viewField profile.lastName ]
-        ]
+viewProfile : Model -> Profile -> Html Msg
+viewProfile model profile =
+    let
+        onSave =
+            Just SaveNames
 
+        onCancel =
+            Just <| SetEditSection Nothing Nothing
 
-viewPhoneNumber : Profile -> Html msg
-viewPhoneNumber profile =
-    Ui.Section.viewLabelItem "Telefonnummer" [ viewField profile.phone ]
+        disabledButtons =
+            model.loadingEditSection == Just EmailSection
+    in
+        Ui.Section.viewGroup "Profilinformasjon"
+            [ Html.Extra.viewMaybe Ui.Message.error (Validation.select NameFields model.validationErrors)
+            , EditSection.init
+                "Administrer profilinformasjon"
+                |> EditSection.setEditButtonType
+                    ( "Endre navn", Icon.edit )
+                |> EditSection.setOnSave onSave
+                |> EditSection.setOnEdit (Just <| SetEditSection (Just NameSection) (Just "firstname"))
+                |> EditSection.setInEditMode (fieldInEditMode model.editSection NameSection)
+                |> EditSection.setIcon (Just Icon.profileLarge)
+                |> EditSection.setButtonGroup
+                    (Just <|
+                        EditSection.cancelConfirmGroup
+                            { onCancel = onCancel
+                            , disabled = disabledButtons
+                            }
+                    )
+                |> EditSection.editSection
+                    (\inEditMode ->
+                        EditSection.horizontalGroup
+                            (if inEditMode then
+                                [ Text.init "firstname"
+                                    |> Text.setTitle (Just "Fornavn")
+                                    |> Text.setError (Validation.select FirstName model.validationErrors)
+                                    |> Text.setOnInput (Just <| UpdateFirstName)
+                                    |> Text.setPlaceholder "Legg til et fornavn"
+                                    |> Text.setValue (Just model.firstName)
+                                    |> Text.view
+                                , Text.init "lastname"
+                                    |> Text.setTitle (Just "Etternavn")
+                                    |> Text.setError (Validation.select LastName model.validationErrors)
+                                    |> Text.setOnInput (Just <| UpdateLastName)
+                                    |> Text.setPlaceholder "Legg til et etternavn"
+                                    |> Text.setValue (Just model.lastName)
+                                    |> Text.view
+                                ]
+
+                             else
+                                [ Ui.Section.viewLabelItem "Fornavn" [ viewField identity profile.firstName ]
+                                , Ui.Section.viewLabelItem "Etternavn" [ viewField identity profile.lastName ]
+                                ]
+                            )
+                    )
+            , viewEmailAddress model profile
+            , Ui.Section.viewWithIcon Icon.signInMethodLarge
+                [ Ui.Section.viewLabelItem "Innloggingsmetode"
+                    [ H.text "Engangspassord på SMS til "
+                    , viewField Util.PhoneNumber.format profile.phone
+                    ]
+                ]
+            ]
 
 
 viewEmailAddress : Model -> Profile -> Html Msg
@@ -331,14 +402,15 @@ viewEmailAddress model profile =
         EditSection.init "Administrer e-post"
             |> EditSection.setEditButtonType
                 (if hasEmail then
-                    ( "Rediger e-post", Icon.delete )
+                    ( "Endre epostadresse", Icon.delete )
 
                  else
-                    ( "Legg til e-post", Icon.edit )
+                    ( "Legg til epostadresse", Icon.edit )
                 )
             |> EditSection.setOnSave onSave
             |> EditSection.setOnEdit (Just <| SetEditSection (Just EmailSection) (Just "email"))
             |> EditSection.setInEditMode (fieldInEditMode model.editSection EmailSection)
+            |> EditSection.setIcon (Just Icon.emailLarge)
             |> EditSection.setButtonGroup
                 (Just <|
                     EditSection.cancelConfirmGroup
@@ -360,7 +432,7 @@ viewEmailAddress model profile =
                             ]
 
                     else
-                        [ Ui.Section.viewLabelItem "E-post" [ viewField profile.email ]
+                        [ Ui.Section.viewLabelItem "E-post" [ viewField identity profile.email ]
                         , model.validationErrors
                             |> Validation.select Email
                             |> Html.Extra.viewMaybe Ui.Message.error
@@ -396,59 +468,63 @@ viewTravelCard model profile =
         disabledButtons =
             model.loadingEditSection == Just TravelCardSection
     in
-        EditSection.init "Administrer t:kort"
-            |> EditSection.setEditButtonType
-                (if hasTravelCard then
-                    ( "Fjern t:kort", Icon.delete )
+        Ui.Section.viewGroup "Billettbærere"
+            [ EditSection.init "Administrer t:kort"
+                |> EditSection.setEditButtonType
+                    (if hasTravelCard then
+                        ( "Fjern t:kort", Icon.delete )
 
-                 else
-                    ( "Legg til t:kort", Icon.edit )
-                )
-            |> EditSection.setOnSave onSave
-            |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
-            |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
-            |> EditSection.setButtonGroup
-                (if hasTravelCard then
-                    Just <|
-                        EditSection.destructiveGroup
-                            { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
-                            , onCancel = onCancel
-                            , onDestroy = onRemove
-                            , disabled = disabledButtons
-                            }
+                     else
+                        ( "Legg til t:kort", Icon.edit )
+                    )
+                |> EditSection.setIcon (Just Icon.ticketLarge)
+                |> EditSection.setOnSave onSave
+                |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
+                |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
+                |> EditSection.setButtonGroup
+                    (if hasTravelCard then
+                        Just <|
+                            EditSection.destructiveGroup
+                                { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                                , onCancel = onCancel
+                                , onDestroy = onRemove
+                                , disabled = disabledButtons
+                                }
 
-                 else
-                    Just <|
-                        EditSection.cancelConfirmGroup
-                            { onCancel = onCancel
-                            , disabled = disabledButtons
-                            }
-                )
-            |> EditSection.editSection
-                (\inEditMode ->
-                    if inEditMode && not hasTravelCard then
-                        EditSection.horizontalGroup
-                            [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
-                                |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
-                                |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
-                                |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
-                                |> MaskedInput.setPattern "#### #### ########"
-                                |> MaskedInput.setAttributes [ A.autofocus True ]
-                                |> MaskedInput.view model.travelCardState model.travelCard
+                     else
+                        Just <|
+                            EditSection.cancelConfirmGroup
+                                { onCancel = onCancel
+                                , disabled = disabledButtons
+                                }
+                    )
+                |> EditSection.editSection
+                    (\inEditMode ->
+                        if inEditMode && not hasTravelCard then
+                            EditSection.horizontalGroup
+                                [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
+                                    |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                    |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
+                                    |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                    |> MaskedInput.setPattern "#### #### ########"
+                                    |> MaskedInput.setAttributes [ A.autofocus True ]
+                                    |> MaskedInput.view model.travelCardState model.travelCard
+                                ]
+
+                        else
+                            [ Ui.Section.viewLabelItem "t:kortnummer"
+                                [ profile.travelCard
+                                    |> Maybe.map (.id >> String.fromInt)
+                                    |> Maybe.map Util.TravelCard.formatAnonymized
+                                    |> Maybe.withDefault "Ingen t:kort lagt til"
+                                    |> H.text
+                                ]
+                            , model.validationErrors
+                                |> Validation.select TravelCard
+                                |> Html.Extra.viewMaybe Ui.Message.error
                             ]
-
-                    else
-                        [ Ui.Section.viewLabelItem "t:kort"
-                            [ profile.travelCard
-                                |> Maybe.map (.id >> String.fromInt)
-                                |> Maybe.withDefault "Ingen t:kort lagt til"
-                                |> H.text
-                            ]
-                        , model.validationErrors
-                            |> Validation.select TravelCard
-                            |> Html.Extra.viewMaybe Ui.Message.error
-                        ]
-                )
+                    )
+            ]
 
 
 subscriptions : Model -> Sub Msg
@@ -469,10 +545,10 @@ hasField x =
 
 {-| Show the field as normal if it is valid, otherwise say that it's not filled out.
 -}
-viewField : String -> Html msg
-viewField x =
+viewField : (String -> String) -> String -> Html msg
+viewField fn x =
     if hasField x then
-        H.span [] [ H.text x ]
+        H.span [] [ H.text <| fn x ]
 
     else
         H.span
@@ -486,7 +562,7 @@ updateProfile : Environment -> String -> String -> Cmd Msg
 updateProfile env firstName lastName =
     WebshopService.updateProfile env firstName lastName
         |> Http.toTask
-        |> Task.attempt (ReceiveUpdateProfile [ FirstName, LastName ])
+        |> Task.attempt (ReceiveUpdateProfile [ NameFields ])
 
 
 updateEmail : Environment -> String -> Cmd Msg
@@ -515,16 +591,32 @@ removeTravelCard env travelCard =
 errorToString : Http.Error -> String
 errorToString error =
     case error of
-        BadStatus { status, body } ->
-            case status.code of
+        BadStatus response ->
+            case response.status.code of
                 500 ->
-                    "Det skjedde en feil med tjenesten. Prøv igjen senere."
+                    Decode.decodeString
+                        (Decode.field "upstreamError" Decode.string
+                            |> Decode.andThen
+                                (\upstreamError ->
+                                    case
+                                        Decode.decodeString (Decode.field "shortNorwegian" Decode.string) upstreamError
+                                    of
+                                        Err _ ->
+                                            Decode.fail "Invalid error"
+
+                                        Ok value ->
+                                            Decode.succeed value
+                                )
+                        )
+                        response.body
+                        |> Result.toMaybe
+                        |> Maybe.withDefault "Det skjedde en feil med tjenesten. Prøv igjen senere."
 
                 409 ->
                     "Dette t:kortet eksisterer ikke eller er allerede registrert."
 
                 400 ->
-                    case WebshopService.travelCardErrorDecoder body of
+                    case WebshopService.travelCardErrorDecoder response.body of
                         Ok errorMessage ->
                             "Feilmelding fra tjenesten: " ++ errorMessage
 

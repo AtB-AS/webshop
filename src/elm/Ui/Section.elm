@@ -4,16 +4,18 @@ module Ui.Section exposing
     , setMarginBottom
     , setMarginTop
     , view
+    , viewGroup
     , viewHeader
     , viewItem
     , viewLabelItem
     , viewPaddedItem
+    , viewWithIcon
     , viewWithOptions
     )
 
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
+import Ui.LabelItem
 
 
 type alias Section =
@@ -54,6 +56,20 @@ view children =
     viewWithOptions children init
 
 
+viewGroup : String -> List (Html msg) -> Html msg
+viewGroup title children =
+    viewItem
+        (H.h2 [ A.class "ui-section__headerTitle ui-section__headerTitle--padded typo-heading__component" ] [ H.text title ]
+            :: children
+        )
+
+
+viewWithIcon : Html msg -> List (Html msg) -> Html msg
+viewWithIcon icon children =
+    H.div [ A.class "ui-section__itemWithIcon" ]
+        [ H.div [ A.class "ui-section__itemWithIcon__icon" ] [ icon ], H.div [ A.class "ui-section__itemWithIcon__content" ] children ]
+
+
 viewPaddedItem : List (Html msg) -> Html msg
 viewPaddedItem =
     H.div [ A.class "ui-section__item ui-section__item--padded" ]
@@ -67,11 +83,7 @@ viewItem =
 viewLabelItem : String -> List (Html msg) -> Html msg
 viewLabelItem label children =
     viewPaddedItem
-        (H.div [ A.class "ui-section__item__label" ]
-            [ Text.textContainer H.div (Just Text.SecondaryColor) <| Text.Tertiary [ H.text label ]
-            ]
-            :: children
-        )
+        [ Ui.LabelItem.view label children ]
 
 
 viewHeader : String -> Html msg

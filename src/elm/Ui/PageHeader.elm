@@ -14,7 +14,6 @@ import Html.Events as E
 import Html.Extra
 import Route exposing (Route)
 import Ui.Heading
-import Util.Encode exposing (maybe)
 
 
 type alias PageHeader msg =

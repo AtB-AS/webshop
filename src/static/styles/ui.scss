@@ -89,12 +89,6 @@
 .ui-section__item--padded {
     padding: var(--spacings-xLarge);
 }
-.ui-section__item__label {
-    margin-bottom: var(--spacings-medium);
-}
-.ui-section__item__label--compact {
-    margin-bottom: var(--spacings-xSmall);
-}
 .ui-section__child:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
         var(--colors-background_1-backgroundColor);
@@ -103,9 +97,30 @@
     padding: 0;
     margin: 0;
 }
+.ui-section__headerTitle--padded {
+    padding: var(--spacings-xLarge);
+}
+
+.ui-section__itemWithIcon {
+    display: flex;
+    flex: 1;
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+}
+.ui-section__itemWithIcon__icon {
+    padding: var(--spacings-xLarge);
+
+    svg {
+        display: block;
+    }
+}
 
 // Style for ./src/Ui/LabelItem.elm
+.ui-labelItem {
+    display: block;
+}
 .ui-labelItem__label {
+    display: block;
     margin-bottom: var(--spacings-medium);
 }
 .ui-labelItem--horizontal {
@@ -735,17 +750,27 @@
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
 }
+.ui-editSection__icon {
+    padding: var(--spacings-xLarge);
+    align-self: flex-start;
+}
 .ui-editSection__editButton {
     margin: var(--spacings-medium);
+    margin-left: auto;
+    font-weight: normal;
+}
+.ui-editSection__editButton--hidden {
+    visibility: hidden;
+    pointer-events: none;
 }
 .ui-editSection__container {
     display: flex;
     align-items: flex-end;
-    justify-content: flex-end;
     flex-wrap: wrap;
 }
 .ui-editSection__content {
     flex: 1;
+    min-width: 15.625rem;
 }
 .ui-editSection__fieldset {
     border: 0;
@@ -775,7 +800,14 @@
 
 .ui-editSection__horizontalGroup {
     display: grid;
-    gap: var(--spacings-medium);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.ui-editSection__horizontalGroup__icon {
+    padding: var(--spacings-xLarge);
+
+    svg {
+        display: block;
+    }
 }
 
 .ui-input-text {
@@ -822,8 +854,14 @@
     border-color: var(--colors-primary_2-backgroundColor);
 }
 .ui-input-text__label {
+    // All text labels for inputs needs to be set as blocks
+    // to compansate for using spans instead of divs (html validation).
     margin-bottom: var(--spacings-medium);
     display: block;
+
+    & > span {
+        display: block;
+    }
 }
 .ui-input-text__input {
     display: block;

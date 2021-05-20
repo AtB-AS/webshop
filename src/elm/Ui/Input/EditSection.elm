@@ -15,6 +15,7 @@ module Ui.Input.EditSection exposing
     , setDGOnCancel
     , setDGOnDestroy
     , setEditButtonType
+    , setIcon
     , setInEditMode
     , setOnEdit
     , setOnSave
@@ -25,6 +26,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra
 import Html.Events as E
+import Html.Extra
 import Ui.Button as B exposing (ButtonMode(..))
 import Ui.TextContainer exposing (TextColor(..), TextContainer(..))
 
@@ -36,6 +38,7 @@ type alias EditSection msg =
     , onSave : Maybe msg
     , inEditMode : Bool
     , buttonGroup : Maybe (List (Html msg))
+    , icon : Maybe (Html msg)
     }
 
 
@@ -47,6 +50,7 @@ init accessibilityName =
     , onSave = Nothing
     , inEditMode = False
     , buttonGroup = Nothing
+    , icon = Nothing
     }
 
 
@@ -80,11 +84,19 @@ setButtonGroup buttonGroup opts =
     { opts | buttonGroup = buttonGroup }
 
 
+setIcon : Maybe (Html msg) -> EditSection msg -> EditSection msg
+setIcon icon opts =
+    { opts | icon = icon }
+
+
 editSection : (Bool -> List (Html msg)) -> EditSection msg -> Html msg
-editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave } =
+editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon } =
     let
         ( editText, editIcon ) =
             editButtonData
+
+        iconElement =
+            Html.Extra.viewMaybe (List.singleton >> H.div [ A.class "ui-editSection__icon" ]) icon
     in
         H.form
             [ A.class "ui-editSection"
@@ -93,7 +105,8 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
             ]
             [ if not inEditMode then
                 H.div [ A.class "ui-editSection__container" ]
-                    [ H.div [ A.class "ui-editSection__content" ] (children False)
+                    [ iconElement
+                    , H.div [ A.class "ui-editSection__content" ] (children False)
                     , B.init editText
                         |> B.setIcon (Just editIcon)
                         |> B.setOnClick onEdit
@@ -103,14 +116,22 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
 
               else
                 H.fieldset [ A.class "ui-editSection__fieldset" ]
-                    (H.legend
+                    [ H.legend
                         [ A.class "ui-editSection__fieldset__legend" ]
                         [ H.text accessibilityName ]
-                        :: children True
-                        ++ [ H.div [ A.class "ui-editSection__fieldset__buttonGroup" ] <|
-                                Maybe.withDefault [] buttonGroup
-                           ]
-                    )
+                    , H.div [ A.class "ui-editSection__container" ]
+                        [ iconElement
+                        , H.div [ A.class "ui-editSection__content" ] (children True)
+                        , B.init editText
+                            |> B.setIcon (Just editIcon)
+                            |> B.setOnClick onEdit
+                            |> B.setDisabled True
+                            |> B.setAttributes [ A.class "ui-editSection__editButton ui-editSection__editButton--hidden", A.tabindex -1 ]
+                            |> B.tertiaryCompact
+                        ]
+                    , H.div [ A.class "ui-editSection__fieldset__buttonGroup" ] <|
+                        Maybe.withDefault [] buttonGroup
+                    ]
             ]
 
 
@@ -205,4 +226,6 @@ destructiveGroup { message, onCancel, onDestroy, disabled } =
 
 horizontalGroup : List (Html msg) -> List (Html msg)
 horizontalGroup children =
-    children |> H.div [ A.class "ui-editSection__horizontalGroup" ] |> List.singleton
+    [ H.div [ A.class "ui-editSection__horizontalGroup" ]
+        children
+    ]

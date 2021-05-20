@@ -1,7 +1,12 @@
 @import '~@atb-as/theme/lib/theme.css';
 
-* {
+html {
     box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
 }
 
 :root {
@@ -12,11 +17,6 @@
     --section-background: #fff;
 
     --maxPageWidth: 1024px;
-}
-
-* {
-    margin: 0;
-    padding: 0;
 }
 
 * {
