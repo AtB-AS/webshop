@@ -5,6 +5,7 @@ import 'firebase/firebase-auth';
 import 'firebase/firebase-firestore';
 import 'firebase/firebase-remote-config';
 import 'wicg-inert';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Elm } from '../elm/Main';
 
@@ -13,6 +14,27 @@ if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js');
     });
 }
+
+// This is silly. Very hacky way to override xhr object prototype
+// to always include uuid as AtbRequestID.
+// This is to avoid annoying argument passing,
+// state management propagation in Elm.
+let originalOpen = XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function (...args) {
+    const [, url] = args;
+    var res = originalOpen.apply(this, args);
+
+    if (
+        [
+            elmFlags.baseUrl,
+            elmFlags.ticketUrl,
+            elmFlags.refDataUrlurl
+        ].some((remoteUrl) => url.includes(remoteUrl))
+    ) {
+        this.setRequestHeader('Atb-Request-Id', uuidv4());
+    }
+    return res;
+};
 
 let installId = localStorage['Atb-Install-Id'];
 
