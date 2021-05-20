@@ -11,11 +11,6 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const dotenv = require('dotenv');
-const CompressionPlugin = require('compression-webpack-plugin');
-
-// Compression stuff
-const zlib = require('zlib');
-const zopfli = require('@gfx/zopfli');
 
 // Local stuff
 const createHashFunction = require('./hash-func.js');
@@ -486,31 +481,6 @@ if (isDevelopment) {
             // Set up Workbox
             new WorkboxWebpackPlugin.GenerateSW({
                 exclude: ['index.html']
-            }),
-
-            new CompressionPlugin({
-                filename: '[path][base].gz',
-                compressionOptions: {
-                    numiterations: 15
-                },
-                algorithm(input, compressionOptions, callback) {
-                    return zopfli.gzip(input, compressionOptions, callback);
-                },
-                test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/
-            }),
-
-            new CompressionPlugin({
-                filename: '[path][base].br',
-                algorithm: 'brotliCompress',
-                test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
-                compressionOptions: {
-                    params: {
-                        [zlib.constants.BROTLI_PARAM_QUALITY]: 11
-                    }
-                },
-                threshold: 10240,
-                minRatio: 0.8,
-                deleteOriginalAssets: false
             })
         ],
         optimization: {
