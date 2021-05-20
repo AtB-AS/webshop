@@ -331,6 +331,15 @@
     padding: var(--spacings-xLarge);
     border-radius: var(--border-radius-regular);
 
+    position: relative;
+
+    & > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    cursor: pointer;
+
     background-position: bottom left, bottom right;
     background-size: 50% 100%;
     background-repeat: no-repeat;
@@ -345,19 +354,40 @@
             rgba(0, 0, 0, 0) 15px,
             var(--colors-background_0-backgroundColor) 15px
         );
+
+    &::after {
+        opacity: 0;
+        border-radius: var(--border-radius-regular);
+        position: absolute;
+        content: '';
+        display: block;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+
+        transition: opacity 150ms ease;
+
+        background-position: bottom left, bottom right;
+        background-size: 50% 100%;
+        background-repeat: no-repeat;
+
+        background-image: radial-gradient(
+                circle at 0 100%,
+                rgba(0, 0, 0, 0) 15px,
+                var(--colors-background_2-backgroundColor) 15px
+            ),
+            radial-gradient(
+                circle at 100% 100%,
+                rgba(0, 0, 0, 0) 15px,
+                var(--colors-background_2-backgroundColor) 15px
+            );
+        color: var(--colors-background_2-color);
+    }
 }
-.ui-ticketDetails__headerButton:hover {
-    background-image: radial-gradient(
-            circle at 0 100%,
-            rgba(0, 0, 0, 0) 15px,
-            var(--colors-background_2-backgroundColor) 15px
-        ),
-        radial-gradient(
-            circle at 100% 100%,
-            rgba(0, 0, 0, 0) 15px,
-            var(--colors-background_2-backgroundColor) 15px
-        );
-    color: var(--colors-background_2-color);
+.ui-ticketDetails__headerButton:hover::after {
+    opacity: 1;
 }
 .ui-ticketDetails__headerButton:focus {
     outline: 0;
