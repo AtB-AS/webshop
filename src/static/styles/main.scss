@@ -57,7 +57,8 @@ button {
 .app {
     flex: 1;
     position: relative;
-    background: url('/images/background-illustration.svg') no-repeat center top;
+    background: url('../images/background-illustration.svg') no-repeat center
+        top;
     background-size: 100%;
 }
 .content {
@@ -600,7 +601,7 @@ table {
     display: grid;
     grid-template-columns: 1fr 1fr;
 
-    background: url('/images/travelcard-help-icons.svg') left center no-repeat;
+    background: url('../images/travelcard-help-icons.svg') left center no-repeat;
     margin-bottom: calc(2 * var(--spacings-xLarge));
 }
 
