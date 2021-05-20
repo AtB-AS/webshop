@@ -25,4 +25,4 @@ format =
 
 formatAnonymized : String -> String
 formatAnonymized =
-    NF.formatString [ NF.Str "XXXX", NF.Space, NF.Str "XX", NF.Digits 2, NF.Space, NF.Digits 7, NF.Str "XX" ]
+    NF.formatString [ NF.Str "XXXX", NF.Space, NF.Str "XX", NF.Digits 2, NF.Space, NF.Digits 7, NF.Str "X" ]
