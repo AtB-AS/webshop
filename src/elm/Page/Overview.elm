@@ -25,6 +25,7 @@ import Ui.Heading
 import Ui.Message as Message
 import Ui.Section
 import Ui.TicketDetails
+import Ui.TravelCardText
 import Util.FareContract
 import Util.Maybe
 import Util.PhoneNumber
@@ -202,7 +203,7 @@ viewAccountInfo shared _ =
                         (\id ->
                             H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
                                 [ Icon.travelCard
-                                , H.text <| Util.TravelCard.formatAnonymized <| String.fromInt id
+                                , Ui.TravelCardText.view id
                                 ]
                         )
                 ]
