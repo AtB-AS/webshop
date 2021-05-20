@@ -24,6 +24,7 @@ import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
+import Ui.TravelCardText
 import Util.Maybe
 import Util.PhoneNumber
 import Util.TravelCard
@@ -514,10 +515,9 @@ viewTravelCard model profile =
                         else
                             [ Ui.Section.viewLabelItem "t:kortnummer"
                                 [ profile.travelCard
-                                    |> Maybe.map (.id >> String.fromInt)
-                                    |> Maybe.map Util.TravelCard.formatAnonymized
-                                    |> Maybe.withDefault "Ingen t:kort lagt til"
-                                    |> H.text
+                                    |> Maybe.map .id
+                                    |> Maybe.map Ui.TravelCardText.view
+                                    |> Maybe.withDefault (H.span [] [ H.text "Ingen t:kort lagt til" ])
                                 ]
                             , model.validationErrors
                                 |> Validation.select TravelCard

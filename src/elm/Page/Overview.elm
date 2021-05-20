@@ -25,9 +25,12 @@ import Ui.Heading
 import Ui.Message as Message
 import Ui.Section
 import Ui.TicketDetails
+import Ui.TravelCardText
 import Util.FareContract
 import Util.Maybe
+import Util.PhoneNumber
 import Util.Status exposing (Status(..))
+import Util.TravelCard
 
 
 type Msg
@@ -191,7 +194,7 @@ viewAccountInfo shared _ =
             [ Ui.Section.viewPaddedItem
                 [ Ui.Heading.component "Min profil"
                 , Html.Extra.viewMaybe
-                    (\d -> H.p [ A.class "accountInfo__item" ] [ H.text d.phone ])
+                    (\d -> H.p [ A.class "accountInfo__item" ] [ H.text <| Util.PhoneNumber.format d.phone ])
                     shared.profile
                 , shared.profile
                     |> Util.Maybe.flatMap .travelCard
@@ -200,7 +203,7 @@ viewAccountInfo shared _ =
                         (\id ->
                             H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
                                 [ Icon.travelCard
-                                , H.text <| String.fromInt id
+                                , Ui.TravelCardText.view id
                                 ]
                         )
                 ]
