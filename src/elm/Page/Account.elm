@@ -10,7 +10,7 @@ import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
 import Html.Extra
 import Http exposing (Error(..))
-import Json.Decode exposing (Error(..))
+import Json.Decode as Decode exposing (Error(..))
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
@@ -572,16 +572,32 @@ removeTravelCard env travelCard =
 errorToString : Http.Error -> String
 errorToString error =
     case error of
-        BadStatus { status, body } ->
-            case status.code of
+        BadStatus response ->
+            case response.status.code of
                 500 ->
-                    "Det skjedde en feil med tjenesten. Prøv igjen senere."
+                    Decode.decodeString
+                        (Decode.field "upstreamError" Decode.string
+                            |> Decode.andThen
+                                (\upstreamError ->
+                                    case
+                                        Decode.decodeString (Decode.field "shortNorwegian" Decode.string) upstreamError
+                                    of
+                                        Err _ ->
+                                            Decode.fail "Invalid error"
+
+                                        Ok value ->
+                                            Decode.succeed value
+                                )
+                        )
+                        response.body
+                        |> Result.toMaybe
+                        |> Maybe.withDefault "Det skjedde en feil med tjenesten. Prøv igjen senere."
 
                 409 ->
                     "Dette t:kortet eksisterer ikke eller er allerede registrert."
 
                 400 ->
-                    case WebshopService.travelCardErrorDecoder body of
+                    case WebshopService.travelCardErrorDecoder response.body of
                         Ok errorMessage ->
                             "Feilmelding fra tjenesten: " ++ errorMessage
 
