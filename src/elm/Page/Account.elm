@@ -24,6 +24,7 @@ import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
+import Util.Maybe
 import Util.PhoneNumber
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
@@ -61,6 +62,7 @@ type Msg
     | LoadingEditSection (Maybe EditSection)
     | ClearValidationError
     | FocusItem String
+    | ResetState
     | NoOp
 
 
@@ -96,6 +98,23 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
+        ResetState ->
+            let
+                mapWithDefault s =
+                    model.profile |> Maybe.map s |> Maybe.withDefault ""
+            in
+                PageUpdater.init
+                    { model
+                        | editSection = Nothing
+                        , firstName = mapWithDefault .firstName
+                        , lastName = mapWithDefault .lastName
+                        , email = mapWithDefault .email
+                        , travelCardState = MaskedInput.initState
+                        , travelCard = model.profile |> Util.Maybe.flatMap .travelCard |> Maybe.map (.id >> String.fromInt) |> Maybe.withDefault ""
+                        , loadingEditSection = Nothing
+                        , validationErrors = []
+                    }
+
         UpdateFirstName value ->
             PageUpdater.init { model | firstName = value }
 

@@ -15,7 +15,7 @@ import Html.Extra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
-import Page.Account as AccountPage
+import Page.Account as AccountPage exposing (Msg(..))
 import Page.History as HistoryPage
 import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
@@ -114,7 +114,12 @@ setRoute maybeRoute model =
                 Cmd.none
 
         Just _ ->
-            Cmd.none
+            if model.route == Just Route.Settings then
+                -- If navigating away from Settings, reset all state.
+                TaskUtil.doTask <| AccountMsg AccountPage.ResetState
+
+            else
+                Cmd.none
 
         Nothing ->
             TaskUtil.doTask <| RouteTo Route.Home
