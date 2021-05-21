@@ -66,6 +66,7 @@ can use environment variables:
     JSON, so remember when copying the config from the Firebase console to change
     the keys to be double-quoted strings (this is only necessary when using an
     environment variable).
+-   `GA_TRACKING_ID`: Optional Google Analytics code.
 
 There is also support for using a `.env` file containing these variables.
 
@@ -81,7 +82,8 @@ module.exports = {
     host: '0.0.0.0',
     port: 8112,
     baseUrl: 'http://localhost',
-    firebaseConfig: {...}
+    firebaseConfig: {...},
+    gaTrackingId: '' // optional Google Analytics code
 };
 ```
 
