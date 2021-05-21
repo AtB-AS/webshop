@@ -967,3 +967,24 @@
 .ui-travelCardText__faded {
     color: var(--text-colors-secondary);
 }
+
+// Ui.Input.Dropdown.elm
+
+.ui-dropdown {
+    position: relative;
+}
+.ui-dropdown__summary {
+    list-style-type: none;
+
+    &::-webkit-details-marker {
+        display: none;
+    }
+}
+.ui-dropdown__content {
+    position: fixed;
+    width: inherit;
+    background: var(--colors-background_0-backgroundColor);
+}
+.ui-dropdown__item {
+    display: block;
+}

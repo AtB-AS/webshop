@@ -6,6 +6,8 @@ import 'firebase/firebase-firestore';
 import 'firebase/firebase-remote-config';
 import 'wicg-inert';
 
+import '@github/details-menu-element';
+
 import { Elm } from '../elm/Main';
 
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
@@ -13,6 +15,9 @@ if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js');
     });
 }
+
+document.addEventListener('details-menu-selected', (e) => console.log(e));
+document.addEventListener('details-menu-select', (e) => console.log(e));
 
 let installId = localStorage['Atb-Install-Id'];
 
