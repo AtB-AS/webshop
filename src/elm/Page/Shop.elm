@@ -25,6 +25,7 @@ import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input.Radio as Radio
+import Ui.Input.Text as Text
 import Ui.LabelItem
 import Ui.LoadingText
 import Ui.Message as Message
@@ -383,7 +384,7 @@ updateNowDateTime : Time.Posix -> Model -> Model
 updateNowDateTime time model =
     { model
         | nowDate = TimeUtil.toIsoDate model.zone time
-        , nowTime = TimeUtil.toIsoTime model.zone time
+        , nowTime = TimeUtil.toHoursAndMinutes model.zone time
     }
 
 
@@ -399,28 +400,6 @@ updateNow now model =
 
     else
         { model | now = now }
-
-
-richActionButton : Bool -> Maybe msg -> Html msg -> Html msg
-richActionButton active maybeAction content =
-    let
-        baseAttributes =
-            [ A.classList
-                [ ( "active", active )
-                , ( "pseudo-button", maybeAction /= Nothing )
-                , ( "pseudo-button-disabled", maybeAction == Nothing )
-                ]
-            ]
-
-        attributes =
-            case maybeAction of
-                Just action ->
-                    E.onClick action :: baseAttributes
-
-                Nothing ->
-                    baseAttributes
-    in
-        H.div attributes [ content ]
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -494,7 +473,7 @@ view _ _ shared model _ =
                     , onOpenClick = Just (ShowView Start)
                     , id = "duration"
                     }
-                    [ viewStart model ]
+                    (viewStart model)
                 , Ui.Group.view
                     { title = "Soner"
                     , icon = Just Icon.ticket
@@ -705,27 +684,32 @@ langString (LangString _ value) =
     value
 
 
-viewStart : Model -> Html Msg
+viewStart : Model -> List (Html Msg)
 viewStart model =
-    H.div [ A.class "section-box" ]
-        [ H.div [ A.class "section-header" ] [ H.text "Velg starttidspunkt" ]
-        , richActionButton False
-            (Just ToggleNow)
-            (H.div [ A.style "display" "flex", A.style "width" "100%" ]
-                [ H.span [ A.style "flex-grow" "1" ] [ H.text "Nå" ]
-                , if model.now then
-                    Icon.checkmark
+    [ B.init ""
+        |> B.setText "Nå"
+        |> B.setOnClick (Just ToggleNow)
+        |> B.setIcon
+            (if model.now then
+                Just Icon.checkmark
 
-                  else
-                    H.text ""
-                ]
+             else
+                Nothing
             )
-        , H.div [ A.class "section-block" ]
-            [ H.input
-                [ E.onInput SetTime
-                , E.onFocus (SetNow False)
-                , A.type_ "time"
-                , A.value model.travelTime
+        |> B.tertiary
+    , Section.viewHorizontalGroup
+        [ Text.init "date"
+            |> Text.setTitle (Just "Dato")
+            |> Text.setOnInput (Just SetDate)
+            |> Text.setAttributes [ E.onFocus (SetNow False), A.min model.nowDate ]
+            |> Text.setType "date"
+            |> Text.setValue (Just model.travelDate)
+            |> Text.view
+        , Text.init "time"
+            |> Text.setTitle (Just "Tid")
+            |> Text.setOnInput (Just SetTime)
+            |> Text.setAttributes
+                [ E.onFocus (SetNow False)
                 , A.min
                     (if model.travelDate == model.nowDate then
                         model.nowTime
@@ -734,19 +718,11 @@ viewStart model =
                         "00:00:00"
                     )
                 ]
-                []
-            ]
-        , H.div [ A.class "section-block" ]
-            [ H.input
-                [ E.onInput SetDate
-                , E.onFocus (SetNow False)
-                , A.type_ "date"
-                , A.value model.travelDate
-                , A.min model.nowDate
-                ]
-                []
-            ]
+            |> Text.setType "time"
+            |> Text.setValue (Just model.travelTime)
+            |> Text.view
         ]
+    ]
 
 
 viewProducts : Model -> List FareProduct -> Html Msg

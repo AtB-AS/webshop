@@ -1,4 +1,4 @@
-module Util.Time exposing (isoStringToFullHumanized, toFullHumanized, toIsoDate, toIsoTime, toMonthNum)
+module Util.Time exposing (isoStringToFullHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
 
 import DateFormat
 import Iso8601
@@ -93,3 +93,8 @@ isoStringToFullHumanized zone dateString =
 toFullHumanized : Time.Zone -> Time.Posix -> String
 toFullHumanized zone date_ =
     DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone date_
+
+
+toHoursAndMinutes : Time.Zone -> Time.Posix -> String
+toHoursAndMinutes zone date_ =
+    DateFormat.formatI18n DateFormat.norwegian "HH:mm" zone date_
