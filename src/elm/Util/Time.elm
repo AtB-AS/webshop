@@ -1,5 +1,7 @@
-module Util.Time exposing (toIsoDate, toIsoTime, toMonthNum)
+module Util.Time exposing (isoStringToFullHumanized, toFullHumanized, toIsoDate, toIsoTime, toMonthNum)
 
+import DateFormat
+import Iso8601
 import Time
 import Util.Format as Format
 
@@ -76,3 +78,18 @@ toMonthNum month =
 
         Time.Dec ->
             12
+
+
+isoStringToFullHumanized : Time.Zone -> String -> Maybe String
+isoStringToFullHumanized zone dateString =
+    case Iso8601.toTime dateString of
+        Err _ ->
+            Nothing
+
+        Ok timePosix ->
+            Just <| toFullHumanized zone timePosix
+
+
+toFullHumanized : Time.Zone -> Time.Posix -> String
+toFullHumanized zone date_ =
+    DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone date_

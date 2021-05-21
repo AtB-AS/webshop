@@ -552,7 +552,7 @@ stringFromStart model =
         Just "Nå"
 
     else
-        Maybe.andThen (Util.Format.isoStringToFullHumanized model.zone) model.isoTime
+        Maybe.andThen (TimeUtil.isoStringToFullHumanized model.zone) model.isoTime
 
 
 stringFromZone : List TariffZone -> Model -> Maybe String
