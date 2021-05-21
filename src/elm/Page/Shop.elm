@@ -758,11 +758,12 @@ viewZones model zones =
                 )
                 zones
     in
-        H.div [ A.class "section-box" ]
-            [ H.div [ A.class "section-header" ] [ H.text "Velg soner" ]
-            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
-            , H.div [ A.class "section-block" ] [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
-            , H.div [ A.class "section-block" ] [ H.node "atb-map" [] [] ]
+        Section.viewItem
+            [ Section.viewHorizontalGroup
+                [ Section.viewLabelItem "Avreisesone" [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
+                , Section.viewLabelItem "Ankomstsone" [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
+                ]
+            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser" ] ] ]
             ]
 
 
