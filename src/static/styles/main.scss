@@ -15,8 +15,6 @@ html {
     --primary-2-hover: rgba(113, 214, 224, 0.8);
     --primary: #000;
     --section-background: #fff;
-
-    --maxPageWidth: 1024px;
 }
 
 * {
@@ -44,6 +42,21 @@ button {
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
 
+.light,
+.dark {
+    --maxPageWidth: 1024px;
+    --contentPadding: var(--spacings-xLarge);
+}
+@media (max-width: 650px) {
+    .light,
+    .dark {
+        --spacings-xLarge: 1.125rem;
+        --spacings-large: 1rem;
+
+        --contentPadding: 0;
+    }
+}
+
 .container {
     min-height: 100vh;
     display: flex;
@@ -63,7 +76,7 @@ button {
 .content {
     position: relative;
     margin: auto;
-    padding: var(--spacings-xLarge);
+    padding: var(--contentPadding);
     max-width: var(--maxPageWidth);
 }
 
@@ -105,7 +118,7 @@ p + p {
     width: 100%;
     max-width: var(--maxPageWidth);
     margin: 0 auto;
-    padding: 0 var(--spacings-large);
+    padding: 0 var(--contentPadding);
     display: flex;
 }
 
