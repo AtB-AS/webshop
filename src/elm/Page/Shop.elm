@@ -628,7 +628,7 @@ summaryView shared model summary =
                     Section.viewPaddedItem
                         [ Ui.LabelItem.viewHorizontal
                             "Total:"
-                            [ H.div [ A.class "summary-price" ]
+                            [ H.p [ A.class "shop__summaryPrice" ]
                                 [ totalPrice
                                     |> Maybe.map (Func.flip Util.Format.float 2)
                                     |> Maybe.map H.text
