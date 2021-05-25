@@ -417,8 +417,17 @@ view _ _ shared model _ =
                 _ ->
                     Nothing
 
+        emptyOffers =
+            case model.offers of
+                Loaded offers ->
+                    List.isEmpty offers
+
+                _ ->
+                    True
+
         disableButtons =
             (errorMessage /= Nothing)
+                || emptyOffers
                 || (case model.reservation of
                         Loading _ ->
                             True
@@ -584,10 +593,10 @@ modelSummary shared model =
 summaryView : Shared -> Model -> ModelSummary -> Html Msg
 summaryView shared model summary =
     let
-        errorLoading =
+        emptyOffers =
             case model.offers of
-                Failed _ ->
-                    True
+                Loaded offers ->
+                    List.isEmpty offers
 
                 _ ->
                     False
@@ -612,8 +621,8 @@ summaryView shared model summary =
             |> Section.setMarginBottom True
             |> Section.viewWithOptions
                 [ Section.viewHeader "Oppsummering"
-                , if errorLoading then
-                    Message.error "Fikk ikke lastet pris for denne billetten."
+                , if emptyOffers then
+                    Message.warning "Finner ingen tilgjengelige billetter."
 
                   else
                     Section.viewPaddedItem
