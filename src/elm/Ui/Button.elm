@@ -111,16 +111,32 @@ button mode color { text, disabled, icon, onClick, type_, attributes } =
             , ( "ui-button--disabled", disabled )
             , ( themeColorToClass color, mode /= Tertiary && mode /= Link )
             ]
+
+        maybeOnClick =
+            if disabled then
+                Nothing
+
+            else
+                onClick
     in
         H.button
             ([ A.classList classList
-             , Html.Attributes.Extra.attributeMaybe E.onClick onClick
-             , A.disabled disabled
+             , Html.Attributes.Extra.attributeMaybe E.onClick maybeOnClick
+             , A.attribute "aria-disabled" (boolToString disabled)
              , A.type_ type_
              ]
                 ++ attributes
             )
             [ Ui.TextContainer.primaryBoldInline [ H.text text ], Html.Extra.viewMaybe (List.singleton >> H.span [ A.class "ui-button__icon" ]) icon ]
+
+
+boolToString : Bool -> String
+boolToString bool =
+    if bool then
+        "true"
+
+    else
+        "false"
 
 
 primary : ThemeColor -> Button msg -> Html msg
