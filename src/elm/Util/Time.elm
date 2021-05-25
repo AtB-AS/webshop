@@ -1,8 +1,8 @@
-module Util.Time exposing (isoStringToFullHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
+module Util.Time exposing (addHours, isoStringToFullHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
 
 import DateFormat
 import Iso8601
-import Time
+import Time exposing (Posix)
 import Util.Format as Format
 
 
@@ -98,3 +98,16 @@ toFullHumanized zone date_ =
 toHoursAndMinutes : Time.Zone -> Time.Posix -> String
 toHoursAndMinutes zone date_ =
     DateFormat.formatI18n DateFormat.norwegian "HH:mm" zone date_
+
+
+{-|
+
+    Add hours to specific posix object
+
+-}
+addHours : Int -> Posix -> Posix
+addHours hours posix =
+    posix
+        |> Time.posixToMillis
+        |> (+) (hours * 1000 * 60 * 60)
+        |> Time.millisToPosix
