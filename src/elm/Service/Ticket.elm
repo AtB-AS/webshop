@@ -77,15 +77,7 @@ receipt env emailAddress orderId =
                 , ( "order_version", Encode.int 1 )
                 ]
     in
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "Atb-Install-Id" env.installId ]
-            , url = url
-            , body = Http.jsonBody body
-            , expect = Http.expectStringResponse (\_ -> Ok ())
-            , timeout = Nothing
-            , withCredentials = False
-            }
+        HttpUtil.post env url (Http.jsonBody body) (Http.expectStringResponse (\_ -> Ok ()))
 
 
 getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
