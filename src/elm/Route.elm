@@ -18,7 +18,7 @@ import Url.Parser.Query as QueryParser
 type Route
     = Home
     | Shop
-    | Thanks ConfirmQuery
+    | Payment ConfirmQuery
     | History
     | Settings
     | NotFound
@@ -45,7 +45,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
         , Parser.map History <| s "history"
-        , Parser.map Thanks <| s "thanks" <?> thanksQueryParser
+        , Parser.map Payment <| s "payment" <?> thanksQueryParser
         , Parser.map Settings <| s "settings"
         ]
 
@@ -58,7 +58,7 @@ routeToString page =
                 Home ->
                     []
 
-                Thanks _ ->
+                Payment _ ->
                     []
 
                 Shop ->

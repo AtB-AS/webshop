@@ -2,7 +2,7 @@ module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.RefData exposing (FareProduct, LangString(..), Limitation, TariffZone, UserProfile, UserType(..))
-import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Reservation)
+import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
@@ -14,7 +14,6 @@ import Http
 import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
-import Process
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
@@ -42,7 +41,6 @@ type Msg
     | ReceiveOffers (Result Http.Error (List Offer))
     | BuyOffers PaymentType
     | ReceiveBuyOffers (Result Http.Error Reservation)
-    | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
     | CloseShop
     | SetProduct String Bool
     | SetFromZone String
@@ -304,10 +302,7 @@ update msg env model shared =
                     Ok reservation ->
                         PageUpdater.fromPair
                             ( { model | reservation = Loaded reservation }
-                            , Cmd.batch
-                                [ MiscService.navigateTo reservation.url
-                                , fetchPaymentStatus env reservation.paymentId
-                                ]
+                            , MiscService.navigateTo reservation.url
                             )
 
                     Err _ ->
@@ -317,33 +312,6 @@ update msg env model shared =
                         in
                             PageUpdater.init { model | reservation = Failed errorMessage }
                                 |> addGlobalNotification (Message.Error errorMessage)
-
-            ReceivePaymentStatus paymentId result ->
-                case ( model.reservation, model.offers, result ) of
-                    ( Loaded reservation, Loaded offers, Ok paymentStatus ) ->
-                        case paymentStatus.status of
-                            "CAPTURE" ->
-                                PageUpdater.init { model | reservation = NotLoaded, offers = NotLoaded }
-                                    |> PageUpdater.addGlobalAction
-                                        (GA.AddActiveReservation
-                                            { reservation = reservation
-                                            , offers = offers
-                                            , paymentStatus = Just paymentStatus
-                                            }
-                                        )
-                                    |> addGlobalNotification (Message.Valid "Ny billett lagt til.")
-                                    |> PageUpdater.addGlobalAction GA.CloseShop
-
-                            "CANCEL" ->
-                                PageUpdater.init { model | reservation = NotLoaded }
-
-                            _ ->
-                                PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
-
-                    _ ->
-                        -- Either there was no longer a reservation, or the payment failed. We treat this
-                        -- as if the payment was cancelled so the user can try again.
-                        PageUpdater.init { model | reservation = NotLoaded }
 
             CloseShop ->
                 PageUpdater.init model
@@ -850,17 +818,6 @@ buyOffers env paymentType offerCounts =
         |> TicketService.reserve env paymentType
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
-
-
-fetchPaymentStatus : Environment -> Int -> Cmd Msg
-fetchPaymentStatus env paymentId =
-    Process.sleep 500
-        |> Task.andThen
-            (\_ ->
-                TicketService.getPaymentStatus env paymentId
-                    |> Http.toTask
-            )
-        |> Task.attempt (ReceivePaymentStatus paymentId)
 
 
 calculateOfferPrice : List ( UserType, Int ) -> Offer -> Float

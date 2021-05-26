@@ -3,7 +3,6 @@ module GlobalActions exposing
     , map
     )
 
-import Data.Ticket exposing (ActiveReservation)
 import Notification exposing (Notification)
 import Route as Route
 
@@ -15,7 +14,6 @@ type GlobalAction msg
     | OpenShop
     | OpenEditTravelCard
     | CloseShop
-    | AddActiveReservation ActiveReservation
     | FocusItem (Maybe String)
     | Logout
 
@@ -40,9 +38,6 @@ map f ga =
 
         CloseShop ->
             CloseShop
-
-        AddActiveReservation reservation ->
-            AddActiveReservation reservation
 
         Logout ->
             Logout

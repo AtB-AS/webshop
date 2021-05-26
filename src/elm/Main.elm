@@ -113,6 +113,27 @@ setRoute maybeRoute model =
             else
                 Cmd.none
 
+        Just (Route.Payment maybeReservation) ->
+            let
+                noPaymentId =
+                    maybeReservation.paymentId == Nothing
+
+                reservation =
+                    { transactionId = Maybe.withDefault 1 maybeReservation.transactionId
+                    , paymentId = Maybe.withDefault 1 maybeReservation.paymentId
+                    , orderId = Maybe.withDefault "" maybeReservation.orderId
+                    , url = ""
+                    }
+            in
+                if noPaymentId then
+                    Route.modifyUrl model.navKey Route.Home
+
+                else
+                    Cmd.batch
+                        [ TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
+                        , Route.modifyUrl model.navKey Route.Home
+                        ]
+
         Just _ ->
             if model.route == Just Route.Settings then
                 -- If navigating away from Settings, reset all state.
@@ -246,11 +267,6 @@ update msg model =
 
                 GA.CloseShop ->
                     ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
-
-                GA.AddActiveReservation reservation ->
-                    ( model
-                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
-                    )
 
                 GA.FocusItem id ->
                     ( model, focusBox id )
@@ -586,14 +602,6 @@ wrapSubPage title children =
     H.div []
         [ PH.init |> PH.setTitle (Just title) |> PH.setBackRoute ( "Oversikt", Route.Home ) |> PH.view
         , children
-        ]
-
-
-viewSuccessTicketPage : Html msg
-viewSuccessTicketPage =
-    H.div [ A.class "pageHome__successBuy" ]
-        [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
-        , H.p [] [ H.text "Takk! Du kan nå lukke vinduet." ]
         ]
 
 

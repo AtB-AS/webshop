@@ -2,7 +2,7 @@ module Ui.TicketDetails exposing (view, viewActivation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
 import Data.RefData exposing (LangString(..))
-import Data.Ticket exposing (ActiveReservation)
+import Data.Ticket exposing (Reservation)
 import Dict exposing (Dict)
 import Dict.Extra
 import Fragment.Icon
@@ -145,8 +145,8 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             ]
 
 
-viewActivation : ActiveReservation -> Html msg
-viewActivation activeReservation =
+viewActivation : Reservation -> Html msg
+viewActivation reservation =
     let
         classList =
             [ ( "ui-ticketDetails", True )
@@ -159,14 +159,6 @@ viewActivation activeReservation =
 
         icon =
             activeReservationLoading
-
-        reservation =
-            activeReservation.reservation
-
-        paymentType =
-            activeReservation.paymentStatus
-                |> Maybe.map .paymentType
-                |> Maybe.withDefault ""
     in
         Ui.TextContainer.primary
             [ H.section
@@ -183,9 +175,6 @@ viewActivation activeReservation =
                     [ Ui.LabelItem.viewCompact
                         "Ordre-ID"
                         [ H.text reservation.orderId ]
-                    , Ui.LabelItem.viewCompact
-                        "Betales med"
-                        [ H.text paymentType ]
                     ]
                 ]
             ]

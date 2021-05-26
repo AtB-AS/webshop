@@ -1,6 +1,5 @@
 module Data.Ticket exposing
-    ( ActiveReservation
-    , Offer
+    ( Offer
     , PaymentStatus
     , PaymentType(..)
     , Price
@@ -42,13 +41,6 @@ type alias Reservation =
     , paymentId : Int
     , transactionId : Int
     , url : String
-    }
-
-
-type alias ActiveReservation =
-    { reservation : Reservation
-    , offers : List Offer
-    , paymentStatus : Maybe PaymentStatus
     }
 
 
