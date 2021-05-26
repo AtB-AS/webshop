@@ -474,7 +474,7 @@ header model =
             , ( "Min profil", Route.Settings )
             ]
 
-        showLogout =
+        showHeader =
             model.environment.customerId /= Nothing || model.onboarding /= Nothing
 
         navigation =
@@ -493,9 +493,6 @@ header model =
 
             else
                 []
-
-        showHeader =
-            showLogout && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
@@ -578,9 +575,6 @@ viewPage model =
                 AccountPage.view env model.appInfo shared model.account model.route
                     |> H.map AccountMsg
                     |> wrapSubPage "Min profil"
-
-            Just Route.Thanks ->
-                viewSuccessTicketPage
 
             _ ->
                 OverviewPage.view env model.appInfo shared model.overview model.route

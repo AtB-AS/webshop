@@ -30,7 +30,6 @@ import Util.FareContract
 import Util.Maybe
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
-import Util.TravelCard
 
 
 type Msg

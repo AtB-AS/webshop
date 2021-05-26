@@ -379,8 +379,8 @@ app.ports.onboardingDone.subscribe(() => {
     }, 500);
 });
 
-app.ports.openWindow.subscribe((url) => {
-    window.open(url);
+app.ports.navigateTo.subscribe((url) => {
+    window.location.assign(url);
 });
 
 if (app.ports.convertTime) {

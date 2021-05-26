@@ -305,7 +305,7 @@ update msg env model shared =
                         PageUpdater.fromPair
                             ( { model | reservation = Loaded reservation }
                             , Cmd.batch
-                                [ MiscService.openWindow reservation.url
+                                [ MiscService.navigateTo reservation.url
                                 , fetchPaymentStatus env reservation.paymentId
                                 ]
                             )

@@ -11,16 +11,32 @@ import Browser.Navigation as Nav
 import Html exposing (Attribute)
 import Html.Attributes as A
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
+import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf, s)
+import Url.Parser.Query as QueryParser
 
 
 type Route
     = Home
     | Shop
-    | Thanks
+    | Thanks ConfirmQuery
     | History
     | Settings
     | NotFound
+
+
+type alias ConfirmQuery =
+    { transactionId : Maybe Int
+    , paymentId : Maybe Int
+    , orderId : Maybe String
+    }
+
+
+thanksQueryParser : QueryParser.Parser ConfirmQuery
+thanksQueryParser =
+    QueryParser.map3 ConfirmQuery
+        (QueryParser.int "transaction_id")
+        (QueryParser.int "payment_id")
+        (QueryParser.string "order_id")
 
 
 parser : Parser (Route -> a) a
@@ -29,7 +45,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
         , Parser.map History <| s "history"
-        , Parser.map Thanks <| s "thanks"
+        , Parser.map Thanks <| s "thanks" <?> thanksQueryParser
         , Parser.map Settings <| s "settings"
         ]
 
@@ -42,11 +58,11 @@ routeToString page =
                 Home ->
                     []
 
+                Thanks _ ->
+                    []
+
                 Shop ->
                     [ "shop" ]
-
-                Thanks ->
-                    [ "thanks" ]
 
                 History ->
                     [ "history" ]

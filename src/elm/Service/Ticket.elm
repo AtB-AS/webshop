@@ -54,7 +54,7 @@ reserve env paymentType offers =
             Encode.object
                 [ ( "offers", Encode.list encodeOffer offers )
                 , ( "payment_type", encodePaymentType paymentType )
-                , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/thanks") )
+                , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
                 ]
     in
         HttpUtil.post env url (Http.jsonBody body) (Http.expectJson reservationDecoder)
