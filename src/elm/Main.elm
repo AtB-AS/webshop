@@ -22,7 +22,7 @@ import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
-import Route exposing (Route)
+import Route exposing (ResponseCode, Route)
 import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
@@ -114,6 +114,11 @@ setRoute maybeRoute model =
                 noPaymentId =
                     maybeReservation.paymentId == Nothing
 
+                isCancelled =
+                    maybeReservation.responseCode
+                        |> Maybe.map ((==) Route.Cancel)
+                        |> Maybe.withDefault False
+
                 reservation =
                     { transactionId = Maybe.withDefault 1 maybeReservation.transactionId
                     , paymentId = Maybe.withDefault 1 maybeReservation.paymentId
@@ -121,7 +126,7 @@ setRoute maybeRoute model =
                     , url = ""
                     }
             in
-                if noPaymentId then
+                if noPaymentId || isCancelled then
                     Route.modifyUrl model.navKey Route.Home
 
                 else
