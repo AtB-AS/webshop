@@ -14,6 +14,7 @@ import Http
 import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
+import Process
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
@@ -37,7 +38,9 @@ import Util.Time as TimeUtil
 
 
 type Msg
-    = FetchOffers
+    = OnEnterPage
+    | OnLeavePage
+    | FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
     | BuyOffers PaymentType
     | ReceiveBuyOffers (Result Http.Error Reservation)
@@ -70,9 +73,9 @@ type TravelDateTime
 
 
 type alias Model =
-    { product : String
-    , fromZone : String
-    , toZone : String
+    { product : Maybe String
+    , fromZone : Maybe String
+    , toZone : Maybe String
     , users : List ( UserType, Int )
     , offers : Status (List Offer)
     , reservation : Status Reservation
@@ -85,43 +88,26 @@ type alias Model =
     }
 
 
-init : Shared -> ( Model, Cmd Msg )
-init shared =
-    let
-        firstZone =
-            shared.tariffZones
-                |> List.sortWith
-                    (\a b ->
-                        case ( a.name, b.name ) of
-                            ( LangString _ nameA, LangString _ nameB ) ->
-                                compare nameA nameB
-                    )
-                |> List.head
-                |> Maybe.map .id
-                |> Maybe.withDefault ""
-    in
-        ( { product =
-                shared.availableFareProducts
-                    |> List.head
-                    |> Maybe.map .id
-                    |> Maybe.withDefault ""
-          , fromZone = firstZone
-          , toZone = firstZone
-          , users = [ ( UserTypeAdult, 1 ) ]
-          , offers = NotLoaded
-          , reservation = NotLoaded
-          , mainView = Duration
-          , travelDateTime = TravelNow
-          , now = Time.millisToPosix 0
-          , inputTravelDate = ""
-          , inputTravelTime = ""
-          , timeZone = Time.utc
-          }
-        , Cmd.batch
-            [ TaskUtil.doTask FetchOffers
-            , Task.perform UpdateZone Time.here
-            ]
-        )
+init : ( Model, Cmd Msg )
+init =
+    ( { product = Nothing
+      , fromZone = Nothing
+      , toZone = Nothing
+      , users = [ ( UserTypeAdult, 1 ) ]
+      , offers = NotLoaded
+      , reservation = NotLoaded
+      , mainView = Duration
+      , travelDateTime = TravelNow
+      , now = Time.millisToPosix 0
+      , inputTravelDate = ""
+      , inputTravelTime = ""
+      , timeZone = Time.utc
+      }
+    , Cmd.batch
+        [ TaskUtil.doTask FetchOffers
+        , Task.perform UpdateZone Time.here
+        ]
+    )
 
 
 update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
@@ -135,21 +121,27 @@ update msg env model shared =
                 |> PageUpdater.addGlobalAction
     in
         case msg of
+            OnEnterPage ->
+                PageUpdater.fromPair init
+
+            OnLeavePage ->
+                PageUpdater.init model
+
             SetProduct product _ ->
                 PageUpdater.fromPair
-                    ( { model | product = product, users = maybeResetUsers shared product model.users }
+                    ( { model | product = Just product, users = maybeResetUsers shared product model.users }
                     , TaskUtil.doTask FetchOffers
                     )
 
             SetFromZone zone ->
                 PageUpdater.fromPair
-                    ( { model | fromZone = zone }
+                    ( { model | fromZone = Just zone }
                     , TaskUtil.doTask FetchOffers
                     )
 
             SetToZone zone ->
                 PageUpdater.fromPair
-                    ( { model | toZone = zone }
+                    ( { model | toZone = Just zone }
                     , TaskUtil.doTask FetchOffers
                     )
 
@@ -244,6 +236,21 @@ update msg env model shared =
                                 _ ->
                                     Nothing
 
+                        ( firstZone, defaultProduct ) =
+                            defaultDerivedData shared
+
+                        dataNotLoadedYet =
+                            List.isEmpty shared.availableFareProducts && List.isEmpty shared.tariffZones
+
+                        newProduct =
+                            Maybe.withDefault defaultProduct model.product
+
+                        newFromZone =
+                            Maybe.withDefault firstZone model.fromZone
+
+                        newToZone =
+                            Maybe.withDefault firstZone model.toZone
+
                         travelTime =
                             case model.travelDateTime of
                                 TravelFuture (Just time) ->
@@ -252,15 +259,28 @@ update msg env model shared =
                                 _ ->
                                     Nothing
                     in
-                        PageUpdater.fromPair
-                            ( { model | offers = Loading oldOffers, reservation = NotLoaded }
-                            , fetchOffers env
-                                model.product
-                                model.fromZone
-                                model.toZone
-                                model.users
-                                travelTime
-                            )
+                        if dataNotLoadedYet then
+                            PageUpdater.fromPair
+                                ( model
+                                , Process.sleep 500 |> Task.attempt (\_ -> FetchOffers)
+                                )
+
+                        else
+                            PageUpdater.fromPair
+                                ( { model
+                                    | offers = Loading oldOffers
+                                    , reservation = NotLoaded
+                                    , product = Just newProduct
+                                    , fromZone = Just newFromZone
+                                    , toZone = Just newToZone
+                                  }
+                                , fetchOffers env
+                                    newProduct
+                                    newFromZone
+                                    newToZone
+                                    model.users
+                                    travelTime
+                                )
 
             ReceiveOffers result ->
                 case result of
@@ -315,7 +335,7 @@ update msg env model shared =
 
             CloseShop ->
                 PageUpdater.init model
-                    |> PageUpdater.addGlobalAction GA.CloseShop
+                    |> PageUpdater.addGlobalAction (GA.RouteTo Route.Home)
 
             ShowView mainView ->
                 PageUpdater.init (toggleShowMainView model mainView)
@@ -343,6 +363,30 @@ update msg env model shared =
                     ( model
                     , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
                     )
+
+
+defaultDerivedData : Shared -> ( String, String )
+defaultDerivedData shared =
+    let
+        firstZone =
+            shared.tariffZones
+                |> List.sortWith
+                    (\a b ->
+                        case ( a.name, b.name ) of
+                            ( LangString _ nameA, LangString _ nameB ) ->
+                                compare nameA nameB
+                    )
+                |> List.head
+                |> Maybe.map .id
+                |> Maybe.withDefault ""
+
+        defaultProduct =
+            shared.availableFareProducts
+                |> List.head
+                |> Maybe.map .id
+                |> Maybe.withDefault ""
+    in
+        ( firstZone, defaultProduct )
 
 
 maybeResetUsers : Shared -> String -> List ( UserType, Int ) -> List ( UserType, Int )
@@ -374,8 +418,11 @@ toggleShowMainView model mainView =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
     let
+        ( defaultZone, defaultProduct ) =
+            defaultDerivedData shared
+
         summary =
-            modelSummary shared model
+            modelSummary ( defaultZone, defaultProduct ) shared model
 
         errorMessage =
             case model.offers of
@@ -428,7 +475,7 @@ view _ _ shared model _ =
                     , onOpenClick = Just (ShowView Duration)
                     , id = "varighet"
                     }
-                    [ viewProducts model shared.availableFareProducts ]
+                    [ viewProducts model defaultProduct shared.availableFareProducts ]
                 , Ui.Group.view
                     { title = "Reisende"
                     , icon = Just Icon.bus
@@ -441,7 +488,7 @@ view _ _ shared model _ =
                     , onOpenClick = Just (ShowView Travelers)
                     , id = "reisende"
                     }
-                    [ viewUserProfiles model shared ]
+                    [ viewUserProfiles defaultProduct model shared ]
                 , Ui.Group.view
                     { title = "Gyldig fra og med"
                     , icon = Just Icon.ticket
@@ -461,7 +508,7 @@ view _ _ shared model _ =
                     , onOpenClick = Just (ShowView Zones)
                     , id = "zones"
                     }
-                    [ viewZones model shared.tariffZones ]
+                    [ viewZones model defaultZone shared.tariffZones ]
                 ]
             , H.div []
                 [ summaryView shared model summary
@@ -516,8 +563,8 @@ stringFromStart model =
             Nothing
 
 
-stringFromZone : List TariffZone -> Model -> Maybe String
-stringFromZone tariffZones model =
+stringFromZone : List TariffZone -> String -> Model -> Maybe String
+stringFromZone tariffZones defaultZone model =
     let
         findName zone =
             tariffZones
@@ -526,10 +573,10 @@ stringFromZone tariffZones model =
                 |> Maybe.withDefault "-"
 
         fromZoneName =
-            findName model.fromZone
+            findName (Maybe.withDefault defaultZone model.fromZone)
 
         toZoneName =
-            findName model.toZone
+            findName (Maybe.withDefault defaultZone model.toZone)
     in
         if model.fromZone == model.toZone then
             Just <| "Reise i 1 sone (" ++ fromZoneName ++ ")"
@@ -546,16 +593,20 @@ type alias ModelSummary =
     }
 
 
-modelSummary : Shared -> Model -> ModelSummary
-modelSummary shared model =
-    { users =
-        model.users
-            |> List.map
-                (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
-    , duration = nameFromFareProduct shared.fareProducts model.product
-    , start = stringFromStart model
-    , zones = stringFromZone shared.tariffZones model
-    }
+modelSummary : ( String, String ) -> Shared -> Model -> ModelSummary
+modelSummary ( defaultZone, defaultProduct ) shared model =
+    let
+        product =
+            Maybe.withDefault defaultProduct model.product
+    in
+        { users =
+            model.users
+                |> List.map
+                    (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
+        , duration = nameFromFareProduct shared.fareProducts product
+        , start = stringFromStart model
+        , zones = stringFromZone shared.tariffZones defaultZone model
+        }
 
 
 summaryView : Shared -> Model -> ModelSummary -> Html Msg
@@ -707,18 +758,21 @@ viewStart model =
         ]
 
 
-viewProducts : Model -> List FareProduct -> Html Msg
-viewProducts model products =
+viewProducts : Model -> String -> List FareProduct -> Html Msg
+viewProducts model defaultProduct products =
     products
-        |> List.map (viewProduct model)
+        |> List.map (viewProduct model defaultProduct)
         |> Radio.viewGroup "Velg billettype"
 
 
-viewProduct : Model -> FareProduct -> Html Msg
-viewProduct model product =
+viewProduct : Model -> String -> FareProduct -> Html Msg
+viewProduct model defaultProduct product =
     let
+        selectedProduct =
+            Maybe.withDefault defaultProduct model.product
+
         isCurrent =
-            model.product == product.id
+            selectedProduct == product.id
     in
         Radio.init product.id
             |> Radio.setTitle (langString product.name)
@@ -728,8 +782,8 @@ viewProduct model product =
             |> Radio.view
 
 
-viewZones : Model -> List TariffZone -> Html Msg
-viewZones model zones =
+viewZones : Model -> String -> List TariffZone -> Html Msg
+viewZones model defaultZone zones =
     let
         sortedZones =
             List.sortWith
@@ -739,11 +793,17 @@ viewZones model zones =
                             compare nameA nameB
                 )
                 zones
+
+        selectedFromZone =
+            Maybe.withDefault defaultZone model.fromZone
+
+        selectedToZone =
+            Maybe.withDefault defaultZone model.toZone
     in
         Section.viewItem
             [ Section.viewHorizontalGroup
-                [ Section.viewLabelItem "Avreisesone" [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone model.fromZone) sortedZones ]
-                , Section.viewLabelItem "Ankomstsone" [ H.select [ E.onInput SetToZone ] <| List.map (viewZone model.toZone) sortedZones ]
+                [ Section.viewLabelItem "Avreisesone" [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone selectedFromZone) sortedZones ]
+                , Section.viewLabelItem "Ankomstsone" [ H.select [ E.onInput SetToZone ] <| List.map (viewZone selectedToZone) sortedZones ]
                 ]
             , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser" ] ] ]
             ]
@@ -758,13 +818,17 @@ viewZone current zone =
         [ H.text <| langString zone.name ]
 
 
-viewUserProfiles : Model -> Shared -> Html Msg
-viewUserProfiles model shared =
-    shared.userProfiles
-        |> List.filter (.userType >> Func.flip List.member (findLimitations model.product shared.productLimitations))
-        |> List.filter (.userType >> (/=) UserTypeAnyone)
-        |> List.map (viewUserProfile model)
-        |> Radio.viewGroup "Reisende"
+viewUserProfiles : String -> Model -> Shared -> Html Msg
+viewUserProfiles defaultProduct model shared =
+    let
+        product =
+            Maybe.withDefault defaultProduct model.product
+    in
+        shared.userProfiles
+            |> List.filter (.userType >> Func.flip List.member (findLimitations product shared.productLimitations))
+            |> List.filter (.userType >> (/=) UserTypeAnyone)
+            |> List.map (viewUserProfile model)
+            |> Radio.viewGroup "Reisende"
 
 
 findLimitations : String -> List Limitation -> List UserType

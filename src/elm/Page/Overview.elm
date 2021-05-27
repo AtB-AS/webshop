@@ -132,7 +132,7 @@ update msg env model =
 
         OpenShop ->
             PageUpdater.init model
-                |> PageUpdater.addGlobalAction GA.OpenShop
+                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Shop)
 
         OpenHistory ->
             PageUpdater.init model

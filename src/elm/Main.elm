@@ -62,7 +62,7 @@ type alias Model =
     { environment : Environment
     , appInfo : AppInfo
     , overview : OverviewPage.Model
-    , shop : Maybe ShopPage.Model
+    , shop : ShopPage.Model
     , history : HistoryPage.Model
     , account : AccountPage.Model
     , shared : Shared
@@ -107,11 +107,7 @@ setRoute maybeRoute model =
     ( { model | route = maybeRoute }
     , case maybeRoute of
         Just Route.Shop ->
-            if model.shop == Nothing then
-                TaskUtil.doTask <| GlobalAction GA.OpenShop
-
-            else
-                Cmd.none
+            TaskUtil.doTask <| ShopMsg ShopPage.OnEnterPage
 
         Just (Route.Payment maybeReservation) ->
             let
@@ -135,12 +131,16 @@ setRoute maybeRoute model =
                         ]
 
         Just _ ->
-            if model.route == Just Route.Settings then
+            case model.route of
                 -- If navigating away from Settings, reset all state.
-                TaskUtil.doTask <| AccountMsg AccountPage.ResetState
+                Just Route.Settings ->
+                    TaskUtil.doTask <| AccountMsg AccountPage.ResetState
 
-            else
-                Cmd.none
+                Just Route.Shop ->
+                    TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
+
+                _ ->
+                    Cmd.none
 
         Nothing ->
             TaskUtil.doTask <| RouteTo Route.Home
@@ -202,7 +202,7 @@ init flags url navKey =
                 { environment = environment
                 , appInfo = appInfo
                 , overview = overviewModel
-                , shop = Nothing
+                , shop = Tuple.first ShopPage.init
                 , history = HistoryPage.init
                 , account = accountModel
                 , shared = Shared.init
@@ -248,25 +248,10 @@ update msg model =
                     in
                         ( { model | environment = newEnvironment }, Cmd.none )
 
-                GA.OpenShop ->
-                    let
-                        ( initModel, initCmd ) =
-                            ShopPage.init model.shared
-                    in
-                        ( { model | shop = Just initModel }
-                        , Cmd.batch
-                            [ Cmd.map ShopMsg initCmd
-                            , Route.newUrl model.navKey Route.Shop
-                            ]
-                        )
-
                 GA.OpenEditTravelCard ->
                     ( { model | account = AccountPage.setEditSection (Just AccountPage.TravelCardSection) model.account }
                     , Route.newUrl model.navKey Route.Settings
                     )
-
-                GA.CloseShop ->
-                    ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
 
                 GA.FocusItem id ->
                     ( model, focusBox id )
@@ -328,14 +313,9 @@ update msg model =
                 |> doPageUpdate
 
         ShopMsg subMsg ->
-            case model.shop of
-                Just shop ->
-                    ShopPage.update subMsg model.environment shop model.shared
-                        |> PageUpdater.map (\newModel -> { model | shop = Just newModel }) ShopMsg
-                        |> doPageUpdate
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ShopPage.update subMsg model.environment model.shop model.shared
+                |> PageUpdater.map (\newModel -> { model | shop = newModel }) ShopMsg
+                |> doPageUpdate
 
         HistoryMsg subMsg ->
             HistoryPage.update subMsg model.environment model.history
@@ -573,14 +553,9 @@ viewPage model =
     in
         case model.route of
             Just Route.Shop ->
-                case model.shop of
-                    Just shop ->
-                        ShopPage.view env model.appInfo shared shop model.route
-                            |> H.map ShopMsg
-                            |> wrapSubPage "Kjøp ny billett"
-
-                    Nothing ->
-                        H.text ""
+                ShopPage.view env model.appInfo shared model.shop model.route
+                    |> H.map ShopMsg
+                    |> wrapSubPage "Kjøp ny billett"
 
             Just Route.History ->
                 HistoryPage.view env model.appInfo shared model.history model.route
@@ -610,9 +585,8 @@ subs model =
     Sub.batch
         [ OverviewPage.subscriptions model.overview
             |> Sub.map OverviewMsg
-        , model.shop
-            |> Maybe.map (ShopPage.subscriptions >> Sub.map ShopMsg)
-            |> Maybe.withDefault Sub.none
+        , ShopPage.subscriptions model.shop
+            |> Sub.map ShopMsg
         , HistoryPage.subscriptions model.history
             |> Sub.map HistoryMsg
         , AccountPage.subscriptions model.account
