@@ -539,7 +539,7 @@ stringFromStart : Model -> Maybe String
 stringFromStart model =
     case model.travelDateTime of
         TravelNow ->
-            Just "Kjøpetidspunkt"
+            Just "Kjøpstidspunkt"
 
         TravelFuture (Just time) ->
             TimeUtil.isoStringToFullHumanized model.timeZone time
@@ -706,7 +706,7 @@ viewStart model =
     in
         [ Radio.viewGroup "Velg avreisetid"
             [ Radio.init "travel-now"
-                |> Radio.setTitle "Nå"
+                |> Radio.setTitle "Kjøpstidspunkt"
                 |> Radio.setName "traveltime"
                 |> Radio.setChecked (not isFutureSelected)
                 |> Radio.setOnCheck (Just <| \_ -> SetTravelDateTime TravelNow)
