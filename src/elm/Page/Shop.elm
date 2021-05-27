@@ -199,7 +199,8 @@ update msg env model shared =
                         List.filter (Tuple.first >> (/=) userType) users
 
                     user =
-                        List.filter (Tuple.first >> (==) userType) users
+                        users
+                            |> List.filter (Tuple.first >> (==) userType)
                             |> List.head
 
                     newValue =
@@ -308,10 +309,13 @@ update msg env model shared =
                                             |> Maybe.map (\( _, count ) -> ( offer.offerId, count ))
                                     )
                                     offers
+
+                            phone =
+                                Maybe.map .phone shared.profile
                         in
                             PageUpdater.fromPair
                                 ( { model | reservation = Loading Nothing }
-                                , buyOffers env paymentType offerCounts
+                                , buyOffers env phone paymentType offerCounts
                                 )
 
                     _ ->
@@ -876,10 +880,10 @@ fetchOffers env product fromZone toZone users travelDate =
         |> Task.attempt ReceiveOffers
 
 
-buyOffers : Environment -> PaymentType -> List ( String, Int ) -> Cmd Msg
-buyOffers env paymentType offerCounts =
+buyOffers : Environment -> Maybe String -> PaymentType -> List ( String, Int ) -> Cmd Msg
+buyOffers env phone paymentType offerCounts =
     offerCounts
-        |> TicketService.reserve env paymentType
+        |> TicketService.reserve env phone paymentType
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
 

@@ -14,6 +14,7 @@ import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode exposing (Value)
 import Url.Builder
 import Util.Http as HttpUtil
+import Util.PhoneNumber
 
 
 {-| Search for offers.
@@ -42,8 +43,8 @@ search env travelDate product travellers zones =
 
 {-| Reserve offers.
 -}
-reserve : Environment -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
-reserve env paymentType offers =
+reserve : Environment -> Maybe String -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
+reserve env phoneNumber paymentType offers =
     let
         url =
             Url.Builder.crossOrigin env.ticketUrl
@@ -51,13 +52,19 @@ reserve env paymentType offers =
                 []
 
         body =
-            Encode.object
-                [ ( "offers", Encode.list encodeOffer offers )
-                , ( "payment_type", encodePaymentType paymentType )
-                , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
-                ]
+            [ ( "offers", Encode.list encodeOffer offers )
+            , ( "payment_type", encodePaymentType paymentType )
+            , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
+            ]
+                ++ (case phoneNumber of
+                        Just phone ->
+                            [ ( "phone_number", Encode.string <| Util.PhoneNumber.withoutCountryCode phone ) ]
+
+                        Nothing ->
+                            []
+                   )
     in
-        HttpUtil.post env url (Http.jsonBody body) (Http.expectJson reservationDecoder)
+        HttpUtil.post env url (Http.jsonBody <| Encode.object body) (Http.expectJson reservationDecoder)
 
 
 {-| Get a receipt for an order.
