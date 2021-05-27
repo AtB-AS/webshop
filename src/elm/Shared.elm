@@ -1,6 +1,6 @@
 module Shared exposing (Msg, Shared, init, subscriptions, update)
 
-import Data.RefData exposing (FareProduct, Limitation, TariffZone, UserProfile, UserType)
+import Data.RefData exposing (FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
 import Data.RemoteConfig exposing (RemoteConfig)
 import List exposing (product)
 import List.Extra
@@ -20,6 +20,9 @@ type Msg
 type alias Shared =
     { tariffZones : List TariffZone
     , fareProducts : List FareProduct
+
+    -- Available for webshop
+    , availableFareProducts : List FareProduct
     , userProfiles : List UserProfile
     , remoteConfig : RemoteConfig
     , productLimitations : List Limitation
@@ -31,6 +34,7 @@ init : Shared
 init =
     { tariffZones = []
     , fareProducts = []
+    , availableFareProducts = []
     , userProfiles = []
     , productLimitations = []
     , profile = Nothing
@@ -54,6 +58,7 @@ update msg model =
                 Ok value ->
                     { model
                         | fareProducts = value
+                        , availableFareProducts = List.filter (.type_ >> (==) ProductTypePeriod) value
                         , productLimitations = getMappedLimitations value model.userProfiles
                     }
 
