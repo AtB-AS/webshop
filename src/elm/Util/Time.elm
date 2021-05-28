@@ -100,10 +100,7 @@ toHoursAndMinutes zone date_ =
     DateFormat.formatI18n DateFormat.norwegian "HH:mm" zone date_
 
 
-{-|
-
-    Add hours to specific posix object
-
+{-| Add hours to specific posix object
 -}
 addHours : Int -> Posix -> Posix
 addHours hours posix =
