@@ -313,6 +313,16 @@ p + p {
     }
 }
 
+.shop__summaryPrice {
+    font-size: 2rem;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    small {
+        font-size: 1rem;
+    }
+}
+
 // Basic responsiveness for pages
 
 @media (max-width: 768px) {
@@ -347,114 +357,6 @@ p + p {
 
 // Components
 
-.toggle {
-    cursor: pointer;
-}
-
-.section-box {
-    margin-bottom: 24px;
-    border-radius: 12px;
-    background: var(--section-background);
-    overflow: hidden;
-
-    > div {
-        border-bottom: 1px solid var(--background);
-        min-height: 68px;
-        padding: 24px;
-        display: grid;
-        place-items: center start;
-
-        label {
-            font-weight: 400;
-            font-size: 12px;
-            line-height: 16px;
-            margin-bottom: 2px;
-            color: rgba(0, 0, 0, 0.6);
-        }
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        &.active {
-            background-color: #cfd2d3;
-        }
-    }
-
-    > div.two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-
-        > div {
-            display: grid;
-            place-items: center start;
-
-            > label {
-                font-weight: 400;
-                font-size: 12px;
-                line-height: 16px;
-                margin-bottom: 2px;
-                color: rgba(0, 0, 0, 0.6);
-            }
-        }
-    }
-
-    .action-button {
-        background: inherit;
-        border: none;
-        font-weight: bold;
-        margin: 0;
-        padding: 0;
-        line-height: 1em;
-        align-self: center;
-    }
-
-    .buy-button {
-        border: none;
-        font-weight: bold;
-        margin: 0;
-        padding: 0;
-        line-height: 1em;
-        align-self: center;
-        background-color: #37424a;
-        color: #fff;
-
-        > button {
-            background: inherit;
-            color: inherit;
-            border: none;
-            font-weight: bold;
-            margin: 0;
-            padding: 0 1rem;
-            line-height: 1em;
-            align-self: center;
-        }
-
-        .disabled-button {
-            opacity: 0.5;
-        }
-    }
-
-    .disabled-button {
-        background: inherit;
-        border: none;
-        font-weight: bold;
-        margin: 0;
-        padding: 0;
-        line-height: 1em;
-        align-self: center;
-        opacity: 0.5;
-    }
-
-    .section-header {
-        font-weight: 500;
-        margin: 0;
-        padding: 0 1.5rem;
-        line-height: 1em;
-        align-self: center;
-    }
-}
-
 .metadata-list {
     width: 100%;
     display: grid;
@@ -467,62 +369,6 @@ p + p {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     grid-gap: 12px;
-}
-
-.pseudo-button {
-    cursor: pointer;
-}
-
-.pseudo-button-disabled {
-    opacity: 0.5;
-}
-
-.buy-button-new {
-    background-color: #37424a;
-    color: #fff;
-
-    &.disabled-button-new > * {
-        opacity: 0.5;
-    }
-}
-
-.summary-price {
-    font-size: 2rem;
-    line-height: 1;
-    display: flex;
-    align-items: baseline;
-    small {
-        font-size: 1rem;
-    }
-}
-
-@keyframes ticket-progress-move {
-    0% {
-        background-position: 0 0;
-    }
-    100% {
-        background-position: 60px 0;
-    }
-}
-
-.tab-bar {
-    margin: 1rem;
-    padding: 0.5rem;
-    background-color: #00323a;
-    color: #fff;
-    border-radius: 8px;
-
-    a {
-        display: inline-block;
-        padding: 0.5rem;
-        text-decoration: none;
-        margin-right: 0.5rem;
-        outline: none;
-
-        &.selected-tab {
-            background-color: #044;
-        }
-    }
 }
 
 dl {
@@ -553,37 +399,6 @@ table {
         border: 1px solid #345d63;
     }
 }
-
-.shop-user button {
-    min-width: 1rem;
-}
-
-.shop-user tr td:nth-child(1),
-.shop-user tr td:nth-child(2),
-.shop-user tr td:nth-child(3) {
-    width: 3rem;
-    text-align: center;
-}
-
-.info-box {
-    background-color: #007c92;
-    color: #fff;
-    padding: 24px;
-    margin-bottom: 24px;
-    display: grid;
-    grid-template-columns: 30px 1fr;
-
-    svg {
-        width: 20px;
-        height: 20px;
-
-        path {
-            fill: #fff;
-        }
-    }
-}
-
-/* temporary */
 
 .onboarding__travelCard {
     display: grid;

@@ -18,6 +18,7 @@ import Time
 import Ui.LabelItem
 import Ui.TextContainer
 import Util.Format
+import Util.Time as TimeUtil
 
 
 type alias TicketDetails msg =
@@ -284,7 +285,7 @@ viewLabelTime title dateTime timeZone =
     Ui.LabelItem.viewCompact title
         [ dateTime
             |> Time.millisToPosix
-            |> Util.Format.posixToFullHumanized timeZone
+            |> TimeUtil.toFullHumanized timeZone
             |> H.text
         ]
 
@@ -367,7 +368,7 @@ viewValidity from to posixNow timeZone =
             Time.posixToMillis posixNow
     in
         if from > now then
-            H.text <| "Gyldig fra " ++ Util.Format.posixToFullHumanized timeZone (Time.millisToPosix from)
+            H.text <| "Gyldig fra " ++ TimeUtil.toFullHumanized timeZone (Time.millisToPosix from)
 
         else if now > to then
             H.text <| timeAgoFormat <| (now - to) // 1000
