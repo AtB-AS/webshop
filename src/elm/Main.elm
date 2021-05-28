@@ -22,7 +22,7 @@ import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
-import Route exposing (ResponseCode, Route)
+import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
