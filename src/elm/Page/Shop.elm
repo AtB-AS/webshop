@@ -40,6 +40,7 @@ import Util.Time as TimeUtil
 type Msg
     = OnEnterPage
     | OnLeavePage
+    | ResetState
     | FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
     | BuyOffers PaymentType
@@ -121,8 +122,11 @@ update msg env model shared =
                 |> PageUpdater.addGlobalAction
     in
         case msg of
+            ResetState ->
+                PageUpdater.init <| Tuple.first init
+
             OnEnterPage ->
-                PageUpdater.fromPair init
+                PageUpdater.fromPair ( model, Tuple.second init )
 
             OnLeavePage ->
                 PageUpdater.init model
@@ -338,7 +342,7 @@ update msg env model shared =
                                 |> addGlobalNotification (Message.Error errorMessage)
 
             CloseShop ->
-                PageUpdater.init model
+                PageUpdater.fromPair ( model, TaskUtil.doTask ResetState )
                     |> PageUpdater.addGlobalAction (GA.RouteTo Route.Home)
 
             ShowView mainView ->
