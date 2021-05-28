@@ -4,6 +4,7 @@ module Data.Ticket exposing
     , PaymentType(..)
     , Price
     , Reservation
+    , ReservationStatus(..)
     , Ticket
     )
 
@@ -34,6 +35,11 @@ type alias Offer =
     , prices : List Price
     , travellerId : String
     }
+
+
+type ReservationStatus
+    = Captured
+    | NotCaptured
 
 
 type alias Reservation =

@@ -3,7 +3,7 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.RefData exposing (LangString(..))
-import Data.Ticket exposing (PaymentStatus, Reservation)
+import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -49,11 +49,6 @@ type Msg
     | AddActiveReservation Reservation
     | Logout
     | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
-
-
-type ReservationStatus
-    = Captured
-    | NotCaptured
 
 
 type alias Model =
@@ -330,7 +325,7 @@ viewMain shared model =
 viewPending : Model -> List (Html msg)
 viewPending model =
     model.reservations
-        |> List.map (Tuple.first >> Ui.TicketDetails.viewActivation)
+        |> List.map Ui.TicketDetails.viewActivation
 
 
 viewTicketCards : Shared -> List FareContract -> Model -> List (Html Msg)

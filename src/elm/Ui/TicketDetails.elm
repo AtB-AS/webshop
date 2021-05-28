@@ -2,7 +2,7 @@ module Ui.TicketDetails exposing (view, viewActivation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
 import Data.RefData exposing (LangString(..))
-import Data.Ticket exposing (Reservation)
+import Data.Ticket exposing (Reservation, ReservationStatus(..))
 import Dict exposing (Dict)
 import Dict.Extra
 import Fragment.Icon
@@ -145,8 +145,8 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             ]
 
 
-viewActivation : Reservation -> Html msg
-viewActivation reservation =
+viewActivation : ( Reservation, ReservationStatus ) -> Html msg
+viewActivation ( reservation, status ) =
     let
         classList =
             [ ( "ui-ticketDetails", True )
@@ -159,6 +159,14 @@ viewActivation reservation =
 
         icon =
             activeReservationLoading
+
+        captureText =
+            case status of
+                Captured ->
+                    "Betaling godkjent. Henter billett..."
+
+                NotCaptured ->
+                    "Prosesseres... ikke gyldig enda."
     in
         Ui.TextContainer.primary
             [ H.section
@@ -168,7 +176,7 @@ viewActivation reservation =
                         [ H.div [ A.class "ui-ticketDetails__headerButton__icon" ]
                             [ icon ]
                         , H.div [ A.class "ui-ticketDetails__headerButton__title" ]
-                            [ H.text "Utsteder billett..." ]
+                            [ H.text captureText ]
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
