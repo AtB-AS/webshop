@@ -684,6 +684,9 @@
     align-items: center;
     transition: filter 150ms ease-in;
 }
+a.ui-button {
+    text-decoration: none;
+}
 .ui-button__icon > :not(.ui-button__coloredIcon) {
     svg,
     path {
