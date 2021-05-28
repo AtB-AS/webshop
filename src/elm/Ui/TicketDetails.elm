@@ -47,7 +47,7 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             Time.posixToMillis currentTime
 
         isCurrentlyActive =
-            fareContract.validFrom < now
+            fareContract.validFrom <= now
 
         classList =
             [ ( "ui-ticketDetails", True )
@@ -356,8 +356,13 @@ viewValidity from to posixNow timeZone =
         now =
             Time.posixToMillis posixNow
     in
-        if from > now then
+        if from > now + (3 * 60 * 60 * 1000) then
+            -- Active in over 3 hours, show absolute time.
             H.text <| "Gyldig fra " ++ TimeUtil.toFullHumanized timeZone (Time.millisToPosix from)
+
+        else if from > now then
+            -- If active within 3 hours, show relative time
+            H.text <| "Gyldig om " ++ timeFormat ((from - now) // 1000) "" "kort tid"
 
         else if now > to then
             H.text <| timeAgoFormat <| (now - to) // 1000
