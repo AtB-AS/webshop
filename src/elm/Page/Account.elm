@@ -8,6 +8,7 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
+import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode exposing (Error(..))
@@ -19,6 +20,7 @@ import Shared exposing (Shared)
 import Task
 import Time exposing (Month(..), ZoneName(..))
 import Ui.Button as B
+import Ui.InlineButtonLink
 import Ui.Input.EditSection as EditSection
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
@@ -514,10 +516,31 @@ viewTravelCard model profile =
 
                         else
                             [ Ui.Section.viewLabelItem "t:kortnummer"
-                                [ profile.travelCard
-                                    |> Maybe.map .id
-                                    |> Maybe.map Ui.TravelCardText.view
-                                    |> Maybe.withDefault (H.span [] [ H.text "Ingen t:kort lagt til" ])
+                                [ case profile.travelCard of
+                                    Just travelCard ->
+                                        travelCard
+                                            |> .id
+                                            |> Ui.TravelCardText.view
+
+                                    Nothing ->
+                                        H.div [ A.class "pageAccount__noTravelCard" ]
+                                            [ Icon.warningColor
+                                            , H.p []
+                                                [ H.text "Du har ingen billettbærere! Last ned appen vår eller "
+                                                , Ui.InlineButtonLink.view
+                                                    [ E.onClick <| SetEditSection (Just TravelCardSection) (Just "tkort")
+                                                    ]
+                                                    [ H.text "legg til et t:kort" ]
+                                                , H.text ". Har du ikke t:kort kan du "
+                                                , H.a
+                                                    [ A.href "https://www.atb.no/bestill-tkort/"
+                                                    , A.target "_blank"
+                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg."
+                                                    ]
+                                                    [ H.text "bestille her" ]
+                                                , H.text "."
+                                                ]
+                                            ]
                                 ]
                             , model.validationErrors
                                 |> Validation.select TravelCard
