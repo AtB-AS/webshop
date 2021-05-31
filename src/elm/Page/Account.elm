@@ -299,7 +299,17 @@ viewSidebar model =
             "Slett AtB-profilen min"
 
         body =
-            "Jeg ønsker at min AtB-profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: " ++ phoneNumber
+            ("Jeg ønsker at min AtB-profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
+                ++ phoneNumber
+            )
+                ++ """
+
+                Jeg forstår at sletting av min AtB-profil innebærer følgende:
+                
+                - Eventuelle fortsatt gyldige eller fremtidige billetter på min profil vil slettes.
+                - Jeg får ikke lenger tilgang til billetthistorikk eller kvitteringer.
+                - Jeg må legge ved kopi av gyldig identifikasjon i denne e-posten, slik at kundeservice kan verifisere at jeg er eier av profilen.
+                """
 
         deleteLink =
             "mailto:kundeservice@atb.no"
