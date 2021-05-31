@@ -762,6 +762,11 @@ a.ui-button {
 .ui-textContainer--primary {
     color: var(--text-colors-primary);
 }
+.ui-button--primary:focus {
+    border: var(--border-width-medium) solid
+        var(--colors-primary_3-backgroundColor);
+}
+
 .ui-textContainer--secondary {
     color: var(--text-colors-secondary);
 }
