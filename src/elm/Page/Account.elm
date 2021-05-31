@@ -451,6 +451,7 @@ viewEmailAddress model profile =
                                 |> Text.setOnInput (Just <| UpdateEmail)
                                 |> Text.setPlaceholder "Legg til et e-post"
                                 |> Text.setValue (Just model.email)
+                                |> Text.setType "email"
                                 |> Text.view
                             ]
 
@@ -530,7 +531,10 @@ viewTravelCard model profile =
                                     |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
                                     |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
                                     |> MaskedInput.setPattern "#### #### ########"
-                                    |> MaskedInput.setAttributes [ A.autofocus True ]
+                                    |> MaskedInput.setAttributes
+                                        [ A.autofocus True
+                                        , A.attribute "inputmode" "numeric"
+                                        ]
                                     |> MaskedInput.view model.travelCardState model.travelCard
                                 ]
 

@@ -420,6 +420,9 @@ viewTravelCard _ model =
                             |> MaskedInput.setPattern "#### #### ########"
                             |> MaskedInput.setBordered True
                             |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
+                            |> MaskedInput.setAttributes
+                                [ A.attribute "inputmode" "numeric"
+                                ]
                             |> MaskedInput.view model.travelCardState model.travelCard
                         ]
                     , H.img
