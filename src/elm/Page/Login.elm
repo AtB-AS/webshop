@@ -148,7 +148,7 @@ view env model =
                     |> List.singleton
                     |> H.div [ A.class "pageLogin__header" ]
         , H.div [ A.class "page page--narrow" ]
-            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
+            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , case model.step of
                 StepLogin ->
                     viewLogin env model
