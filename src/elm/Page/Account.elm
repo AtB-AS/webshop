@@ -314,7 +314,7 @@ viewSidebar model =
             , B.init "Slett konto"
                 |> B.setIcon (Just Icon.delete)
                 |> B.setElement H.a
-                |> B.setAttributes [ A.href deleteLink ]
+                |> B.setAttributes [ A.href deleteLink, A.title "Send epost til kundeservice med telefonnummer for å få slettet konto." ]
                 |> B.primary B.Primary_destructive
             ]
 
