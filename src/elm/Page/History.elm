@@ -116,7 +116,7 @@ update msg env model =
         ReceiveReceipt orderId _ ->
             -- TODO: Show error
             PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
-                |> ("Kvitteringen ble sendt til din e-post."
+                |> (H.text "Kvitteringen ble sendt til din e-post."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)

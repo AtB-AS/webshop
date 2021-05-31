@@ -79,7 +79,7 @@ update msg _ model =
 
         Resend ->
             updateLogin model
-                |> ("Sendt ny forespørsel etter engangspassord."
+                |> (H.text "Sendt ny forespørsel etter engangspassord."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)

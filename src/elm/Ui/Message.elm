@@ -20,11 +20,11 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 
 
-type UserStatus
-    = Warning String
-    | Info String
-    | Valid String
-    | Error String
+type UserStatus msg
+    = Warning (Html msg)
+    | Info (Html msg)
+    | Valid (Html msg)
+    | Error (Html msg)
 
 
 type Border
@@ -34,7 +34,7 @@ type Border
     | NoBorder
 
 
-statusToClass : UserStatus -> String
+statusToClass : UserStatus msg -> String
 statusToClass status =
     case status of
         Warning _ ->
@@ -50,7 +50,7 @@ statusToClass status =
             "ui-message--info"
 
 
-statusToIcon : UserStatus -> Html msg
+statusToIcon : UserStatus msg -> Html msg
 statusToIcon status =
     case status of
         Warning _ ->
@@ -66,7 +66,7 @@ statusToIcon status =
             Icon.info
 
 
-stringOfStatus : UserStatus -> String
+stringOfStatus : UserStatus msg -> Html msg
 stringOfStatus status =
     case status of
         Warning text ->
@@ -90,7 +90,7 @@ type alias Message =
     }
 
 
-messageWithOptions : Message -> UserStatus -> Html msg
+messageWithOptions : Message -> UserStatus msg -> Html msg
 messageWithOptions options statusType =
     let
         statusClass =
@@ -106,7 +106,7 @@ messageWithOptions options statusType =
             ]
 
         text =
-            H.text <| stringOfStatus statusType
+            stringOfStatus statusType
 
         icon =
             statusToIcon statusType
@@ -126,29 +126,29 @@ defaultOption =
     }
 
 
-message : UserStatus -> Html msg
+message : UserStatus msg -> Html msg
 message =
     messageWithOptions defaultOption
 
 
 infoWithOptions : Message -> String -> Html msg
 infoWithOptions opts text =
-    messageWithOptions opts (Info text)
+    messageWithOptions opts (Info <| H.text text)
 
 
 warningWithOptions : Message -> String -> Html msg
 warningWithOptions opts text =
-    messageWithOptions opts (Warning text)
+    messageWithOptions opts (Warning <| H.text text)
 
 
 validWithOptions : Message -> String -> Html msg
 validWithOptions opts text =
-    messageWithOptions opts (Valid text)
+    messageWithOptions opts (Valid <| H.text text)
 
 
 errorWithOptions : Message -> String -> Html msg
 errorWithOptions opts text =
-    messageWithOptions opts (Error text)
+    messageWithOptions opts (Error <| H.text text)
 
 
 info : String -> Html msg

@@ -298,7 +298,7 @@ update msg env model shared =
                                 "Kunne ikke laste inn billettinformasjon. Prøv igjen."
                         in
                             PageUpdater.init { model | offers = Failed errorMessage }
-                                |> addGlobalNotification (Message.Error errorMessage)
+                                |> addGlobalNotification (Message.Error <| H.text errorMessage)
 
             BuyOffers paymentType ->
                 case model.offers of
@@ -339,7 +339,7 @@ update msg env model shared =
                                 "Fikk ikke reservert billett. Prøv igjen."
                         in
                             PageUpdater.init { model | reservation = Failed errorMessage }
-                                |> addGlobalNotification (Message.Error errorMessage)
+                                |> addGlobalNotification (Message.Error <| H.text errorMessage)
 
             CloseShop ->
                 PageUpdater.fromPair ( model, TaskUtil.doTask ResetState )
