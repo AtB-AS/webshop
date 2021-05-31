@@ -62,7 +62,7 @@ type alias Model =
     { environment : Environment
     , appInfo : AppInfo
     , overview : OverviewPage.Model
-    , shop : Maybe ShopPage.Model
+    , shop : ShopPage.Model
     , history : HistoryPage.Model
     , account : AccountPage.Model
     , shared : Shared
@@ -107,19 +107,45 @@ setRoute maybeRoute model =
     ( { model | route = maybeRoute }
     , case maybeRoute of
         Just Route.Shop ->
-            if model.shop == Nothing then
-                TaskUtil.doTask <| GlobalAction GA.OpenShop
+            TaskUtil.doTask <| ShopMsg ShopPage.OnEnterPage
 
-            else
-                Cmd.none
+        Just (Route.Payment maybeReservation) ->
+            let
+                noPaymentId =
+                    maybeReservation.paymentId == Nothing
+
+                isCancelled =
+                    maybeReservation.responseCode
+                        |> Maybe.map ((==) Route.Cancel)
+                        |> Maybe.withDefault False
+
+                reservation =
+                    { transactionId = Maybe.withDefault 1 maybeReservation.transactionId
+                    , paymentId = Maybe.withDefault 1 maybeReservation.paymentId
+                    , orderId = Maybe.withDefault "" maybeReservation.orderId
+                    , url = ""
+                    }
+            in
+                if noPaymentId || isCancelled then
+                    Route.modifyUrl model.navKey Route.Home
+
+                else
+                    Cmd.batch
+                        [ TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
+                        , Route.modifyUrl model.navKey Route.Home
+                        ]
 
         Just _ ->
-            if model.route == Just Route.Settings then
+            case model.route of
                 -- If navigating away from Settings, reset all state.
-                TaskUtil.doTask <| AccountMsg AccountPage.ResetState
+                Just Route.Settings ->
+                    TaskUtil.doTask <| AccountMsg AccountPage.ResetState
 
-            else
-                Cmd.none
+                Just Route.Shop ->
+                    TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
+
+                _ ->
+                    Cmd.none
 
         Nothing ->
             TaskUtil.doTask <| RouteTo Route.Home
@@ -181,7 +207,7 @@ init flags url navKey =
                 { environment = environment
                 , appInfo = appInfo
                 , overview = overviewModel
-                , shop = Nothing
+                , shop = Tuple.first ShopPage.init
                 , history = HistoryPage.init
                 , account = accountModel
                 , shared = Shared.init
@@ -227,29 +253,9 @@ update msg model =
                     in
                         ( { model | environment = newEnvironment }, Cmd.none )
 
-                GA.OpenShop ->
-                    let
-                        ( initModel, initCmd ) =
-                            ShopPage.init model.shared
-                    in
-                        ( { model | shop = Just initModel }
-                        , Cmd.batch
-                            [ Cmd.map ShopMsg initCmd
-                            , Route.newUrl model.navKey Route.Shop
-                            ]
-                        )
-
                 GA.OpenEditTravelCard ->
                     ( { model | account = AccountPage.setEditSection (Just AccountPage.TravelCardSection) model.account }
                     , Route.newUrl model.navKey Route.Settings
-                    )
-
-                GA.CloseShop ->
-                    ( { model | shop = Nothing }, Route.newUrl model.navKey Route.Home )
-
-                GA.AddActiveReservation reservation ->
-                    ( model
-                    , TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
                     )
 
                 GA.FocusItem id ->
@@ -312,14 +318,9 @@ update msg model =
                 |> doPageUpdate
 
         ShopMsg subMsg ->
-            case model.shop of
-                Just shop ->
-                    ShopPage.update subMsg model.environment shop model.shared
-                        |> PageUpdater.map (\newModel -> { model | shop = Just newModel }) ShopMsg
-                        |> doPageUpdate
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ShopPage.update subMsg model.environment model.shop model.shared
+                |> PageUpdater.map (\newModel -> { model | shop = newModel }) ShopMsg
+                |> doPageUpdate
 
         HistoryMsg subMsg ->
             HistoryPage.update subMsg model.environment model.history
@@ -474,7 +475,7 @@ header model =
             , ( "Min profil", Route.Settings )
             ]
 
-        showLogout =
+        showHeader =
             model.environment.customerId /= Nothing || model.onboarding /= Nothing
 
         navigation =
@@ -493,9 +494,6 @@ header model =
 
             else
                 []
-
-        showHeader =
-            showLogout && model.route /= Just Route.Thanks
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
@@ -560,14 +558,9 @@ viewPage model =
     in
         case model.route of
             Just Route.Shop ->
-                case model.shop of
-                    Just shop ->
-                        ShopPage.view env model.appInfo shared shop model.route
-                            |> H.map ShopMsg
-                            |> wrapSubPage "Kjøp ny billett"
-
-                    Nothing ->
-                        H.text ""
+                ShopPage.view env model.appInfo shared model.shop model.route
+                    |> H.map ShopMsg
+                    |> wrapSubPage "Kjøp ny billett"
 
             Just Route.History ->
                 HistoryPage.view env model.appInfo shared model.history model.route
@@ -578,9 +571,6 @@ viewPage model =
                 AccountPage.view env model.appInfo shared model.account model.route
                     |> H.map AccountMsg
                     |> wrapSubPage "Min profil"
-
-            Just Route.Thanks ->
-                viewSuccessTicketPage
 
             _ ->
                 OverviewPage.view env model.appInfo shared model.overview model.route
@@ -595,22 +585,13 @@ wrapSubPage title children =
         ]
 
 
-viewSuccessTicketPage : Html msg
-viewSuccessTicketPage =
-    H.div [ A.class "pageHome__successBuy" ]
-        [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
-        , H.p [] [ H.text "Takk! Du kan nå lukke vinduet." ]
-        ]
-
-
 subs : Model -> Sub Msg
 subs model =
     Sub.batch
         [ OverviewPage.subscriptions model.overview
             |> Sub.map OverviewMsg
-        , model.shop
-            |> Maybe.map (ShopPage.subscriptions >> Sub.map ShopMsg)
-            |> Maybe.withDefault Sub.none
+        , ShopPage.subscriptions model.shop
+            |> Sub.map ShopMsg
         , HistoryPage.subscriptions model.history
             |> Sub.map HistoryMsg
         , AccountPage.subscriptions model.account

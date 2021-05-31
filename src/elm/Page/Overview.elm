@@ -3,7 +3,7 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.RefData exposing (LangString(..))
-import Data.Ticket exposing (ActiveReservation)
+import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -14,10 +14,12 @@ import Html.Extra
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import PageUpdater exposing (PageUpdater)
+import Process
 import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
+import Svg.Attributes exposing (result)
 import Task
 import Time
 import Ui.Button as B
@@ -30,7 +32,6 @@ import Util.FareContract
 import Util.Maybe
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
-import Util.TravelCard
 
 
 type Msg
@@ -45,8 +46,9 @@ type Msg
     | UpdateTime Time.Posix
     | AdjustTimeZone Time.Zone
     | ToggleTicket String
-    | AddActiveReservation ActiveReservation
+    | AddActiveReservation Reservation
     | Logout
+    | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
 
 
 type alias Model =
@@ -57,7 +59,7 @@ type alias Model =
     , inspection : Status Inspection
     , currentTime : Time.Posix
     , expanded : Maybe String
-    , reservations : List ActiveReservation
+    , reservations : List ( Reservation, ReservationStatus )
     , timeZone : Time.Zone
     }
 
@@ -97,7 +99,7 @@ update msg env model =
 
                         activeReservations =
                             model.reservations
-                                |> List.filter (\{ reservation } -> not <| List.member reservation.orderId orderIds)
+                                |> List.filter (\( reservation, _ ) -> not <| List.member reservation.orderId orderIds)
                     in
                         PageUpdater.init { model | tickets = tickets, reservations = activeReservations }
 
@@ -125,7 +127,7 @@ update msg env model =
 
         OpenShop ->
             PageUpdater.init model
-                |> PageUpdater.addGlobalAction GA.OpenShop
+                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Shop)
 
         OpenHistory ->
             PageUpdater.init model
@@ -155,7 +157,20 @@ update msg env model =
                 }
 
         AddActiveReservation active ->
-            PageUpdater.init { model | reservations = active :: model.reservations }
+            let
+                existsFromBefore =
+                    model.reservations
+                        |> List.map (Tuple.first >> .paymentId)
+                        |> List.member active.paymentId
+            in
+                if existsFromBefore then
+                    PageUpdater.init model
+
+                else
+                    PageUpdater.fromPair
+                        ( { model | reservations = ( active, NotCaptured ) :: model.reservations }
+                        , fetchPaymentStatus env active.paymentId
+                        )
 
         Logout ->
             PageUpdater.init model
@@ -163,6 +178,49 @@ update msg env model =
 
         AdjustTimeZone zone ->
             PageUpdater.init { model | timeZone = zone }
+
+        ReceivePaymentStatus paymentId result ->
+            let
+                updateReservationToStatus state =
+                    model.reservations
+                        |> List.map
+                            (\( reservation, status ) ->
+                                if reservation.paymentId /= paymentId then
+                                    ( reservation, status )
+
+                                else
+                                    ( reservation, state )
+                            )
+
+                withoutCurrentReservation =
+                    List.filter (Tuple.first >> .paymentId >> (/=) paymentId) model.reservations
+            in
+                case result of
+                    Ok paymentStatus ->
+                        case paymentStatus.status of
+                            "CAPTURE" ->
+                                PageUpdater.init { model | reservations = updateReservationToStatus Captured }
+
+                            "CANCEL" ->
+                                PageUpdater.init
+                                    { model | reservations = withoutCurrentReservation }
+
+                            "CREDIT" ->
+                                PageUpdater.init
+                                    { model | reservations = withoutCurrentReservation }
+
+                            "REJECT" ->
+                                PageUpdater.init
+                                    { model | reservations = withoutCurrentReservation }
+
+                            _ ->
+                                PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
+
+                    _ ->
+                        -- Either there was no longer a reservation, or the payment failed. We treat this
+                        -- as if the payment was cancelled so the user can try again.
+                        PageUpdater.init
+                            { model | reservations = withoutCurrentReservation }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -320,3 +378,14 @@ sendReceipt env orderId =
         TicketService.receipt env env.customerEmail orderId
             |> Http.toTask
             |> Task.attempt ReceiveReceipt
+
+
+fetchPaymentStatus : Environment -> Int -> Cmd Msg
+fetchPaymentStatus env paymentId =
+    Process.sleep 500
+        |> Task.andThen
+            (\_ ->
+                TicketService.getPaymentStatus env paymentId
+                    |> Http.toTask
+            )
+        |> Task.attempt (ReceivePaymentStatus paymentId)

@@ -2,7 +2,7 @@ module Ui.TicketDetails exposing (view, viewActivation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
 import Data.RefData exposing (LangString(..))
-import Data.Ticket exposing (ActiveReservation)
+import Data.Ticket exposing (Reservation, ReservationStatus(..))
 import Dict exposing (Dict)
 import Dict.Extra
 import Fragment.Icon
@@ -47,7 +47,7 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             Time.posixToMillis currentTime
 
         isCurrentlyActive =
-            fareContract.validFrom < now
+            fareContract.validFrom <= now
 
         classList =
             [ ( "ui-ticketDetails", True )
@@ -145,8 +145,8 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             ]
 
 
-viewActivation : ActiveReservation -> Html msg
-viewActivation activeReservation =
+viewActivation : ( Reservation, ReservationStatus ) -> Html msg
+viewActivation ( reservation, status ) =
     let
         classList =
             [ ( "ui-ticketDetails", True )
@@ -160,13 +160,13 @@ viewActivation activeReservation =
         icon =
             activeReservationLoading
 
-        reservation =
-            activeReservation.reservation
+        captureText =
+            case status of
+                Captured ->
+                    "Betaling godkjent. Henter billett..."
 
-        paymentType =
-            activeReservation.paymentStatus
-                |> Maybe.map .paymentType
-                |> Maybe.withDefault ""
+                NotCaptured ->
+                    "Prosesseres... ikke gyldig enda."
     in
         Ui.TextContainer.primary
             [ H.section
@@ -176,16 +176,13 @@ viewActivation activeReservation =
                         [ H.div [ A.class "ui-ticketDetails__headerButton__icon" ]
                             [ icon ]
                         , H.div [ A.class "ui-ticketDetails__headerButton__title" ]
-                            [ H.text "Utsteder billett..." ]
+                            [ H.text captureText ]
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
                     [ Ui.LabelItem.viewCompact
                         "Ordre-ID"
                         [ H.text reservation.orderId ]
-                    , Ui.LabelItem.viewCompact
-                        "Betales med"
-                        [ H.text paymentType ]
                     ]
                 ]
             ]
@@ -367,8 +364,13 @@ viewValidity from to posixNow timeZone =
         now =
             Time.posixToMillis posixNow
     in
-        if from > now then
+        if from > now + (3 * 60 * 60 * 1000) then
+            -- Active in over 3 hours, show absolute time.
             H.text <| "Gyldig fra " ++ TimeUtil.toFullHumanized timeZone (Time.millisToPosix from)
+
+        else if from > now then
+            -- If active within 3 hours, show relative time
+            H.text <| "Gyldig om " ++ timeFormat ((from - now) // 1000) "" "kort tid"
 
         else if now > to then
             H.text <| timeAgoFormat <| (now - to) // 1000
