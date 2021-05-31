@@ -403,7 +403,7 @@ viewEmailAddress model profile =
         EditSection.init "Administrer e-post"
             |> EditSection.setEditButtonType
                 (if hasEmail then
-                    ( "Endre epostadresse", Icon.delete )
+                    ( "Endre epostadresse", Icon.edit )
 
                  else
                     ( "Legg til epostadresse", Icon.edit )
