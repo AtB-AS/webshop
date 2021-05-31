@@ -308,7 +308,7 @@ viewSidebar model =
                 
                 - Eventuelle fortsatt gyldige eller fremtidige billetter på min profil vil slettes.
                 - Jeg får ikke lenger tilgang til billetthistorikk eller kvitteringer.
-                - Jeg må legge ved kopi gyldig identifikasjon i denne e-posten, slik at kundeservice kan verfisere at jeg er eier av profilen.
+                - Jeg må legge ved kopi av gyldig identifikasjon i denne e-posten, slik at kundeservice kan verifisere at jeg er eier av profilen.
                 """
 
         deleteLink =
