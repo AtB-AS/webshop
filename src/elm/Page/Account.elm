@@ -291,13 +291,13 @@ viewSidebar model =
         phoneNumber =
             model.profile
                 |> Maybe.map .phone
-                |> Maybe.withDefault "<Telefon nummer her>"
+                |> Maybe.withDefault "<Telefonnummer her>"
 
         subject =
-            "Slett meg som bruker"
+            "Slett AtB-profilen min"
 
         body =
-            "Jeg vil slettes som bruker av nettbutikk og AtB systemene. Brukeren min er ved telefonnummer: " ++ phoneNumber
+            "Jeg ønsker at min AtB-profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: " ++ phoneNumber
 
         deleteLink =
             "mailto:kundeservice@atb.no"
