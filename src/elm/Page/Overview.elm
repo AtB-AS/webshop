@@ -308,7 +308,15 @@ viewMain shared model =
         infoMessage =
             Ui.Section.init
                 |> Ui.Section.setMarginBottom True
-                |> Ui.Section.viewWithOptions [ Message.info "Billettene som vises her kan ikke brukes i en eventuell kontroll." ]
+                |> Ui.Section.viewWithOptions
+                    [ H.p []
+                        [ H.text "Denne billettvisningen er ikke gyldig ved eventuell billettkontroll."
+                        , H.br [] []
+                        , H.text "På reise vil det t:kortet du har registrert på din profil være gyldig billettbevis."
+                        ]
+                        |> Message.Info
+                        |> Message.message
+                    ]
     in
         H.div [ A.class "main" ]
             [ if List.isEmpty validTickets && List.isEmpty model.reservations then
