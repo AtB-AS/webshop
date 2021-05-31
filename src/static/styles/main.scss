@@ -355,6 +355,16 @@ p + p {
     }
 }
 
+.pageAccount__noTravelCard {
+    display: flex;
+
+    svg {
+        flex-shrink: 0;
+        display: block;
+        margin-right: var(--spacings-medium);
+    }
+}
+
 // Components
 
 .metadata-list {
