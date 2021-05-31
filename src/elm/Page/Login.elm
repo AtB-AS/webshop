@@ -177,6 +177,12 @@ viewLogin _ model =
                     |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
                     |> T.view
                 ]
+            , H.p []
+                [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
+                , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta" ] [ H.text "Begrensninger og forutsetninger." ]
+                ]
+                |> Message.Warning
+                |> Message.message
             , B.init "Send engangspassord"
                 |> B.setIcon (Just Icon.rightArrow)
                 |> B.setType "submit"
