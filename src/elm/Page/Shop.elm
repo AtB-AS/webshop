@@ -644,6 +644,22 @@ summaryView shared model summary =
 
         vatAmount =
             Maybe.map ((*) (toFloat shared.remoteConfig.vat_percent / 100)) totalPrice
+
+        validFrom =
+            case model.travelDateTime of
+                TravelNow ->
+                    H.text "Kjøpstidspunkt"
+
+                TravelFuture (Just time) ->
+                    TimeUtil.isoStringToFullHumanized model.timeZone time
+                        |> Maybe.map
+                            (\dateTime ->
+                                H.time [ A.datetime time ] [ H.text <| dateTime ]
+                            )
+                        |> Maybe.withDefault Html.Extra.nothing
+
+                TravelFuture Nothing ->
+                    Html.Extra.nothing
     in
         Section.init
             |> Section.setMarginBottom True
@@ -674,7 +690,7 @@ summaryView shared model summary =
                         ]
                 , Section.viewPaddedItem
                     [ Ui.LabelItem.viewCompact "Gyldig fra"
-                        [ H.p [] [ H.text <| Maybe.withDefault "" summary.start ]
+                        [ validFrom
                         ]
                     ]
                 , maybeBuyNotice model.users
