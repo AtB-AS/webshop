@@ -1,5 +1,7 @@
 module Page.History exposing (Model, Msg, init, subscriptions, update, view)
 
+-- import Ui.Input.Text as T
+
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.RefData exposing (LangString(..))
@@ -21,7 +23,6 @@ import Shared exposing (Shared)
 import Task
 import Ui.Button as B
 import Ui.Group
-import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
@@ -134,28 +135,36 @@ view _ _ shared model _ =
 
 
 viewSidebar : Model -> Html Msg
-viewSidebar model =
+viewSidebar _ =
     Ui.Section.view
-        [ Ui.Section.viewHeader "Filtrer på dato"
-        , Ui.Section.viewItem
-            [ T.init "from"
-                |> T.setValue model.from
-                |> T.setOnInput (Just InputFrom)
-                |> T.setType "date"
-                |> T.setPlaceholder "Velg dato"
-                |> T.setTitle (Just "Fra")
-                |> T.view
-            ]
-        , Ui.Section.viewItem
-            [ T.init "to"
-                |> T.setValue model.to
-                |> T.setOnInput (Just InputTo)
-                |> T.setType "date"
-                |> T.setPlaceholder "Velg dato"
-                |> T.setTitle (Just "Til")
-                |> T.view
-            ]
+        [ Ui.Section.viewPaddedItem [ H.text "Se historikk over alle kjøp og be om å få kvittering tilsendt via e-post." ]
         ]
+
+
+
+-- viewSidebar : Model -> Html Msg
+-- viewSidebar model =
+--     Ui.Section.view
+--         [ Ui.Section.viewHeader "Filtrer på dato"
+--         , Ui.Section.viewItem
+--             [ T.init "from"
+--                 |> T.setValue model.from
+--                 |> T.setOnInput (Just InputFrom)
+--                 |> T.setType "date"
+--                 |> T.setPlaceholder "Velg dato"
+--                 |> T.setTitle (Just "Fra")
+--                 |> T.view
+--             ]
+--         , Ui.Section.viewItem
+--             [ T.init "to"
+--                 |> T.setValue model.to
+--                 |> T.setOnInput (Just InputTo)
+--                 |> T.setType "date"
+--                 |> T.setPlaceholder "Velg dato"
+--                 |> T.setTitle (Just "Til")
+--                 |> T.view
+--             ]
+--         ]
 
 
 viewMain : Shared -> Model -> Html Msg
