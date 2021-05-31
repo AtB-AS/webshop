@@ -80,9 +80,7 @@ button {
     max-width: var(--maxPageWidth);
 }
 
-a:link,
-a:active,
-a:visited {
+a {
     color: var(--text-colors-primary);
     text-decoration: underline;
 }

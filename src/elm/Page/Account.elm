@@ -27,6 +27,7 @@ import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
 import Ui.TravelCardText
+import Url.Builder as Url
 import Util.Maybe
 import Util.PhoneNumber
 import Util.TravelCard
@@ -287,18 +288,37 @@ view _ _ _ model _ =
 
 
 viewSidebar : Model -> Html Msg
-viewSidebar _ =
-    Ui.Section.view
-        [ B.init "Logg ut"
-            |> B.setIcon (Just Icon.logout)
-            |> B.setOnClick (Just Logout)
-            |> B.tertiary
-        , B.init "Slett konto"
-            |> B.setIcon (Just Icon.delete)
-            |> B.setDisabled True
-            |> B.setOnClick (Just Logout)
-            |> B.tertiary
-        ]
+viewSidebar model =
+    let
+        phoneNumber =
+            model.profile
+                |> Maybe.map .phone
+                |> Maybe.withDefault "<Telefonnummer her>"
+
+        subject =
+            "Slett AtB-profilen min"
+
+        body =
+            "Jeg ønsker at min AtB-profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: " ++ phoneNumber
+
+        deleteLink =
+            "mailto:kundeservice@atb.no"
+                ++ Url.toQuery
+                    [ Url.string "body" body
+                    , Url.string "subject" subject
+                    ]
+    in
+        Ui.Section.view
+            [ B.init "Logg ut"
+                |> B.setIcon (Just Icon.logout)
+                |> B.setOnClick (Just Logout)
+                |> B.tertiary
+            , B.init "Slett konto"
+                |> B.setIcon (Just Icon.delete)
+                |> B.setElement H.a
+                |> B.setAttributes [ A.href deleteLink, A.title "Send epost til kundeservice med telefonnummer for å få slettet konto." ]
+                |> B.primary B.Primary_destructive
+            ]
 
 
 viewMain : Model -> Html Msg
