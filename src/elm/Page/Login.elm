@@ -179,7 +179,7 @@ viewLogin _ model =
                 ]
             , H.p []
                 [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
-                , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta" ] [ H.text "Begrensninger og forutsetninger." ]
+                , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta" ] [ H.text "Begrensninger og forutsetninger (åpner ny side)." ]
                 ]
                 |> Message.Warning
                 |> Message.message
