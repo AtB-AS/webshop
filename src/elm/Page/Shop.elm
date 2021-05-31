@@ -813,7 +813,7 @@ viewZones model defaultZone zones =
                 [ Section.viewLabelItem "Avreisesone" [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone selectedFromZone) sortedZones ]
                 , Section.viewLabelItem "Ankomstsone" [ H.select [ E.onInput SetToZone ] <| List.map (viewZone selectedToZone) sortedZones ]
                 ]
-            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser" ] ] ]
+            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser (åpner ny side)" ] ] ]
             ]
 
 

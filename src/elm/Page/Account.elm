@@ -555,9 +555,9 @@ viewTravelCard model profile =
                                                 , H.a
                                                     [ A.href "https://www.atb.no/bestill-tkort/"
                                                     , A.target "_blank"
-                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg."
+                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg (åpner ny side)."
                                                     ]
-                                                    [ H.text "bestille her" ]
+                                                    [ H.text "bestille her (åpner ny side)" ]
                                                 , H.text "."
                                                 ]
                                             ]
