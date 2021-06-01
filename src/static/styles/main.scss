@@ -1,4 +1,5 @@
 @import '~@atb-as/theme/lib/theme.css';
+@import '~@atb-as/theme/lib/typography.css';
 
 html {
     box-sizing: border-box;
@@ -22,6 +23,11 @@ html {
     padding: 0;
 }
 
+html {
+    // Use browsers default font size.
+    font-size: 100%;
+}
+
 html,
 body {
     min-height: 100vh;
@@ -37,7 +43,7 @@ input,
 button {
     font-family: var(--font-main);
     // Explicitly set font size as 16px to avoid mobile zoom on focus.
-    font-size: 16px;
+    font-size: 1rem;
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
