@@ -461,6 +461,7 @@ viewEmailAddress model profile =
                                 |> Text.setOnInput (Just <| UpdateEmail)
                                 |> Text.setPlaceholder "Legg til et e-post"
                                 |> Text.setValue (Just model.email)
+                                |> Text.setType "email"
                                 |> Text.view
                             ]
 
@@ -540,7 +541,10 @@ viewTravelCard model profile =
                                     |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
                                     |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
                                     |> MaskedInput.setPattern "#### #### ########"
-                                    |> MaskedInput.setAttributes [ A.autofocus True ]
+                                    |> MaskedInput.setAttributes
+                                        [ A.autofocus True
+                                        , A.attribute "inputmode" "numeric"
+                                        ]
                                     |> MaskedInput.view model.travelCardState model.travelCard
                                 ]
 
@@ -565,9 +569,9 @@ viewTravelCard model profile =
                                                 , H.a
                                                     [ A.href "https://www.atb.no/bestill-tkort/"
                                                     , A.target "_blank"
-                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg."
+                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg (åpner ny side)."
                                                     ]
-                                                    [ H.text "bestille her" ]
+                                                    [ H.text "bestille her (åpner ny side)" ]
                                                 , H.text "."
                                                 ]
                                             ]

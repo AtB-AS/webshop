@@ -25,6 +25,7 @@ import Time exposing (Posix)
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input.Radio as Radio
+import Ui.Input.Select as Select
 import Ui.Input.Text as Text
 import Ui.LabelItem
 import Ui.LoadingText
@@ -643,6 +644,22 @@ summaryView shared model summary =
 
         vatAmount =
             Maybe.map ((*) (toFloat shared.remoteConfig.vat_percent / 100)) totalPrice
+
+        validFrom =
+            case model.travelDateTime of
+                TravelNow ->
+                    H.text "Kjøpstidspunkt"
+
+                TravelFuture (Just time) ->
+                    TimeUtil.isoStringToFullHumanized model.timeZone time
+                        |> Maybe.map
+                            (\dateTime ->
+                                H.time [ A.datetime time ] [ H.text <| dateTime ]
+                            )
+                        |> Maybe.withDefault Html.Extra.nothing
+
+                TravelFuture Nothing ->
+                    Html.Extra.nothing
     in
         Section.init
             |> Section.setMarginBottom True
@@ -673,7 +690,7 @@ summaryView shared model summary =
                         ]
                 , Section.viewPaddedItem
                     [ Ui.LabelItem.viewCompact "Gyldig fra"
-                        [ H.p [] [ H.text <| Maybe.withDefault "" summary.start ]
+                        [ validFrom
                         ]
                     ]
                 , maybeBuyNotice model.users
@@ -810,10 +827,16 @@ viewZones model defaultZone zones =
     in
         Section.viewItem
             [ Section.viewHorizontalGroup
-                [ Section.viewLabelItem "Avreisesone" [ H.select [ E.onInput SetFromZone ] <| List.map (viewZone selectedFromZone) sortedZones ]
-                , Section.viewLabelItem "Ankomstsone" [ H.select [ E.onInput SetToZone ] <| List.map (viewZone selectedToZone) sortedZones ]
+                [ Select.init "travelFromZone"
+                    |> Select.setTitle (Just "Avreisesone")
+                    |> Select.setOnInput (Just SetFromZone)
+                    |> Select.view (List.map (viewZone selectedFromZone) sortedZones)
+                , Select.init "travelToZone"
+                    |> Select.setTitle (Just "Ankomstsone")
+                    |> Select.setOnInput (Just SetToZone)
+                    |> Select.view (List.map (viewZone selectedToZone) sortedZones)
                 ]
-            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser" ] ] ]
+            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser (åpner ny side)" ] ] ]
             ]
 
 

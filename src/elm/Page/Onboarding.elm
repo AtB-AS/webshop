@@ -344,7 +344,7 @@ viewConsents _ model =
     [ Section.view
         [ Section.viewPaddedItem
             [ H.p [] [ H.text "Vi trenger komme i kontakt med deg som reisende for å optimalisere opplevelsen av den nye nettbutikken. Vi blir veldig glade om samtykker til dette!" ]
-            , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
+            , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
         , Section.viewLabelItem "Samtykker"
             [ Checkbox.init "consent1"
@@ -420,6 +420,9 @@ viewTravelCard _ model =
                             |> MaskedInput.setPattern "#### #### ########"
                             |> MaskedInput.setBordered True
                             |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
+                            |> MaskedInput.setAttributes
+                                [ A.attribute "inputmode" "numeric"
+                                ]
                             |> MaskedInput.view model.travelCardState model.travelCard
                         ]
                     , H.img

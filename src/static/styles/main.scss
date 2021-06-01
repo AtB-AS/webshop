@@ -34,6 +34,7 @@ body {
 }
 
 input,
+select,
 button {
     font-family: var(--font-main);
     // Explicitly set font size as 16px to avoid mobile zoom on focus.
