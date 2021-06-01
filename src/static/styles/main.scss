@@ -10,14 +10,6 @@ html {
     box-sizing: inherit;
 }
 
-:root {
-    --background: #e7e8e9;
-    --primary-2: #71d6e0;
-    --primary-2-hover: rgba(113, 214, 224, 0.8);
-    --primary: #000;
-    --section-background: #fff;
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -105,14 +97,6 @@ p {
 }
 p + p {
     margin-top: var(--spacings-medium);
-}
-
-.box {
-    background-color: transparent;
-    color: var(--primary);
-    padding: 2rem;
-    margin: 1rem;
-    border-radius: 8px;
 }
 
 .pageHeader {
@@ -475,6 +459,3 @@ table {
 
 @import 'waiting';
 @import 'ui';
-
-// Take priority
-@import '~@atb-as/theme/lib/typography.css';
