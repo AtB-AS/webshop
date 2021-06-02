@@ -79,7 +79,7 @@ update msg _ model =
 
         Resend ->
             updateLogin model
-                |> ("Sendt ny forespørsel etter engangspassord."
+                |> (H.text "Sendt ny forespørsel etter engangspassord."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)
@@ -148,7 +148,7 @@ view env model =
                     |> List.singleton
                     |> H.div [ A.class "pageLogin__header" ]
         , H.div [ A.class "page page--narrow" ]
-            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration" ] []
+            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , case model.step of
                 StepLogin ->
                     viewLogin env model
@@ -177,6 +177,12 @@ viewLogin _ model =
                     |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
                     |> T.view
                 ]
+            , H.p []
+                [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
+                , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Begrensninger og forutsetninger (åpner ny side)." ]
+                ]
+                |> Message.Warning
+                |> Message.message
             , B.init "Send engangspassord"
                 |> B.setIcon (Just Icon.rightArrow)
                 |> B.setType "submit"

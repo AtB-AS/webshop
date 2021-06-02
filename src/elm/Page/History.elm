@@ -1,11 +1,13 @@
 module Page.History exposing (Model, Msg, init, subscriptions, update, view)
 
+-- import Ui.Input.Text as T
+
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.RefData exposing (LangString(..))
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
-import GlobalActions as GA
+import GlobalActions as GA exposing (GlobalAction(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Extra
@@ -21,7 +23,6 @@ import Shared exposing (Shared)
 import Task
 import Ui.Button as B
 import Ui.Group
-import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
@@ -116,7 +117,7 @@ update msg env model =
         ReceiveReceipt orderId _ ->
             -- TODO: Show error
             PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
-                |> ("Kvitteringen ble sendt til din e-post."
+                |> (H.text "Kvitteringen ble sendt til din e-post."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)
@@ -134,28 +135,36 @@ view _ _ shared model _ =
 
 
 viewSidebar : Model -> Html Msg
-viewSidebar model =
+viewSidebar _ =
     Ui.Section.view
-        [ Ui.Section.viewHeader "Filtrer på dato"
-        , Ui.Section.viewItem
-            [ T.init "from"
-                |> T.setValue model.from
-                |> T.setOnInput (Just InputFrom)
-                |> T.setType "date"
-                |> T.setPlaceholder "Velg dato"
-                |> T.setTitle (Just "Fra")
-                |> T.view
-            ]
-        , Ui.Section.viewItem
-            [ T.init "to"
-                |> T.setValue model.to
-                |> T.setOnInput (Just InputTo)
-                |> T.setType "date"
-                |> T.setPlaceholder "Velg dato"
-                |> T.setTitle (Just "Til")
-                |> T.view
-            ]
+        [ Ui.Section.viewPaddedItem [ H.text "Se historikk over alle kjøp og be om å få kvittering tilsendt via e-post." ]
         ]
+
+
+
+-- viewSidebar : Model -> Html Msg
+-- viewSidebar model =
+--     Ui.Section.view
+--         [ Ui.Section.viewHeader "Filtrer på dato"
+--         , Ui.Section.viewItem
+--             [ T.init "from"
+--                 |> T.setValue model.from
+--                 |> T.setOnInput (Just InputFrom)
+--                 |> T.setType "date"
+--                 |> T.setPlaceholder "Velg dato"
+--                 |> T.setTitle (Just "Fra")
+--                 |> T.view
+--             ]
+--         , Ui.Section.viewItem
+--             [ T.init "to"
+--                 |> T.setValue model.to
+--                 |> T.setOnInput (Just InputTo)
+--                 |> T.setType "date"
+--                 |> T.setPlaceholder "Velg dato"
+--                 |> T.setTitle (Just "Til")
+--                 |> T.view
+--             ]
+--         ]
 
 
 viewMain : Shared -> Model -> Html Msg
@@ -292,7 +301,11 @@ viewOrder shared model order =
                     )
                 |> B.setIcon (Just Icon.rightArrow)
                 |> B.tertiary
-            , Html.Extra.viewIf missingEmail (Message.warning "Du må legge til epost via profilen din for å kunne sende kvittering.")
+            , Html.Extra.viewIf missingEmail
+                (H.p [] [ H.a [ Route.href Route.Settings ] [ H.text "Du må legge til epost via profilen din for å kunne sende kvittering." ] ]
+                    |> Message.Warning
+                    |> Message.message
+                )
             ]
 
 

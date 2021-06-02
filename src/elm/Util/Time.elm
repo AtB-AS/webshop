@@ -1,6 +1,8 @@
-module Util.Time exposing (toIsoDate, toIsoTime, toMonthNum)
+module Util.Time exposing (addHours, isoStringToFullHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
 
-import Time
+import DateFormat
+import Iso8601
+import Time exposing (Posix)
 import Util.Format as Format
 
 
@@ -76,3 +78,33 @@ toMonthNum month =
 
         Time.Dec ->
             12
+
+
+isoStringToFullHumanized : Time.Zone -> String -> Maybe String
+isoStringToFullHumanized zone dateString =
+    case Iso8601.toTime dateString of
+        Err _ ->
+            Nothing
+
+        Ok timePosix ->
+            Just <| toFullHumanized zone timePosix
+
+
+toFullHumanized : Time.Zone -> Time.Posix -> String
+toFullHumanized zone date_ =
+    DateFormat.formatI18n DateFormat.norwegian "dd.MM.yyyy - HH:mm" zone date_
+
+
+toHoursAndMinutes : Time.Zone -> Time.Posix -> String
+toHoursAndMinutes zone date_ =
+    DateFormat.formatI18n DateFormat.norwegian "HH:mm" zone date_
+
+
+{-| Add hours to specific posix object
+-}
+addHours : Int -> Posix -> Posix
+addHours hours posix =
+    posix
+        |> Time.posixToMillis
+        |> (+) (hours * 1000 * 60 * 60)
+        |> Time.millisToPosix

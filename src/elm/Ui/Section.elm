@@ -6,6 +6,7 @@ module Ui.Section exposing
     , view
     , viewGroup
     , viewHeader
+    , viewHorizontalGroup
     , viewItem
     , viewLabelItem
     , viewPaddedItem
@@ -54,6 +55,11 @@ viewWithOptions items options =
 view : List (Html msg) -> Html msg
 view children =
     viewWithOptions children init
+
+
+viewHorizontalGroup : List (Html msg) -> Html msg
+viewHorizontalGroup =
+    H.div [ A.class "ui-section__item ui-section__item--horizontal" ]
 
 
 viewGroup : String -> List (Html msg) -> Html msg

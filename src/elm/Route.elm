@@ -1,5 +1,6 @@
 module Route exposing
-    ( Route(..)
+    ( ResponseCode(..)
+    , Route(..)
     , fromUrl
     , href
     , modifyUrl
@@ -8,19 +9,48 @@ module Route exposing
     )
 
 import Browser.Navigation as Nav
+import Dict
 import Html exposing (Attribute)
 import Html.Attributes as A
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, oneOf, s)
+import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf, s)
+import Url.Parser.Query as QueryParser
 
 
 type Route
     = Home
     | Shop
-    | Thanks
+    | Payment PaymentResponseQuery
     | History
     | Settings
     | NotFound
+
+
+type alias PaymentResponseQuery =
+    { transactionId : Maybe Int
+    , paymentId : Maybe Int
+    , orderId : Maybe String
+    , responseCode : Maybe ResponseCode
+    }
+
+
+type ResponseCode
+    = Cancel
+    | OK
+
+
+paymentResponseQueryParser : QueryParser.Parser PaymentResponseQuery
+paymentResponseQueryParser =
+    QueryParser.map4 PaymentResponseQuery
+        (QueryParser.int "transaction_id")
+        (QueryParser.int "payment_id")
+        (QueryParser.string "order_id")
+        (QueryParser.enum "response_code" <|
+            Dict.fromList
+                [ ( "Cancel", Cancel )
+                , ( "OK", OK )
+                ]
+        )
 
 
 parser : Parser (Route -> a) a
@@ -29,7 +59,7 @@ parser =
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
         , Parser.map History <| s "history"
-        , Parser.map Thanks <| s "thanks"
+        , Parser.map Payment <| s "payment" <?> paymentResponseQueryParser
         , Parser.map Settings <| s "settings"
         ]
 
@@ -42,11 +72,11 @@ routeToString page =
                 Home ->
                     []
 
+                Payment _ ->
+                    []
+
                 Shop ->
                     [ "shop" ]
-
-                Thanks ->
-                    [ "thanks" ]
 
                 History ->
                     [ "history" ]

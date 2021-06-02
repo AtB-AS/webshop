@@ -342,6 +342,9 @@ const commonConfig = {
                 version: gitDescribe(),
                 commit: gitCommitHash()
             }),
+            gaTrackingId: JSON.stringify(
+                process.env.GA_TRACKING_ID || localConfig.gaTrackingId
+            ),
             firebaseConfig: JSON.stringify(getFirebaseConfig(localConfig))
         })
     ]

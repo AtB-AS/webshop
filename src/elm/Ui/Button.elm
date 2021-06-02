@@ -14,6 +14,7 @@ module Ui.Button exposing
     , secondaryDefault
     , setAttributes
     , setDisabled
+    , setElement
     , setIcon
     , setOnClick
     , setText
@@ -22,7 +23,7 @@ module Ui.Button exposing
     , tertiaryCompact
     )
 
-import Html as H exposing (Html)
+import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Attributes.Extra
 import Html.Events as E
@@ -58,6 +59,7 @@ type alias Button msg =
     , onClick : Maybe msg
     , type_ : String
     , attributes : List (H.Attribute msg)
+    , element : List (Attribute msg) -> List (Html msg) -> Html msg
     }
 
 
@@ -69,6 +71,7 @@ init text =
     , onClick = Nothing
     , type_ = "button"
     , attributes = []
+    , element = H.button
     }
 
 
@@ -97,13 +100,18 @@ setType type_ opts =
     { opts | type_ = type_ }
 
 
+setElement : (List (Attribute msg) -> List (Html msg) -> Html msg) -> Button msg -> Button msg
+setElement element opts =
+    { opts | element = element }
+
+
 setAttributes : List (H.Attribute msg) -> Button msg -> Button msg
 setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
 button : ButtonMode -> ThemeColor -> Button msg -> Html msg
-button mode color { text, disabled, icon, onClick, type_, attributes } =
+button mode color { text, disabled, icon, onClick, type_, attributes, element } =
     let
         classList =
             [ ( buttonModeToClass mode, True )
@@ -111,16 +119,32 @@ button mode color { text, disabled, icon, onClick, type_, attributes } =
             , ( "ui-button--disabled", disabled )
             , ( themeColorToClass color, mode /= Tertiary && mode /= Link )
             ]
+
+        maybeOnClick =
+            if disabled then
+                Nothing
+
+            else
+                onClick
     in
-        H.button
+        element
             ([ A.classList classList
-             , Html.Attributes.Extra.attributeMaybe E.onClick onClick
-             , A.disabled disabled
+             , Html.Attributes.Extra.attributeMaybe E.onClick maybeOnClick
+             , A.attribute "aria-disabled" (boolToString disabled)
              , A.type_ type_
              ]
                 ++ attributes
             )
             [ Ui.TextContainer.primaryBoldInline [ H.text text ], Html.Extra.viewMaybe (List.singleton >> H.span [ A.class "ui-button__icon" ]) icon ]
+
+
+boolToString : Bool -> String
+boolToString bool =
+    if bool then
+        "true"
+
+    else
+        "false"
 
 
 primary : ThemeColor -> Button msg -> Html msg

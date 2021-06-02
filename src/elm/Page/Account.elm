@@ -8,6 +8,7 @@ import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
+import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode exposing (Error(..))
@@ -19,11 +20,14 @@ import Shared exposing (Shared)
 import Task
 import Time exposing (Month(..), ZoneName(..))
 import Ui.Button as B
+import Ui.InlineButtonLink
 import Ui.Input.EditSection as EditSection
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
 import Ui.Message
 import Ui.Section
+import Ui.TravelCardText
+import Url.Builder as Url
 import Util.Maybe
 import Util.PhoneNumber
 import Util.TravelCard
@@ -284,18 +288,47 @@ view _ _ _ model _ =
 
 
 viewSidebar : Model -> Html Msg
-viewSidebar _ =
-    Ui.Section.view
-        [ B.init "Logg ut"
-            |> B.setIcon (Just Icon.logout)
-            |> B.setOnClick (Just Logout)
-            |> B.tertiary
-        , B.init "Slett konto"
-            |> B.setIcon (Just Icon.delete)
-            |> B.setDisabled True
-            |> B.setOnClick (Just Logout)
-            |> B.tertiary
-        ]
+viewSidebar model =
+    let
+        phoneNumber =
+            model.profile
+                |> Maybe.map .phone
+                |> Maybe.withDefault "<Telefonnummer her>"
+
+        subject =
+            "Slett AtB-profilen min"
+
+        body =
+            ("Jeg ønsker at min AtB-profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
+                ++ phoneNumber
+            )
+                ++ """
+
+                Jeg forstår at sletting av min AtB-profil innebærer følgende:
+                
+                - Eventuelle fortsatt gyldige eller fremtidige billetter på min profil vil slettes.
+                - Jeg får ikke lenger tilgang til billetthistorikk eller kvitteringer.
+                - Jeg må legge ved kopi av gyldig identifikasjon i denne e-posten, slik at kundeservice kan verifisere at jeg er eier av profilen.
+                """
+
+        deleteLink =
+            "mailto:kundeservice@atb.no"
+                ++ Url.toQuery
+                    [ Url.string "body" body
+                    , Url.string "subject" subject
+                    ]
+    in
+        Ui.Section.view
+            [ B.init "Logg ut"
+                |> B.setIcon (Just Icon.logout)
+                |> B.setOnClick (Just Logout)
+                |> B.tertiary
+            , B.init "Slett konto"
+                |> B.setIcon (Just Icon.delete)
+                |> B.setElement H.a
+                |> B.setAttributes [ A.href deleteLink, A.title "Send epost til kundeservice med telefonnummer for å få slettet konto." ]
+                |> B.primary B.Primary_destructive
+            ]
 
 
 viewMain : Model -> Html Msg
@@ -402,7 +435,7 @@ viewEmailAddress model profile =
         EditSection.init "Administrer e-post"
             |> EditSection.setEditButtonType
                 (if hasEmail then
-                    ( "Endre epostadresse", Icon.delete )
+                    ( "Endre epostadresse", Icon.edit )
 
                  else
                     ( "Legg til epostadresse", Icon.edit )
@@ -428,6 +461,7 @@ viewEmailAddress model profile =
                                 |> Text.setOnInput (Just <| UpdateEmail)
                                 |> Text.setPlaceholder "Legg til et e-post"
                                 |> Text.setValue (Just model.email)
+                                |> Text.setType "email"
                                 |> Text.view
                             ]
 
@@ -507,17 +541,40 @@ viewTravelCard model profile =
                                     |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
                                     |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
                                     |> MaskedInput.setPattern "#### #### ########"
-                                    |> MaskedInput.setAttributes [ A.autofocus True ]
+                                    |> MaskedInput.setAttributes
+                                        [ A.autofocus True
+                                        , A.attribute "inputmode" "numeric"
+                                        ]
                                     |> MaskedInput.view model.travelCardState model.travelCard
                                 ]
 
                         else
                             [ Ui.Section.viewLabelItem "t:kortnummer"
-                                [ profile.travelCard
-                                    |> Maybe.map (.id >> String.fromInt)
-                                    |> Maybe.map Util.TravelCard.formatAnonymized
-                                    |> Maybe.withDefault "Ingen t:kort lagt til"
-                                    |> H.text
+                                [ case profile.travelCard of
+                                    Just travelCard ->
+                                        travelCard
+                                            |> .id
+                                            |> Ui.TravelCardText.view
+
+                                    Nothing ->
+                                        H.div [ A.class "pageAccount__noTravelCard" ]
+                                            [ Icon.warningColor
+                                            , H.p []
+                                                [ H.text "Du har ingen billettbærere! Last ned appen vår eller "
+                                                , Ui.InlineButtonLink.view
+                                                    [ E.onClick <| SetEditSection (Just TravelCardSection) (Just "tkort")
+                                                    ]
+                                                    [ H.text "legg til et t:kort" ]
+                                                , H.text ". Har du ikke t:kort kan du "
+                                                , H.a
+                                                    [ A.href "https://www.atb.no/bestill-tkort/"
+                                                    , A.target "_blank"
+                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg (åpner ny side)."
+                                                    ]
+                                                    [ H.text "bestille her (åpner ny side)" ]
+                                                , H.text "."
+                                                ]
+                                            ]
                                 ]
                             , model.validationErrors
                                 |> Validation.select TravelCard

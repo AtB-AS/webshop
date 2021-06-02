@@ -1,6 +1,17 @@
-module Util.PhoneNumber exposing (format)
+module Util.PhoneNumber exposing (format, withoutCountryCode)
 
 import Util.NumberFormater as NF
+
+
+withoutCountryCode : String -> String
+withoutCountryCode phone =
+    if String.startsWith "+" phone then
+        -- NOTE: This isn't ideal permanently. If supporting multiple country codes, we should
+        -- check for complete list as some are 3 digits.
+        String.dropLeft 3 phone
+
+    else
+        phone
 
 
 format : String -> String
@@ -10,7 +21,7 @@ format phone =
             String.left 3 phone
 
         actualPhone =
-            String.replace countryCode "" phone
+            withoutCountryCode phone
     in
         NF.formatString
             [ NF.Str countryCode
