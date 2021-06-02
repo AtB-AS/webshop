@@ -459,7 +459,7 @@ viewEmailAddress model profile =
                                 |> Text.setTitle (Just "E-post")
                                 |> Text.setError (Validation.select Email model.validationErrors)
                                 |> Text.setOnInput (Just <| UpdateEmail)
-                                |> Text.setPlaceholder "Legg til et e-post"
+                                |> Text.setPlaceholder "Legg til en e-postadresse"
                                 |> Text.setValue (Just model.email)
                                 |> Text.setType "email"
                                 |> Text.view
