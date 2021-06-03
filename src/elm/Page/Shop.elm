@@ -8,7 +8,6 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Events as E
 import Html.Extra
 import Http
 import List.Extra
@@ -623,7 +622,7 @@ modelSummary ( defaultZone, defaultProduct ) shared model =
 
 
 summaryView : Shared -> Model -> ModelSummary -> Html Msg
-summaryView shared model summary =
+summaryView shared model _ =
     let
         emptyOffers =
             case model.offers of
