@@ -10,9 +10,10 @@ import Html.Events as E
 import Html.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
-import Service.FirebaseAuth as FirebaseAuth
+import Service.FirebaseAuth as FirebaseAuth exposing (Provider(..))
 import Task
 import Ui.Button as B
+import Ui.InlineButtonLink
 import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.PageHeader as PH
@@ -23,6 +24,7 @@ type LoginMethod
     = PhoneMethod
     | EmailMethod
     | RegisterEmailMethod
+    | ResetEmailMethod
 
 
 type Msg
@@ -32,6 +34,8 @@ type Msg
     | InputPassword String
     | DoLogin
     | ResendPhoneCode
+    | ResetPassword
+    | SetLoginMethod LoginMethod
     | Confirm
     | BackLogin
     | RequestCode
@@ -63,7 +67,7 @@ init =
       , code = ""
       , email = ""
       , password = ""
-      , loginMethod = RegisterEmailMethod
+      , loginMethod = PhoneMethod
       , step = StepLogin
       , error = Nothing
       , loading = False
@@ -87,6 +91,9 @@ update msg _ model =
         InputPassword value ->
             PageUpdater.init { model | password = value }
 
+        SetLoginMethod method ->
+            PageUpdater.init { model | loginMethod = method }
+
         BackLogin ->
             PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
 
@@ -99,6 +106,9 @@ update msg _ model =
 
                     EmailMethod ->
                         loginUsingEmail model.email model.password
+
+                    ResetEmailMethod ->
+                        resetUsingEmail model.email
 
                     RegisterEmailMethod ->
                         registerUsingEmail model.email model.password
@@ -113,6 +123,17 @@ update msg _ model =
                 , loginUsingPhone model.phone
                 )
                 |> (H.text "Sendt ny forespørsel etter engangspassord."
+                        |> Message.Valid
+                        |> Message.message
+                        |> (\s -> Notification.setContent s Notification.init)
+                        |> GA.ShowNotification
+                        |> PageUpdater.addGlobalAction
+                   )
+
+        ResetPassword ->
+            PageUpdater.init
+                { model | loginMethod = EmailMethod }
+                |> (H.text "E-post med informasjon for glemt passord sendt."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)
@@ -162,6 +183,11 @@ loginUsingEmail email password =
     FirebaseAuth.loginEmail { email = email, password = password }
 
 
+resetUsingEmail : String -> Cmd Msg
+resetUsingEmail email =
+    FirebaseAuth.resetPassword email
+
+
 registerUsingEmail : String -> String -> Cmd Msg
 registerUsingEmail email password =
     FirebaseAuth.registerEmail { email = email, password = password }
@@ -208,24 +234,72 @@ viewLogin model =
                 PhoneMethod ->
                     viewPhoneInputs
 
+                ResetEmailMethod ->
+                    viewResetInputs
+
                 _ ->
                     viewEmailInputs
 
-        submitText =
+        ( submitText, description ) =
             case model.loginMethod of
                 PhoneMethod ->
-                    "Send engangspassord"
+                    ( "Send engangspassord"
+                    , [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor. "
+                      , Ui.InlineButtonLink.view
+                            [ E.onClick <| SetLoginMethod EmailMethod
+                            ]
+                            [ H.text "Eller du kan logge inn med e-post" ]
+                      , H.text "."
+                      ]
+                    )
 
                 EmailMethod ->
-                    "Logg inn"
+                    ( "Logg inn"
+                    , [ H.text "Ingen profil enda? "
+                      , Ui.InlineButtonLink.view
+                            [ E.onClick <| SetLoginMethod RegisterEmailMethod
+                            ]
+                            [ H.text "Opprett og logg inn med ny profil" ]
+                      , H.text ". Eller så kan du "
+                      , Ui.InlineButtonLink.view
+                            [ E.onClick <| SetLoginMethod PhoneMethod
+                            ]
+                            [ H.text "logge inn og opprette automatisk med telefonnummer" ]
+                      , H.text "."
+                      ]
+                    )
 
                 RegisterEmailMethod ->
-                    "Registrer profil"
+                    ( "Registrer profil"
+                    , [ H.text "Opprett ny profil. "
+                      , Ui.InlineButtonLink.view
+                            [ E.onClick <| SetLoginMethod EmailMethod
+                            ]
+                            [ H.text "Logg inn med eksisterende konto" ]
+                      , H.text " eller "
+                      , Ui.InlineButtonLink.view
+                            [ E.onClick <| SetLoginMethod PhoneMethod
+                            ]
+                            [ H.text "logg inn med telefon" ]
+                      , H.text "."
+                      ]
+                    )
+
+                ResetEmailMethod ->
+                    ( "Tilbakestill passord"
+                    , [ H.text "Be om å tilbakestille passord på profilen. Eller "
+                      , Ui.InlineButtonLink.view
+                            [ E.onClick <| SetLoginMethod EmailMethod
+                            ]
+                            [ H.text "gå tilbake" ]
+                      , H.text "."
+                      ]
+                    )
     in
         H.form [ E.onSubmit DoLogin ]
             [ Ui.Section.view
                 [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
-                , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor." ] ]
+                , Ui.Section.viewPaddedItem [ H.p [] description ]
                 , Ui.Section.viewItem <| viewInputs model
                 , H.p []
                     [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
@@ -238,6 +312,11 @@ viewLogin model =
                     |> B.setType "submit"
                     |> B.primary B.Primary_2
                 ]
+            , B.init "Glemt passord?"
+                |> B.setOnClick (Just (SetLoginMethod ResetEmailMethod))
+                |> B.setType "button"
+                |> B.link
+                |> Html.Extra.viewIf (model.loginMethod == EmailMethod)
             ]
 
 
@@ -273,6 +352,20 @@ viewEmailInputs model =
         |> T.setRequired True
         |> T.setTitle (Just "Passord")
         |> T.setPlaceholder "Tast inn passordet ditt"
+        |> T.view
+    ]
+
+
+viewResetInputs : Model -> List (Html Msg)
+viewResetInputs model =
+    [ Html.Extra.viewMaybe Message.error model.error
+    , T.init "email"
+        |> T.setValue (Just model.email)
+        |> T.setOnInput (Just InputEmail)
+        |> T.setType "email"
+        |> T.setRequired True
+        |> T.setTitle (Just "E-post")
+        |> T.setPlaceholder "Logg inn med e-posten din"
         |> T.view
     ]
 
@@ -313,5 +406,6 @@ subscriptions _ =
     Sub.batch
         [ FirebaseAuth.onRequestCode RequestCode
         , FirebaseAuth.onError HandleError
+        , FirebaseAuth.onPasswordReset (\_ -> ResetPassword)
         , FirebaseAuth.signedInInfo (\_ -> LoggedIn)
         ]
