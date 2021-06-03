@@ -1,14 +1,16 @@
 port module Service.FirebaseAuth exposing
     ( Provider(..)
     , authError
+    , confirmPhone
+    , loginEmail
+    , loginPhone
     , onError
     , onRequestCode
-    , phoneConfirm
-    , phoneLogin
     , phoneRequestCode
     , providerDecoder
     , providerFromString
     , providerToString
+    , registerEmail
     , signInError
     , signOut
     , signedInInfo
@@ -22,6 +24,7 @@ type Provider
     = Google
     | Microsoft
     | Phone
+    | Password
     | Anonymous
     | Unknown String
 
@@ -39,14 +42,25 @@ port signInError : (Json.Encode.Value -> msg) -> Sub msg
 port signOutHandler : () -> Cmd msg
 
 
+{-| Initiate login with the given email/password.
+-}
+port loginEmail : { email : String, password : String } -> Cmd msg
+
+
+{-| Initiate register with the given email/password.
+Will login after successful register.
+-}
+port registerEmail : { email : String, password : String } -> Cmd msg
+
+
 {-| Initiate login with the given phone number.
 -}
-port phoneLogin : String -> Cmd msg
+port loginPhone : String -> Cmd msg
 
 
 {-| Confirm the login with the given code.
 -}
-port phoneConfirm : String -> Cmd msg
+port confirmPhone : String -> Cmd msg
 
 
 {-| Confirmation code from phone authentication recieved.
@@ -130,6 +144,9 @@ providerToString provider =
 
         Anonymous ->
             "anonymous"
+
+        Password ->
+            "password"
 
         Unknown _ ->
             "unknown"

@@ -412,7 +412,7 @@ window.customElements.define(
     }
 );
 
-function handleauthError(error) {
+function handleAuthError(error) {
     if (!error) {
         app.ports.authError.send('En ukjent feil oppstod.');
     }
@@ -450,11 +450,15 @@ function handleauthError(error) {
             );
             break;
         default:
-            app.ports.authError.send('En ukjent feil oppstod.');
+            if (error.message) {
+                app.ports.authError.send(error.message);
+            } else {
+                app.ports.authError.send('En ukjent feil oppstod.');
+            }
     }
 }
 
-app.ports.phoneLogin.subscribe((phone) => {
+app.ports.loginPhone.subscribe((phone) => {
     if (!phone) {
         return;
     }
@@ -473,11 +477,11 @@ app.ports.phoneLogin.subscribe((phone) => {
                 JSON.stringify(error)
             );
 
-            handleauthError(error);
+            handleAuthError(error);
         });
 });
 
-app.ports.phoneConfirm.subscribe((code) => {
+app.ports.confirmPhone.subscribe((code) => {
     if (!code) {
         return;
     }
@@ -494,7 +498,44 @@ app.ports.phoneConfirm.subscribe((code) => {
                 JSON.stringify(error)
             );
 
-            handleauthError(error);
+            handleAuthError(error);
+        });
+});
+
+app.ports.registerEmail.subscribe(({ email, password }) => {
+    firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            fetchAuthInfo(userCredential.user);
+        })
+        .catch((error) => {
+            console.log('[debug] email register error', error);
+            console.log(
+                '[debug] email register error json',
+                JSON.stringify(error)
+            );
+
+            handleAuthError(error);
+        });
+});
+
+app.ports.loginEmail.subscribe(({ email, password }) => {
+    console.log('[debug] Logging in', email);
+    firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            fetchAuthInfo(userCredential.user);
+        })
+        .catch((error) => {
+            console.log('[debug] email login error', error);
+            console.log(
+                '[debug] email login error json',
+                JSON.stringify(error)
+            );
+
+            handleAuthError(error);
         });
 });
 
