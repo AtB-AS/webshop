@@ -1,15 +1,20 @@
 port module Service.FirebaseAuth exposing
     ( Provider(..)
+    , authError
+    , onError
+    , onRequestCode
+    , phoneConfirm
+    , phoneLogin
+    , phoneRequestCode
     , providerDecoder
     , providerFromString
     , providerToString
-    , signIn
     , signInError
-    , signInInfo
     , signOut
+    , signedInInfo
     )
 
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode
 
 
@@ -25,10 +30,7 @@ type Provider
 -- PORTS
 
 
-port signInHandler : String -> Cmd msg
-
-
-port signInInfo : (Json.Encode.Value -> msg) -> Sub msg
+port signedInInfo : (Json.Encode.Value -> msg) -> Sub msg
 
 
 port signInError : (Json.Encode.Value -> msg) -> Sub msg
@@ -37,18 +39,47 @@ port signInError : (Json.Encode.Value -> msg) -> Sub msg
 port signOutHandler : () -> Cmd msg
 
 
+{-| Initiate login with the given phone number.
+-}
+port phoneLogin : String -> Cmd msg
+
+
+{-| Confirm the login with the given code.
+-}
+port phoneConfirm : String -> Cmd msg
+
+
+{-| Confirmation code from phone authentication recieved.
+-}
+port phoneRequestCode : (Value -> msg) -> Sub msg
+
+
+{-| Error recieved from authentication module in index.js.
+-}
+port authError : (String -> msg) -> Sub msg
+
+
 
 -- HELPERS
-
-
-signIn : Provider -> Cmd msg
-signIn =
-    providerToString >> signInHandler
 
 
 signOut : Cmd msg
 signOut =
     signOutHandler ()
+
+
+{-| Called when SMS has been sent and we need the user to enter the code.
+-}
+onRequestCode : msg -> Sub msg
+onRequestCode msg =
+    phoneRequestCode (\_ -> msg)
+
+
+{-| Called on error during phone login.
+-}
+onError : (String -> msg) -> Sub msg
+onError =
+    authError
 
 
 
