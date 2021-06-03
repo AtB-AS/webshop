@@ -468,7 +468,7 @@ app.ports.loginPhone.subscribe((phone) => {
         .signInWithPhoneNumber(phone, window.recaptchaVerifier)
         .then((confirmationResult) => {
             window.confirmationResult = confirmationResult;
-            app.ports.phoneRequestCode.send();
+            app.ports.phoneRequestCode.send('');
         })
         .catch((error) => {
             console.log('[debug] phone login error', error);
@@ -521,7 +521,6 @@ app.ports.registerEmail.subscribe(({ email, password }) => {
 });
 
 app.ports.loginEmail.subscribe(({ email, password }) => {
-    console.log('[debug] Logging in', email);
     firebase
         .auth()
         .signInWithEmailAndPassword(email, password)
@@ -535,6 +534,18 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
                 JSON.stringify(error)
             );
 
+            handleAuthError(error);
+        });
+});
+
+app.ports.resetPassword.subscribe((email) => {
+    firebase
+        .auth()
+        .sendPasswordResetEmail(email)
+        .then(function () {
+            app.ports.resetPasswordDone.send();
+        })
+        .catch(function (error) {
             handleAuthError(error);
         });
 });

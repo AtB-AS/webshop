@@ -5,12 +5,15 @@ port module Service.FirebaseAuth exposing
     , loginEmail
     , loginPhone
     , onError
+    , onPasswordReset
     , onRequestCode
     , phoneRequestCode
     , providerDecoder
     , providerFromString
     , providerToString
     , registerEmail
+    , resetPassword
+    , resetPasswordDone
     , signInError
     , signOut
     , signedInInfo
@@ -73,6 +76,16 @@ port phoneRequestCode : (Value -> msg) -> Sub msg
 port authError : (String -> msg) -> Sub msg
 
 
+{-| Resetting password is done
+-}
+port resetPasswordDone : (Value -> msg) -> Sub msg
+
+
+{-| Reset password by passing in email
+-}
+port resetPassword : String -> Cmd msg
+
+
 
 -- HELPERS
 
@@ -94,6 +107,13 @@ onRequestCode msg =
 onError : (String -> msg) -> Sub msg
 onError =
     authError
+
+
+{-| Called on password reset
+-}
+onPasswordReset : (Value -> msg) -> Sub msg
+onPasswordReset =
+    resetPasswordDone
 
 
 
