@@ -19,10 +19,18 @@ import Ui.PageHeader as PH
 import Ui.Section
 
 
+type LoginMethod
+    = PhoneMethod
+    | EmailMethod
+    | RegisterEmailMethod
+
+
 type Msg
     = InputPhone String
     | InputCode String
-    | LoginPhone
+    | InputEmail String
+    | InputPassword String
+    | DoLogin
     | ResendPhoneCode
     | Confirm
     | BackLogin
@@ -35,6 +43,9 @@ type Msg
 type alias Model =
     { phone : String
     , code : String
+    , email : String
+    , password : String
+    , loginMethod : LoginMethod
     , step : Step
     , error : Maybe String
     , loading : Bool
@@ -50,6 +61,9 @@ init : ( Model, Cmd Msg )
 init =
     ( { phone = ""
       , code = ""
+      , email = ""
+      , password = ""
+      , loginMethod = RegisterEmailMethod
       , step = StepLogin
       , error = Nothing
       , loading = False
@@ -67,17 +81,37 @@ update msg _ model =
         InputCode value ->
             PageUpdater.init { model | code = value }
 
+        InputEmail value ->
+            PageUpdater.init { model | email = value }
+
+        InputPassword value ->
+            PageUpdater.init { model | password = value }
+
         BackLogin ->
             PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
 
-        LoginPhone ->
-            updateLogin model
+        DoLogin ->
+            PageUpdater.fromPair
+                ( { model | error = Nothing, loading = True }
+                , case model.loginMethod of
+                    PhoneMethod ->
+                        loginUsingPhone model.phone
+
+                    EmailMethod ->
+                        loginUsingEmail model.email model.password
+
+                    RegisterEmailMethod ->
+                        registerUsingEmail model.email model.password
+                )
 
         LoggedIn ->
             PageUpdater.init (Tuple.first init)
 
         ResendPhoneCode ->
-            updateLogin model
+            PageUpdater.fromPair
+                ( { model | error = Nothing, loading = True }
+                , loginUsingPhone model.phone
+                )
                 |> (H.text "Sendt ny forespørsel etter engangspassord."
                         |> Message.Valid
                         |> Message.message
@@ -89,7 +123,7 @@ update msg _ model =
         Confirm ->
             PageUpdater.fromPair
                 ( { model | loading = True }
-                , FirebaseAuth.phoneConfirm model.code
+                , FirebaseAuth.confirmPhone model.code
                 )
 
         RequestCode ->
@@ -110,20 +144,27 @@ update msg _ model =
             PageUpdater.init model
 
 
-updateLogin : Model -> PageUpdater Model Msg
-updateLogin model =
+loginUsingPhone : String -> Cmd Msg
+loginUsingPhone phoneNumber =
     let
         fullPhone =
-            if String.startsWith "+" model.phone then
-                model.phone
+            if String.startsWith "+" phoneNumber then
+                phoneNumber
 
             else
-                "+47" ++ model.phone
+                "+47" ++ phoneNumber
     in
-        PageUpdater.fromPair
-            ( { model | loading = True }
-            , FirebaseAuth.phoneLogin fullPhone
-            )
+        FirebaseAuth.loginPhone fullPhone
+
+
+loginUsingEmail : String -> String -> Cmd Msg
+loginUsingEmail email password =
+    FirebaseAuth.loginEmail { email = email, password = password }
+
+
+registerUsingEmail : String -> String -> Cmd Msg
+registerUsingEmail email password =
+    FirebaseAuth.registerEmail { email = email, password = password }
 
 
 focusBox : Maybe String -> Cmd Msg
@@ -150,7 +191,7 @@ view env model =
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , case model.step of
                 StepLogin ->
-                    viewLogin env model
+                    viewLogin model
 
                 StepConfirm ->
                     viewConfirm env model
@@ -159,35 +200,81 @@ view env model =
         ]
 
 
-viewLogin : Environment -> Model -> Html Msg
-viewLogin _ model =
-    H.form [ E.onSubmit LoginPhone ]
-        [ Ui.Section.view
-            [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
-            , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor." ] ]
-            , Ui.Section.viewItem
-                [ T.init "phone"
-                    |> T.setValue (Just model.phone)
-                    |> T.setOnInput (Just InputPhone)
-                    |> T.setError model.error
-                    |> T.setType "tel"
-                    |> T.setRequired True
-                    |> T.setTitle (Just "Telefonnummer")
-                    |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
-                    |> T.view
+viewLogin : Model -> Html Msg
+viewLogin model =
+    let
+        viewInputs =
+            case model.loginMethod of
+                PhoneMethod ->
+                    viewPhoneInputs
+
+                _ ->
+                    viewEmailInputs
+
+        submitText =
+            case model.loginMethod of
+                PhoneMethod ->
+                    "Send engangspassord"
+
+                EmailMethod ->
+                    "Logg inn"
+
+                RegisterEmailMethod ->
+                    "Registrer profil"
+    in
+        H.form [ E.onSubmit DoLogin ]
+            [ Ui.Section.view
+                [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
+                , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor." ] ]
+                , Ui.Section.viewItem <| viewInputs model
+                , H.p []
+                    [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
+                    , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Begrensninger og forutsetninger (åpner ny side)." ]
+                    ]
+                    |> Message.Warning
+                    |> Message.message
+                , B.init submitText
+                    |> B.setIcon (Just Icon.rightArrow)
+                    |> B.setType "submit"
+                    |> B.primary B.Primary_2
                 ]
-            , H.p []
-                [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
-                , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Begrensninger og forutsetninger (åpner ny side)." ]
-                ]
-                |> Message.Warning
-                |> Message.message
-            , B.init "Send engangspassord"
-                |> B.setIcon (Just Icon.rightArrow)
-                |> B.setType "submit"
-                |> B.primary B.Primary_2
             ]
-        ]
+
+
+viewPhoneInputs : Model -> List (Html Msg)
+viewPhoneInputs model =
+    [ T.init "phone"
+        |> T.setValue (Just model.phone)
+        |> T.setOnInput (Just InputPhone)
+        |> T.setError model.error
+        |> T.setType "tel"
+        |> T.setRequired True
+        |> T.setTitle (Just "Telefonnummer")
+        |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
+        |> T.view
+    ]
+
+
+viewEmailInputs : Model -> List (Html Msg)
+viewEmailInputs model =
+    [ Html.Extra.viewMaybe Message.error model.error
+    , T.init "email"
+        |> T.setValue (Just model.email)
+        |> T.setOnInput (Just InputEmail)
+        |> T.setType "email"
+        |> T.setRequired True
+        |> T.setTitle (Just "E-post")
+        |> T.setPlaceholder "Logg inn med e-posten din"
+        |> T.view
+    , T.init "password"
+        |> T.setValue (Just model.password)
+        |> T.setOnInput (Just InputPassword)
+        |> T.setType "password"
+        |> T.setRequired True
+        |> T.setTitle (Just "Passord")
+        |> T.setPlaceholder "Tast inn passordet ditt"
+        |> T.view
+    ]
 
 
 viewConfirm : Environment -> Model -> Html Msg
