@@ -11,7 +11,6 @@ import Html.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.FirebaseAuth as FirebaseAuth
-import Service.Phone as PhoneService
 import Task
 import Ui.Button as B
 import Ui.Input.Text as T
@@ -23,8 +22,8 @@ import Ui.Section
 type Msg
     = InputPhone String
     | InputCode String
-    | Login
-    | Resend
+    | LoginPhone
+    | ResendPhoneCode
     | Confirm
     | BackLogin
     | RequestCode
@@ -71,13 +70,13 @@ update msg _ model =
         BackLogin ->
             PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
 
-        Login ->
+        LoginPhone ->
             updateLogin model
 
         LoggedIn ->
             PageUpdater.init (Tuple.first init)
 
-        Resend ->
+        ResendPhoneCode ->
             updateLogin model
                 |> (H.text "Sendt ny forespørsel etter engangspassord."
                         |> Message.Valid
@@ -90,7 +89,7 @@ update msg _ model =
         Confirm ->
             PageUpdater.fromPair
                 ( { model | loading = True }
-                , PhoneService.phoneConfirm model.code
+                , FirebaseAuth.phoneConfirm model.code
                 )
 
         RequestCode ->
@@ -123,7 +122,7 @@ updateLogin model =
     in
         PageUpdater.fromPair
             ( { model | loading = True }
-            , PhoneService.phoneLogin fullPhone
+            , FirebaseAuth.phoneLogin fullPhone
             )
 
 
@@ -162,7 +161,7 @@ view env model =
 
 viewLogin : Environment -> Model -> Html Msg
 viewLogin _ model =
-    H.form [ E.onSubmit Login ]
+    H.form [ E.onSubmit LoginPhone ]
         [ Ui.Section.view
             [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
             , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor." ] ]
@@ -216,7 +215,7 @@ viewConfirm _ model =
                 |> B.primary B.Primary_2
             ]
         , B.init "Send engangspassord på nytt"
-            |> B.setOnClick (Just Resend)
+            |> B.setOnClick (Just ResendPhoneCode)
             |> B.setType "button"
             |> B.link
         ]
@@ -225,7 +224,7 @@ viewConfirm _ model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ PhoneService.onRequestCode RequestCode
-        , PhoneService.onError HandleError
-        , FirebaseAuth.signInInfo (\_ -> LoggedIn)
+        [ FirebaseAuth.onRequestCode RequestCode
+        , FirebaseAuth.onError HandleError
+        , FirebaseAuth.signedInInfo (\_ -> LoggedIn)
         ]

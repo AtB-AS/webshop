@@ -136,31 +136,6 @@ remoteConfig
         console.log('[ERROR] remoteConfig.fetchAndActivate:', err);
     });
 
-app.ports.signInHandler.subscribe((provider_id) => {
-    const auth = firebase.auth();
-    let provider;
-
-    if (provider_id === 'google.com') {
-        provider = auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    } else if (provider_id === 'anonymous') {
-        provider = auth.signInAnonymously();
-    } else {
-        console.log('Tried to sign in with unknown provider', provider_id);
-        return;
-    }
-
-    provider
-        .then((result) => {
-            fetchAuthInfo(result.user);
-        })
-        .catch((error) => {
-            app.ports.signInError.send({
-                code: error.code,
-                message: error.message
-            });
-        });
-});
-
 app.ports.signOutHandler.subscribe(async () => {
     clearRefreshToken();
 
@@ -274,7 +249,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
                         phone
                     ]);
                 } else {
-                    app.ports.signInInfo.send({
+                    app.ports.signedInInfo.send({
                         token: idToken.token,
                         email: email,
                         phone: phone,
@@ -437,45 +412,45 @@ window.customElements.define(
     }
 );
 
-function handlePhoneError(error) {
+function handleauthError(error) {
     if (!error) {
-        app.ports.phoneError.send('En ukjent feil oppstod.');
+        app.ports.authError.send('En ukjent feil oppstod.');
     }
 
     switch (error.code) {
         case 'auth/invalid-phone-number':
-            app.ports.phoneError.send('Ugyldig telefonnummer.');
+            app.ports.authError.send('Ugyldig telefonnummer.');
             break;
         case 'auth/too-many-requests':
-            app.ports.phoneError.send(
+            app.ports.authError.send(
                 'Du har prøvd å logge inn for mange ganger uten hell. Vent noen minutter og prøv igjen.'
             );
             break;
         case 'auth/captcha-check-failed':
-            app.ports.phoneError.send(
+            app.ports.authError.send(
                 'Feil i valg i ReCaptcha. Prøv en gang til.'
             );
             break;
         case 'auth/missing-phone-number':
-            app.ports.phoneError.send('Ugyldig telefonnummer.');
+            app.ports.authError.send('Ugyldig telefonnummer.');
             break;
         case 'auth/user-disabled':
-            app.ports.phoneError.send(
+            app.ports.authError.send(
                 'Brukeren din ser ut til å være deaktivert. Ta kontakt med kundeservice.'
             );
             break;
         case 'auth/invalid-verification-code':
-            app.ports.phoneError.send(
+            app.ports.authError.send(
                 'Passordet stemmer ikke, vennligst prøv på nytt eller be om et nytt engangspassord.'
             );
             break;
         case 'auth/code-expired':
-            app.ports.phoneError.send(
+            app.ports.authError.send(
                 'Engangspassordet har utløpt. Vennligst prøv på nytt eller be om et nytt engangspassord.'
             );
             break;
         default:
-            app.ports.phoneError.send('En ukjent feil oppstod.');
+            app.ports.authError.send('En ukjent feil oppstod.');
     }
 }
 
@@ -498,7 +473,7 @@ app.ports.phoneLogin.subscribe((phone) => {
                 JSON.stringify(error)
             );
 
-            handlePhoneError(error);
+            handleauthError(error);
         });
 });
 
@@ -519,7 +494,7 @@ app.ports.phoneConfirm.subscribe((code) => {
                 JSON.stringify(error)
             );
 
-            handlePhoneError(error);
+            handleauthError(error);
         });
 });
 

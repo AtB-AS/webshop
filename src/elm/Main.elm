@@ -52,7 +52,6 @@ type Msg
     | OnboardingMsg OnboardingPage.Msg
     | SharedMsg Shared.Msg
     | StartOnboarding ( String, String, String )
-    | LogIn FirebaseAuth.Provider
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
     | LoggedInError (Result Decode.Error AuthError)
@@ -394,9 +393,6 @@ update msg model =
         StartOnboarding ( token, email, phone ) ->
             ( { model | onboarding = Just <| OnboardingPage.init token email phone }, Cmd.none )
 
-        LogIn provider ->
-            ( model, FirebaseAuth.signIn provider )
-
         LogOut ->
             let
                 oldEnvironment =
@@ -642,7 +638,7 @@ subs model =
         , Shared.subscriptions
             |> Sub.map SharedMsg
         , Time.every 1000 MaybeCloseNotification
-        , FirebaseAuth.signInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
+        , FirebaseAuth.signedInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userErrorDecoder >> LoggedInError)
         , MiscService.onboardingStart StartOnboarding
         ]
