@@ -1,5 +1,7 @@
 port module Service.Misc exposing
     ( Profile
+    , SignInMethod
+    , SignInProvider(..)
     , bodyClass
     , convertTime
     , convertedTime
@@ -53,6 +55,18 @@ type alias TravelCard =
     }
 
 
+type SignInProvider
+    = Password
+    | Phone
+    | Unknown
+
+
+type alias SignInMethod =
+    { provider : SignInProvider
+    , uid : String
+    }
+
+
 type alias Profile =
     { id : String
     , firstName : String
@@ -60,6 +74,7 @@ type alias Profile =
     , phone : String
     , email : String
     , travelCard : Maybe TravelCard
+    , signInMethods : List SignInMethod
     }
 
 
@@ -78,6 +93,7 @@ profileDecoder =
         |> DecodeP.required "phone" Decode.string
         |> DecodeP.required "email" Decode.string
         |> DecodeP.optional "travelcard" (Decode.map Just travelCardDecoder) Nothing
+        |> DecodeP.required "signInMethods" (Decode.list signInMethodDecoder)
 
 
 travelCardDecoder : Decoder TravelCard
@@ -85,6 +101,33 @@ travelCardDecoder =
     Decode.succeed TravelCard
         |> DecodeP.required "id" Decode.int
         |> DecodeP.required "expires" timestampDecoder
+
+
+signInMethodDecoder : Decoder SignInMethod
+signInMethodDecoder =
+    Decode.succeed SignInMethod
+        |> DecodeP.required "providerId" providerDecoder
+        |> DecodeP.required "uid" Decode.string
+
+
+providerFromString : String -> SignInProvider
+providerFromString provider =
+    case provider of
+        "phone" ->
+            Phone
+
+        "password" ->
+            Password
+
+        _ ->
+            Unknown
+
+
+{-| Decode a provider.
+-}
+providerDecoder : Decoder SignInProvider
+providerDecoder =
+    Decode.andThen (providerFromString >> Decode.succeed) Decode.string
 
 
 encodeProfile : Profile -> Encode.Value
