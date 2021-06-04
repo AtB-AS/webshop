@@ -138,6 +138,9 @@ setRouteInternal initialRoute maybeRoute model =
                     Just Route.Shop ->
                         TaskUtil.doTask <| ShopMsg ShopPage.OnEnterPage
 
+                    Just (Route.Login loginPath) ->
+                        TaskUtil.doTask <| LoginMsg <| LoginPage.OnEnterPage loginPath
+
                     Just Route.Settings ->
                         TaskUtil.doTask <| AccountMsg AccountPage.OnEnterPage
 
@@ -373,7 +376,7 @@ update msg model =
                 |> doPageUpdate
 
         LoginMsg subMsg ->
-            LoginPage.update subMsg model.environment model.login
+            LoginPage.update subMsg model.environment model.login model.navKey
                 |> PageUpdater.map (\newModel -> { model | login = newModel, authError = AuthErrorNone }) LoginMsg
                 |> doPageUpdate
 
@@ -483,17 +486,8 @@ view model =
                                     viewPage model
 
                                 Nothing ->
-                                    let
-                                        route =
-                                            case model.route of
-                                                Just (Login subRoute) ->
-                                                    subRoute
-
-                                                _ ->
-                                                    PhonePath
-                                    in
-                                        LoginPage.view model.environment model.login route
-                                            |> H.map LoginMsg
+                                    LoginPage.view model.environment model.login
+                                        |> H.map LoginMsg
                     ]
             )
         ]

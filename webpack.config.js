@@ -268,7 +268,7 @@ const commonConfig = {
         path: outputPath,
         filename: `static/js/${outputFilename}`,
         crossOriginLoading: 'anonymous',
-        publicPath: '',
+        publicPath: '/',
         hashFunction: createHashFunction('sha256', 'base64'),
         hashDigestLength: 64
     },

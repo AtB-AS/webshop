@@ -145,6 +145,5 @@ fromUrl : Url -> Maybe Route
 fromUrl url =
     url
         |> Parser.parse parser
-        |> Debug.log "route"
         |> Maybe.withDefault NotFound
         |> Just
