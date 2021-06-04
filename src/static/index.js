@@ -539,9 +539,12 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
 });
 
 app.ports.resetPassword.subscribe((email) => {
+    const actionCodeSettings = {
+        url: window.location.origin
+    };
     firebase
         .auth()
-        .sendPasswordResetEmail(email)
+        .sendPasswordResetEmail(email, actionCodeSettings)
         .then(function () {
             app.ports.resetPasswordDone.send();
         })
