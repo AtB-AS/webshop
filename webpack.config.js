@@ -285,7 +285,8 @@ const commonConfig = {
         splitChunks: {
             name: 'vendor',
             minChunks: 2
-        }
+        },
+        emitOnErrors: false
     },
     plugins: [
         new SriPlugin({
