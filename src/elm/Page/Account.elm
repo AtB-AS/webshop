@@ -14,7 +14,7 @@ import Http exposing (Error(..))
 import Json.Decode as Decode exposing (Error(..))
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
-import Service.Misc as MiscService exposing (Profile)
+import Service.Misc as MiscService exposing (Profile, SignInMethod, SignInProvider(..))
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
@@ -377,7 +377,7 @@ viewProfile model profile =
         disabledButtons =
             model.loadingEditSection == Just EmailSection
     in
-        Ui.Section.viewGroup "Profilinformasjon"
+        Ui.Section.viewGroup "Profilinformasjon" <|
             [ Html.Extra.viewMaybe Ui.Message.error (Validation.select NameFields model.validationErrors)
             , EditSection.init
                 "Administrer profilinformasjon"
@@ -421,13 +421,30 @@ viewProfile model profile =
                             )
                     )
             , viewEmailAddress model profile
-            , Ui.Section.viewWithIcon Icon.signInMethodLarge
+            ]
+                ++ List.map viewSignInMethod profile.signInMethods
+
+
+viewSignInMethod : SignInMethod -> Html msg
+viewSignInMethod method =
+    case method.provider of
+        Phone ->
+            Ui.Section.viewWithIcon Icon.signInMethodLarge
                 [ Ui.Section.viewLabelItem "Innloggingsmetode"
                     [ H.text "Engangspassord på SMS til "
-                    , viewField Util.PhoneNumber.format profile.phone
+                    , viewField Util.PhoneNumber.format method.uid
                     ]
                 ]
-            ]
+
+        Password ->
+            Ui.Section.viewWithIcon Icon.signInMethodLarge
+                [ Ui.Section.viewLabelItem "Innloggingsmetode"
+                    [ H.text <| "E-post og passord på " ++ method.uid
+                    ]
+                ]
+
+        _ ->
+            Html.Extra.nothing
 
 
 viewEmailAddress : Model -> Profile -> Html Msg

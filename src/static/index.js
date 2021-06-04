@@ -267,7 +267,10 @@ async function fetchAuthInfo(user, stopOnboarding) {
                         );
                     }
 
-                    app.ports.firestoreReadProfile.send(profile);
+                    app.ports.firestoreReadProfile.send({
+                        ...profile,
+                        signInMethods: user.providerData
+                    });
 
                     loadFareContracts(accountId);
                 }
