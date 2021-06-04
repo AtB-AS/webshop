@@ -1,5 +1,6 @@
 module Route exposing
-    ( ResponseCode(..)
+    ( LoginMethodPath(..)
+    , ResponseCode(..)
     , Route(..)
     , fromUrl
     , href
@@ -17,12 +18,20 @@ import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf, s)
 import Url.Parser.Query as QueryParser
 
 
+type LoginMethodPath
+    = PhonePath
+    | EmailPath
+    | RegisterEmailPath
+    | ForgotPasswordPath
+
+
 type Route
     = Home
     | Shop
     | Payment PaymentResponseQuery
     | History
     | Settings
+    | Login LoginMethodPath
     | NotFound
 
 
@@ -53,6 +62,16 @@ paymentResponseQueryParser =
         )
 
 
+parseLoginMethod : Parser (LoginMethodPath -> a) a
+parseLoginMethod =
+    oneOf
+        [ Parser.map PhonePath Parser.top
+        , Parser.map EmailPath <| s "email"
+        , Parser.map ForgotPasswordPath <| s "forgot-password"
+        , Parser.map RegisterEmailPath <| s "register"
+        ]
+
+
 parser : Parser (Route -> a) a
 parser =
     oneOf
@@ -61,6 +80,7 @@ parser =
         , Parser.map History <| s "history"
         , Parser.map Payment <| s "payment" <?> paymentResponseQueryParser
         , Parser.map Settings <| s "settings"
+        , Parser.map Login <| s "login" </> parseLoginMethod
         ]
 
 
@@ -80,6 +100,18 @@ routeToString page =
 
                 History ->
                     [ "history" ]
+
+                Login EmailPath ->
+                    [ "login", "email" ]
+
+                Login ForgotPasswordPath ->
+                    [ "login", "forgot-password" ]
+
+                Login RegisterEmailPath ->
+                    [ "login", "register" ]
+
+                Login PhonePath ->
+                    [ "login" ]
 
                 Settings ->
                     [ "settings" ]
@@ -113,5 +145,6 @@ fromUrl : Url -> Maybe Route
 fromUrl url =
     url
         |> Parser.parse parser
+        |> Debug.log "route"
         |> Maybe.withDefault NotFound
         |> Just
