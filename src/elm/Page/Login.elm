@@ -1,6 +1,7 @@
-module Page.Login exposing (Model, Msg, init, subscriptions, update, view)
+module Page.Login exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Browser.Dom as Dom
+import Browser.Navigation as Nav
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
@@ -14,7 +15,6 @@ import Route exposing (LoginMethodPath(..))
 import Service.FirebaseAuth as FirebaseAuth exposing (Provider(..))
 import Task
 import Ui.Button as B
-import Ui.InlineButtonLink
 import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.PageHeader as PH
@@ -29,7 +29,8 @@ type LoginMethod
 
 
 type Msg
-    = InputPhone String
+    = OnEnterPage LoginMethodPath
+    | InputPhone String
     | InputCode String
     | InputEmail String
     | InputPassword String
@@ -73,13 +74,28 @@ init =
       , error = Nothing
       , loading = False
       }
-    , focusBox (Just "phone")
+    , Cmd.batch [ focusBox (Just "phone"), focusBox (Just "email") ]
     )
 
 
-update : Msg -> Environment -> Model -> PageUpdater Model Msg
-update msg _ model =
+update : Msg -> Environment -> Model -> Nav.Key -> PageUpdater Model Msg
+update msg env model navKey =
     case msg of
+        OnEnterPage path ->
+            let
+                isLoggedIn =
+                    env.customerId /= Nothing
+            in
+                PageUpdater.fromPair
+                    ( { model | loginMethod = Debug.log " dsata" (methodPathToPath path) }
+                      -- Not logged in, so just redirect home
+                    , if isLoggedIn then
+                        Route.modifyUrl navKey Route.Home
+
+                      else
+                        Tuple.second init
+                    )
+
         InputPhone value ->
             PageUpdater.init { model | phone = value }
 
@@ -166,6 +182,22 @@ update msg _ model =
             PageUpdater.init model
 
 
+methodPathToPath : LoginMethodPath -> LoginMethod
+methodPathToPath path =
+    case path of
+        RegisterEmailPath ->
+            RegisterEmailMethod
+
+        ForgotPasswordPath ->
+            ResetEmailMethod
+
+        EmailPath ->
+            EmailMethod
+
+        _ ->
+            PhoneMethod
+
+
 loginUsingPhone : String -> Cmd Msg
 loginUsingPhone phoneNumber =
     let
@@ -201,8 +233,8 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> LoginMethodPath -> Html Msg
-view env model loginPath =
+view : Environment -> Model -> Html Msg
+view env model =
     H.div []
         [ case model.step of
             StepLogin ->
@@ -218,7 +250,7 @@ view env model loginPath =
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , case model.step of
                 StepLogin ->
-                    viewLogin model loginPath
+                    viewLogin model
 
                 StepConfirm ->
                     viewConfirm env model
@@ -227,8 +259,8 @@ view env model loginPath =
         ]
 
 
-viewLogin : Model -> LoginMethodPath -> Html Msg
-viewLogin model loginPath =
+viewLogin : Model -> Html Msg
+viewLogin model =
     let
         viewInputs =
             case model.loginMethod of
@@ -242,8 +274,8 @@ viewLogin model loginPath =
                     viewEmailInputs
 
         ( submitText, description ) =
-            case loginPath of
-                PhonePath ->
+            case model.loginMethod of
+                PhoneMethod ->
                     ( "Send engangspassord"
                     , [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor. "
                       , H.a
@@ -254,7 +286,7 @@ viewLogin model loginPath =
                       ]
                     )
 
-                EmailPath ->
+                EmailMethod ->
                     ( "Logg inn"
                     , [ H.text "Ingen profil enda? "
                       , H.a
@@ -270,7 +302,7 @@ viewLogin model loginPath =
                       ]
                     )
 
-                RegisterEmailPath ->
+                RegisterEmailMethod ->
                     ( "Registrer profil"
                     , [ H.text "Opprett ny profil. "
                       , H.a
@@ -286,7 +318,7 @@ viewLogin model loginPath =
                       ]
                     )
 
-                ForgotPasswordPath ->
+                ResetEmailMethod ->
                     ( "Tilbakestill passord"
                     , [ H.text "Be om å tilbakestille passord på profilen. Eller "
                       , H.a
@@ -318,7 +350,7 @@ viewLogin model loginPath =
                 |> B.setElement H.a
                 |> B.setAttributes [ Route.href <| Route.Login ForgotPasswordPath ]
                 |> B.link
-                |> Html.Extra.viewIf (loginPath == EmailPath)
+                |> Html.Extra.viewIf (model.loginMethod == EmailMethod)
             ]
 
 
