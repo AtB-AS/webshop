@@ -22,7 +22,7 @@ import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
-import Route exposing (Route(..))
+import Route exposing (LoginMethodPath(..), Route(..))
 import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
@@ -483,8 +483,17 @@ view model =
                                     viewPage model
 
                                 Nothing ->
-                                    LoginPage.view model.environment model.login
-                                        |> H.map LoginMsg
+                                    let
+                                        route =
+                                            case model.route of
+                                                Just (Login subRoute) ->
+                                                    subRoute
+
+                                                _ ->
+                                                    PhonePath
+                                    in
+                                        LoginPage.view model.environment model.login route
+                                            |> H.map LoginMsg
                     ]
             )
         ]

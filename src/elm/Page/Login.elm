@@ -10,6 +10,7 @@ import Html.Events as E
 import Html.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
+import Route exposing (LoginMethodPath(..))
 import Service.FirebaseAuth as FirebaseAuth exposing (Provider(..))
 import Task
 import Ui.Button as B
@@ -200,8 +201,8 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> Html Msg
-view env model =
+view : Environment -> Model -> LoginMethodPath -> Html Msg
+view env model loginPath =
     H.div []
         [ case model.step of
             StepLogin ->
@@ -217,7 +218,7 @@ view env model =
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , case model.step of
                 StepLogin ->
-                    viewLogin model
+                    viewLogin model loginPath
 
                 StepConfirm ->
                     viewConfirm env model
@@ -226,8 +227,8 @@ view env model =
         ]
 
 
-viewLogin : Model -> Html Msg
-viewLogin model =
+viewLogin : Model -> LoginMethodPath -> Html Msg
+viewLogin model loginPath =
     let
         viewInputs =
             case model.loginMethod of
@@ -241,55 +242,55 @@ viewLogin model =
                     viewEmailInputs
 
         ( submitText, description ) =
-            case model.loginMethod of
-                PhoneMethod ->
+            case loginPath of
+                PhonePath ->
                     ( "Send engangspassord"
                     , [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor. "
-                      , Ui.InlineButtonLink.view
-                            [ E.onClick <| SetLoginMethod EmailMethod
+                      , H.a
+                            [ Route.href <| Route.Login EmailPath
                             ]
                             [ H.text "Eller du kan logge inn med e-post" ]
                       , H.text "."
                       ]
                     )
 
-                EmailMethod ->
+                EmailPath ->
                     ( "Logg inn"
                     , [ H.text "Ingen profil enda? "
-                      , Ui.InlineButtonLink.view
-                            [ E.onClick <| SetLoginMethod RegisterEmailMethod
+                      , H.a
+                            [ Route.href <| Route.Login RegisterEmailPath
                             ]
                             [ H.text "Opprett og logg inn med ny profil" ]
                       , H.text ". Eller så kan du "
-                      , Ui.InlineButtonLink.view
-                            [ E.onClick <| SetLoginMethod PhoneMethod
+                      , H.a
+                            [ Route.href <| Route.Login PhonePath
                             ]
                             [ H.text "logge inn og opprette automatisk med telefonnummer" ]
                       , H.text "."
                       ]
                     )
 
-                RegisterEmailMethod ->
+                RegisterEmailPath ->
                     ( "Registrer profil"
                     , [ H.text "Opprett ny profil. "
-                      , Ui.InlineButtonLink.view
-                            [ E.onClick <| SetLoginMethod EmailMethod
+                      , H.a
+                            [ Route.href <| Route.Login EmailPath
                             ]
                             [ H.text "Logg inn med eksisterende konto" ]
                       , H.text " eller "
-                      , Ui.InlineButtonLink.view
-                            [ E.onClick <| SetLoginMethod PhoneMethod
+                      , H.a
+                            [ Route.href <| Route.Login PhonePath
                             ]
                             [ H.text "logg inn med telefon" ]
                       , H.text "."
                       ]
                     )
 
-                ResetEmailMethod ->
+                ForgotPasswordPath ->
                     ( "Tilbakestill passord"
                     , [ H.text "Be om å tilbakestille passord på profilen. Eller "
-                      , Ui.InlineButtonLink.view
-                            [ E.onClick <| SetLoginMethod EmailMethod
+                      , H.a
+                            [ Route.href <| Route.Login EmailPath
                             ]
                             [ H.text "gå tilbake" ]
                       , H.text "."
@@ -313,10 +314,11 @@ viewLogin model =
                     |> B.primary B.Primary_2
                 ]
             , B.init "Glemt passord?"
-                |> B.setOnClick (Just (SetLoginMethod ResetEmailMethod))
                 |> B.setType "button"
+                |> B.setElement H.a
+                |> B.setAttributes [ Route.href <| Route.Login ForgotPasswordPath ]
                 |> B.link
-                |> Html.Extra.viewIf (model.loginMethod == EmailMethod)
+                |> Html.Extra.viewIf (loginPath == EmailPath)
             ]
 
 
