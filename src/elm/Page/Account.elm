@@ -351,6 +351,7 @@ viewMain model =
             (case model.profile of
                 Just profile ->
                     [ viewProfile model profile
+                    , viewSignIn model profile
                     , viewTravelCard model profile
                     , Ui.Section.viewGroup "Personvern"
                         [ Ui.Section.viewPaddedItem
@@ -377,7 +378,7 @@ viewProfile model profile =
         disabledButtons =
             model.loadingEditSection == Just EmailSection
     in
-        Ui.Section.viewGroup "Profilinformasjon" <|
+        Ui.Section.viewGroup "Profilinformasjon"
             [ Html.Extra.viewMaybe Ui.Message.error (Validation.select NameFields model.validationErrors)
             , EditSection.init
                 "Administrer profilinformasjon"
@@ -422,7 +423,12 @@ viewProfile model profile =
                     )
             , viewEmailAddress model profile
             ]
-                ++ List.map viewSignInMethod profile.signInMethods
+
+
+viewSignIn : Model -> Profile -> Html Msg
+viewSignIn _ profile =
+    Ui.Section.viewGroup "Innloggingsmetode" <|
+        List.map viewSignInMethod profile.signInMethods
 
 
 viewSignInMethod : SignInMethod -> Html msg
@@ -430,7 +436,7 @@ viewSignInMethod method =
     case method.provider of
         Phone ->
             Ui.Section.viewWithIcon Icon.signInMethodLarge
-                [ Ui.Section.viewLabelItem "Innloggingsmetode"
+                [ Ui.Section.viewLabelItem "Engangspassord"
                     [ H.text "Engangspassord på SMS til "
                     , viewField Util.PhoneNumber.format method.uid
                     ]
@@ -438,7 +444,7 @@ viewSignInMethod method =
 
         Password ->
             Ui.Section.viewWithIcon Icon.signInMethodLarge
-                [ Ui.Section.viewLabelItem "Innloggingsmetode"
+                [ Ui.Section.viewLabelItem "E-post og passord"
                     [ H.text <| "E-post og passord på " ++ method.uid
                     ]
                 ]
