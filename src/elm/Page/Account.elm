@@ -12,8 +12,11 @@ import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode exposing (Error(..))
+import List.Extra
+import Notification
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
+import Service.FirebaseAuth as FirebaseAuth exposing (AuthError)
 import Service.Misc as MiscService exposing (Profile, SignInMethod, SignInProvider(..))
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
@@ -24,12 +27,11 @@ import Ui.InlineButtonLink
 import Ui.Input.EditSection as EditSection
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
-import Ui.Message
+import Ui.Message exposing (error)
 import Ui.Section
 import Ui.TravelCardText
 import Url.Builder as Url
 import Util.Maybe
-import Util.PageTitle
 import Util.PhoneNumber
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
@@ -40,11 +42,13 @@ type EditSection
     = TravelCardSection
     | NameSection
     | EmailSection
+    | LoginEmailSection
 
 
 type FieldName
     = TravelCard
     | Email
+    | LoginEmail
     | FirstName
     | LastName
     | NameFields
@@ -55,6 +59,7 @@ type Msg
     | UpdateFirstName String
     | UpdateLastName String
     | UpdateEmail String
+    | UpdateLoginEmail String
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
@@ -63,6 +68,8 @@ type Msg
     | ProfileChange (Maybe Profile)
     | SaveNames
     | SaveEmail
+    | SaveLoginEmail
+    | UpdatedLoginEmail (Maybe AuthError)
     | SaveTravelCard
     | SetEditSection (Maybe EditSection) (Maybe String)
     | LoadingEditSection (Maybe EditSection)
@@ -76,6 +83,7 @@ type alias Model =
     { firstName : String
     , lastName : String
     , email : String
+    , loginEmail : String
     , travelCard : String
     , travelCardState : MaskedInput.State
     , profile : Maybe Profile
@@ -90,6 +98,7 @@ init =
     ( { firstName = ""
       , lastName = ""
       , email = ""
+      , loginEmail = ""
       , travelCard = ""
       , travelCardState = MaskedInput.initState
       , profile = Nothing
@@ -103,181 +112,226 @@ init =
 
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
-    case msg of
-        OnEnterPage ->
-            PageUpdater.init model
-                |> (Just "Min profil"
-                        |> GA.SetTitle
-                        |> PageUpdater.addGlobalAction
-                   )
+    let
+        providerData profile p =
+            profile
+                |> Maybe.map .signInMethods
+                |> Util.Maybe.flatMap (List.Extra.find (.provider >> (==) p))
+                |> Maybe.map .uid
+                |> Maybe.withDefault ""
+    in
+        case msg of
+            OnEnterPage ->
+                PageUpdater.init model
+                    |> (Just "Min profil"
+                            |> GA.SetTitle
+                            |> PageUpdater.addGlobalAction
+                       )
 
-        ResetState ->
-            let
-                mapWithDefault s =
-                    model.profile |> Maybe.map s |> Maybe.withDefault ""
-            in
+            ResetState ->
+                let
+                    mapProfileWithDefault s =
+                        model.profile |> Maybe.map s |> Maybe.withDefault ""
+                in
+                    PageUpdater.init
+                        { model
+                            | editSection = Nothing
+                            , firstName = mapProfileWithDefault .firstName
+                            , lastName = mapProfileWithDefault .lastName
+                            , email = mapProfileWithDefault .email
+                            , loginEmail = providerData model.profile Password
+                            , travelCardState = MaskedInput.initState
+                            , travelCard = model.profile |> Util.Maybe.flatMap .travelCard |> Maybe.map (.id >> String.fromInt) |> Maybe.withDefault ""
+                            , loadingEditSection = Nothing
+                            , validationErrors = []
+                        }
+
+            UpdateFirstName value ->
+                PageUpdater.init { model | firstName = value }
+
+            UpdateLastName value ->
+                PageUpdater.init { model | lastName = value }
+
+            UpdateEmail value ->
+                PageUpdater.init { model | email = value }
+
+            UpdateLoginEmail value ->
+                PageUpdater.init { model | loginEmail = value }
+
+            InputTravelCard value ->
                 PageUpdater.init
                     { model
-                        | editSection = Nothing
-                        , firstName = mapWithDefault .firstName
-                        , lastName = mapWithDefault .lastName
-                        , email = mapWithDefault .email
-                        , travelCardState = MaskedInput.initState
-                        , travelCard = model.profile |> Util.Maybe.flatMap .travelCard |> Maybe.map (.id >> String.fromInt) |> Maybe.withDefault ""
-                        , loadingEditSection = Nothing
+                        | travelCard = value
+                        , validationErrors = Validation.remove TravelCard model.validationErrors
+                    }
+
+            StateTravelCard state ->
+                PageUpdater.init
+                    { model | travelCardState = state }
+
+            SaveNames ->
+                PageUpdater.fromPair
+                    ( { model
+                        | loadingEditSection = Just NameSection
+                        , validationErrors = Validation.removeAll [ FirstName, LastName, NameFields ] model.validationErrors
+                      }
+                    , updateProfile env model.firstName model.lastName
+                    )
+
+            ReceiveUpdateProfile field result ->
+                case result of
+                    Ok () ->
+                        PageUpdater.init
+                            { model
+                                | loadingEditSection = Nothing
+                                , editSection = Nothing
+                                , validationErrors = Validation.removeAll field model.validationErrors
+                            }
+
+                    Err error ->
+                        PageUpdater.init
+                            { model
+                                | loadingEditSection = Nothing
+                                , validationErrors = Validation.add field (Util.TravelCard.serverErrorToString WebshopService.travelCardErrorDecoder error) model.validationErrors
+                            }
+
+            ProfileChange (Just profile) ->
+                PageUpdater.init
+                    { model
+                        | profile = Just profile
+                        , firstName = profile.firstName
+                        , lastName = profile.lastName
+                        , email = profile.email
+                        , loginEmail = providerData (Just profile) Password
+                        , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
                         , validationErrors = []
                     }
 
-        UpdateFirstName value ->
-            PageUpdater.init { model | firstName = value }
+            ProfileChange Nothing ->
+                PageUpdater.init { model | profile = Nothing }
 
-        UpdateLastName value ->
-            PageUpdater.init { model | lastName = value }
+            RemoveTravelCard ->
+                PageUpdater.fromPair
+                    ( { model
+                        | loadingEditSection = Just TravelCardSection
+                        , validationErrors = Validation.remove TravelCard model.validationErrors
+                      }
+                    , removeTravelCard env model.travelCard
+                    )
 
-        UpdateEmail value ->
-            PageUpdater.init { model | email = value }
+            SaveEmail ->
+                case validateEmail .email model of
+                    Ok _ ->
+                        PageUpdater.fromPair
+                            ( { model
+                                | loadingEditSection = Just EmailSection
+                                , validationErrors = Validation.remove Email model.validationErrors
+                              }
+                            , updateEmail env model.email
+                            )
 
-        InputTravelCard value ->
-            PageUpdater.init
-                { model
-                    | travelCard = value
-                    , validationErrors = Validation.remove TravelCard model.validationErrors
-                }
+                    Err errors ->
+                        PageUpdater.init { model | validationErrors = errors }
 
-        StateTravelCard state ->
-            PageUpdater.init
-                { model | travelCardState = state }
+            SaveLoginEmail ->
+                case validateEmail .loginEmail model of
+                    Ok _ ->
+                        PageUpdater.fromPair
+                            ( { model
+                                | loadingEditSection = Just LoginEmailSection
+                                , validationErrors = Validation.remove LoginEmail model.validationErrors
+                              }
+                            , FirebaseAuth.updateAuthEmail model.loginEmail
+                            )
 
-        SaveNames ->
-            PageUpdater.fromPair
-                ( { model
-                    | loadingEditSection = Just NameSection
-                    , validationErrors = Validation.removeAll [ FirstName, LastName, NameFields ] model.validationErrors
-                  }
-                , updateProfile env model.firstName model.lastName
-                )
+                    Err errors ->
+                        PageUpdater.init { model | validationErrors = errors }
 
-        ReceiveUpdateProfile field result ->
-            case result of
-                Ok () ->
-                    PageUpdater.init
-                        { model
-                            | loadingEditSection = Nothing
-                            , editSection = Nothing
-                            , validationErrors = Validation.removeAll field model.validationErrors
-                        }
+            UpdatedLoginEmail maybeError ->
+                case maybeError of
+                    Just error ->
+                        PageUpdater.init
+                            { model
+                                | validationErrors = Validation.add [ LoginEmail ] error.message model.validationErrors
+                            }
 
-                Err error ->
-                    PageUpdater.init
-                        { model
-                            | loadingEditSection = Nothing
-                            , validationErrors = Validation.add field (Util.TravelCard.serverErrorToString WebshopService.travelCardErrorDecoder error) model.validationErrors
-                        }
+                    Nothing ->
+                        PageUpdater.init model
+                            |> PageUpdater.addGlobalAction
+                                ("Sendt verifikasjonsepost. Se e-post for å bekrefte endringen."
+                                    |> Ui.Message.valid
+                                    |> (\s -> Notification.setContent s Notification.init)
+                                    |> GA.ShowNotification
+                                )
 
-        ProfileChange (Just profile) ->
-            PageUpdater.init
-                { model
-                    | profile = Just profile
-                    , firstName = profile.firstName
-                    , lastName = profile.lastName
-                    , email = profile.email
-                    , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
-                    , validationErrors = []
-                }
+            SaveTravelCard ->
+                case validateTravelCard model of
+                    Ok _ ->
+                        PageUpdater.fromPair
+                            ( { model
+                                | loadingEditSection = Just TravelCardSection
+                                , validationErrors = Validation.remove TravelCard model.validationErrors
+                              }
+                            , updateTravelCard env model.travelCard
+                            )
 
-        ProfileChange Nothing ->
-            PageUpdater.init { model | profile = Nothing }
+                    Err errors ->
+                        PageUpdater.init { model | validationErrors = errors }
 
-        RemoveTravelCard ->
-            PageUpdater.fromPair
-                ( { model
-                    | loadingEditSection = Just TravelCardSection
-                    , validationErrors = Validation.remove TravelCard model.validationErrors
-                  }
-                , removeTravelCard env model.travelCard
-                )
+            SetEditSection (Just section) focusId ->
+                PageUpdater.init { model | editSection = Just section, validationErrors = [] }
+                    |> PageUpdater.addCmd (focusBox focusId)
 
-        SaveEmail ->
-            case validateEmail model of
-                Ok _ ->
-                    PageUpdater.fromPair
-                        ( { model
-                            | loadingEditSection = Just EmailSection
-                            , validationErrors = Validation.remove Email model.validationErrors
-                          }
-                        , updateEmail env model.email
-                        )
+            SetEditSection Nothing focusId ->
+                case model.profile of
+                    Nothing ->
+                        PageUpdater.init model
 
-                Err errors ->
-                    PageUpdater.init { model | validationErrors = errors }
+                    Just profile ->
+                        PageUpdater.fromPair
+                            ( { model
+                                | editSection = Nothing
+                                , validationErrors = []
+                                , firstName = profile.firstName
+                                , lastName = profile.lastName
+                                , email = profile.email
+                                , loginEmail = providerData model.profile Password
+                                , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
+                              }
+                            , focusBox focusId
+                            )
 
-        SaveTravelCard ->
-            case validateTravelCard model of
-                Ok _ ->
-                    PageUpdater.fromPair
-                        ( { model
-                            | loadingEditSection = Just TravelCardSection
-                            , validationErrors = Validation.remove TravelCard model.validationErrors
-                          }
-                        , updateTravelCard env model.travelCard
-                        )
+            LoadingEditSection section ->
+                PageUpdater.init { model | loadingEditSection = section }
 
-                Err errors ->
-                    PageUpdater.init { model | validationErrors = errors }
+            Logout ->
+                PageUpdater.init
+                    { model
+                        | firstName = model.firstName
+                        , lastName = model.lastName
+                        , email = model.email
+                        , editSection = Nothing
+                        , validationErrors = []
+                    }
+                    |> PageUpdater.addGlobalAction GA.Logout
 
-        SetEditSection (Just section) focusId ->
-            PageUpdater.init { model | editSection = Just section, validationErrors = [] }
-                |> PageUpdater.addCmd (focusBox focusId)
+            ClearValidationError ->
+                PageUpdater.init { model | validationErrors = [] }
 
-        SetEditSection Nothing focusId ->
-            case model.profile of
-                Nothing ->
-                    PageUpdater.init model
+            FocusItem id ->
+                PageUpdater.fromPair ( model, focusBox <| Just id )
 
-                Just profile ->
-                    PageUpdater.fromPair
-                        ( { model
-                            | editSection = Nothing
-                            , validationErrors = []
-                            , firstName = profile.firstName
-                            , lastName = profile.lastName
-                            , email = profile.email
-                            , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
-                          }
-                        , focusBox focusId
-                        )
-
-        LoadingEditSection section ->
-            PageUpdater.init { model | loadingEditSection = section }
-
-        Logout ->
-            PageUpdater.init
-                { model
-                    | firstName = model.firstName
-                    , lastName = model.lastName
-                    , email = model.email
-                    , editSection = Nothing
-                    , validationErrors = []
-                }
-                |> PageUpdater.addGlobalAction GA.Logout
-
-        ClearValidationError ->
-            PageUpdater.init { model | validationErrors = [] }
-
-        FocusItem id ->
-            PageUpdater.fromPair ( model, focusBox <| Just id )
-
-        NoOp ->
-            PageUpdater.init model
+            NoOp ->
+                PageUpdater.init model
 
 
-validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
-validateEmail model =
+validateEmail : (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail sel model =
     if String.isEmpty model.email then
         Validation.validate Validation.void model
 
     else
-        Validation.validate (Validation.emailValidator Email .email) model
+        Validation.validate (Validation.emailValidator Email sel) model
 
 
 validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
@@ -426,31 +480,72 @@ viewProfile model profile =
 
 
 viewSignIn : Model -> Profile -> Html Msg
-viewSignIn _ profile =
-    Ui.Section.viewGroup "Innloggingsmetode" <|
-        List.map viewSignInMethod profile.signInMethods
+viewSignIn model profile =
+    Ui.Section.viewGroup "Innloggingsmetoder" <|
+        List.map (viewSignInMethod model) profile.signInMethods
 
 
-viewSignInMethod : SignInMethod -> Html msg
-viewSignInMethod method =
-    case method.provider of
-        Phone ->
-            Ui.Section.viewWithIcon Icon.signInMethodLarge
-                [ Ui.Section.viewLabelItem "Engangspassord"
-                    [ H.text "Engangspassord på SMS til "
-                    , viewField Util.PhoneNumber.format method.uid
+viewSignInMethod : Model -> SignInMethod -> Html Msg
+viewSignInMethod model method =
+    let
+        onSave =
+            Just <| SaveLoginEmail
+
+        onCancel =
+            Just <| SetEditSection Nothing Nothing
+
+        errors =
+            Validation.select LoginEmail model.validationErrors
+
+        shouldBeEditMode =
+            fieldInEditMode model.editSection LoginEmailSection || errors /= Nothing
+    in
+        case method.provider of
+            Phone ->
+                Ui.Section.viewWithIcon Icon.signInMethodLarge
+                    [ Ui.Section.viewLabelItem "Engangspassord"
+                        [ H.text "Engangspassord på SMS til "
+                        , viewField Util.PhoneNumber.format method.uid
+                        ]
                     ]
-                ]
 
-        Password ->
-            Ui.Section.viewWithIcon Icon.signInMethodLarge
-                [ Ui.Section.viewLabelItem "E-post og passord"
-                    [ H.text <| "E-post og passord på " ++ method.uid
-                    ]
-                ]
+            Password ->
+                EditSection.init
+                    "E-post og passord"
+                    |> EditSection.setEditButtonType
+                        ( "Endre innlogging", Icon.edit )
+                    |> EditSection.setOnSave onSave
+                    |> EditSection.setOnEdit (Just <| SetEditSection (Just LoginEmailSection) (Just "emailLogin"))
+                    |> EditSection.setInEditMode shouldBeEditMode
+                    |> EditSection.setIcon (Just Icon.signInMethodLarge)
+                    |> EditSection.setButtonGroup
+                        (Just <|
+                            EditSection.cancelConfirmGroup
+                                { onCancel = onCancel
+                                , disabled = False
+                                }
+                        )
+                    |> EditSection.editSection
+                        (\inEditMode ->
+                            if inEditMode then
+                                EditSection.horizontalGroup
+                                    [ Text.init "emailLogin"
+                                        |> Text.setTitle (Just "E-post")
+                                        |> Text.setError (Validation.select LoginEmail model.validationErrors)
+                                        |> Text.setOnInput (Just <| UpdateLoginEmail)
+                                        |> Text.setPlaceholder "Legg til en e-postadresse"
+                                        |> Text.setValue (Just model.loginEmail)
+                                        |> Text.setType "email"
+                                        |> Text.view
+                                    ]
 
-        _ ->
-            Html.Extra.nothing
+                            else
+                                [ Ui.Section.viewLabelItem "E-post og passord til" [ viewField identity method.uid ]
+                                ]
+                        )
+
+            _ ->
+                Html.Extra.nothing
 
 
 viewEmailAddress : Model -> Profile -> Html Msg
@@ -622,7 +717,10 @@ viewTravelCard model profile =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    MiscService.onProfileChange ProfileChange
+    Sub.batch
+        [ MiscService.onProfileChange ProfileChange
+        , FirebaseAuth.onAuthEmailUpdate UpdatedLoginEmail
+        ]
 
 
 

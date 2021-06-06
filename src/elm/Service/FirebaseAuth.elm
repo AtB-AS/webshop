@@ -1,26 +1,29 @@
 port module Service.FirebaseAuth exposing
-    ( Provider(..)
+    ( AuthError
+    , Provider(..)
     , authError
     , confirmPhone
     , loginEmail
     , loginPhone
+    , onAuthEmailUpdate
     , onError
     , onPasswordReset
     , onRequestCode
     , phoneRequestCode
     , providerDecoder
     , providerFromString
-    , providerToString
     , registerEmail
     , resetPassword
     , resetPasswordDone
     , signInError
     , signOut
     , signedInInfo
+    , updateAuthEmail
     )
 
 import Json.Decode as Decode exposing (Decoder, Value)
-import Json.Encode
+import Json.Decode.Pipeline as DecodeP
+import Json.Encode as Encode
 
 
 type Provider
@@ -32,14 +35,20 @@ type Provider
     | Unknown String
 
 
+type alias AuthError =
+    { code : String
+    , message : String
+    }
+
+
 
 -- PORTS
 
 
-port signedInInfo : (Json.Encode.Value -> msg) -> Sub msg
+port signedInInfo : (Encode.Value -> msg) -> Sub msg
 
 
-port signInError : (Json.Encode.Value -> msg) -> Sub msg
+port signInError : (Encode.Value -> msg) -> Sub msg
 
 
 port signOutHandler : () -> Cmd msg
@@ -86,6 +95,12 @@ port resetPasswordDone : (Value -> msg) -> Sub msg
 port resetPassword : String -> Cmd msg
 
 
+port updateAuthEmail : String -> Cmd msg
+
+
+port updateAuthEmailDone : (Encode.Value -> msg) -> Sub msg
+
+
 
 -- HELPERS
 
@@ -116,8 +131,26 @@ onPasswordReset =
     resetPasswordDone
 
 
+{-| Called on update login email
+-}
+onAuthEmailUpdate : (Maybe AuthError -> msg) -> Sub msg
+onAuthEmailUpdate msg =
+    updateAuthEmailDone
+        (Decode.decodeValue authErrorDecoder
+            >> Result.toMaybe
+            >> msg
+        )
+
+
 
 -- PROVIDER TO/FROM
+
+
+authErrorDecoder : Decoder AuthError
+authErrorDecoder =
+    Decode.succeed AuthError
+        |> DecodeP.required "code" Decode.string
+        |> DecodeP.required "message" Decode.string
 
 
 {-| Parse a string into a provider.
@@ -146,27 +179,3 @@ providerFromString provider =
 providerDecoder : Decoder Provider
 providerDecoder =
     Decode.andThen (providerFromString >> Decode.succeed) Decode.string
-
-
-{-| Turn a provider into a string.
--}
-providerToString : Provider -> String
-providerToString provider =
-    case provider of
-        Google ->
-            "google.com"
-
-        Microsoft ->
-            "microsoft.com"
-
-        Phone ->
-            "phone"
-
-        Anonymous ->
-            "anonymous"
-
-        Password ->
-            "password"
-
-        Unknown _ ->
-            "unknown"

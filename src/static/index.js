@@ -541,6 +541,26 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
         });
 });
 
+app.ports.updateAuthEmail.subscribe((email) => {
+    const actionCodeSettings = {
+        url: window.location.origin + '/login/email'
+    };
+
+    firebase
+        .auth()
+        .currentUser.verifyBeforeUpdateEmail(email, actionCodeSettings)
+        .then(function (...args) {
+            console.log(args);
+            debugger;
+            app.ports.updateAuthEmailDone.send();
+        })
+        .catch(function (error) {
+            debugger;
+
+            app.ports.updateAuthEmailDone.send(error);
+        });
+});
+
 app.ports.resetPassword.subscribe((email) => {
     const actionCodeSettings = {
         url: window.location.origin
