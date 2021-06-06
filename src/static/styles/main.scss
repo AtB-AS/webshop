@@ -102,7 +102,7 @@ p + p {
 }
 
 .pageHeader {
-    background-color: var(--colors-primary_2-backgroundColor);
+    background-color: var(--colors-background_gray-backgroundColor);
 }
 .pageHeader__content {
     width: 100%;
@@ -127,6 +127,10 @@ p + p {
         display: block;
         height: 1.25rem;
         margin-right: var(--spacings-medium);
+    }
+    svg,
+    path {
+        fill: currentColor;
     }
 }
 .pageHeader__nav {
@@ -165,6 +169,10 @@ p + p {
 
     svg {
         margin-left: var(--spacings-small);
+    }
+    svg,
+    path {
+        fill: currentColor;
     }
 }
 .pageHeader__content a,
