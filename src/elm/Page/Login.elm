@@ -87,7 +87,7 @@ update msg env model navKey =
                     env.customerId /= Nothing
             in
                 PageUpdater.fromPair
-                    ( { model | loginMethod = Debug.log " dsata" (methodPathToPath path) }
+                    ( { model | loginMethod = methodPathToPath path }
                       -- Not logged in, so just redirect home
                     , if isLoggedIn then
                         Route.modifyUrl navKey Route.Home
