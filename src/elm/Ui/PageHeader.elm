@@ -67,9 +67,10 @@ view { back, title, onCancel } =
         , Html.Extra.viewMaybe (Ui.Heading.titleWithEl H.h2) title
         , case onCancel of
             Just ( text, icon, action ) ->
-                H.div
+                H.button
                     [ E.onClick action
                     , A.class "ui-pageHeader__cancel"
+                    , A.type_ "button"
                     ]
                     [ H.text text, icon ]
 
