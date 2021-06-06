@@ -46,6 +46,7 @@ button {
     --maxPageWidth: 1024px;
     --contentPadding: var(--spacings-xLarge);
 }
+
 @media (max-width: 650px) {
     .light,
     .dark {
@@ -66,6 +67,7 @@ button {
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
     letter-spacing: var(--baseTypo-body__primary-letterSpacing, 0.03125rem);
 }
+
 .app {
     flex: 1;
     position: relative;

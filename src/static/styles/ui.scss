@@ -180,11 +180,17 @@
     border: 0;
     justify-content: space-between;
     align-items: center;
+    color: var(--text-colors-primary);
 
     transition: all 150ms ease-in-out;
     border: var(--border-width-medium) solid transparent;
     // Remove border from padding.
     padding: calc(var(--spacings-xLarge) - 2 * var(--border-width-medium));
+
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 .ui-group__headerButton:hover {
     background: var(--colors-background_2-backgroundColor);
@@ -330,6 +336,7 @@
     justify-content: space-between;
     align-items: center;
     font-weight: normal;
+    color: var(--text-colors-primary);
 
     transition: all 150ms ease-in-out;
     padding: var(--spacings-xLarge);
@@ -434,7 +441,14 @@
     }
 }
 .ui-ticketDetails__headerButton__toggleText {
-    margin: 0 var(--spacings-medium);
+    svg {
+        margin-left: var(--spacings-medium);
+    }
+
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 
 @media (max-width: 500px) {
@@ -508,6 +522,11 @@
 
     svg {
         margin-right: var(--spacings-medium);
+    }
+
+    svg,
+    path {
+        fill: currentColor;
     }
 }
 .ui-pageHeader__back:hover {
@@ -795,6 +814,11 @@ a.ui-button {
 .ui-editSection__icon {
     padding: var(--spacings-xLarge);
     align-self: flex-start;
+
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 .ui-editSection__editButton {
     margin: var(--spacings-medium);
@@ -911,6 +935,7 @@ a.ui-button {
     padding: 0;
     border: 0;
     background-color: transparent;
+    color: var(--text-colors-primary);
 
     &:-webkit-autofill,
     &:-webkit-autofill:hover,
@@ -919,6 +944,10 @@ a.ui-button {
         transition: background-color 5000s ease-in-out 0s;
         -webkit-text-fill-color: inherit !important;
     }
+}
+
+.dark ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
 }
 
 .ui-input-text__input:focus {
@@ -984,6 +1013,7 @@ a.ui-button {
     display: inline;
     text-decoration: underline;
     background: transparent;
+    color: var(--text-colors-primary);
     border: 0;
     font-size: var(--baseTypo-body__primary-fontSize, 1rem);
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
