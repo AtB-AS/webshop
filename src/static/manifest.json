@@ -1,9 +1,9 @@
 {
-  "name": "AtB Webshop",
-  "short_name": "AtB Webshop",
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#27c37f",
-  "background_color": "#fff",
-  "icons": []
+    "name": "AtB Nettbutikk",
+    "short_name": "AtB Nettbutikk",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#27c37f",
+    "background_color": "#fff",
+    "icons": []
 }

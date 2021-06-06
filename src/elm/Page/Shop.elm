@@ -128,6 +128,10 @@ update msg env model shared =
 
             OnEnterPage ->
                 PageUpdater.fromPair ( model, Tuple.second init )
+                    |> (Just "Kjøp billett"
+                            |> GA.SetTitle
+                            |> PageUpdater.addGlobalAction
+                       )
 
             OnLeavePage ->
                 PageUpdater.init model

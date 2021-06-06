@@ -30,12 +30,14 @@ import Ui.TicketDetails
 import Ui.TravelCardText
 import Util.FareContract
 import Util.Maybe
+import Util.PageTitle
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
 
 
 type Msg
-    = ReceiveFareContracts (Result Decode.Error (List FareContract))
+    = OnEnterPage
+    | ReceiveFareContracts (Result Decode.Error (List FareContract))
     | Receipt String
     | ReceiveReceipt (Result Http.Error ())
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
@@ -83,6 +85,13 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
+        OnEnterPage ->
+            PageUpdater.init model
+                |> (Nothing
+                        |> GA.SetTitle
+                        |> PageUpdater.addGlobalAction
+                   )
+
         ReceiveFareContracts result ->
             case result of
                 Ok fareContracts ->

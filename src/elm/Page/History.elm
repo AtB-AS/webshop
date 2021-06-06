@@ -1,4 +1,4 @@
-module Page.History exposing (Model, Msg, init, subscriptions, update, view)
+module Page.History exposing (Model, Msg(..), init, subscriptions, update, view)
 
 -- import Ui.Input.Text as T
 
@@ -26,10 +26,12 @@ import Ui.Group
 import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
+import Util.PageTitle
 
 
 type Msg
-    = InputFrom String
+    = OnEnterPage
+    | InputFrom String
     | InputTo String
     | ToggleOrder String
     | ReceiveFareContracts (Result Decode.Error (List FareContract))
@@ -62,6 +64,13 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
+        OnEnterPage ->
+            PageUpdater.init model
+                |> (Just "Kjøpshistorikk"
+                        |> GA.SetTitle
+                        |> PageUpdater.addGlobalAction
+                   )
+
         InputFrom value ->
             PageUpdater.init { model | from = Just value }
 

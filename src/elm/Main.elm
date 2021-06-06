@@ -22,7 +22,7 @@ import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
 import PageUpdater exposing (PageUpdater)
-import Route exposing (Route)
+import Route exposing (Route(..))
 import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService
 import Shared exposing (Shared)
@@ -32,6 +32,7 @@ import Ui.GlobalNotifications
 import Ui.Message
 import Ui.PageHeader as PH
 import Url exposing (Url)
+import Util.PageTitle
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
 
@@ -103,53 +104,83 @@ main =
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
-setRoute maybeRoute model =
-    ( { model | route = maybeRoute }
-    , case maybeRoute of
-        Just Route.Shop ->
-            TaskUtil.doTask <| ShopMsg ShopPage.OnEnterPage
+setRoute =
+    setRouteInternal False
 
-        Just (Route.Payment maybeReservation) ->
-            let
-                noPaymentId =
-                    maybeReservation.paymentId == Nothing
 
-                isCancelled =
-                    maybeReservation.responseCode
-                        |> Maybe.map ((==) Route.Cancel)
-                        |> Maybe.withDefault False
+setInitialRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
+setInitialRoute =
+    setRouteInternal True
 
-                reservation =
-                    { transactionId = Maybe.withDefault 1 maybeReservation.transactionId
-                    , paymentId = Maybe.withDefault 1 maybeReservation.paymentId
-                    , orderId = Maybe.withDefault "" maybeReservation.orderId
-                    , url = ""
-                    }
-            in
-                if noPaymentId || isCancelled then
-                    Route.modifyUrl model.navKey Route.Home
 
-                else
-                    Cmd.batch
-                        [ TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
-                        , Route.modifyUrl model.navKey Route.Home
-                        ]
-
-        Just _ ->
-            case model.route of
+setRouteInternal : Bool -> Maybe Route -> Model -> ( Model, Cmd Msg )
+setRouteInternal initialRoute maybeRoute model =
+    let
+        moveAwayCmd =
+            case ( maybeRoute, model.route ) of
                 -- If navigating away from Settings, reset all state.
-                Just Route.Settings ->
+                ( Just _, Just Route.Settings ) ->
                     TaskUtil.doTask <| AccountMsg AccountPage.ResetState
 
-                Just Route.Shop ->
+                ( Just _, Just Route.Shop ) ->
                     TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
 
                 _ ->
                     Cmd.none
+    in
+        ( { model | route = maybeRoute }
+        , if maybeRoute == model.route && not initialRoute then
+            Cmd.none
 
-        Nothing ->
-            TaskUtil.doTask <| RouteTo Route.Home
-    )
+          else
+            Cmd.batch
+                [ moveAwayCmd
+                , case maybeRoute of
+                    Just Route.Shop ->
+                        TaskUtil.doTask <| ShopMsg ShopPage.OnEnterPage
+
+                    Just Route.Settings ->
+                        TaskUtil.doTask <| AccountMsg AccountPage.OnEnterPage
+
+                    Just Route.History ->
+                        TaskUtil.doTask <| HistoryMsg HistoryPage.OnEnterPage
+
+                    Just Route.Home ->
+                        TaskUtil.doTask <| OverviewMsg OverviewPage.OnEnterPage
+
+                    Just (Route.Payment maybeReservation) ->
+                        let
+                            noPaymentId =
+                                maybeReservation.paymentId == Nothing
+
+                            isCancelled =
+                                maybeReservation.responseCode
+                                    |> Maybe.map ((==) Route.Cancel)
+                                    |> Maybe.withDefault False
+
+                            reservation =
+                                { transactionId = Maybe.withDefault 1 maybeReservation.transactionId
+                                , paymentId = Maybe.withDefault 1 maybeReservation.paymentId
+                                , orderId = Maybe.withDefault "" maybeReservation.orderId
+                                , url = ""
+                                }
+                        in
+                            if noPaymentId || isCancelled then
+                                Route.modifyUrl model.navKey Route.Home
+
+                            else
+                                Cmd.batch
+                                    [ TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
+                                    , Route.modifyUrl model.navKey Route.Home
+                                    ]
+
+                    Just _ ->
+                        TaskUtil.doTask <| GlobalAction <| GA.SetTitle Nothing
+
+                    Nothing ->
+                        TaskUtil.doTask <| RouteTo Route.Home
+                ]
+        )
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -178,7 +209,7 @@ init flags url navKey =
             }
 
         appInfo =
-            { title = "AtB Webshop"
+            { title = "AtB Nettbutikk"
             , version = flags.version
             , commit = flags.commit
             }
@@ -203,7 +234,7 @@ init flags url navKey =
                 NotLoaded
 
         ( routeModel, routeCmd ) =
-            setRoute route
+            setInitialRoute route
                 { environment = environment
                 , appInfo = appInfo
                 , overview = overviewModel
@@ -239,6 +270,16 @@ update msg model =
             case globalAction of
                 GA.RouteTo route ->
                     ( model, Route.newUrl model.navKey route )
+
+                GA.SetTitle title ->
+                    let
+                        appInfo =
+                            model.appInfo
+
+                        newAppInfo =
+                            { appInfo | title = Util.PageTitle.pageTitle title }
+                    in
+                        ( { model | appInfo = newAppInfo }, Cmd.none )
 
                 GA.ShowNotification notification ->
                     ( { model | notifications = notification :: model.notifications }, Cmd.none )
