@@ -977,6 +977,9 @@ a.ui-button {
         -webkit-text-fill-color: inherit !important;
     }
 }
+.ui-input-text__input[readonly] {
+    color: var(--text-colors-secondary);
+}
 
 .dark ::-webkit-calendar-picker-indicator {
     filter: invert(1);

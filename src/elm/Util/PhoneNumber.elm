@@ -1,4 +1,4 @@
-module Util.PhoneNumber exposing (format, withoutCountryCode)
+module Util.PhoneNumber exposing (format, withCountryCode, withoutCountryCode)
 
 import Util.NumberFormater as NF
 
@@ -12,6 +12,15 @@ withoutCountryCode phone =
 
     else
         phone
+
+
+withCountryCode : String -> String
+withCountryCode phone =
+    if String.startsWith "+" phone then
+        phone
+
+    else
+        "+47" ++ phone
 
 
 format : String -> String
