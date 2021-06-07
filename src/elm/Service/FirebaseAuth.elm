@@ -1,7 +1,8 @@
 port module Service.FirebaseAuth exposing
-    ( AuthError
+    ( FirebaseError
     , Provider(..)
     , authError
+    , checkVerifyUser
     , confirmPhone
     , loginEmail
     , loginPhone
@@ -9,6 +10,7 @@ port module Service.FirebaseAuth exposing
     , onError
     , onPasswordReset
     , onRequestCode
+    , onVerifyUserRequested
     , phoneRequestCode
     , providerDecoder
     , providerFromString
@@ -19,6 +21,8 @@ port module Service.FirebaseAuth exposing
     , signOut
     , signedInInfo
     , updateAuthEmail
+    , verifyUser
+    , verifyUserStart
     )
 
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -35,7 +39,7 @@ type Provider
     | Unknown String
 
 
-type alias AuthError =
+type alias FirebaseError =
     { code : String
     , message : String
     }
@@ -101,6 +105,18 @@ port updateAuthEmail : String -> Cmd msg
 port updateAuthEmailDone : (Encode.Value -> msg) -> Sub msg
 
 
+port verifyUserStart : (String -> msg) -> Sub msg
+
+
+port verifyUser : String -> Cmd msg
+
+
+port checkVerifyUser : () -> Cmd msg
+
+
+port verifyUserRequested : (Encode.Value -> msg) -> Sub msg
+
+
 
 -- HELPERS
 
@@ -133,9 +149,18 @@ onPasswordReset =
 
 {-| Called on update login email
 -}
-onAuthEmailUpdate : (Maybe AuthError -> msg) -> Sub msg
+onAuthEmailUpdate : (Maybe FirebaseError -> msg) -> Sub msg
 onAuthEmailUpdate msg =
     updateAuthEmailDone
+        (Decode.decodeValue authErrorDecoder
+            >> Result.toMaybe
+            >> msg
+        )
+
+
+onVerifyUserRequested : (Maybe FirebaseError -> msg) -> Sub msg
+onVerifyUserRequested msg =
+    verifyUserRequested
         (Decode.decodeValue authErrorDecoder
             >> Result.toMaybe
             >> msg
@@ -146,9 +171,9 @@ onAuthEmailUpdate msg =
 -- PROVIDER TO/FROM
 
 
-authErrorDecoder : Decoder AuthError
+authErrorDecoder : Decoder FirebaseError
 authErrorDecoder =
-    Decode.succeed AuthError
+    Decode.succeed FirebaseError
         |> DecodeP.required "code" Decode.string
         |> DecodeP.required "message" Decode.string
 

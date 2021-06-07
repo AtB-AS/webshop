@@ -16,7 +16,7 @@ import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
-import Service.FirebaseAuth as FirebaseAuth exposing (AuthError)
+import Service.FirebaseAuth as FirebaseAuth exposing (FirebaseError)
 import Service.Misc as MiscService exposing (Profile, SignInMethod, SignInProvider(..))
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
@@ -69,7 +69,7 @@ type Msg
     | SaveNames
     | SaveEmail
     | SaveLoginEmail
-    | UpdatedLoginEmail (Maybe AuthError)
+    | UpdatedLoginEmail (Maybe FirebaseError)
     | SaveTravelCard
     | SetEditSection (Maybe EditSection) (Maybe String)
     | LoadingEditSection (Maybe EditSection)

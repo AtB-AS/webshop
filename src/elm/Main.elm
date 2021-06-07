@@ -21,6 +21,7 @@ import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
+import Page.VerifyUser as VerifyUserPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (LoginMethodPath(..), Route(..))
 import Service.FirebaseAuth as FirebaseAuth
@@ -50,8 +51,10 @@ type Msg
     | AccountMsg AccountPage.Msg
     | LoginMsg LoginPage.Msg
     | OnboardingMsg OnboardingPage.Msg
+    | VerifyUserMsg VerifyUserPage.Msg
     | SharedMsg Shared.Msg
     | StartOnboarding ( String, String, String )
+    | StartVerifyUser String
     | LogOut
     | LoggedInData (Result Decode.Error UserData)
     | LoggedInError (Result Decode.Error AuthError)
@@ -68,6 +71,7 @@ type alias Model =
     , shared : Shared
     , login : LoginPage.Model
     , onboarding : Maybe OnboardingPage.Model
+    , verifyUser : Maybe VerifyUserPage.Model
     , route : Maybe Route.Route
     , errors : List Error
     , notifications : List (Notification Msg)
@@ -252,6 +256,7 @@ init flags url navKey =
                 , userData = userData
                 , authError = AuthErrorNone
                 , navKey = navKey
+                , verifyUser = Nothing
                 }
     in
         ( routeModel
@@ -390,11 +395,24 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        VerifyUserMsg subMsg ->
+            case model.verifyUser of
+                Just email ->
+                    VerifyUserPage.update subMsg email
+                        |> PageUpdater.map (\newModel -> { model | verifyUser = Just newModel }) VerifyUserMsg
+                        |> doPageUpdate
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         SharedMsg subMsg ->
             ( { model | shared = Shared.update subMsg model.shared }, Cmd.none )
 
         StartOnboarding ( token, email, phone ) ->
             ( { model | onboarding = Just <| OnboardingPage.init token email phone }, Cmd.none )
+
+        StartVerifyUser email ->
+            ( { model | verifyUser = Just <| VerifyUserPage.init email }, Cmd.none )
 
         LogOut ->
             let
@@ -459,20 +477,23 @@ view model =
             model
             (case model.userData of
                 Loading _ ->
-                    case model.onboarding of
-                        Just onboarding ->
-                            [ OnboardingPage.view model.environment model.shared onboarding
-                                |> H.map OnboardingMsg
-                            ]
+                    [ case ( model.verifyUser, model.onboarding ) of
+                        ( Just email, _ ) ->
+                            VerifyUserPage.view email
+                                |> H.map VerifyUserMsg
 
-                        Nothing ->
-                            [ H.ul [ A.class "waiting-room" ]
+                        ( _, Just onboarding ) ->
+                            OnboardingPage.view model.environment model.shared onboarding
+                                |> H.map OnboardingMsg
+
+                        _ ->
+                            H.ul [ A.class "waiting-room" ]
                                 [ H.li [] []
                                 , H.li [] []
                                 , H.li [] []
                                 , H.li [] []
                                 ]
-                            ]
+                    ]
 
                 _ ->
                     [ case model.onboarding of
@@ -480,7 +501,7 @@ view model =
                             OnboardingPage.view model.environment model.shared onboarding
                                 |> H.map OnboardingMsg
 
-                        Nothing ->
+                        _ ->
                             case model.environment.customerId of
                                 Just _ ->
                                     viewPage model
@@ -516,10 +537,10 @@ header model =
             ]
 
         showHeader =
-            model.environment.customerId /= Nothing || model.onboarding /= Nothing
+            model.environment.customerId /= Nothing || model.onboarding /= Nothing || model.verifyUser /= Nothing
 
         navigation =
-            if model.onboarding == Nothing then
+            if model.onboarding == Nothing && model.verifyUser == Nothing then
                 List.map
                     (\( name, route ) ->
                         H.li
@@ -644,6 +665,7 @@ subs model =
         , FirebaseAuth.signedInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userErrorDecoder >> LoggedInError)
         , MiscService.onboardingStart StartOnboarding
+        , FirebaseAuth.verifyUserStart StartVerifyUser
         ]
 
 
