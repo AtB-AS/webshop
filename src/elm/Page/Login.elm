@@ -19,6 +19,7 @@ import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section
+import Util.PhoneNumber
 
 
 type LoginMethod
@@ -200,15 +201,7 @@ methodPathToPath path =
 
 loginUsingPhone : String -> Cmd Msg
 loginUsingPhone phoneNumber =
-    let
-        fullPhone =
-            if String.startsWith "+" phoneNumber then
-                phoneNumber
-
-            else
-                "+47" ++ phoneNumber
-    in
-        FirebaseAuth.loginPhone fullPhone
+    FirebaseAuth.loginPhone <| Util.PhoneNumber.withCountryCode phoneNumber
 
 
 loginUsingEmail : String -> String -> Cmd Msg
