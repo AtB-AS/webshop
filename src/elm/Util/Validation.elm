@@ -2,8 +2,10 @@ module Util.Validation exposing
     ( FormError
     , ValidationErrors
     , add
+    , all
     , emailValidator
     , init
+    , phoneValidator
     , remove
     , removeAll
     , select
@@ -58,6 +60,15 @@ travelCardValidator field toValue =
         ]
 
 
+phoneValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
+phoneValidator field toValue =
+    Validate.firstError
+        [ ifNotLength 11 toValue ( field, "Telefonnummeret må bestå av 8 siffer" )
+        , Validate.ifFalse (\model -> String.startsWith "+" (toValue model)) ( field, "Telefonnummeret må ha med landskode" )
+        , Validate.ifNotInt (toValue >> String.replace "+" "") (\_ -> ( field, "Telefonnummer må være et tall på 8 siffer." ))
+        ]
+
+
 emailValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
 emailValidator field toValue =
     Validate.firstError
@@ -75,6 +86,11 @@ void =
 validate : Validator error subject -> subject -> Result (List error) (Valid subject)
 validate =
     Validate.validate
+
+
+all : List (Validator error subject) -> Validator error subject
+all =
+    Validate.all
 
 
 

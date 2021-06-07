@@ -24,6 +24,7 @@ import Ui.LabelItem
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
+import Util.PhoneNumber
 import Util.Task
 import Util.TravelCard
 import Util.Validation as V exposing (FormError, ValidationErrors)
@@ -34,6 +35,7 @@ type Msg
     = InputEmail String
     | InputFirstName String
     | InputLastName String
+    | InputPhone String
     | ToggleConsent Int Bool
     | Register
     | ReceiveRegisterProfile (Result Http.Error ())
@@ -60,6 +62,7 @@ type Step
 type FieldName
     = TravelCardField
     | EmailField
+    | PhoneField
     | RegisterForm
     | ConsentForm
 
@@ -80,6 +83,8 @@ type alias Model =
     , unsavedConsents : List Int
     , consentEmail : String
     , savedEmail : String
+    , isReadonlyEmail : Bool
+    , isReadonlyPhone : Bool
     }
 
 
@@ -100,6 +105,8 @@ init token email phone =
     , unsavedConsents = []
     , consentEmail = ""
     , savedEmail = ""
+    , isReadonlyEmail = not <| String.isEmpty email
+    , isReadonlyPhone = not <| String.isEmpty phone
     }
 
 
@@ -130,20 +137,27 @@ update msg env shared model =
             in
                 PageUpdater.init { model | consents = newConsents }
 
-        Register ->
-            case validateEmail False .email model of
-                Ok _ ->
-                    PageUpdater.fromPair
-                        ( { model | validationErrors = V.init }
-                        , saveProfile { env | token = model.token }
-                            model.firstName
-                            model.lastName
-                            model.phone
-                            model.email
-                        )
+        InputPhone value ->
+            PageUpdater.init { model | phone = value, validationErrors = (V.remove PhoneField >> V.remove RegisterForm) model.validationErrors }
 
-                Err errors ->
-                    PageUpdater.init { model | validationErrors = errors }
+        Register ->
+            let
+                modelWithCountryCode =
+                    { model | phone = Util.PhoneNumber.withCountryCode model.phone }
+            in
+                case validatePersonalInfo modelWithCountryCode of
+                    Ok _ ->
+                        PageUpdater.fromPair
+                            ( { model | validationErrors = V.init }
+                            , saveProfile { env | token = model.token }
+                                modelWithCountryCode.firstName
+                                modelWithCountryCode.lastName
+                                modelWithCountryCode.phone
+                                modelWithCountryCode.email
+                            )
+
+                    Err errors ->
+                        PageUpdater.init { model | validationErrors = errors }
 
         ReceiveRegisterProfile result ->
             case result of
@@ -347,6 +361,29 @@ validateEmail required field model =
         V.validate (V.emailValidator EmailField field) model
 
 
+validatorEmail : Model -> Validate.Validator (FormError FieldName) Model
+validatorEmail model =
+    if String.isEmpty model.email then
+        V.void
+
+    else
+        V.emailValidator EmailField .email
+
+
+validatorPhone : Model -> Validate.Validator (FormError FieldName) Model
+validatorPhone model =
+    if String.isEmpty model.phone then
+        V.void
+
+    else
+        V.phoneValidator PhoneField .phone
+
+
+validatePersonalInfo : Model -> Result (List (FormError FieldName)) (Valid Model)
+validatePersonalInfo model =
+    V.validate (V.all [ validatorEmail model, validatorPhone model ]) model
+
+
 view : Environment -> Shared -> Model -> Html Msg
 view env shared model =
     case model.step of
@@ -397,23 +434,54 @@ viewProfileInfo _ model =
         [ Section.viewPaddedItem
             [ H.p [] [ H.text "Her ber vi om noen opplysninger som vil forenkle bruken av nettbutikken." ]
             ]
-        , sectionTextInput "firstname"
-            model.firstName
-            InputFirstName
-            "Fornavn"
-            "Skriv inn fornavnet ditt"
-        , sectionTextInput "lastname"
-            model.lastName
-            InputLastName
-            "Etternavn"
-            "Skriv inn etternavnet ditt"
+        , Section.viewItem
+            [ TextInput.init "firstname"
+                |> TextInput.setTitle (Just "Fornavn")
+                |> TextInput.setPlaceholder "Skriv inn fornavnet ditt"
+                |> TextInput.setOnInput (Just InputFirstName)
+                |> TextInput.setValue (Just model.firstName)
+                |> TextInput.view
+            ]
+        , Section.viewItem
+            [ TextInput.init "lastname"
+                |> TextInput.setTitle (Just "Etternavn")
+                |> TextInput.setPlaceholder "Skriv inn etternavnet ditt"
+                |> TextInput.setOnInput (Just InputLastName)
+                |> TextInput.setValue (Just model.lastName)
+                |> TextInput.view
+            ]
+        , Section.viewItem
+            [ TextInput.init "phone"
+                |> TextInput.setTitle
+                    (Just <|
+                        if model.isReadonlyPhone then
+                            "Telefonnummer (fra innlogging)"
+
+                        else
+                            "Telefonnummer"
+                    )
+                |> TextInput.setPlaceholder "Skriv inn ditt telefonnummer"
+                |> TextInput.setOnInput (Just InputPhone)
+                |> TextInput.setValue (Just model.phone)
+                |> TextInput.setError (V.select PhoneField model.validationErrors)
+                |> TextInput.setAttributes [ A.readonly model.isReadonlyPhone ]
+                |> TextInput.view
+            ]
         , Section.viewItem
             [ TextInput.init "email"
-                |> TextInput.setTitle (Just "E-postadresse")
+                |> TextInput.setTitle
+                    (Just <|
+                        if model.isReadonlyEmail then
+                            "E-postadresse (fra innlogging)"
+
+                        else
+                            "E-postadresse"
+                    )
                 |> TextInput.setPlaceholder "Hvor skal vi sende kvitteringer?"
                 |> TextInput.setOnInput (Just InputEmail)
                 |> TextInput.setValue (Just model.email)
                 |> TextInput.setError (V.select EmailField model.validationErrors)
+                |> TextInput.setAttributes [ A.readonly model.isReadonlyEmail ]
                 |> TextInput.view
             ]
         , Html.Extra.viewMaybe Message.error <| V.select RegisterForm model.validationErrors
