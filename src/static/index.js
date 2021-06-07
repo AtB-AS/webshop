@@ -225,7 +225,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
             console.error('No idToken');
             return;
         }
-
+        debugger;
         const accountId = idToken.claims['sub'];
         const email = user.email || '';
         const phone = user.phoneNumber || '';
@@ -235,46 +235,50 @@ async function fetchAuthInfo(user, stopOnboarding) {
 
         localStorage.setItem('loggedIn', 'loggedIn');
 
-        unsubscribeFetchUserDataSnapshot = db
-            .collection('customers')
-            .doc(accountId)
-            .onSnapshot((doc) => {
-                const profile = doc.data();
+        if (!user.emailVerified && provider == 'password') {
+            app.ports.verifyUserStart.send(email);
+        } else {
+            unsubscribeFetchUserDataSnapshot = db
+                .collection('customers')
+                .doc(accountId)
+                .onSnapshot((doc) => {
+                    const profile = doc.data();
 
-                if (!profile) {
-                    onboardingUser = user;
-                    app.ports.onboardingStart.send([
-                        idToken.token,
-                        email,
-                        phone
-                    ]);
-                } else {
-                    app.ports.signedInInfo.send({
-                        token: idToken.token,
-                        email: email,
-                        phone: phone,
-                        uid: accountId,
-                        provider: provider,
-                        stopOnboarding: !!stopOnboarding
-                    });
+                    if (!profile) {
+                        onboardingUser = user;
+                        app.ports.onboardingStart.send([
+                            idToken.token,
+                            email,
+                            phone
+                        ]);
+                    } else {
+                        app.ports.signedInInfo.send({
+                            token: idToken.token,
+                            email: email,
+                            phone: phone,
+                            uid: accountId,
+                            provider: provider,
+                            stopOnboarding: !!stopOnboarding
+                        });
 
-                    if (
-                        typeof profile.travelcard === 'object' &&
-                        profile.travelcard !== null
-                    ) {
-                        profile.travelcard.expires = convert_time(
-                            profile.travelcard.expires
-                        );
+                        if (
+                            typeof profile.travelcard === 'object' &&
+                            profile.travelcard !== null
+                        ) {
+                            profile.travelcard.expires = convert_time(
+                                profile.travelcard.expires
+                            );
+                        }
+
+                        app.ports.firestoreReadProfile.send({
+                            ...profile,
+                            signInMethods: user.providerData
+                        });
+
+                        loadFareContracts(accountId);
                     }
-
-                    app.ports.firestoreReadProfile.send({
-                        ...profile,
-                        signInMethods: user.providerData
-                    });
-
-                    loadFareContracts(accountId);
-                }
-            });
+                });
+        }
     } catch (error) {
         console.log('Error when retrieving cached user', error);
     }
@@ -363,6 +367,10 @@ app.ports.onboardingDone.subscribe(() => {
     setTimeout(() => {
         fetchAuthInfo(onboardingUser, true);
     }, 500);
+});
+
+app.ports.checkVerifyUser.subscribe(() => {
+    fetchAuthInfo(firebase.auth().currentUser);
 });
 
 app.ports.navigateTo.subscribe((url) => {
@@ -510,6 +518,7 @@ app.ports.registerEmail.subscribe(({ email, password }) => {
         .auth()
         .createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
+            sendVerificationEmail();
             fetchAuthInfo(userCredential.user);
         })
         .catch((error) => {
@@ -549,17 +558,30 @@ app.ports.updateAuthEmail.subscribe((email) => {
     firebase
         .auth()
         .currentUser.verifyBeforeUpdateEmail(email, actionCodeSettings)
-        .then(function (...args) {
-            console.log(args);
-            debugger;
+        .then(function () {
             app.ports.updateAuthEmailDone.send();
         })
         .catch(function (error) {
-            debugger;
-
             app.ports.updateAuthEmailDone.send(error);
         });
 });
+
+function sendVerificationEmail(email) {
+    const actionCodeSettings = {
+        url: window.location.origin
+    };
+
+    firebase
+        .auth()
+        .currentUser.sendEmailVerification(actionCodeSettings)
+        .then(function () {
+            app.ports.verifyUserRequested.send();
+        })
+        .catch(function (error) {
+            app.ports.verifyUserRequested.send(error);
+        });
+}
+app.ports.verifyUser.subscribe(sendVerificationEmail);
 
 app.ports.resetPassword.subscribe((email) => {
     const actionCodeSettings = {
