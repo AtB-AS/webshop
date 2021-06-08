@@ -243,7 +243,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
 
         localStorage.setItem('loggedIn', 'loggedIn');
 
-        if (!user.emailVerified && provider == 'password') {
+        if (!(await isUserPasswordProviderAndverified())) {
             app.ports.verifyUserStart.send(email);
         } else {
             unsubscribeFetchUserDataSnapshot = db
@@ -530,8 +530,8 @@ app.ports.registerEmail.subscribe(({ email, password }) => {
     firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            sendVerificationEmail();
+        .then(async (userCredential) => {
+            await sendVerificationEmail();
             fetchAuthInfo(userCredential.user);
         })
         .catch((error) => {
@@ -563,20 +563,19 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
         });
 });
 
-function sendVerificationEmail() {
+async function sendVerificationEmail() {
     const actionCodeSettings = {
         url: window.location.origin
     };
 
-    firebase
-        .auth()
-        .currentUser.sendEmailVerification(actionCodeSettings)
-        .then(function () {
-            app.ports.verifyUserRequested.send();
-        })
-        .catch(function (error) {
-            app.ports.verifyUserRequested.send(error);
-        });
+    try {
+        await firebase
+            .auth()
+            .currentUser.sendEmailVerification(actionCodeSettings);
+        app.ports.verifyUserRequested.send();
+    } catch (error) {
+        app.ports.verifyUserRequested.send(error);
+    }
 }
 app.ports.verifyUser.subscribe(sendVerificationEmail);
 

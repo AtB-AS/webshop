@@ -62,7 +62,7 @@ update msg model =
                             Nothing
 
                         else
-                            Just "Ser ikke ut til at du har verifisert e-posten enda. Prøv å send på nytt."
+                            Just "Ser ikke ut til at du har verifisert e-posten enda. Om du ikke har mottatt e-post kan du sjekke spam-filter og eventuelt prøve å sende ny verifikasjon"
                 }
 
 
@@ -71,18 +71,20 @@ view model =
     H.div []
         [ H.div [ A.class "page page--narrow" ]
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
-            , Ui.Section.view
-                [ Ui.Section.viewHeader <| "Verifiser " ++ model.email
-                , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Hei! Du må bekrefte eposten din for å kunne logge inn." ] ]
-                , Html.Extra.viewMaybe Ui.Message.warning model.error
-                , B.init "Det er gjort"
-                    |> B.setOnClick (Just CheckVerifyUser)
-                    |> B.primary B.Primary_2
+            , H.div []
+                [ Ui.Section.view
+                    [ Ui.Section.viewHeader <| "Verifiser " ++ model.email
+                    , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Hei! Du må bekrefte eposten din for å kunne logge inn." ] ]
+                    , Html.Extra.viewMaybe Ui.Message.warning model.error
+                    , B.init "Det er gjort"
+                        |> B.setOnClick (Just CheckVerifyUser)
+                        |> B.primary B.Primary_2
+                    ]
+                , B.init "Send verifikasjon på nytt"
+                    |> B.setOnClick (Just SendVerifyUser)
+                    |> B.setType "button"
+                    |> B.link
                 ]
-            , B.init "Send engangspassord på nytt"
-                |> B.setOnClick (Just SendVerifyUser)
-                |> B.setType "button"
-                |> B.link
             ]
         ]
 

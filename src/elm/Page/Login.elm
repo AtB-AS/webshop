@@ -13,6 +13,7 @@ import Notification
 import PageUpdater exposing (PageUpdater)
 import Route exposing (LoginMethodPath(..))
 import Service.FirebaseAuth as FirebaseAuth exposing (Provider(..))
+import Service.Misc as Misc
 import Task
 import Ui.Button as B
 import Ui.Input.Text as T
@@ -31,6 +32,7 @@ type LoginMethod
 
 type Msg
     = OnEnterPage LoginMethodPath
+    | OnLeavePage LoginMethodPath
     | InputPhone String
     | InputCode String
     | InputEmail String
@@ -84,18 +86,21 @@ update msg env model navKey =
     case msg of
         OnEnterPage path ->
             let
-                isLoggedIn =
+                shouldNavigateHome =
                     env.customerId /= Nothing
             in
                 PageUpdater.fromPair
                     ( { model | loginMethod = methodPathToPath path }
                       -- Not logged in, so just redirect home
-                    , if isLoggedIn then
+                    , if shouldNavigateHome then
                         Route.modifyUrl navKey Route.Home
 
                       else
                         Tuple.second init
                     )
+
+        OnLeavePage _ ->
+            PageUpdater.init <| Tuple.first init
 
         InputPhone value ->
             PageUpdater.init { model | phone = value }
@@ -133,7 +138,7 @@ update msg env model navKey =
                 )
 
         LoggedIn ->
-            PageUpdater.init (Tuple.first init)
+            PageUpdater.fromPair ( Tuple.first init, Route.newUrl navKey Route.Home )
 
         ResendPhoneCode ->
             PageUpdater.fromPair
@@ -435,4 +440,6 @@ subscriptions _ =
         , FirebaseAuth.onError HandleError
         , FirebaseAuth.onPasswordReset (\_ -> ResetPassword)
         , FirebaseAuth.signedInInfo (\_ -> LoggedIn)
+        , Misc.onboardingStart (\_ -> LoggedIn)
+        , FirebaseAuth.verifyUserStart (\_ -> LoggedIn)
         ]

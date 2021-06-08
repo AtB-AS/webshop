@@ -425,7 +425,13 @@ update msg model =
                         , token = ""
                     }
             in
-                ( { model | userData = NotLoaded, environment = newEnvironment, onboarding = Nothing, authError = AuthErrorNone }
+                ( { model
+                    | userData = NotLoaded
+                    , environment = newEnvironment
+                    , onboarding = Nothing
+                    , verifyUser = Nothing
+                    , authError = AuthErrorNone
+                  }
                 , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                 )
 
@@ -475,42 +481,32 @@ view model =
     Browser.Document model.appInfo.title
         [ wrapPage
             model
-            (case model.userData of
-                Loading _ ->
-                    [ case ( model.verifyUser, model.onboarding ) of
-                        ( Just email, Nothing ) ->
-                            VerifyUserPage.view email
-                                |> H.map VerifyUserMsg
+            [ case ( model.userData, model.verifyUser, model.onboarding ) of
+                ( Loading _, Nothing, Nothing ) ->
+                    H.ul [ A.class "waiting-room" ]
+                        [ H.li [] []
+                        , H.li [] []
+                        , H.li [] []
+                        , H.li [] []
+                        ]
 
-                        ( _, Just onboarding ) ->
-                            OnboardingPage.view model.environment model.shared onboarding
-                                |> H.map OnboardingMsg
+                ( NotLoaded, Just email, Nothing ) ->
+                    VerifyUserPage.view email
+                        |> H.map VerifyUserMsg
 
-                        _ ->
-                            H.ul [ A.class "waiting-room" ]
-                                [ H.li [] []
-                                , H.li [] []
-                                , H.li [] []
-                                , H.li [] []
-                                ]
-                    ]
+                ( _, _, Just onboarding ) ->
+                    OnboardingPage.view model.environment model.shared onboarding
+                        |> H.map OnboardingMsg
 
-                _ ->
-                    [ case model.onboarding of
-                        Just onboarding ->
-                            OnboardingPage.view model.environment model.shared onboarding
-                                |> H.map OnboardingMsg
+                ( _, _, _ ) ->
+                    case model.environment.customerId of
+                        Just _ ->
+                            viewPage model
 
-                        _ ->
-                            case model.environment.customerId of
-                                Just _ ->
-                                    viewPage model
-
-                                Nothing ->
-                                    LoginPage.view model.environment model.login
-                                        |> H.map LoginMsg
-                    ]
-            )
+                        Nothing ->
+                            LoginPage.view model.environment model.login
+                                |> H.map LoginMsg
+            ]
         ]
 
 
