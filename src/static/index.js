@@ -212,6 +212,15 @@ function enqueueRefreshToken(user, expirationString) {
     refreshTokenTimer = setTimeout(fetchAuthInfo.bind(null, user), refreshTime);
 }
 
+async function isUserPasswordProviderAndverified() {
+    const user = firebase.auth().currentUser;
+    if (!user) return false;
+    const idToken = await user.getIdTokenResult(true);
+    if (!idToken) return false;
+
+    return user.emailVerified && idToken.signInProvider == 'password';
+}
+
 async function fetchAuthInfo(user, stopOnboarding) {
     clearRefreshToken();
     // Unsubscribe previous listener.
@@ -225,7 +234,6 @@ async function fetchAuthInfo(user, stopOnboarding) {
             console.error('No idToken');
             return;
         }
-        debugger;
         const accountId = idToken.claims['sub'];
         const email = user.email || '';
         const phone = user.phoneNumber || '';
@@ -369,8 +377,13 @@ app.ports.onboardingDone.subscribe(() => {
     }, 500);
 });
 
-app.ports.checkVerifyUser.subscribe(() => {
-    fetchAuthInfo(firebase.auth().currentUser);
+app.ports.checkVerifyUser.subscribe(async () => {
+    const response = await isUserPasswordProviderAndverified();
+    app.ports.checkVerifyUserResponse.send(response);
+
+    if (response) {
+        fetchAuthInfo(firebase.auth().currentUser);
+    }
 });
 
 app.ports.navigateTo.subscribe((url) => {
@@ -550,23 +563,7 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
         });
 });
 
-app.ports.updateAuthEmail.subscribe((email) => {
-    const actionCodeSettings = {
-        url: window.location.origin + '/login/email'
-    };
-
-    firebase
-        .auth()
-        .currentUser.verifyBeforeUpdateEmail(email, actionCodeSettings)
-        .then(function () {
-            app.ports.updateAuthEmailDone.send();
-        })
-        .catch(function (error) {
-            app.ports.updateAuthEmailDone.send(error);
-        });
-});
-
-function sendVerificationEmail(email) {
+function sendVerificationEmail() {
     const actionCodeSettings = {
         url: window.location.origin
     };

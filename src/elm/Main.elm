@@ -478,7 +478,7 @@ view model =
             (case model.userData of
                 Loading _ ->
                     [ case ( model.verifyUser, model.onboarding ) of
-                        ( Just email, _ ) ->
+                        ( Just email, Nothing ) ->
                             VerifyUserPage.view email
                                 |> H.map VerifyUserMsg
 
@@ -661,6 +661,8 @@ subs model =
             |> Sub.map LoginMsg
         , Shared.subscriptions
             |> Sub.map SharedMsg
+        , VerifyUserPage.subscriptions
+            |> Sub.map VerifyUserMsg
         , Time.every 1000 MaybeCloseNotification
         , FirebaseAuth.signedInInfo (Decode.decodeValue userDataDecoder >> LoggedInData)
         , FirebaseAuth.signInError (Decode.decodeValue userErrorDecoder >> LoggedInError)

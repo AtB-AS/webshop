@@ -3,10 +3,10 @@ port module Service.FirebaseAuth exposing
     , Provider(..)
     , authError
     , checkVerifyUser
+    , checkVerifyUserResponse
     , confirmPhone
     , loginEmail
     , loginPhone
-    , onAuthEmailUpdate
     , onError
     , onPasswordReset
     , onRequestCode
@@ -20,7 +20,6 @@ port module Service.FirebaseAuth exposing
     , signInError
     , signOut
     , signedInInfo
-    , updateAuthEmail
     , verifyUser
     , verifyUserStart
     )
@@ -99,12 +98,6 @@ port resetPasswordDone : (Value -> msg) -> Sub msg
 port resetPassword : String -> Cmd msg
 
 
-port updateAuthEmail : String -> Cmd msg
-
-
-port updateAuthEmailDone : (Encode.Value -> msg) -> Sub msg
-
-
 port verifyUserStart : (String -> msg) -> Sub msg
 
 
@@ -112,6 +105,9 @@ port verifyUser : String -> Cmd msg
 
 
 port checkVerifyUser : () -> Cmd msg
+
+
+port checkVerifyUserResponse : (Bool -> msg) -> Sub msg
 
 
 port verifyUserRequested : (Encode.Value -> msg) -> Sub msg
@@ -145,17 +141,6 @@ onError =
 onPasswordReset : (Value -> msg) -> Sub msg
 onPasswordReset =
     resetPasswordDone
-
-
-{-| Called on update login email
--}
-onAuthEmailUpdate : (Maybe FirebaseError -> msg) -> Sub msg
-onAuthEmailUpdate msg =
-    updateAuthEmailDone
-        (Decode.decodeValue authErrorDecoder
-            >> Result.toMaybe
-            >> msg
-        )
 
 
 onVerifyUserRequested : (Maybe FirebaseError -> msg) -> Sub msg
