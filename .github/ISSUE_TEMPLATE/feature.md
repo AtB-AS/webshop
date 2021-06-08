@@ -41,3 +41,5 @@ Nevn annen nyttig informasjon og lenker som kan være viktig for denne oppgaven
 - [ ] Tekst kan forstørres opp til minst 200 %-visning utan tap av innhold og funksjonalitet.
 - [ ] Overskrifter, tabeller, overskriftsceller og lister er rett kodet.
 - [ ] Bilder/illustrasjoner er kodet etter formål (ikke lenkede-dekorative bilder skaper ikke støy, mens bilder som er meningsbærende har tekstalternativ).
+
+Beskrivelse av QA prosessen finnes [her](https://github.com/AtB-AS/org/blob/master/guides/quality_assurance.md#qa-in-atb-webshop).
