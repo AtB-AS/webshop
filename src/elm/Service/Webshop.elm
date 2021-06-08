@@ -12,6 +12,7 @@ module Service.Webshop exposing
     , save
     , travelCardErrorDecoder
     , updateEmail
+    , updatePhone
     , updateProfile
     )
 
@@ -48,6 +49,17 @@ updateEmail env email =
         payload =
             Encode.object
                 [ ( "email", Encode.string email )
+                ]
+    in
+        HttpUtil.patch env (env.baseUrl ++ "/webshop/v1/profile") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
+
+
+updatePhone : Environment -> String -> Http.Request ()
+updatePhone env phone =
+    let
+        payload =
+            Encode.object
+                [ ( "phone", Encode.string phone )
                 ]
     in
         HttpUtil.patch env (env.baseUrl ++ "/webshop/v1/profile") (Http.jsonBody payload) (Http.expectStringResponse (\_ -> Ok ()))
