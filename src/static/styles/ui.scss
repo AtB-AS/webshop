@@ -36,18 +36,34 @@
 .ui-message--warning {
     background: var(--status-warning-main-backgroundColor);
     color: var(--status-warning-main-color);
+
+    a {
+        color: var(--status-warning-main-color);
+    }
 }
 .ui-message--error {
     background: var(--status-error-main-backgroundColor);
     color: var(--status-error-main-color);
+
+    a {
+        color: var(--status-error-main-color);
+    }
 }
 .ui-message--valid {
     background: var(--status-valid-main-backgroundColor);
     color: var(--status-valid-main-color);
+
+    a {
+        color: var(--status-valid-main-color);
+    }
 }
 .ui-message--info {
     background: var(--status-info-main-backgroundColor);
     color: var(--status-info-main-color);
+
+    a {
+        color: var(--status-info-main-color);
+    }
 }
 .ui-message--borderTop {
     border-top-left-radius: var(--border-radius-regular);
