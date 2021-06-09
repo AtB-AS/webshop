@@ -29,6 +29,7 @@ import Ui.Section
 import Ui.TravelCardText
 import Url.Builder as Url
 import Util.Maybe
+import Util.PageTitle
 import Util.PhoneNumber
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
@@ -50,7 +51,8 @@ type FieldName
 
 
 type Msg
-    = UpdateFirstName String
+    = OnEnterPage
+    | UpdateFirstName String
     | UpdateLastName String
     | UpdateEmail String
     | InputTravelCard String
@@ -102,6 +104,13 @@ init =
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
+        OnEnterPage ->
+            PageUpdater.init model
+                |> (Just "Min profil"
+                        |> GA.SetTitle
+                        |> PageUpdater.addGlobalAction
+                   )
+
         ResetState ->
             let
                 mapWithDefault s =

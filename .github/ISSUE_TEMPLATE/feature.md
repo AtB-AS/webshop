@@ -1,11 +1,11 @@
 ---
 name: Feature
-about: 'En større endring som kan leve litt over tid, som et konsept, funksjonalitet
-  eller sider. '
-title: "[Feature] Ny feature"
+about:
+    'En større endring som kan leve litt over tid, som et konsept, funksjonalitet
+    eller sider. '
+title: '[Feature] Ny feature'
 labels: C-Feature
 assignees: ''
-
 ---
 
 **Konseptuell beskrivelse og behov som skal løses**
