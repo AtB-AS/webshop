@@ -30,7 +30,6 @@ import Ui.TicketDetails
 import Ui.TravelCardText
 import Util.FareContract
 import Util.Maybe
-import Util.PageTitle
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
 
