@@ -14,7 +14,7 @@
     },
     "devDependencies": {
         "@atb-as/elm-format": "^1.0.0",
-        "@atb-as/theme": "^2.0.0",
+        "@atb-as/theme": "3.2.0",
         "@babel/core": "^7.14.3",
         "@babel/preset-env": "^7.14.2",
         "@webpack-cli/serve": "^1.4.0",
@@ -43,16 +43,15 @@
         "style-loader": "2.0.0",
         "terser-webpack-plugin": "5.1.2",
         "url-loader": "4.1.1",
+        "uuid": "^8.3.2",
         "webpack": "^5.37.1",
         "webpack-cli": "4.7.0",
         "webpack-dev-server": "3.11.2",
         "webpack-merge": "5.7.3",
         "webpack-subresource-integrity": "1.5.2",
         "wicg-inert": "^3.1.1",
-        "uuid": "^8.3.2",
         "workbox-webpack-plugin": "6.1.5"
     },
-    "dependencies": {},
     "browserslist": [
         "defaults, not IE 11"
     ]

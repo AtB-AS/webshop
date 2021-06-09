@@ -156,8 +156,8 @@ warning =
 warningColor : Html msg
 warningColor =
     S.svg [ SA.width "20", SA.height "20", SA.viewBox "0 0 20 20", SA.fill "none" ]
-        [ S.path [ SA.d "M9 6V11H11V6H9Z", SA.fill "black" ] []
-        , S.path [ SA.d "M11 12H9V14H11V12Z", SA.fill "black" ] []
+        [ S.path [ SA.d "M9 6V11H11V6H9Z", SA.fill "currentColor" ] []
+        , S.path [ SA.d "M11 12H9V14H11V12Z", SA.fill "currentColor" ] []
         , S.path
             [ SA.fillRule "evenodd"
             , SA.clipRule "evenodd"

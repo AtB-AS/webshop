@@ -113,9 +113,9 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
 
                                     else
                                         "Vis detaljer"
+                                , chevronIcon
                                 ]
                             ]
-                        , chevronIcon
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
