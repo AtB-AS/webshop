@@ -1,6 +1,6 @@
 module Shared exposing (Msg, Shared, init, subscriptions, update)
 
-import Data.RefData exposing (FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
+import Data.RefData exposing (Consent, FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
 import Data.RemoteConfig exposing (RemoteConfig)
 import List exposing (product)
 import List.Extra
@@ -13,6 +13,7 @@ type Msg
     = ReceiveTariffZones (Result () (List TariffZone))
     | ReceiveFareProducts (Result () (List FareProduct))
     | ReceiveUserProfiles (Result () (List UserProfile))
+    | ReceiveConsents (Result () (List Consent))
     | ReceiveRemoteConfig (Result () RemoteConfig)
     | ProfileChange (Maybe Profile)
 
@@ -26,6 +27,7 @@ type alias Shared =
     , userProfiles : List UserProfile
     , remoteConfig : RemoteConfig
     , productLimitations : List Limitation
+    , consents : List Consent
     , profile : Maybe Profile
     }
 
@@ -37,6 +39,7 @@ init =
     , availableFareProducts = []
     , userProfiles = []
     , productLimitations = []
+    , consents = []
     , profile = Nothing
     , remoteConfig = RCConfig.init
     }
@@ -76,6 +79,14 @@ update msg model =
                 Err _ ->
                     model
 
+        ReceiveConsents result ->
+            case result of
+                Ok value ->
+                    { model | consents = value }
+
+                Err _ ->
+                    model
+
         ReceiveRemoteConfig result ->
             case result of
                 Ok value ->
@@ -110,6 +121,7 @@ subscriptions =
         [ RefDataService.onTariffZones ReceiveTariffZones
         , RefDataService.onFareProducts ReceiveFareProducts
         , RefDataService.onUserProfiles ReceiveUserProfiles
+        , RefDataService.onConsents ReceiveConsents
         , RCConfig.onRemoteConfig ReceiveRemoteConfig
         , MiscService.onProfileChange ProfileChange
         ]

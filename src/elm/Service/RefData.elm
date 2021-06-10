@@ -2,12 +2,13 @@ port module Service.RefData exposing
     ( getFareProducts
     , getTariffZones
     , getUserProfiles
+    , onConsents
     , onFareProducts
     , onTariffZones
     , onUserProfiles
     )
 
-import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (Consent, FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -156,6 +157,13 @@ userTypeDecoder =
         Decode.int
 
 
+consentDecoder : Decoder Consent
+consentDecoder =
+    Decode.succeed Consent
+        |> DecodeP.required "id" Decode.int
+        |> DecodeP.required "title" (Decode.dict Decode.string)
+
+
 onTariffZones : (Result () (List TariffZone) -> msg) -> Sub msg
 onTariffZones =
     remoteConfigDecoder tariffZoneDecoder >> remoteConfigTariffZones
@@ -171,6 +179,11 @@ onUserProfiles =
     remoteConfigDecoder userProfileDecoder >> remoteConfigUserProfiles
 
 
+onConsents : (Result () (List Consent) -> msg) -> Sub msg
+onConsents =
+    remoteConfigDecoder consentDecoder >> remoteConfigConsents
+
+
 
 -- INTERNAL
 
@@ -182,6 +195,9 @@ port remoteConfigFareProducts : (Decode.Value -> msg) -> Sub msg
 
 
 port remoteConfigUserProfiles : (Decode.Value -> msg) -> Sub msg
+
+
+port remoteConfigConsents : (Decode.Value -> msg) -> Sub msg
 
 
 remoteConfigDecoder : Decoder a -> (Result () (List a) -> msg) -> (Decode.Value -> msg)
