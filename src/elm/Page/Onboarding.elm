@@ -126,7 +126,7 @@ update msg env model =
                 PageUpdater.init { model | consents = newConsents }
 
         Register ->
-            case validateEmail model of
+            case validateEmail False model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model | validationErrors = V.init }
@@ -184,13 +184,27 @@ update msg env model =
                         }
 
         RegisterConsents ->
-            PageUpdater.fromPair
-                ( { model | unsavedConsents = Set.toList model.consents }
-                , registerConsents
-                    { env | token = model.token }
-                    (Set.toList model.consents)
-                    model.email
-                )
+            if not (Set.isEmpty model.consents) then
+                case validateEmail True model of
+                    Ok _ ->
+                        PageUpdater.fromPair
+                            ( { model
+                                | unsavedConsents = Set.toList model.consents
+                                , validationErrors = V.init
+                              }
+                            , registerConsents
+                                { env | token = model.token }
+                                (Set.toList model.consents)
+                                model.email
+                            )
+
+                    Err errors ->
+                        PageUpdater.init { model | validationErrors = errors }
+
+            else
+                -- No consents were ticked, so there's nothing to register. Jump to next step.
+                PageUpdater.init model
+                    |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
         ReceiveRegisterConsent id result ->
             case result of
@@ -294,9 +308,9 @@ validateTravelCard =
     V.validate (V.travelCardValidator TravelCardField .travelCard)
 
 
-validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
-validateEmail model =
-    if String.isEmpty model.email then
+validateEmail : Bool -> Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail required model =
+    if not required && String.isEmpty model.email then
         V.validate V.void model
 
     else
@@ -390,11 +404,15 @@ viewConsents _ shared model =
             ]
         , Section.viewLabelItem "Velg samtykker" (List.map (viewConsent model) shared.consents)
         , if not (Set.isEmpty model.consents) then
-            sectionTextInput "consent-email"
-                model.email
-                InputEmail
-                "E-postadresse"
-                "Hvor kan vi kontakte deg?"
+            Section.viewItem
+                [ TextInput.init "consent-email"
+                    |> TextInput.setTitle (Just "E-postadresse")
+                    |> TextInput.setPlaceholder "Hvor kan vi kontakte deg?"
+                    |> TextInput.setOnInput (Just InputEmail)
+                    |> TextInput.setValue (Just model.email)
+                    |> TextInput.setError (V.select EmailField model.validationErrors)
+                    |> TextInput.view
+                ]
 
           else
             H.text ""

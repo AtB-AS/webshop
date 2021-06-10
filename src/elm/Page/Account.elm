@@ -272,8 +272,12 @@ update msg env model =
 
 
 validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
-validateEmail =
-    Validation.validate (Validation.emailValidator Email .email)
+validateEmail model =
+    if String.isEmpty model.email then
+        Validation.validate Validation.void model
+
+    else
+        Validation.validate (Validation.emailValidator Email .email) model
 
 
 validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
