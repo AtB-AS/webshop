@@ -700,6 +700,11 @@
     height: 1.25rem;
     width: 1.25rem;
     padding-right: 1rem;
+
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 .ui-input-checkbox__title {
     flex: 1;
