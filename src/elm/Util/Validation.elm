@@ -61,7 +61,8 @@ travelCardValidator field toValue =
 emailValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
 emailValidator field toValue =
     Validate.firstError
-        [ Validate.ifInvalidEmail toValue (\_ -> ( field, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
+        [ Validate.ifBlank toValue ( field, "E-post kan ikke være tomt." )
+        , Validate.ifInvalidEmail toValue (\_ -> ( field, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
         ]
 
 
