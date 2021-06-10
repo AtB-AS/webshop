@@ -16,7 +16,10 @@ withoutCountryCode phone =
 
 withCountryCode : String -> String
 withCountryCode phone =
-    if String.startsWith "+" phone then
+    if String.isEmpty phone then
+        phone
+
+    else if String.startsWith "+" phone then
         phone
 
     else
