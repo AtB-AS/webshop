@@ -1,5 +1,6 @@
 module Data.RefData exposing
-    ( FareProduct
+    ( Consent
+    , FareProduct
     , LangString(..)
     , Limitation
     , ProductType(..)
@@ -7,6 +8,8 @@ module Data.RefData exposing
     , UserProfile
     , UserType(..)
     )
+
+import Dict exposing (Dict)
 
 
 type LangString
@@ -64,4 +67,10 @@ type alias UserProfile =
     , alternativeNames : List LangString
     , age : ( Int, Int )
     , userType : UserType
+    }
+
+
+type alias Consent =
+    { id : Int
+    , title : Dict String String
     }

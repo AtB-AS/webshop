@@ -462,7 +462,7 @@ view model =
                 Loading _ ->
                     case model.onboarding of
                         Just onboarding ->
-                            [ OnboardingPage.view model.environment onboarding
+                            [ OnboardingPage.view model.environment model.shared onboarding
                                 |> H.map OnboardingMsg
                             ]
 
@@ -478,7 +478,7 @@ view model =
                 _ ->
                     [ case model.onboarding of
                         Just onboarding ->
-                            OnboardingPage.view model.environment onboarding
+                            OnboardingPage.view model.environment model.shared onboarding
                                 |> H.map OnboardingMsg
 
                         Nothing ->

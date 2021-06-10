@@ -1,5 +1,7 @@
 module Page.Onboarding exposing (Model, Msg, init, subscriptions, update, view)
 
+import Data.RefData exposing (Consent)
+import Dict
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
@@ -11,6 +13,8 @@ import Json.Decode as Decode
 import PageUpdater exposing (PageUpdater)
 import Service.Misc as MiscService
 import Service.Webshop as WebshopService
+import Set exposing (Set)
+import Shared exposing (Shared)
 import Task
 import Ui.Button as Button
 import Ui.Input.Checkbox as Checkbox
@@ -30,8 +34,7 @@ type Msg
     = InputEmail String
     | InputFirstName String
     | InputLastName String
-    | ToggleConsent1 Bool
-    | ToggleConsent2 Bool
+    | ToggleConsent Int Bool
     | Register
     | ReceiveRegisterProfile (Result Http.Error ())
     | SkipRegister
@@ -64,13 +67,12 @@ type alias Model =
     , profileSaved : Bool
     , email : String
     , phone : String
-    , consent1 : Bool
-    , consent2 : Bool
     , step : Step
     , travelCard : String
     , travelCardState : MaskedInput.State
     , travelCardSaved : Bool
     , validationErrors : ValidationErrors FieldName
+    , consents : Set Int
     }
 
 
@@ -82,13 +84,12 @@ init token email phone =
     , email = email
     , profileSaved = False
     , phone = phone
-    , consent1 = False
-    , consent2 = False
-    , step = ProfileInfo
+    , step = Consents
     , travelCardState = MaskedInput.initState
     , travelCard = ""
     , travelCardSaved = False
     , validationErrors = []
+    , consents = Set.empty
     }
 
 
@@ -108,11 +109,16 @@ update msg env model =
         InputLastName value ->
             PageUpdater.init { model | lastName = value, validationErrors = V.remove RegisterForm model.validationErrors }
 
-        ToggleConsent1 value ->
-            PageUpdater.init { model | consent1 = value }
+        ToggleConsent id value ->
+            let
+                newConsents =
+                    if value then
+                        Set.insert id model.consents
 
-        ToggleConsent2 value ->
-            PageUpdater.init { model | consent2 = value }
+                    else
+                        Set.remove id model.consents
+            in
+                PageUpdater.init { model | consents = newConsents }
 
         Register ->
             case validateEmail model of
@@ -196,13 +202,14 @@ update msg env model =
                             PageUpdater.init model
                                 |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
 
-                    -- TODO Deactivated consent for now.
-                    -- Just Consents ->
-                    --     if model.profileSaved then
-                    --         PageUpdater.init { model | step = Consents, validationErrors = V.init }
-                    --     else
-                    --         PageUpdater.init model
-                    --             |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
+                    Just Consents ->
+                        if model.profileSaved then
+                            PageUpdater.init { model | step = Consents, validationErrors = V.init }
+
+                        else
+                            PageUpdater.init model
+                                |> PageUpdater.addCmd (Util.Task.doTask SkipRegister)
+
                     Nothing ->
                         PageUpdater.fromPair ( model, MiscService.onboardingDone () )
 
@@ -261,20 +268,20 @@ validateEmail model =
         V.validate (V.emailValidator EmailField .email) model
 
 
-view : Environment -> Model -> Html Msg
-view env model =
+view : Environment -> Shared -> Model -> Html Msg
+view env shared model =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
-                |> wrapHeader model True "Profilinformasjon (1 av 3)"
+                |> wrapHeader model True "Profilinformasjon (1 av 4)"
 
         Consents ->
-            viewConsents env model
+            viewConsents env shared model
                 |> wrapHeader model True "Samtykker (2 av 4)"
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader model False "Legg til t:kort (2 av 3)"
+                |> wrapHeader model False "Legg til t:kort (3 av 4)"
 
         AppAdvert ->
             viewAppAdvert env model
@@ -339,26 +346,15 @@ viewProfileInfo _ model =
     ]
 
 
-viewConsents : Environment -> Model -> List (Html Msg)
-viewConsents _ model =
+viewConsents : Environment -> Shared -> Model -> List (Html Msg)
+viewConsents _ shared model =
     [ Section.view
         [ Section.viewPaddedItem
             [ H.p [] [ H.text "Vi trenger komme i kontakt med deg som reisende for å optimalisere opplevelsen av den nye nettbutikken. Vi blir veldig glade om samtykker til dette!" ]
             , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
-        , Section.viewLabelItem "Samtykker"
-            [ Checkbox.init "consent1"
-                |> Checkbox.setChecked model.consent1
-                |> Checkbox.setOnCheck (Just ToggleConsent1)
-                |> Checkbox.setTitle "Jeg ønsker å bli kontaktet når endringer skjer i nettbutikken"
-                |> Checkbox.view
-            , Checkbox.init "consent2"
-                |> Checkbox.setChecked model.consent2
-                |> Checkbox.setOnCheck (Just ToggleConsent2)
-                |> Checkbox.setTitle "Jeg ønsker å delta på brukertester"
-                |> Checkbox.view
-            ]
-        , if model.consent1 || model.consent2 then
+        , Section.viewLabelItem "Samtykker" (List.map (viewConsent model) shared.consents)
+        , if not (Set.isEmpty model.consents) then
             sectionTextInput "consent-email"
                 model.email
                 InputEmail
@@ -373,6 +369,23 @@ viewConsents _ model =
             |> Button.primaryDefault
         ]
     ]
+
+
+viewConsent : Model -> Consent -> Html Msg
+viewConsent model consent =
+    let
+        isChecked =
+            Set.member consent.id model.consents
+
+        title =
+            Dict.get "nob" consent.title
+                |> Maybe.withDefault "Ukjent samtykke"
+    in
+        Checkbox.init ("consent" ++ String.fromInt consent.id)
+            |> Checkbox.setChecked isChecked
+            |> Checkbox.setOnCheck (Just <| ToggleConsent consent.id)
+            |> Checkbox.setTitle title
+            |> Checkbox.view
 
 
 viewTravelCard : Environment -> Model -> List (Html Msg)

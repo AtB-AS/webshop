@@ -125,6 +125,10 @@ remoteConfig
             app.ports.remoteConfigTariffZones,
             'tariff_zones'
         );
+        fetchRemoteConfigData(
+            app.ports.remoteConfigConsents,
+            'consents'
+        );
         sendRemoteConfigVatPercent();
     })
     .catch((err) => {
