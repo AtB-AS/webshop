@@ -8,6 +8,7 @@ module Service.Webshop exposing
     , getToken
     , getTokens
     , inspectQrCode
+    , registerConsent
     , save
     , travelCardErrorDecoder
     , updateEmail
@@ -119,6 +120,21 @@ save env firstName lastName phone email =
     in
         HttpUtil.post env
             (env.baseUrl ++ "/webshop/v1/register")
+            (Http.jsonBody payload)
+            (Http.expectJson (Decode.succeed ()))
+
+
+registerConsent : Environment -> Int -> String -> Http.Request ()
+registerConsent env id email =
+    let
+        payload =
+            Encode.object
+                [ ( "consentId", Encode.int id )
+                , ( "email", Encode.string email )
+                ]
+    in
+        HttpUtil.post env
+            (env.baseUrl ++ "/webshop/v1/consent")
             (Http.jsonBody payload)
             (Http.expectJson (Decode.succeed ()))
 
