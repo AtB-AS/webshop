@@ -42,6 +42,8 @@ type Msg
     | InputStateTravelCard MaskedInput.State
     | RegisterTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
+    | RegisterConsents
+    | ReceiveRegisterConsent Int (Result Http.Error ())
     | Finish
     | NextStep
     | PrevStep
@@ -58,6 +60,7 @@ type FieldName
     = TravelCardField
     | EmailField
     | RegisterForm
+    | ConsentForm
 
 
 type alias Model =
@@ -73,6 +76,7 @@ type alias Model =
     , travelCardSaved : Bool
     , validationErrors : ValidationErrors FieldName
     , consents : Set Int
+    , unsavedConsents : List Int
     }
 
 
@@ -90,6 +94,7 @@ init token email phone =
     , travelCardSaved = False
     , validationErrors = []
     , consents = Set.empty
+    , unsavedConsents = []
     }
 
 
@@ -177,6 +182,36 @@ update msg env model =
                             | validationErrors =
                                 V.add [ TravelCardField ] (errorToString error) model.validationErrors
                         }
+
+        RegisterConsents ->
+            PageUpdater.fromPair
+                ( { model | unsavedConsents = Set.toList model.consents }
+                , registerConsents
+                    { env | token = model.token }
+                    (Set.toList model.consents)
+                    model.email
+                )
+
+        ReceiveRegisterConsent id result ->
+            case result of
+                Ok () ->
+                    let
+                        newModel =
+                            { model | unsavedConsents = List.filter ((/=) id) model.unsavedConsents }
+                    in
+                        if List.isEmpty newModel.unsavedConsents then
+                            PageUpdater.init newModel
+                                |> PageUpdater.addCmd (Util.Task.doTask NextStep)
+
+                        else
+                            PageUpdater.init newModel
+
+                Err error ->
+                    let
+                        errorMessage =
+                            getError error |> Maybe.withDefault "Ukjent feil"
+                    in
+                        PageUpdater.init { model | validationErrors = V.add [ ConsentForm ] errorMessage model.validationErrors }
 
         SkipRegister ->
             PageUpdater.fromPair
@@ -363,9 +398,10 @@ viewConsents _ shared model =
 
           else
             H.text ""
+        , Html.Extra.viewMaybe Message.error <| V.select ConsentForm model.validationErrors
         , Button.init "Lagre samtykker"
             |> Button.setIcon (Just Icon.rightArrow)
-            |> Button.setOnClick (Just NextStep)
+            |> Button.setOnClick (Just RegisterConsents)
             |> Button.primaryDefault
         ]
     ]
@@ -503,11 +539,8 @@ sectionTextInput id value action title placeholder =
 nextStep : Step -> Maybe Step
 nextStep step =
     case step of
-        -- TODO Temporary disable consent
-        -- ProfileInfo ->
-        --     Just Consents
         ProfileInfo ->
-            Just TravelCard
+            Just Consents
 
         Consents ->
             Just TravelCard
@@ -568,6 +601,18 @@ registerTravelCard env travelCardId =
         |> WebshopService.addTravelCard env
         |> Http.toTask
         |> Task.attempt ReceiveRegisterTravelCard
+
+
+registerConsents : Environment -> List Int -> String -> Cmd Msg
+registerConsents env consents email =
+    consents
+        |> List.map
+            (\id ->
+                WebshopService.registerConsent env id email
+                    |> Http.toTask
+                    |> Task.attempt (ReceiveRegisterConsent id)
+            )
+        |> Cmd.batch
 
 
 {-| TODO this should be deduplicated from Account.elm page and reused.
