@@ -258,7 +258,7 @@ init flags url navKey =
             , Cmd.map AccountMsg accountCmd
             , Cmd.map LoginMsg loginCmd
             , routeCmd
-            , MiscService.bodyClass "light"
+            , MiscService.bodyClass "light override-light"
             ]
         )
 
@@ -496,7 +496,7 @@ view model =
 
 wrapPage : Model -> List (Html Msg) -> Html Msg
 wrapPage model children =
-    H.div [ A.class "light container" ]
+    H.div [ A.class "light override-light container" ]
         [ viewAuthError model
         , header model
         , H.main_ [ A.class "app" ]
