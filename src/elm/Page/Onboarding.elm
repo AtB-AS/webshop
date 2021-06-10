@@ -308,11 +308,11 @@ view env shared model =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
-                |> wrapHeader model True "Profilinformasjon (1 av 4)"
+                |> wrapHeader model True "Ny profil (1 av 4)"
 
         Consents ->
             viewConsents env shared model
-                |> wrapHeader model True "Samtykker (2 av 4)"
+                |> wrapHeader model True "Mine samtykker (2 av 4)"
 
         TravelCard ->
             viewTravelCard env model
@@ -320,7 +320,7 @@ view env shared model =
 
         AppAdvert ->
             viewAppAdvert env model
-                |> wrapHeader model True "Har du prøvd AtB-appen?"
+                |> wrapHeader model True "Psst! Har du prøvd AtB-appen?"
 
 
 wrapHeader : Model -> Bool -> String -> List (Html Msg) -> Html Msg
@@ -385,21 +385,21 @@ viewConsents : Environment -> Shared -> Model -> List (Html Msg)
 viewConsents _ shared model =
     [ Section.view
         [ Section.viewPaddedItem
-            [ H.p [] [ H.text "Vi trenger komme i kontakt med deg som reisende for å optimalisere opplevelsen av den nye nettbutikken. Vi blir veldig glade om samtykker til dette!" ]
+            [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post. Samtykkene kan du endre når som helst!" ]
             , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
-        , Section.viewLabelItem "Samtykker" (List.map (viewConsent model) shared.consents)
+        , Section.viewLabelItem "Velg samtykker" (List.map (viewConsent model) shared.consents)
         , if not (Set.isEmpty model.consents) then
             sectionTextInput "consent-email"
                 model.email
                 InputEmail
                 "E-postadresse"
-                "Legg inn din e-postadresse"
+                "Hvor kan vi kontakte deg?"
 
           else
             H.text ""
         , Html.Extra.viewMaybe Message.error <| V.select ConsentForm model.validationErrors
-        , Button.init "Lagre samtykker"
+        , Button.init "Lagre mine samtykker"
             |> Button.setIcon (Just Icon.rightArrow)
             |> Button.setOnClick (Just RegisterConsents)
             |> Button.primaryDefault
