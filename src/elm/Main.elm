@@ -450,7 +450,7 @@ update msg model =
                             }
 
                         newModel =
-                            { model | userData = Loaded value, environment = newEnvironment }
+                            { model | userData = Loaded value, environment = newEnvironment, verifyUser = Nothing }
                     in
                         ( if value.stopOnboarding then
                             { newModel | onboarding = Nothing }
