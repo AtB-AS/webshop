@@ -167,18 +167,24 @@ update msg env model =
                 )
 
         SavePhone ->
-            case validatePhone .email model of
-                Ok _ ->
-                    PageUpdater.fromPair
-                        ( { model
-                            | loadingEditSection = Just PhoneSection
-                            , validationErrors = Validation.remove PhoneInput model.validationErrors
-                          }
-                        , updatePhone env model.phone
-                        )
+            let
+                modelWithCode =
+                    { model
+                        | phone = Util.PhoneNumber.withCountryCode model.phone
+                    }
+            in
+                case validatePhone .phone modelWithCode of
+                    Ok _ ->
+                        PageUpdater.fromPair
+                            ( { model
+                                | loadingEditSection = Just PhoneSection
+                                , validationErrors = Validation.remove PhoneInput model.validationErrors
+                              }
+                            , updatePhone env modelWithCode.phone
+                            )
 
-                Err errors ->
-                    PageUpdater.init { model | validationErrors = errors }
+                    Err errors ->
+                        PageUpdater.init { model | validationErrors = errors }
 
         ReceiveUpdateProfile field result ->
             case result of
