@@ -774,7 +774,8 @@ a.ui-button {
         display: block;
     }
 }
-a.ui-button--link {
+a.ui-button--link,
+.ui-button--link {
     background: transparent;
     color: var(--colors-background_0-color);
     text-decoration: underline;
