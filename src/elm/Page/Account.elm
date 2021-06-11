@@ -645,7 +645,6 @@ updateEmail env email =
 updateTravelCard : Environment -> String -> Cmd Msg
 updateTravelCard env travelCard =
     travelCard
-        |> Util.TravelCard.extractDigits
         |> WebshopService.addTravelCard env
         |> Http.toTask
         |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
