@@ -375,6 +375,12 @@ function loadFareContracts(accountId) {
     );
 }
 
+app.ports.onboardingRefreshAuth.subscribe(() => {
+    setTimeout(() => {
+        fetchAuthInfo(onboardingUser);
+    }, 500);
+});
+
 app.ports.onboardingDone.subscribe(() => {
     setTimeout(() => {
         fetchAuthInfo(onboardingUser, true);
