@@ -439,7 +439,6 @@ subscriptions _ =
         [ FirebaseAuth.onRequestCode RequestCode
         , FirebaseAuth.onError HandleError
         , FirebaseAuth.onPasswordReset (\_ -> ResetPassword)
-        , FirebaseAuth.signedInInfo (\_ -> LoggedIn)
         , Misc.onboardingStart (\_ -> LoggedIn)
         , FirebaseAuth.verifyUserStart (\_ -> LoggedIn)
         ]
