@@ -576,11 +576,8 @@ prevStep step =
         Consents ->
             Just ProfileInfo
 
-        -- TODO Temporary disable Consent
-        -- TravelCard ->
-        --     Just Consents
         TravelCard ->
-            Just ProfileInfo
+            Just Consents
 
         AppAdvert ->
             Just TravelCard
