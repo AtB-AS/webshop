@@ -79,6 +79,7 @@ type alias Model =
     , consents : Set Int
     , unsavedConsents : List Int
     , consentEmail : String
+    , savedEmail : String
     }
 
 
@@ -98,6 +99,7 @@ init token email phone =
     , consents = Set.empty
     , unsavedConsents = []
     , consentEmail = ""
+    , savedEmail = ""
     }
 
 
@@ -146,7 +148,12 @@ update msg env model =
         ReceiveRegisterProfile result ->
             case result of
                 Ok () ->
-                    PageUpdater.init { model | validationErrors = V.init, profileSaved = True }
+                    PageUpdater.init
+                        { model
+                            | validationErrors = V.init
+                            , profileSaved = True
+                            , savedEmail = model.email
+                        }
                         |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
@@ -266,7 +273,7 @@ update msg env model =
                             PageUpdater.init
                                 { model
                                     | step = Consents
-                                    , consentEmail = model.email
+                                    , consentEmail = model.savedEmail
                                     , validationErrors = V.init
                                 }
 
