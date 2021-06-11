@@ -127,6 +127,7 @@ update msg env model =
                         , firstName = mapProfileWithDefault .firstName
                         , lastName = mapProfileWithDefault .lastName
                         , email = mapProfileWithDefault .email
+                        , phone = mapProfileWithDefault .phone
                         , travelCardState = MaskedInput.initState
                         , travelCard = model.profile |> Util.Maybe.flatMap .travelCard |> Maybe.map (.id >> String.fromInt) |> Maybe.withDefault ""
                         , loadingEditSection = Nothing
@@ -203,6 +204,7 @@ update msg env model =
                     , firstName = profile.firstName
                     , lastName = profile.lastName
                     , email = profile.email
+                    , phone = profile.phone
                     , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
                     , validationErrors = []
                 }
