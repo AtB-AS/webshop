@@ -552,7 +552,6 @@ skipRegisterProfile env phone =
 registerTravelCard : Environment -> String -> Cmd Msg
 registerTravelCard env travelCardId =
     travelCardId
-        |> Util.TravelCard.extractDigits
         |> WebshopService.addTravelCard env
         |> Http.toTask
         |> Task.attempt ReceiveRegisterTravelCard
