@@ -90,7 +90,7 @@ update msg env model navKey =
                     env.customerId /= Nothing
             in
                 PageUpdater.fromPair
-                    ( { model | loginMethod = methodPathToPath path }
+                    ( { model | loginMethod = methodPathToPath path, error = Nothing, loading = False }
                       -- Not logged in, so just redirect home
                     , if shouldNavigateHome then
                         Route.modifyUrl navKey Route.Home
@@ -115,7 +115,7 @@ update msg env model navKey =
             PageUpdater.init { model | password = value }
 
         SetLoginMethod method ->
-            PageUpdater.init { model | loginMethod = method }
+            PageUpdater.init { model | loginMethod = method, error = Nothing, loading = False }
 
         BackLogin ->
             PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
