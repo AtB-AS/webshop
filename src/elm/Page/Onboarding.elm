@@ -421,7 +421,7 @@ viewConsents : Environment -> Shared -> Model -> List (Html Msg)
 viewConsents _ shared model =
     [ Section.view
         [ Section.viewPaddedItem
-            [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post. Samtykkene kan du endre når som helst!" ]
+            [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post." ]
             , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
         , Section.viewLabelItem "Velg samtykker" (List.map (viewConsent model) shared.consents)
