@@ -7,6 +7,7 @@ port module Service.Misc exposing
     , navigateTo
     , onProfileChange
     , onboardingDone
+    , onboardingRefreshAuth
     , onboardingStart
     , receiveFareContracts
     , receiveTokens
@@ -41,6 +42,9 @@ port onboardingStart : (( String, String, String ) -> msg) -> Sub msg
 
 
 port onboardingDone : () -> Cmd msg
+
+
+port onboardingRefreshAuth : () -> Cmd msg
 
 
 type alias TravelCard =

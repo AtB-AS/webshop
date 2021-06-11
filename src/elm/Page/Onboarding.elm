@@ -154,6 +154,7 @@ update msg env model =
                             , profileSaved = True
                             , savedEmail = model.email
                         }
+                        |> PageUpdater.addCmd (MiscService.onboardingRefreshAuth ())
                         |> PageUpdater.addCmd (Util.Task.doTask NextStep)
 
                 Err error ->
@@ -210,7 +211,7 @@ update msg env model =
                                 , validationErrors = V.init
                               }
                             , registerConsents
-                                { env | token = model.token }
+                                env
                                 (Set.toList model.consents)
                                 model.consentEmail
                             )
@@ -418,7 +419,7 @@ viewProfileInfo _ model =
 
 
 viewConsents : Environment -> Shared -> Model -> List (Html Msg)
-viewConsents _ shared model =
+viewConsents env shared model =
     [ Section.view
         [ Section.viewPaddedItem
             [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post." ]
@@ -442,6 +443,7 @@ viewConsents _ shared model =
         , Button.init "Lagre mine samtykker"
             |> Button.setIcon (Just Icon.rightArrow)
             |> Button.setOnClick (Just RegisterConsents)
+            |> Button.setDisabled (env.customerId == Nothing)
             |> Button.primaryDefault
         ]
     ]
