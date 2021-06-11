@@ -133,6 +133,10 @@
     svg {
         display: block;
     }
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 
 // Style for ./src/Ui/LabelItem.elm

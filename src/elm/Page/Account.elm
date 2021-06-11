@@ -511,7 +511,7 @@ viewPhoneNumber model profile =
                 |> EditSection.setOnSave onSave
                 |> EditSection.setOnEdit (Just <| SetEditSection (Just PhoneSection) (Just "phone"))
                 |> EditSection.setInEditMode (fieldInEditMode model.editSection PhoneSection)
-                |> EditSection.setIcon (Just Icon.phone)
+                |> EditSection.setIcon (Just Icon.phoneLarge)
                 |> EditSection.setButtonGroup
                     (Just <|
                         EditSection.cancelConfirmGroup
