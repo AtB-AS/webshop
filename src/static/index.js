@@ -140,17 +140,15 @@ app.ports.signOutHandler.subscribe(async () => {
     clearRefreshToken();
 
     try {
-        // Remove loggedIn before signing out to avoid showing error
-        // below on onAuthStateChanged.
-        localStorage.removeItem('loggedIn');
-
-        await firebase.auth().signOut();
-
         unsubscribeFareContractSnapshot && unsubscribeFareContractSnapshot();
         unsubscribeFareContractSnapshot = null;
 
         unsubscribeFetchUserDataSnapshot && unsubscribeFetchUserDataSnapshot();
         unsubscribeFetchUserDataSnapshot = null;
+
+        // Remove loggedIn before signing out to avoid showing error
+        // below on onAuthStateChanged.
+        await firebase.auth().signOut();
     } catch (e) {
         console.error('[debug] Unable to logout: ', e);
     }
@@ -159,6 +157,16 @@ app.ports.signOutHandler.subscribe(async () => {
 // Use device language
 firebase.auth().useDeviceLanguage();
 
+function updateElmWithLoggedOutAndCleanUp() {
+    clearRefreshToken();
+    localStorage.removeItem('loggedIn');
+
+    app.ports.signInError.send({
+        code: -1,
+        message: 'Du er blitt logget ut.'
+    });
+}
+
 // Observer on user info
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
@@ -166,13 +174,7 @@ firebase.auth().onAuthStateChanged((user) => {
     } else if (localStorage.getItem('loggedIn')) {
         // Not logged in remove logged in flag to be safe to avoid infinite loading.
         console.log('[debug] Logged out due to stale state.');
-        clearRefreshToken();
-        localStorage.removeItem('loggedIn');
-
-        app.ports.signInError.send({
-            code: -1,
-            message: 'Du er blitt logget ut.'
-        });
+        updateElmWithLoggedOutAndCleanUp();
     }
 });
 
@@ -361,6 +363,10 @@ function loadFareContracts(accountId) {
         },
         function (e) {
             console.error('Error when retrieving fare contracts for user', e);
+
+            if (e.message.includes('insufficient permissions')) {
+                updateElmWithLoggedOutAndCleanUp();
+            }
         }
     );
 }
@@ -388,6 +394,10 @@ app.ports.checkVerifyUser.subscribe(async () => {
 
 app.ports.navigateTo.subscribe((url) => {
     window.location.assign(url);
+});
+
+app.ports.reloadPage.subscribe(() => {
+    window.location.reload();
 });
 
 if (app.ports.convertTime) {

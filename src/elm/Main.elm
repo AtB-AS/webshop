@@ -466,7 +466,9 @@ update msg model =
         LoggedInError result ->
             case result of
                 Ok authError ->
-                    ( { model | authError = authError }, Cmd.none )
+                    ( { model | authError = authError, userData = NotLoaded }
+                    , MiscService.reloadPage ()
+                    )
 
                 Err error ->
                     ( { model | authError = AuthErrorSimple <| Decode.errorToString error }, Cmd.none )

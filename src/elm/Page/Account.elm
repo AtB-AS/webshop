@@ -12,8 +12,10 @@ import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode exposing (Error(..))
+import Notification
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
+import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService exposing (Profile, SignInMethod, SignInProvider(..))
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
@@ -66,6 +68,8 @@ type Msg
     | SaveNames
     | SaveEmail
     | SavePhone
+    | ResetPassword String
+    | RequestResetPassword
     | SaveTravelCard
     | SetEditSection (Maybe EditSection) (Maybe String)
     | LoadingEditSection (Maybe EditSection)
@@ -145,6 +149,26 @@ update msg env model =
 
         UpdatePhone value ->
             PageUpdater.init { model | phone = value }
+
+        ResetPassword email ->
+            PageUpdater.init model
+                |> ("E-post med for å sette nytt passord er sendt til "
+                        ++ email
+                        |> H.text
+                        |> Ui.Message.Valid
+                        |> Ui.Message.message
+                        |> (\s -> Notification.setContent s Notification.init)
+                        |> GA.ShowNotification
+                        |> PageUpdater.addGlobalAction
+                   )
+
+        RequestResetPassword ->
+            case model.profile of
+                Just profile ->
+                    PageUpdater.fromPair ( model, resetUsingEmail profile.email )
+
+                Nothing ->
+                    PageUpdater.init model
 
         InputTravelCard value ->
             PageUpdater.init
@@ -481,7 +505,12 @@ viewSignInMethod _ method =
         Password ->
             Ui.Section.viewWithIcon Icon.signInMethodLarge
                 [ Ui.Section.viewLabelItem "E-post og passord"
-                    [ H.text <| "Logg på med e-post " ++ method.uid
+                    [ H.text <| "Logg på med e-post " ++ method.uid ++ ". "
+                    , Ui.InlineButtonLink.view
+                        [ E.onClick RequestResetPassword
+                        , A.title <| "Send forespørsel for nytt passord (sender epost til " ++ method.uid ++ ")"
+                        ]
+                        [ H.text "Lag nytt passord" ]
                     ]
                 ]
 
@@ -797,3 +826,8 @@ removeTravelCard env travelCard =
     WebshopService.deleteTravelCard env travelCard
         |> Http.toTask
         |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
+
+
+resetUsingEmail : String -> Cmd Msg
+resetUsingEmail email =
+    FirebaseAuth.resetPassword email

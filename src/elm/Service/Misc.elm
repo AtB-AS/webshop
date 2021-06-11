@@ -13,6 +13,7 @@ port module Service.Misc exposing
     , onboardingStart
     , receiveFareContracts
     , receiveTokens
+    , reloadPage
     , saveProfile
     )
 
@@ -23,6 +24,9 @@ import Json.Encode as Encode
 
 
 port navigateTo : String -> Cmd msg
+
+
+port reloadPage : () -> Cmd msg
 
 
 port bodyClass : String -> Cmd msg
