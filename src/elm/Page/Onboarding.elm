@@ -455,19 +455,20 @@ viewAppAdvert _ _ =
         [ H.img [ A.class "onboarding__appIllustration", A.src "/images/app.png", A.alt "Eksempelvisning av hvordan app-en ser ut" ] []
         , Section.view
             [ Section.viewPaddedItem
-                [ H.p [] [ H.text "Her kan du planlegge reiser, kjøpe enkelt- eller periodebillett og vise billett ved kontroll. Alt samlet i en app. Billetter du kjøper i nettbutikken vil også være tilgjengelig i appen din." ]
+                [ H.p [] [ H.text "Her kan du planlegge reiser, kjøpe billett og vise billett ved kontroll. Alt i en app!" ]
                 , H.div
                     [ A.class "onboarding__badgeButtons" ]
                     [ H.a
-                        [ A.href "https://apps.apple.com/us/app/id1502395251", A.rel "noopener", A.title "Se AtB beta i App Store", A.target "_blank" ]
+                        [ A.href "https://apps.apple.com/us/app/id1502395251", A.rel "noopener", A.title "Se AtB-app i App Store (åpner nytt vindu)", A.target "_blank" ]
                         [ H.img [ A.src "/images/badge-ios.svg", A.alt "iOS badge" ] [] ]
                     , H.a
-                        [ A.href "https://play.google.com/store/apps/details?id=no.mittatb.store", A.rel "noopener", A.title "Se AtB beta i Google Play Store", A.target "_blank" ]
+                        [ A.href "https://play.google.com/store/apps/details?id=no.mittatb.store", A.rel "noopener", A.title "Se AtB-app i Google Play Store (åpner nytt vindu)", A.target "_blank" ]
                         [ H.img [ A.src "/images/badge-android.svg", A.alt "Android badge" ] [] ]
                     ]
                 ]
             , Button.init "Fullfør"
                 |> Button.setIcon (Just Icon.rightArrow)
+                |> Button.setAttributes [ A.title "Aktiver for å avslutte onboarding" ]
                 |> Button.setOnClick (Just Finish)
                 |> Button.primaryDefault
             ]

@@ -573,6 +573,10 @@
         margin-left: var(--spacings-medium);
         display: block;
     }
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 .ui-pageHeader__cancel:hover {
     opacity: 0.6;
