@@ -421,7 +421,7 @@ viewConsents : Environment -> Shared -> Model -> List (Html Msg)
 viewConsents _ shared model =
     [ Section.view
         [ Section.viewPaddedItem
-            [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post. Samtykkene kan du endre når som helst!" ]
+            [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post." ]
             , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
         , Section.viewLabelItem "Velg samtykker" (List.map (viewConsent model) shared.consents)
@@ -544,7 +544,7 @@ viewAppAdvert _ _ =
         [ H.img [ A.class "onboarding__appIllustration", A.src "/images/app.png", A.alt "Eksempelvisning av hvordan app-en ser ut" ] []
         , Section.view
             [ Section.viewPaddedItem
-                [ H.p [] [ H.text "Her kan du planlegge reiser, kjøpe enkelt- eller periodebillett og vise billett ved kontroll. Alt samlet i en app. Billetter du kjøper i nettbutikken vil også være tilgjengelig i appen din." ]
+                [ H.p [] [ H.text "Her kan du planlegge reiser, kjøpe billett og vise billett ved kontroll. Alt i en app!" ]
                 , H.div
                     [ A.class "onboarding__badgeButtons" ]
                     [ H.a
