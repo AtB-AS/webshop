@@ -526,7 +526,36 @@ app.ports.confirmPhone.subscribe((code) => {
         });
 });
 
-app.ports.registerEmail.subscribe(({ email, password }) => {
+app.ports.registerEmail.subscribe(async ({ email, password }) => {
+    const checkEmailResult = await fetch(
+        `${
+            elmFlags.baseUrl
+        }/webshop/v1/available-email?email=${encodeURIComponent(email)}`
+    );
+    const checkEmailData = await checkEmailResult.json();
+
+    try {
+        const signInMethods = await firebase
+            .auth()
+            .fetchSignInMethodsForEmail(email);
+
+        if (signInMethods.length > 0) {
+            return handleAuthError({
+                message:
+                    'Det er alt registrert en konto på denne eposten. Prøv å logg inn.'
+            });
+        }
+    } catch (e) {
+        // Can just ignore if we don't find anything.
+    }
+
+    if (!checkEmailData.available) {
+        return handleAuthError({
+            message:
+                'Denne eposten er registrert i systemet fra før. Kan det være du har logget inn med telefonnummer?'
+        });
+    }
+
     firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
