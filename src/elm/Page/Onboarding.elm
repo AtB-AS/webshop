@@ -42,6 +42,7 @@ type Msg
     | InputStateTravelCard MaskedInput.State
     | RegisterTravelCard
     | ReceiveRegisterTravelCard (Result Http.Error ())
+    | InputConsentEmail String
     | RegisterConsents
     | ReceiveRegisterConsent Int (Result Http.Error ())
     | Finish
@@ -77,6 +78,7 @@ type alias Model =
     , validationErrors : ValidationErrors FieldName
     , consents : Set Int
     , unsavedConsents : List Int
+    , consentEmail : String
     }
 
 
@@ -95,6 +97,7 @@ init token email phone =
     , validationErrors = []
     , consents = Set.empty
     , unsavedConsents = []
+    , consentEmail = ""
     }
 
 
@@ -126,7 +129,7 @@ update msg env model =
                 PageUpdater.init { model | consents = newConsents }
 
         Register ->
-            case validateEmail False model of
+            case validateEmail False .email model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model | validationErrors = V.init }
@@ -183,9 +186,16 @@ update msg env model =
                                 V.add [ TravelCardField ] (errorToString error) model.validationErrors
                         }
 
+        InputConsentEmail value ->
+            PageUpdater.init
+                { model
+                    | consentEmail = value
+                    , validationErrors = (V.remove EmailField >> V.remove ConsentForm) model.validationErrors
+                }
+
         RegisterConsents ->
             if not (Set.isEmpty model.consents) then
-                case validateEmail True model of
+                case validateEmail True .consentEmail model of
                     Ok _ ->
                         PageUpdater.fromPair
                             ( { model
@@ -195,7 +205,7 @@ update msg env model =
                             , registerConsents
                                 { env | token = model.token }
                                 (Set.toList model.consents)
-                                model.email
+                                model.consentEmail
                             )
 
                     Err errors ->
@@ -253,7 +263,12 @@ update msg env model =
 
                     Just Consents ->
                         if model.profileSaved then
-                            PageUpdater.init { model | step = Consents, validationErrors = V.init }
+                            PageUpdater.init
+                                { model
+                                    | step = Consents
+                                    , consentEmail = model.email
+                                    , validationErrors = V.init
+                                }
 
                         else
                             PageUpdater.init model
@@ -308,13 +323,13 @@ validateTravelCard =
     V.validate (V.travelCardValidator TravelCardField .travelCard)
 
 
-validateEmail : Bool -> Model -> Result (List (FormError FieldName)) (Valid Model)
-validateEmail required model =
-    if not required && String.isEmpty model.email then
+validateEmail : Bool -> (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail required field model =
+    if not required && String.isEmpty (field model) then
         V.validate V.void model
 
     else
-        V.validate (V.emailValidator EmailField .email) model
+        V.validate (V.emailValidator EmailField field) model
 
 
 view : Environment -> Shared -> Model -> Html Msg
@@ -408,8 +423,8 @@ viewConsents _ shared model =
                 [ TextInput.init "consent-email"
                     |> TextInput.setTitle (Just "E-postadresse")
                     |> TextInput.setPlaceholder "Hvor kan vi kontakte deg?"
-                    |> TextInput.setOnInput (Just InputEmail)
-                    |> TextInput.setValue (Just model.email)
+                    |> TextInput.setOnInput (Just InputConsentEmail)
+                    |> TextInput.setValue (Just model.consentEmail)
                     |> TextInput.setError (V.select EmailField model.validationErrors)
                     |> TextInput.view
                 ]
