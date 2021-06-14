@@ -125,10 +125,7 @@ remoteConfig
             app.ports.remoteConfigTariffZones,
             'tariff_zones'
         );
-        fetchRemoteConfigData(
-            app.ports.remoteConfigConsents,
-            'consents'
-        );
+        fetchRemoteConfigData(app.ports.remoteConfigConsents, 'consents');
         sendRemoteConfigVatPercent();
     })
     .catch((err) => {
@@ -214,13 +211,13 @@ function enqueueRefreshToken(user, expirationString) {
     refreshTokenTimer = setTimeout(fetchAuthInfo.bind(null, user), refreshTime);
 }
 
-async function isUserPasswordProviderAndverified() {
+async function isUserPasswordProviderAndUnVerified() {
     const user = firebase.auth().currentUser;
     if (!user) return false;
     const idToken = await user.getIdTokenResult(true);
     if (!idToken) return false;
 
-    return user.emailVerified && idToken.signInProvider == 'password';
+    return !user.emailVerified && idToken.signInProvider == 'password';
 }
 
 async function fetchAuthInfo(user, stopOnboarding) {
@@ -245,7 +242,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
 
         localStorage.setItem('loggedIn', 'loggedIn');
 
-        if (!(await isUserPasswordProviderAndverified())) {
+        if (await isUserPasswordProviderAndUnVerified()) {
             app.ports.verifyUserStart.send(email);
         } else {
             unsubscribeFetchUserDataSnapshot = db
@@ -384,10 +381,10 @@ app.ports.onboardingDone.subscribe(() => {
 });
 
 app.ports.checkVerifyUser.subscribe(async () => {
-    const response = await isUserPasswordProviderAndverified();
-    app.ports.checkVerifyUserResponse.send(response);
+    const response = await isUserPasswordProviderAndUnVerified();
+    app.ports.checkVerifyUserResponse.send(!response);
 
-    if (response) {
+    if (!response) {
         fetchAuthInfo(firebase.auth().currentUser);
     }
 });

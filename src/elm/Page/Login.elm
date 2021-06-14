@@ -444,7 +444,7 @@ viewConfirm _ model =
                     |> T.setValue (Just model.code)
                     |> T.setOnInput (Just InputCode)
                     |> T.setError model.error
-                    |> T.setTitle (Just "engangskode")
+                    |> T.setTitle (Just "Engangskode")
                     |> T.setPlaceholder "Skriv inn engangskoden"
                     |> T.setAttributes
                         [ A.attribute "autocomplete" "one-time-code"
