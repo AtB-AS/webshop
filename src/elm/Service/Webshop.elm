@@ -124,13 +124,20 @@ save env firstName lastName phone email =
             (Http.expectJson (Decode.succeed ()))
 
 
-registerConsent : Environment -> Int -> String -> Http.Request ()
-registerConsent env id email =
+registerConsent : Environment -> Int -> Bool -> String -> Http.Request ()
+registerConsent env id choice email =
     let
         payload =
             Encode.object
                 [ ( "consentId", Encode.int id )
-                , ( "email", Encode.string email )
+                , ( "choice", Encode.bool choice )
+                , ( "email"
+                  , if choice then
+                        Encode.string email
+
+                    else
+                        Encode.string ""
+                  )
                 ]
     in
         HttpUtil.post env
