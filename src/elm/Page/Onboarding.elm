@@ -191,7 +191,7 @@ update msg env shared model =
                     PageUpdater.init
                         { model
                             | validationErrors =
-                                V.add [ TravelCardField ] (errorToString error) model.validationErrors
+                                V.add [ TravelCardField ] (Util.TravelCard.serverErrorToString WebshopService.travelCardErrorDecoder error) model.validationErrors
                         }
 
         InputConsentEmail value ->
@@ -656,32 +656,3 @@ registerConsents env consents choices email =
                     |> Task.attempt (ReceiveRegisterConsent id)
             )
         |> Cmd.batch
-
-
-{-| TODO this should be deduplicated from Account.elm page and reused.
-But currently unsure where mappers like this fit in the current layered arcitechture
--}
-errorToString : Http.Error -> String
-errorToString error =
-    case error of
-        BadStatus { status, body } ->
-            case status.code of
-                500 ->
-                    "Det skjedde en feil med tjenesten. Prøv igjen senere."
-
-                409 ->
-                    "Dette t:kortet eksisterer ikke eller er allerede registrert."
-
-                400 ->
-                    case WebshopService.travelCardErrorDecoder body of
-                        Ok errorMessage ->
-                            "Feilmelding fra tjenesten: " ++ errorMessage
-
-                        _ ->
-                            "Innsendt informasjon ser ut til å ikke stemme. Prøv igjen er du snill."
-
-                _ ->
-                    "Unknown error"
-
-        _ ->
-            "Fikk ikke kontakt med tjenesten. Sjekk om du er på nett og prøv igjen."
