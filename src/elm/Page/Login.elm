@@ -156,7 +156,7 @@ update msg env model navKey =
         ResetPassword ->
             PageUpdater.init
                 { model | loginMethod = EmailMethod }
-                |> (H.text "E-post med informasjon for glemt passord sendt."
+                |> (H.text "E-post med informasjon for endring av passord sendt."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)
