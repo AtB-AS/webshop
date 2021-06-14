@@ -6,6 +6,7 @@ module Ui.Section exposing
     , view
     , viewGroup
     , viewHeader
+    , viewHeaderEl
     , viewHorizontalGroup
     , viewItem
     , viewLabelItem
@@ -92,9 +93,14 @@ viewLabelItem label children =
         [ Ui.LabelItem.view label children ]
 
 
+viewHeaderEl : List (Html msg) -> Html msg
+viewHeaderEl children =
+    viewPaddedItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] children ]
+
+
 viewHeader : String -> Html msg
-viewHeader title =
-    viewPaddedItem [ H.h2 [ A.class "ui-section__headerTitle typo-heading__component" ] [ H.text title ] ]
+viewHeader =
+    H.text >> List.singleton >> viewHeaderEl
 
 
 internalItem : List (Html msg) -> Html msg

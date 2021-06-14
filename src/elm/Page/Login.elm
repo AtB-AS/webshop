@@ -329,7 +329,10 @@ viewLogin model =
     in
         H.form [ E.onSubmit DoLogin ]
             [ Ui.Section.view
-                [ Ui.Section.viewHeader "Velkommen til AtBs nettbutikk"
+                [ Ui.Section.viewHeaderEl
+                    [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+                    , H.text "Velkommen til AtBs nettbutikk"
+                    ]
                 , Ui.Section.viewPaddedItem [ H.p [] description ]
                 , Ui.Section.viewItem <| viewInputs model
                 , H.p []
