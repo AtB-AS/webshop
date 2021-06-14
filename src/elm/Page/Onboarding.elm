@@ -103,8 +103,8 @@ init token email phone =
     }
 
 
-update : Msg -> Environment -> Model -> PageUpdater Model Msg
-update msg env model =
+update : Msg -> Environment -> Shared -> Model -> PageUpdater Model Msg
+update msg env shared model =
     case msg of
         InputEmail value ->
             PageUpdater.init
@@ -202,27 +202,34 @@ update msg env model =
                 }
 
         RegisterConsents ->
-            if not (Set.isEmpty model.consents) then
-                case validateEmail True .consentEmail model of
-                    Ok _ ->
-                        PageUpdater.fromPair
-                            ( { model
-                                | unsavedConsents = Set.toList model.consents
-                                , validationErrors = V.init
-                              }
-                            , registerConsents
-                                env
-                                (Set.toList model.consents)
-                                model.consentEmail
-                            )
+            let
+                consentIds =
+                    List.map .id shared.consents
 
-                    Err errors ->
-                        PageUpdater.init { model | validationErrors = errors }
+                validUpdater =
+                    PageUpdater.fromPair
+                        ( { model
+                            | unsavedConsents = consentIds
+                            , validationErrors = V.init
+                          }
+                        , registerConsents
+                            env
+                            consentIds
+                            model.consents
+                            model.consentEmail
+                        )
+            in
+                if not (Set.isEmpty model.consents) then
+                    case validateEmail True .consentEmail model of
+                        Ok _ ->
+                            validUpdater
 
-            else
-                -- No consents were ticked, so there's nothing to register. Jump to next step.
-                PageUpdater.init model
-                    |> PageUpdater.addCmd (Util.Task.doTask NextStep)
+                        Err errors ->
+                            PageUpdater.init { model | validationErrors = errors }
+
+                else
+                    -- No consents were ticked, but we still register all of them as not accepted.
+                    validUpdater
 
         ReceiveRegisterConsent id result ->
             case result of
@@ -642,12 +649,12 @@ registerTravelCard env travelCardId =
         |> Task.attempt ReceiveRegisterTravelCard
 
 
-registerConsents : Environment -> List Int -> String -> Cmd Msg
-registerConsents env consents email =
+registerConsents : Environment -> List Int -> Set Int -> String -> Cmd Msg
+registerConsents env consents choices email =
     consents
         |> List.map
             (\id ->
-                WebshopService.registerConsent env id email
+                WebshopService.registerConsent env id (Set.member id choices) email
                     |> Http.toTask
                     |> Task.attempt (ReceiveRegisterConsent id)
             )

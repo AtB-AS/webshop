@@ -381,7 +381,7 @@ update msg model =
         OnboardingMsg subMsg ->
             case model.onboarding of
                 Just onboarding ->
-                    OnboardingPage.update subMsg model.environment onboarding
+                    OnboardingPage.update subMsg model.environment model.shared onboarding
                         |> PageUpdater.map (\newModel -> { model | onboarding = Just newModel }) OnboardingMsg
                         |> doPageUpdate
 
