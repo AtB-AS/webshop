@@ -690,6 +690,8 @@
     display: flex;
     width: 100%;
     color: var(--colors-background_0-color);
+
+    border: var(--border-width-medium) solid transparent;
 }
 .ui-input-checkbox:active {
     background: var(--colors-background_3-backgroundColor);
@@ -699,6 +701,11 @@
     position: absolute;
     opacity: 0;
     width: 1px;
+}
+.ui-input-checkbox__input:focus + .ui-input-checkbox {
+    outline: 0;
+    border: var(--border-width-medium) solid
+        var(--colors-primary_2-backgroundColor);
 }
 .ui-input-checkbox__box {
     height: 1.25rem;
