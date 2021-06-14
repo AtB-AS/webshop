@@ -480,6 +480,11 @@ function handleAuthError(error) {
                 'Engangskoden har utløpt. Vennligst prøv på nytt eller be om et nytt engangskode.'
             );
             break;
+        case 'auth/user-not-found':
+            app.ports.authError.send(
+                'Fant ingen bruker med den informasjonen.'
+            );
+            break;
         default:
             if (error.message) {
                 app.ports.authError.send(error.message);
