@@ -311,6 +311,10 @@ p + p {
         display: block;
         margin-right: var(--spacings-medium);
     }
+    svg,
+    path {
+        fill: currentColor;
+    }
 }
 
 .shop__summaryPrice {
