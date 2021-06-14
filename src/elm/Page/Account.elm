@@ -171,7 +171,7 @@ update msg env model =
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
-                            , validationErrors = Validation.add field (errorToString error) model.validationErrors
+                            , validationErrors = Validation.add field (Util.TravelCard.serverErrorToString WebshopService.travelCardErrorDecoder error) model.validationErrors
                         }
 
         ProfileChange (Just profile) ->
@@ -655,45 +655,3 @@ removeTravelCard env travelCard =
     WebshopService.deleteTravelCard env travelCard
         |> Http.toTask
         |> Task.attempt (ReceiveUpdateProfile [ TravelCard ])
-
-
-errorToString : Http.Error -> String
-errorToString error =
-    case error of
-        BadStatus response ->
-            case response.status.code of
-                500 ->
-                    Decode.decodeString
-                        (Decode.field "upstreamError" Decode.string
-                            |> Decode.andThen
-                                (\upstreamError ->
-                                    case
-                                        Decode.decodeString (Decode.field "shortNorwegian" Decode.string) upstreamError
-                                    of
-                                        Err _ ->
-                                            Decode.fail "Invalid error"
-
-                                        Ok value ->
-                                            Decode.succeed value
-                                )
-                        )
-                        response.body
-                        |> Result.toMaybe
-                        |> Maybe.withDefault "Det skjedde en feil med tjenesten. Prøv igjen senere."
-
-                409 ->
-                    "Dette t:kortet eksisterer ikke eller er allerede registrert."
-
-                400 ->
-                    case WebshopService.travelCardErrorDecoder response.body of
-                        Ok errorMessage ->
-                            "Feilmelding fra tjenesten: " ++ errorMessage
-
-                        _ ->
-                            "Innsendt informasjon ser ut til å ikke stemme. Prøv igjen er du snill."
-
-                _ ->
-                    "Unknown error"
-
-        _ ->
-            "Fikk ikke kontakt med tjenesten. Sjekk om du er på nett og prøv igjen."
