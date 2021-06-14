@@ -475,12 +475,12 @@ function handleAuthError(error) {
             break;
         case 'auth/invalid-verification-code':
             app.ports.authError.send(
-                'Passordet stemmer ikke, vennligst prøv på nytt eller be om et nytt engangspassord.'
+                'Passordet stemmer ikke, vennligst prøv på nytt eller be om et nytt engangskode.'
             );
             break;
         case 'auth/code-expired':
             app.ports.authError.send(
-                'Engangspassordet har utløpt. Vennligst prøv på nytt eller be om et nytt engangspassord.'
+                'Engangskoden har utløpt. Vennligst prøv på nytt eller be om et nytt engangskode.'
             );
             break;
         default:
