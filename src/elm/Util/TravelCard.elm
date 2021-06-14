@@ -54,13 +54,6 @@ serverErrorToString encode error =
             "Fikk ikke kontakt med tjenesten. Sjekk om du er på nett og prøv igjen."
 
 
-
--- Invalid travel card id length
--- Travel card id must be numeric
--- Travel card id is incorrect
--- Invalid significant travel digit length
-
-
 translateErrorString : String -> String
 translateErrorString error =
     let
