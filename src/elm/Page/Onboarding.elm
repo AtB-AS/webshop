@@ -432,7 +432,7 @@ viewConsents env shared model =
             [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post." ]
             , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
-        , Section.viewLabelItem "Velg samtykker" (List.map (viewConsent model) shared.consents)
+        , Section.viewLabelItem "Velg samtykker" (List.filterMap (viewConsent model) shared.consents)
         , if not (Set.isEmpty model.consents) then
             Section.viewItem
                 [ TextInput.init "consent-email"
@@ -456,21 +456,18 @@ viewConsents env shared model =
     ]
 
 
-viewConsent : Model -> Consent -> Html Msg
+viewConsent : Model -> Consent -> Maybe (Html Msg)
 viewConsent model consent =
-    let
-        isChecked =
-            Set.member consent.id model.consents
-
-        title =
-            Dict.get "nob" consent.title
-                |> Maybe.withDefault "Ukjent samtykke"
-    in
-        Checkbox.init ("consent" ++ String.fromInt consent.id)
-            |> Checkbox.setChecked isChecked
-            |> Checkbox.setOnCheck (Just <| ToggleConsent consent.id)
-            |> Checkbox.setTitle title
-            |> Checkbox.view
+    Dict.get "nob" consent.title
+        |> Maybe.andThen
+            (\title ->
+                Checkbox.init ("consent" ++ String.fromInt consent.id)
+                    |> Checkbox.setChecked (Set.member consent.id model.consents)
+                    |> Checkbox.setOnCheck (Just <| ToggleConsent consent.id)
+                    |> Checkbox.setTitle title
+                    |> Checkbox.view
+                    |> Just
+            )
 
 
 viewTravelCard : Environment -> Model -> List (Html Msg)
