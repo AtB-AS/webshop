@@ -48,7 +48,7 @@ update msg model =
         VerificationRequested _ ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction
-                    ("Sendt verifikasjonsepost. Se e-post for å bekrefte endringen."
+                    ("Sendt bekreftelsesepost. Se e-post for å bekrefte endringen."
                         |> Ui.Message.valid
                         |> (\s -> Notification.setContent s Notification.init)
                         |> GA.ShowNotification
@@ -62,7 +62,7 @@ update msg model =
                             Nothing
 
                         else
-                            Just "Ser ikke ut til at du har verifisert e-posten enda. Om du ikke har mottatt e-post kan du sjekke spam-filter og eventuelt prøve å sende ny verifikasjon"
+                            Just "Ser ikke ut til at du har verifisert e-posten enda. Om du ikke har mottatt e-post kan du sjekke spam-filter eller prøve å sende ny bekreftelse"
                 }
 
 
@@ -73,14 +73,14 @@ view model =
             [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , H.div []
                 [ Ui.Section.view
-                    [ Ui.Section.viewHeader <| "Verifiser " ++ model.email
+                    [ Ui.Section.viewHeader <| "Bekreft " ++ model.email
                     , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Hei! Du må bekrefte eposten din for å kunne logge inn." ] ]
                     , Html.Extra.viewMaybe Ui.Message.warning model.error
                     , B.init "Det er gjort"
                         |> B.setOnClick (Just CheckVerifyUser)
                         |> B.primary B.Primary_2
                     ]
-                , B.init "Send verifikasjon på nytt"
+                , B.init "Send bekreftelse på nytt"
                     |> B.setOnClick (Just SendVerifyUser)
                     |> B.setType "button"
                     |> B.link
