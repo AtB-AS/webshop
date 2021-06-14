@@ -26,7 +26,6 @@ import Ui.Group
 import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
-import Util.PageTitle
 
 
 type Msg
@@ -268,6 +267,9 @@ viewOrder shared model order =
 
                 Nothing ->
                     True
+
+        isRefunded =
+            order.state == FareContractStateRefunded
     in
         Ui.Group.view
             { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
@@ -286,13 +288,21 @@ viewOrder shared model order =
             , onOpenClick = Just (ToggleOrder order.id)
             }
             [ Ui.Section.viewPaddedItem
-                [ H.label [] [ H.text "Kjøpsinformasjon" ]
+                [ H.p [] [ H.text "Kjøpsinformasjon" ]
                 , H.div [ A.class "metadata-list" ]
-                    [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                    , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
-                    , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
-                    , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
-                    ]
+                    (if isRefunded then
+                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                        , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
+                        , H.div [] [ H.text <| "Refundert" ]
+                        ]
+
+                     else
+                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                        , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
+                        , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
+                        , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
+                        ]
+                    )
                 ]
             , Ui.Section.viewPaddedItem
                 (List.indexedMap
