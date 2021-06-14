@@ -145,7 +145,7 @@ update msg env model navKey =
                 ( { model | error = Nothing, loading = True }
                 , loginUsingPhone model.phone
                 )
-                |> (H.text "Sendt ny forespørsel etter engangspassord."
+                |> (H.text "Sendt ny forespørsel etter engangskode."
                         |> Message.Valid
                         |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)
@@ -259,100 +259,129 @@ view env model =
 
 viewLogin : Model -> Html Msg
 viewLogin model =
-    let
-        viewInputs =
-            case model.loginMethod of
-                PhoneMethod ->
-                    viewPhoneInputs
+    H.form [ E.onSubmit DoLogin ] <|
+        case model.loginMethod of
+            PhoneMethod ->
+                viewPhoneLogin model
 
-                ResetEmailMethod ->
-                    viewResetInputs
+            ResetEmailMethod ->
+                viewEmailReset model
 
-                _ ->
-                    viewEmailInputs
+            RegisterEmailMethod ->
+                viewEmailRegister model
 
-        ( submitText, description ) =
-            case model.loginMethod of
-                PhoneMethod ->
-                    ( "Send engangspassord"
-                    , [ H.text "Ingen profil enda? Vi oppretter den automatisk for deg når du skriver inn og sender telefonnummeret ditt nedenfor. "
-                      , H.a
-                            [ Route.href <| Route.Login EmailPath
-                            ]
-                            [ H.text "Eller du kan logge inn med e-post" ]
-                      , H.text "."
-                      ]
-                    )
+            EmailMethod ->
+                viewEmailLogin model
 
-                EmailMethod ->
-                    ( "Logg inn"
-                    , [ H.text "Ingen profil enda? "
-                      , H.a
-                            [ Route.href <| Route.Login RegisterEmailPath
-                            ]
-                            [ H.text "Opprett og logg inn med ny profil" ]
-                      , H.text ". Eller så kan du "
-                      , H.a
-                            [ Route.href <| Route.Login PhonePath
-                            ]
-                            [ H.text "logge inn og opprette automatisk med telefonnummer" ]
-                      , H.text "."
-                      ]
-                    )
 
-                RegisterEmailMethod ->
-                    ( "Registrer profil"
-                    , [ H.text "Opprett ny profil. "
-                      , H.a
-                            [ Route.href <| Route.Login EmailPath
-                            ]
-                            [ H.text "Logg inn med eksisterende konto" ]
-                      , H.text " eller "
-                      , H.a
-                            [ Route.href <| Route.Login PhonePath
-                            ]
-                            [ H.text "logg inn med telefon" ]
-                      , H.text "."
-                      ]
-                    )
+betaNotice : Html msg
+betaNotice =
+    H.p []
+        [ H.text "I BETA har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
+        , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Forutsetninger (åpner ny side)." ]
+        ]
+        |> Message.Warning
+        |> Message.message
 
-                ResetEmailMethod ->
-                    ( "Tilbakestill passord"
-                    , [ H.text "Be om å tilbakestille passord på profilen. Eller "
-                      , H.a
-                            [ Route.href <| Route.Login EmailPath
-                            ]
-                            [ H.text "gå tilbake" ]
-                      , H.text "."
-                      ]
-                    )
-    in
-        H.form [ E.onSubmit DoLogin ]
-            [ Ui.Section.view
-                [ Ui.Section.viewHeaderEl
-                    [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-                    , H.text "Velkommen til AtBs nettbutikk"
-                    ]
-                , Ui.Section.viewPaddedItem [ H.p [] description ]
-                , Ui.Section.viewItem <| viewInputs model
-                , H.p []
-                    [ H.text "I betaperioden har nettbutikken spesielle begrenseninger og forutsetninger. Gjør deg kjent med disse før du logger inn. "
-                    , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Begrensninger og forutsetninger (åpner ny side)." ]
-                    ]
-                    |> Message.Warning
-                    |> Message.message
-                , B.init submitText
-                    |> B.setIcon (Just Icon.rightArrow)
-                    |> B.setType "submit"
-                    |> B.primary B.Primary_2
-                ]
-            , B.init "Glemt passord?"
-                |> B.setType "button"
-                |> B.setElement H.a
-                |> B.setAttributes [ Route.href <| Route.Login ForgotPasswordPath ]
-                |> B.link
-                |> Html.Extra.viewIf (model.loginMethod == EmailMethod)
+
+viewPhoneLogin : Model -> List (Html Msg)
+viewPhoneLogin model =
+    [ Ui.Section.view
+        [ Ui.Section.viewHeaderEl
+            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+            , H.text "Velkommen til AtBs nettbutikk"
             ]
+        , Ui.Section.viewPaddedItem
+            [ H.div [ A.attribute "aria-label" "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din. Brukere av skjermleser anbefales innlogging med e-post." ]
+                [ H.p [ A.attribute "aria-hidden" "true" ] [ H.text "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din." ]
+                ]
+            ]
+        , Ui.Section.viewItem <| viewPhoneInputs model
+        , Ui.Section.viewPaddedItem
+            [ H.p [] [ H.a [ Route.href <| Route.Login EmailPath ] [ H.text "Jeg vil heller bruke e-post" ] ]
+            ]
+        , betaNotice
+        , B.init "Send engangskode"
+            |> B.setIcon (Just Icon.rightArrow)
+            |> B.setType "submit"
+            |> B.primary B.Primary_2
+        ]
+    ]
+
+
+viewEmailLogin : Model -> List (Html Msg)
+viewEmailLogin model =
+    [ Ui.Section.view
+        [ Ui.Section.viewHeaderEl
+            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+            , H.text "Velkommen til AtBs nettbutikk"
+            ]
+        , Ui.Section.viewPaddedItem
+            [ H.p []
+                [ H.text "Logg inn på din AtB-profil med e-post og passord eller "
+                , H.a [ Route.href <| Route.Login PhonePath, A.title "Logg på med telefon og engangskode" ] [ H.text "bruk engangskode fra telefonen" ]
+                , H.text "."
+                ]
+            ]
+        , Ui.Section.viewItem <| viewEmailInputs model
+        , Ui.Section.viewPaddedItem
+            [ H.p [] [ H.a [ Route.href <| Route.Login RegisterEmailPath ] [ H.text "Opprett en ny profil" ] ]
+            ]
+        , betaNotice
+        , B.init "Logg inn"
+            |> B.setIcon (Just Icon.rightArrow)
+            |> B.setType "submit"
+            |> B.primary B.Primary_2
+        ]
+    , B.init "Glemt passord?"
+        |> B.setElement H.a
+        |> B.setAttributes [ Route.href <| Route.Login ForgotPasswordPath ]
+        |> B.link
+    ]
+
+
+viewEmailRegister : Model -> List (Html Msg)
+viewEmailRegister model =
+    [ Ui.Section.view
+        [ Ui.Section.viewHeaderEl
+            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+            , H.text "Velkommen til AtBs nettbutikk"
+            ]
+        , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
+        , Ui.Section.viewItem <| viewEmailInputs model
+        , betaNotice
+        , B.init "Registrer profil"
+            |> B.setIcon (Just Icon.rightArrow)
+            |> B.setType "submit"
+            |> B.primary B.Primary_2
+        ]
+    , B.init "Logg inn med en eksisterende profil"
+        |> B.setElement H.a
+        |> B.setAttributes [ Route.href <| Route.Login EmailPath ]
+        |> B.link
+    ]
+
+
+viewEmailReset : Model -> List (Html Msg)
+viewEmailReset model =
+    [ Ui.Section.view
+        [ Ui.Section.viewHeaderEl
+            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+            , H.text "Velkommen til AtBs nettbutikk"
+            ]
+        , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Be om å tilbakestille passord på profilen." ] ]
+        , Ui.Section.viewItem <| viewResetInputs model
+        , betaNotice
+        , B.init "Tilbakestill passord"
+            |> B.setIcon (Just Icon.rightArrow)
+            |> B.setType "submit"
+            |> B.primary B.Primary_2
+        ]
+    , B.init "Logg inn på min profil"
+        |> B.setElement H.a
+        |> B.setAttributes [ Route.href <| Route.Login EmailPath ]
+        |> B.link
+    ]
 
 
 viewPhoneInputs : Model -> List (Html Msg)
@@ -378,7 +407,7 @@ viewEmailInputs model =
         |> T.setType "email"
         |> T.setRequired True
         |> T.setTitle (Just "E-post")
-        |> T.setPlaceholder "Logg inn med e-posten din"
+        |> T.setPlaceholder "Skriv inn din e-postadresse"
         |> T.view
     , T.init "password"
         |> T.setValue (Just model.password)
@@ -386,7 +415,7 @@ viewEmailInputs model =
         |> T.setType "password"
         |> T.setRequired True
         |> T.setTitle (Just "Passord")
-        |> T.setPlaceholder "Tast inn passordet ditt"
+        |> T.setPlaceholder "Skriv inn passordet ditt"
         |> T.view
     ]
 
@@ -409,14 +438,14 @@ viewConfirm : Environment -> Model -> Html Msg
 viewConfirm _ model =
     H.form [ E.onSubmit Confirm ]
         [ Ui.Section.view
-            [ Ui.Section.viewPaddedItem [ H.p [] [ H.text ("Vi har sendt et engangspassord til " ++ model.phone) ] ]
+            [ Ui.Section.viewPaddedItem [ H.p [] [ H.text ("Vi har sendt et engangskode til " ++ model.phone) ] ]
             , Ui.Section.viewItem
                 [ T.init "confirmbox"
                     |> T.setValue (Just model.code)
                     |> T.setOnInput (Just InputCode)
                     |> T.setError model.error
-                    |> T.setTitle (Just "Engangspassord")
-                    |> T.setPlaceholder "Skriv inn engangspassordet"
+                    |> T.setTitle (Just "engangskode")
+                    |> T.setPlaceholder "Skriv inn engangskoden"
                     |> T.setAttributes
                         [ A.attribute "autocomplete" "one-time-code"
                         , A.pattern "[0-9]*"
@@ -429,7 +458,7 @@ viewConfirm _ model =
                 |> B.setType "submit"
                 |> B.primary B.Primary_2
             ]
-        , B.init "Send engangspassord på nytt"
+        , B.init "Send engangskode på nytt"
             |> B.setOnClick (Just ResendPhoneCode)
             |> B.setType "button"
             |> B.link
