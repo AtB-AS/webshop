@@ -486,7 +486,7 @@ function handleAuthError(error) {
             );
             break;
         case 'auth/weak-password':
-            app.ports.authError.send('Passordet burde være minst 6 tegn.');
+            app.ports.authError.send('Passordet må være minst 6 tegn.');
             break;
         default:
             if (error.message) {
