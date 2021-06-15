@@ -404,6 +404,9 @@ viewEmailInputs passwordPlaceholder model =
         |> T.setRequired True
         |> T.setTitle (Just "E-post")
         |> T.setPlaceholder "Skriv inn din e-postadresse"
+        |> T.setAttributes
+            [ A.attribute "autocomplete" "email"
+            ]
         |> T.view
     , T.init "password"
         |> T.setValue (Just model.password)
@@ -411,6 +414,9 @@ viewEmailInputs passwordPlaceholder model =
         |> T.setType "password"
         |> T.setRequired True
         |> T.setTitle (Just "Passord")
+        |> T.setAttributes
+            [ A.attribute "autocomplete" "password"
+            ]
         |> T.setPlaceholder passwordPlaceholder
         |> T.view
     ]
@@ -424,6 +430,9 @@ viewResetInputs model =
         |> T.setOnInput (Just InputEmail)
         |> T.setType "email"
         |> T.setRequired True
+        |> T.setAttributes
+            [ A.attribute "autocomplete" "email"
+            ]
         |> T.setTitle (Just "E-post")
         |> T.setPlaceholder "Logg inn med e-posten din"
         |> T.view
