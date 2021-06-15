@@ -5,6 +5,7 @@ module Util.Validation exposing
     , all
     , emailValidator
     , init
+    , passwordValidator
     , phoneValidator
     , remove
     , removeAll
@@ -72,8 +73,16 @@ phoneValidator field toValue =
 emailValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
 emailValidator field toValue =
     Validate.firstError
-        [ Validate.ifBlank toValue ( field, "E-post kan ikke være tomt." )
+        [ Validate.ifBlank toValue ( field, "E-postadresse kan ikke være tomt." )
         , Validate.ifInvalidEmail toValue (\_ -> ( field, "E-posten du har skrevet ser ikke ut til å være gyldig" ))
+        ]
+
+
+passwordValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
+passwordValidator field toValue =
+    Validate.firstError
+        [ Validate.ifBlank toValue ( field, "Passord kan ikke være tomt." )
+        , Validate.ifFalse (\i -> String.length (toValue i) >= 6) ( field, "Passordet må være over 6 tegn" )
         ]
 
 

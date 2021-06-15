@@ -21,6 +21,8 @@ import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section
 import Util.PhoneNumber
+import Util.Validation as V exposing (FormError, ValidationErrors)
+import Validate exposing (Valid)
 
 
 type LoginMethod
@@ -28,6 +30,12 @@ type LoginMethod
     | EmailMethod
     | RegisterEmailMethod
     | ResetEmailMethod
+
+
+type FieldName
+    = EmailField
+    | PhoneField
+    | PasswordField
 
 
 type Msg
@@ -58,6 +66,7 @@ type alias Model =
     , step : Step
     , error : Maybe String
     , loading : Bool
+    , validationErrors : ValidationErrors FieldName
     }
 
 
@@ -76,6 +85,7 @@ init =
       , step = StepLogin
       , error = Nothing
       , loading = False
+      , validationErrors = V.init
       }
     , Cmd.batch [ focusBox (Just "phone"), focusBox (Just "email") ]
     )
@@ -90,7 +100,7 @@ update msg env model navKey =
                     env.customerId /= Nothing
             in
                 PageUpdater.fromPair
-                    ( { model | loginMethod = methodPathToPath path, error = Nothing, loading = False }
+                    ( { model | loginMethod = methodPathToPath path, error = Nothing, validationErrors = V.init, loading = False }
                       -- Not logged in, so just redirect home
                     , if shouldNavigateHome then
                         Route.modifyUrl navKey Route.Home
@@ -103,39 +113,44 @@ update msg env model navKey =
             PageUpdater.init <| Tuple.first init
 
         InputPhone value ->
-            PageUpdater.init { model | phone = value }
+            PageUpdater.init { model | phone = value, validationErrors = V.remove PhoneField model.validationErrors }
 
         InputCode value ->
             PageUpdater.init { model | code = value }
 
         InputEmail value ->
-            PageUpdater.init { model | email = value }
+            PageUpdater.init { model | email = value, validationErrors = V.remove EmailField model.validationErrors }
 
         InputPassword value ->
-            PageUpdater.init { model | password = value }
+            PageUpdater.init { model | password = value, validationErrors = V.remove PasswordField model.validationErrors }
 
         SetLoginMethod method ->
-            PageUpdater.init { model | loginMethod = method, error = Nothing, loading = False }
+            PageUpdater.init { model | loginMethod = method, error = Nothing, validationErrors = V.init, loading = False }
 
         BackLogin ->
-            PageUpdater.init { model | step = StepLogin, error = Nothing, loading = False, code = "" }
+            PageUpdater.init { model | step = StepLogin, error = Nothing, validationErrors = V.init, loading = False, code = "" }
 
         DoLogin ->
-            PageUpdater.fromPair
-                ( { model | error = Nothing, loading = True }
-                , case model.loginMethod of
-                    PhoneMethod ->
-                        loginUsingPhone model.phone
+            case validateLogin model of
+                Ok _ ->
+                    PageUpdater.fromPair
+                        ( { model | error = Nothing, validationErrors = V.init, loading = True }
+                        , case model.loginMethod of
+                            PhoneMethod ->
+                                loginUsingPhone model.phone
 
-                    EmailMethod ->
-                        loginUsingEmail model.email model.password
+                            EmailMethod ->
+                                loginUsingEmail model.email model.password
 
-                    ResetEmailMethod ->
-                        resetUsingEmail model.email
+                            ResetEmailMethod ->
+                                resetUsingEmail model.email
 
-                    RegisterEmailMethod ->
-                        registerUsingEmail model.email model.password
-                )
+                            RegisterEmailMethod ->
+                                registerUsingEmail model.email model.password
+                        )
+
+                Err errors ->
+                    PageUpdater.init { model | validationErrors = errors }
 
         LoggedIn ->
             PageUpdater.fromPair ( Tuple.first init, Route.newUrl navKey Route.Home )
@@ -186,6 +201,34 @@ update msg env model navKey =
 
         NoOp ->
             PageUpdater.init model
+
+
+validateLogin : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateLogin model =
+    case model.loginMethod of
+        PhoneMethod ->
+            validatePhone model
+
+        ResetEmailMethod ->
+            validateEmail model
+
+        _ ->
+            validateEmailPassword model
+
+
+validateEmailPassword : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmailPassword model =
+    V.validate (V.all [ V.emailValidator EmailField .email, V.passwordValidator PasswordField .password ]) model
+
+
+validateEmail : Model -> Result (List (FormError FieldName)) (Valid Model)
+validateEmail model =
+    V.validate (V.emailValidator EmailField .email) model
+
+
+validatePhone : Model -> Result (List (FormError FieldName)) (Valid Model)
+validatePhone model =
+    V.validate (V.phoneValidator PhoneField .phone) model
 
 
 methodPathToPath : LoginMethodPath -> LoginMethod
@@ -259,7 +302,7 @@ view env model =
 
 viewLogin : Model -> Html Msg
 viewLogin model =
-    H.form [ E.onSubmit DoLogin ] <|
+    H.form [ E.onSubmit DoLogin, A.novalidate True ] <|
         case model.loginMethod of
             PhoneMethod ->
                 viewPhoneLogin model
@@ -388,6 +431,7 @@ viewPhoneInputs model =
         |> T.setError model.error
         |> T.setType "tel"
         |> T.setRequired True
+        |> T.setError (V.select PhoneField model.validationErrors)
         |> T.setTitle (Just "Telefonnummer")
         |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
         |> T.view
@@ -404,6 +448,7 @@ viewEmailInputs passwordPlaceholder model =
         |> T.setRequired True
         |> T.setTitle (Just "E-post")
         |> T.setPlaceholder "Skriv inn din e-postadresse"
+        |> T.setError (V.select EmailField model.validationErrors)
         |> T.setAttributes
             [ A.attribute "autocomplete" "email"
             ]
@@ -414,6 +459,7 @@ viewEmailInputs passwordPlaceholder model =
         |> T.setType "password"
         |> T.setRequired True
         |> T.setTitle (Just "Passord")
+        |> T.setError (V.select PasswordField model.validationErrors)
         |> T.setAttributes
             [ A.attribute "autocomplete" "password"
             ]
@@ -433,6 +479,7 @@ viewResetInputs model =
         |> T.setAttributes
             [ A.attribute "autocomplete" "email"
             ]
+        |> T.setError (V.select EmailField model.validationErrors)
         |> T.setTitle (Just "E-post")
         |> T.setPlaceholder "Logg inn med e-posten din"
         |> T.view
