@@ -19,6 +19,7 @@ import Ui.Button as B
 import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.PageHeader as PH
+import Ui.ScreenReaderText as SR
 import Ui.Section
 import Util.PhoneNumber
 import Util.Validation as V exposing (FormError, ValidationErrors)
@@ -322,8 +323,11 @@ viewPhoneLogin model =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem
-            [ H.div [ A.attribute "aria-label" "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din. Brukere av skjermleser anbefales innlogging med e-post." ]
-                [ H.p [ A.attribute "aria-hidden" "true" ] [ H.text "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din." ]
+            [ H.div []
+                [ H.p []
+                    [ H.text "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din."
+                    , SR.view " Brukere av skjermleser anbefales innlogging med e-post."
+                    ]
                 ]
             ]
         , Ui.Section.viewItem <| viewPhoneInputs model
