@@ -40,7 +40,6 @@ type Msg
     | Receipt String
     | ReceiveReceipt (Result Http.Error ())
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
-    | OpenShop
     | OpenHistory
     | OpenSettings
     | OpenEditTravelCard
@@ -132,10 +131,6 @@ update msg env model =
 
                 Err _ ->
                     PageUpdater.init { model | tokenPayloads = [] }
-
-        OpenShop ->
-            PageUpdater.init model
-                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Shop)
 
         OpenHistory ->
             PageUpdater.init model
@@ -294,16 +289,18 @@ viewAccountInfo shared _ =
 viewActions : Model -> Html Msg
 viewActions _ =
     Ui.Section.view
-        [ B.init "Kjøp ny billett"
+        [ B.init "Kjøp ny periodebillett"
             |> B.setDisabled False
             |> B.setIcon (Just Icon.ticketAdd)
-            |> B.setOnClick (Just OpenShop)
-            |> B.tertiary
-        , B.init "Kjøpshistorikk"
+            |> B.setAttributes [ Route.href Route.Shop ]
+            |> B.setElement H.a
+            |> B.primary B.Primary_2
+        , B.init "Kjøp nytt klippekort"
             |> B.setDisabled False
+            |> B.setElement H.a
             |> B.setIcon (Just Icon.tickets)
-            |> B.setOnClick (Just OpenHistory)
-            |> B.tertiary
+            |> B.setAttributes [ Route.href Route.ShopCarnet ]
+            |> B.primary B.Primary_2
         ]
 
 

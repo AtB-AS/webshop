@@ -28,6 +28,7 @@ type LoginMethodPath
 type Route
     = Home
     | Shop
+    | ShopCarnet
     | Payment PaymentResponseQuery
     | History
     | Settings
@@ -77,6 +78,7 @@ parser =
     oneOf
         [ Parser.map Home Parser.top
         , Parser.map Shop <| s "shop"
+        , Parser.map ShopCarnet <| s "shop-carnet"
         , Parser.map History <| s "history"
         , Parser.map Payment <| s "payment" <?> paymentResponseQueryParser
         , Parser.map Settings <| s "settings"
@@ -97,6 +99,9 @@ routeToString page =
 
                 Shop ->
                     [ "shop" ]
+
+                ShopCarnet ->
+                    [ "shop-carnet" ]
 
                 History ->
                     [ "history" ]
