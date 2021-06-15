@@ -211,15 +211,6 @@ function enqueueRefreshToken(user, expirationString) {
     refreshTokenTimer = setTimeout(fetchAuthInfo.bind(null, user), refreshTime);
 }
 
-async function isUserPasswordProviderAndUnVerified() {
-    const user = firebase.auth().currentUser;
-    if (!user) return false;
-    const idToken = await user.getIdTokenResult(true);
-    if (!idToken) return false;
-
-    return !user.emailVerified && idToken.signInProvider == 'password';
-}
-
 async function fetchAuthInfo(user, stopOnboarding) {
     clearRefreshToken();
     // Unsubscribe previous listener.
@@ -242,7 +233,8 @@ async function fetchAuthInfo(user, stopOnboarding) {
 
         localStorage.setItem('loggedIn', 'loggedIn');
 
-        if (await isUserPasswordProviderAndUnVerified()) {
+        if (idToken.signInProvider == 'password' && !user.emailVerified) {
+            // If user is signed in through password, we must ensure verification.
             app.ports.verifyUserStart.send(email);
         } else {
             unsubscribeFetchUserDataSnapshot = db
@@ -381,11 +373,20 @@ app.ports.onboardingDone.subscribe(() => {
 });
 
 app.ports.checkVerifyUser.subscribe(async () => {
-    const response = await isUserPasswordProviderAndUnVerified();
-    app.ports.checkVerifyUserResponse.send(!response);
+    const user = firebase.auth().currentUser;
 
-    if (!response) {
-        fetchAuthInfo(firebase.auth().currentUser);
+    try {
+        if (!user) {
+            app.ports.checkVerifyUserResponse.send(false);
+        } else {
+            await user.reload();
+            if (user.emailVerified) {
+                app.ports.checkVerifyUserResponse.send(true);
+                fetchAuthInfo(user);
+            }
+        }
+    } catch (e) {
+        app.ports.checkVerifyUserResponse.send(false);
     }
 });
 
