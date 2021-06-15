@@ -21,6 +21,7 @@ import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
 import Page.Shop as ShopPage
+import Page.ShopCarnet as ShopCarnetPage
 import Page.VerifyUser as VerifyUserPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (LoginMethodPath(..), Route(..))
@@ -47,6 +48,7 @@ type Msg
     | MaybeCloseNotification Time.Posix
     | OverviewMsg OverviewPage.Msg
     | ShopMsg ShopPage.Msg
+    | ShopCarnetMsg ShopCarnetPage.Msg
     | HistoryMsg HistoryPage.Msg
     | AccountMsg AccountPage.Msg
     | LoginMsg LoginPage.Msg
@@ -66,6 +68,7 @@ type alias Model =
     , appInfo : AppInfo
     , overview : OverviewPage.Model
     , shop : ShopPage.Model
+    , shopCarnet : ShopCarnetPage.Model
     , history : HistoryPage.Model
     , account : AccountPage.Model
     , shared : Shared
@@ -128,6 +131,9 @@ setRouteInternal initialRoute maybeRoute model =
                 ( Just _, Just Route.Shop ) ->
                     TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
 
+                ( Just _, Just Route.ShopCarnet ) ->
+                    TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
+
                 _ ->
                     Cmd.none
     in
@@ -144,6 +150,9 @@ setRouteInternal initialRoute maybeRoute model =
 
                     Just (Route.Login loginPath) ->
                         TaskUtil.doTask <| LoginMsg <| LoginPage.OnEnterPage loginPath
+
+                    Just Route.ShopCarnet ->
+                        TaskUtil.doTask <| ShopCarnetMsg ShopCarnetPage.OnEnterPage
 
                     Just Route.Settings ->
                         TaskUtil.doTask <| AccountMsg AccountPage.OnEnterPage
@@ -245,6 +254,7 @@ init flags url navKey =
                 , appInfo = appInfo
                 , overview = overviewModel
                 , shop = Tuple.first ShopPage.init
+                , shopCarnet = Tuple.first ShopCarnetPage.init
                 , history = HistoryPage.init
                 , account = accountModel
                 , shared = Shared.init
@@ -368,6 +378,11 @@ update msg model =
         ShopMsg subMsg ->
             ShopPage.update subMsg model.environment model.shop model.shared
                 |> PageUpdater.map (\newModel -> { model | shop = newModel }) ShopMsg
+                |> doPageUpdate
+
+        ShopCarnetMsg subMsg ->
+            ShopCarnetPage.update subMsg model.environment model.shopCarnet model.shared
+                |> PageUpdater.map (\newModel -> { model | shopCarnet = newModel }) ShopCarnetMsg
                 |> doPageUpdate
 
         HistoryMsg subMsg ->
@@ -549,7 +564,8 @@ header : Model -> Html Msg
 header model =
     let
         links =
-            [ ( "Kjøp billett", Route.Shop )
+            [ ( "Ny periodebillett", Route.Shop )
+            , ( "Nytt klippekort", Route.ShopCarnet )
             , ( "Kjøpshistorikk", Route.History )
             , ( "Min profil", Route.Settings )
             ]
@@ -639,7 +655,12 @@ viewPage model =
             Just Route.Shop ->
                 ShopPage.view env model.appInfo shared model.shop model.route
                     |> H.map ShopMsg
-                    |> wrapSubPage "Kjøp ny billett"
+                    |> wrapSubPage "Kjøp ny periodebillett"
+
+            Just Route.ShopCarnet ->
+                ShopCarnetPage.view env model.appInfo shared model.shopCarnet model.route
+                    |> H.map ShopCarnetMsg
+                    |> wrapSubPage "Kjøp nytt klippekort"
 
             Just Route.History ->
                 HistoryPage.view env model.appInfo shared model.history model.route
