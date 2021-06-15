@@ -113,7 +113,7 @@ messageWithOptions options statusType =
     in
         H.div [ A.classList classList ]
             [ icon
-            , H.div [ A.class "ui-message__content" ] [ text ]
+            , H.div [ A.class "ui-message__content", A.attribute "role" "alert" ] [ text ]
             ]
 
 
