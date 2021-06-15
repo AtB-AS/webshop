@@ -398,7 +398,7 @@ viewSidebar model =
             , B.init "Slett konto"
                 |> B.setIcon (Just Icon.delete)
                 |> B.setElement H.a
-                |> B.setAttributes [ A.href deleteLink, A.title "Send epost til kundeservice med telefonnummer for å få slettet konto." ]
+                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet konto." ]
                 |> B.primary B.Primary_destructive
             ]
 
@@ -508,7 +508,7 @@ viewSignInMethod _ method =
                     [ H.text <| "Logg på med e-post " ++ method.uid ++ ". "
                     , Ui.InlineButtonLink.view
                         [ E.onClick RequestResetPassword
-                        , A.title <| "Send forespørsel for nytt passord (sender epost til " ++ method.uid ++ ")"
+                        , A.title <| "Send forespørsel om nytt passord (sender e-post til " ++ method.uid ++ ")"
                         ]
                         [ H.text "Lag nytt passord" ]
                     ]

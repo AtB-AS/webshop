@@ -554,7 +554,7 @@ app.ports.registerEmail.subscribe(async ({ email, password }) => {
         if (signInMethods.length > 0) {
             return handleAuthError({
                 message:
-                    'Det er alt registrert en konto på denne eposten. Prøv å logg inn.'
+                    'Det er alt registrert en konto på denne e-postadressen. Prøv å logg inn.'
             });
         }
     } catch (e) {
@@ -564,7 +564,7 @@ app.ports.registerEmail.subscribe(async ({ email, password }) => {
     if (!checkEmailData.available) {
         return handleAuthError({
             message:
-                'Denne eposten er registrert i systemet fra før. Kan det være du har logget inn med telefonnummer?'
+                'Denne e-postadressen er registrert i systemet fra før. Kan det være du har logget inn med telefonnummer?'
         });
     }
 
