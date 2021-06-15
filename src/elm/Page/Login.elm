@@ -274,23 +274,10 @@ viewLogin model =
                 viewEmailLogin model
 
 
-betaNotice : Html msg
-betaNotice =
-    H.p []
-        [ H.text "I BETA har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
-        , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Forutsetninger (åpner ny side)." ]
-        ]
-        |> Message.Warning
-        |> Message.message
-
-
 viewPhoneLogin : Model -> List (Html Msg)
 viewPhoneLogin model =
     [ Ui.Section.view
-        [ Ui.Section.viewHeaderEl
-            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-            , H.text "Velkommen til AtBs nettbutikk"
-            ]
+        [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem
             [ H.div [ A.attribute "aria-label" "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din. Brukere av skjermleser anbefales innlogging med e-post." ]
                 [ H.p [ A.attribute "aria-hidden" "true" ] [ H.text "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din." ]
@@ -312,10 +299,7 @@ viewPhoneLogin model =
 viewEmailLogin : Model -> List (Html Msg)
 viewEmailLogin model =
     [ Ui.Section.view
-        [ Ui.Section.viewHeaderEl
-            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-            , H.text "Velkommen til AtBs nettbutikk"
-            ]
+        [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem
             [ H.p []
                 [ H.text "Logg inn på din AtB-profil med e-post og passord eller "
@@ -343,10 +327,7 @@ viewEmailLogin model =
 viewEmailRegister : Model -> List (Html Msg)
 viewEmailRegister model =
     [ Ui.Section.view
-        [ Ui.Section.viewHeaderEl
-            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-            , H.text "Velkommen til AtBs nettbutikk"
-            ]
+        [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
         , Ui.Section.viewItem <| viewEmailInputs model
         , betaNotice
@@ -365,10 +346,7 @@ viewEmailRegister model =
 viewEmailReset : Model -> List (Html Msg)
 viewEmailReset model =
     [ Ui.Section.view
-        [ Ui.Section.viewHeaderEl
-            [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-            , H.text "Velkommen til AtBs nettbutikk"
-            ]
+        [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Be om å tilbakestille passord på profilen." ] ]
         , Ui.Section.viewItem <| viewResetInputs model
         , betaNotice
@@ -382,6 +360,24 @@ viewEmailReset model =
         |> B.setAttributes [ Route.href <| Route.Login EmailPath ]
         |> B.link
     ]
+
+
+viewWelcomeIllustration : Html Msg
+viewWelcomeIllustration =
+    Ui.Section.viewHeaderEl
+        [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+        , H.text "Velkommen til AtBs nettbutikk"
+        ]
+
+
+betaNotice : Html msg
+betaNotice =
+    H.p []
+        [ H.text "I BETA har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
+        , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Forutsetninger (åpner ny side)." ]
+        ]
+        |> Message.Warning
+        |> Message.message
 
 
 viewPhoneInputs : Model -> List (Html Msg)
