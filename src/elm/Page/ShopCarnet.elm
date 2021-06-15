@@ -20,12 +20,10 @@ import Service.Ticket as TicketService
 import Set
 import Shared exposing (Shared)
 import Task
-import Time exposing (Posix)
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input.Radio as Radio
 import Ui.Input.Select as Select
-import Ui.Input.Text as Text
 import Ui.LabelItem
 import Ui.LoadingText
 import Ui.Message as Message
@@ -34,7 +32,6 @@ import Util.Format
 import Util.Func as Func
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
-import Util.Time as TimeUtil
 
 
 type Msg
@@ -52,25 +49,13 @@ type Msg
     | ModUser UserType Int
     | SetUser UserType Bool
     | ShowView MainView
-    | SetTime String
-    | SetDate String
-    | UpdateNow Time.Posix
-    | UpdateZone Time.Zone
-    | GetIsoTime String
-    | SetTravelDateTime TravelDateTime
 
 
 type MainView
     = Travelers
     | Duration
-    | Start
     | Zones
     | None
-
-
-type TravelDateTime
-    = TravelNow
-    | TravelFuture (Maybe String)
 
 
 type alias Model =
@@ -81,11 +66,6 @@ type alias Model =
     , offers : Status (List Offer)
     , reservation : Status Reservation
     , mainView : MainView
-    , travelDateTime : TravelDateTime
-    , now : Posix
-    , inputTravelDate : String
-    , inputTravelTime : String
-    , timeZone : Time.Zone
     }
 
 
@@ -98,16 +78,8 @@ init =
       , offers = NotLoaded
       , reservation = NotLoaded
       , mainView = Duration
-      , travelDateTime = TravelNow
-      , now = Time.millisToPosix 0
-      , inputTravelDate = ""
-      , inputTravelTime = ""
-      , timeZone = Time.utc
       }
-    , Cmd.batch
-        [ TaskUtil.doTask FetchOffers
-        , Task.perform UpdateZone Time.here
-        ]
+    , TaskUtil.doTask FetchOffers
     )
 
 
@@ -156,45 +128,6 @@ update msg env model shared =
             SetUser userType _ ->
                 PageUpdater.fromPair
                     ( { model | users = [ ( userType, 1 ) ] }
-                    , TaskUtil.doTask FetchOffers
-                    )
-
-            SetTravelDateTime (TravelFuture maybeFuture) ->
-                case maybeFuture of
-                    Nothing ->
-                        let
-                            travelDate =
-                                if String.isEmpty model.inputTravelDate then
-                                    TimeUtil.toIsoDate model.timeZone model.now
-
-                                else
-                                    model.inputTravelDate
-
-                            travelTime =
-                                if String.isEmpty model.inputTravelTime then
-                                    TimeUtil.toHoursAndMinutes model.timeZone <| TimeUtil.addHours 1 model.now
-
-                                else
-                                    model.inputTravelTime
-                        in
-                            PageUpdater.fromPair
-                                ( { model
-                                    | travelDateTime = TravelFuture Nothing
-                                    , inputTravelDate = travelDate
-                                    , inputTravelTime = travelTime
-                                  }
-                                , MiscService.convertTime ( travelDate, travelTime )
-                                )
-
-                    future ->
-                        PageUpdater.fromPair
-                            ( { model | travelDateTime = TravelFuture <| future }
-                            , TaskUtil.doTask FetchOffers
-                            )
-
-            SetTravelDateTime TravelNow ->
-                PageUpdater.fromPair
-                    ( { model | travelDateTime = TravelNow }
                     , TaskUtil.doTask FetchOffers
                     )
 
@@ -259,14 +192,6 @@ update msg env model shared =
 
                         newToZone =
                             Maybe.withDefault firstZone model.toZone
-
-                        travelTime =
-                            case model.travelDateTime of
-                                TravelFuture (Just time) ->
-                                    Just time
-
-                                _ ->
-                                    Nothing
                     in
                         if dataNotLoadedYet then
                             PageUpdater.fromPair
@@ -288,7 +213,7 @@ update msg env model shared =
                                     newFromZone
                                     newToZone
                                     model.users
-                                    travelTime
+                                    Nothing
                                 )
 
             ReceiveOffers result ->
@@ -351,30 +276,6 @@ update msg env model shared =
 
             ShowView mainView ->
                 PageUpdater.init (toggleShowMainView model mainView)
-
-            SetDate date ->
-                PageUpdater.fromPair
-                    ( { model | inputTravelDate = date }
-                    , MiscService.convertTime ( date, model.inputTravelTime )
-                    )
-
-            SetTime time ->
-                PageUpdater.fromPair
-                    ( { model | inputTravelTime = time }
-                    , MiscService.convertTime ( model.inputTravelDate, time )
-                    )
-
-            UpdateNow now ->
-                PageUpdater.init { model | now = now }
-
-            UpdateZone zone ->
-                PageUpdater.init { model | timeZone = zone }
-
-            GetIsoTime isoTime ->
-                PageUpdater.fromPair
-                    ( model
-                    , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
-                    )
 
 
 defaultDerivedData : Shared -> ( String, String )
@@ -502,16 +403,6 @@ view _ _ shared model _ =
                     }
                     [ viewUserProfiles defaultProduct model shared ]
                 , Ui.Group.view
-                    { title = "Gyldig fra og med"
-                    , icon = Just Icon.ticket
-                    , value = summary.start
-                    , open = model.mainView == Start
-                    , disabled = False
-                    , onOpenClick = Just (ShowView Start)
-                    , id = "duration"
-                    }
-                    (viewStart model)
-                , Ui.Group.view
                     { title = "Soner"
                     , icon = Just Icon.ticket
                     , value = summary.zones
@@ -562,19 +453,6 @@ nameFromFareProduct products productId =
         |> Maybe.map (.name >> langString)
 
 
-stringFromStart : Model -> Maybe String
-stringFromStart model =
-    case model.travelDateTime of
-        TravelNow ->
-            Just "Kjøpstidspunkt"
-
-        TravelFuture (Just time) ->
-            TimeUtil.isoStringToFullHumanized model.timeZone time
-
-        _ ->
-            Nothing
-
-
 stringFromZone : List TariffZone -> String -> Model -> Maybe String
 stringFromZone tariffZones defaultZone model =
     let
@@ -616,13 +494,13 @@ modelSummary ( defaultZone, defaultProduct ) shared model =
                 |> List.map
                     (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
         , duration = nameFromFareProduct shared.fareProducts product
-        , start = stringFromStart model
+        , start = Just ""
         , zones = stringFromZone shared.tariffZones defaultZone model
         }
 
 
 summaryView : Shared -> Model -> ModelSummary -> Html Msg
-summaryView shared model summary =
+summaryView shared model _ =
     let
         emptyOffers =
             case model.offers of
@@ -647,22 +525,6 @@ summaryView shared model summary =
 
         vatAmount =
             Maybe.map ((*) (toFloat shared.remoteConfig.vat_percent / 100)) totalPrice
-
-        validFrom =
-            case model.travelDateTime of
-                TravelNow ->
-                    H.text "Kjøpstidspunkt"
-
-                TravelFuture (Just time) ->
-                    TimeUtil.isoStringToFullHumanized model.timeZone time
-                        |> Maybe.map
-                            (\dateTime ->
-                                H.time [ A.datetime time ] [ H.text <| dateTime ]
-                            )
-                        |> Maybe.withDefault Html.Extra.nothing
-
-                TravelFuture Nothing ->
-                    Html.Extra.nothing
     in
         Section.init
             |> Section.setMarginBottom True
@@ -691,11 +553,6 @@ summaryView shared model summary =
                                 |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                             ]
                         ]
-                , Section.viewPaddedItem
-                    [ Ui.LabelItem.viewCompact "Gyldig fra"
-                        [ validFrom
-                        ]
-                    ]
                 , maybeBuyNotice model.users
                 ]
 
@@ -743,47 +600,6 @@ maybeBuyNotice users =
 langString : LangString -> String
 langString (LangString _ value) =
     value
-
-
-viewStart : Model -> List (Html Msg)
-viewStart model =
-    let
-        isFutureSelected =
-            model.travelDateTime /= TravelNow
-    in
-        [ Radio.viewGroup "Velg avreisetid"
-            [ Radio.init "travel-now"
-                |> Radio.setTitle "Kjøpstidspunkt"
-                |> Radio.setName "traveltime"
-                |> Radio.setChecked (not isFutureSelected)
-                |> Radio.setOnCheck (Just <| \_ -> SetTravelDateTime TravelNow)
-                |> Radio.view
-            , Radio.init "travel-future"
-                |> Radio.setTitle "Velg dato og tid"
-                |> Radio.setName "traveltime"
-                |> Radio.setChecked isFutureSelected
-                |> Radio.setOnCheck (Just <| \_ -> SetTravelDateTime <| TravelFuture Nothing)
-                |> Radio.view
-            ]
-        , Html.Extra.viewIf isFutureSelected <|
-            Section.viewHorizontalGroup
-                [ Text.init "date"
-                    |> Text.setTitle (Just "Dato")
-                    |> Text.setOnInput (Just SetDate)
-                    |> Text.setAttributes [ A.min <| TimeUtil.toIsoDate model.timeZone model.now ]
-                    |> Text.setType "date"
-                    |> Text.setValue (Just model.inputTravelDate)
-                    |> Text.view
-                , Text.init "time"
-                    |> Text.setTitle (Just "Tid")
-                    |> Text.setOnInput (Just SetTime)
-                    |> Text.setAttributes
-                        [ A.min <| TimeUtil.toHoursAndMinutes model.timeZone model.now ]
-                    |> Text.setType "time"
-                    |> Text.setValue (Just model.inputTravelTime)
-                    |> Text.view
-                ]
-        ]
 
 
 viewProducts : Model -> String -> List FareProduct -> Html Msg
@@ -890,10 +706,7 @@ viewUserProfile model userProfile =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ MiscService.convertedTime GetIsoTime
-        , Time.every 1000 UpdateNow
-        ]
+    Sub.none
 
 
 
