@@ -160,7 +160,7 @@ function updateElmWithLoggedOutAndCleanUp() {
 
     app.ports.signInError.send({
         code: -1,
-        message: 'Du er blitt logget ut.'
+        message: 'Du er utlogget.'
     });
 }
 
