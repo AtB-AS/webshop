@@ -8,7 +8,7 @@ port module Service.RefData exposing
     , onUserProfiles
     )
 
-import Data.RefData exposing (Consent, FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -55,6 +55,7 @@ fareProductDecoder =
         |> DecodeP.required "name" langStringDecoder
         |> DecodeP.optional "description" langStringDecoder (LangString "" "")
         |> DecodeP.required "type" productTypeDecoder
+        |> DecodeP.required "distributionChannel" (Decode.list distributionChannelDecoder)
         |> DecodeP.required "alternativeNames" (Decode.list langStringDecoder)
         |> DecodeP.required "limitations" limitationsDecoder
 
@@ -70,8 +71,28 @@ productTypeDecoder =
                 "single" ->
                     Decode.succeed ProductTypeSingle
 
+                "carnet" ->
+                    Decode.succeed ProductTypeCarnet
+
                 _ ->
                     Decode.fail "Invalid product type"
+        )
+        Decode.string
+
+
+distributionChannelDecoder : Decoder DistributionChannel
+distributionChannelDecoder =
+    Decode.andThen
+        (\userType ->
+            case userType of
+                "web" ->
+                    Decode.succeed DistributionChannelWeb
+
+                "app" ->
+                    Decode.succeed DistributionChannelApp
+
+                _ ->
+                    Decode.fail "Invalid distributionChannel"
         )
         Decode.string
 
