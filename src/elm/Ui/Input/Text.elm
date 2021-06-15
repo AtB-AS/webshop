@@ -142,7 +142,7 @@ view { id, title, value, type_, error, placeholder, onInput, required, onBlur, a
             , Html.Extra.viewMaybe
                 (\t ->
                     Text.textContainer H.span (Just Text.DestructiveColor) <|
-                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage" ] [ Fragment.Icon.error, H.text t ] ]
+                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage", A.attribute "role" "alert" ] [ Fragment.Icon.error, H.text t ] ]
                 )
                 error
             ]
