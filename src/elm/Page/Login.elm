@@ -374,7 +374,7 @@ viewEmailRegister model =
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
         , Ui.Section.viewItem <| viewEmailInputs "Velg et passord" model
         , betaNotice
-        , B.init "Registrer profil"
+        , B.init "Opprett profil"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setType "submit"
             |> B.primary B.Primary_2
