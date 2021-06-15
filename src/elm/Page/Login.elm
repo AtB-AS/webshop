@@ -307,7 +307,7 @@ viewEmailLogin model =
                 , H.text "."
                 ]
             ]
-        , Ui.Section.viewItem <| viewEmailInputs model
+        , Ui.Section.viewItem <| viewEmailInputs "Skriv inn passordet ditt" model
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ Route.href <| Route.Login RegisterEmailPath ] [ H.text "Opprett en ny profil" ] ]
             ]
@@ -329,7 +329,7 @@ viewEmailRegister model =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
-        , Ui.Section.viewItem <| viewEmailInputs model
+        , Ui.Section.viewItem <| viewEmailInputs "Velg et passord" model
         , betaNotice
         , B.init "Registrer profil"
             |> B.setIcon (Just Icon.rightArrow)
@@ -394,8 +394,8 @@ viewPhoneInputs model =
     ]
 
 
-viewEmailInputs : Model -> List (Html Msg)
-viewEmailInputs model =
+viewEmailInputs : String -> Model -> List (Html Msg)
+viewEmailInputs passwordPlaceholder model =
     [ Html.Extra.viewMaybe Message.error model.error
     , T.init "email"
         |> T.setValue (Just model.email)
@@ -411,7 +411,7 @@ viewEmailInputs model =
         |> T.setType "password"
         |> T.setRequired True
         |> T.setTitle (Just "Passord")
-        |> T.setPlaceholder "Skriv inn passordet ditt"
+        |> T.setPlaceholder passwordPlaceholder
         |> T.view
     ]
 
