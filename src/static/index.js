@@ -115,7 +115,7 @@ remoteConfig
     .then(() => {
         fetchRemoteConfigData(
             app.ports.remoteConfigFareProducts,
-            'preassigned_fare_products'
+            'preassigned_fare_products_v2'
         );
         fetchRemoteConfigData(
             app.ports.remoteConfigUserProfiles,

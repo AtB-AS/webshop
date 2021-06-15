@@ -1,7 +1,7 @@
 module Page.ShopCarnet exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.RefData exposing (FareProduct, LangString(..), Limitation, TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (FareProduct, LangString(..), Limitation, ProductType(..), TariffZone, UserProfile, UserType(..))
 import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -178,11 +178,15 @@ update msg env model shared =
                                 _ ->
                                     Nothing
 
+                        availableProducts =
+                            shared.fareProducts
+                                |> List.filter (.type_ >> (==) ProductTypeCarnet)
+
                         ( firstZone, defaultProduct ) =
-                            defaultDerivedData shared
+                            defaultDerivedData shared availableProducts
 
                         dataNotLoadedYet =
-                            List.isEmpty shared.availableFareProducts && List.isEmpty shared.tariffZones
+                            List.isEmpty availableProducts && List.isEmpty shared.tariffZones
 
                         newProduct =
                             Maybe.withDefault defaultProduct model.product
@@ -278,8 +282,8 @@ update msg env model shared =
                 PageUpdater.init (toggleShowMainView model mainView)
 
 
-defaultDerivedData : Shared -> ( String, String )
-defaultDerivedData shared =
+defaultDerivedData : Shared -> List FareProduct -> ( String, String )
+defaultDerivedData shared products =
     let
         firstZone =
             shared.tariffZones
@@ -294,7 +298,7 @@ defaultDerivedData shared =
                 |> Maybe.withDefault ""
 
         defaultProduct =
-            shared.availableFareProducts
+            products
                 |> List.head
                 |> Maybe.map .id
                 |> Maybe.withDefault ""
@@ -331,8 +335,12 @@ toggleShowMainView model mainView =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
     let
+        availableProducts =
+            shared.fareProducts
+                |> List.filter (.type_ >> (==) ProductTypeCarnet)
+
         ( defaultZone, defaultProduct ) =
-            defaultDerivedData shared
+            defaultDerivedData shared availableProducts
 
         summary =
             modelSummary ( defaultZone, defaultProduct ) shared model
@@ -388,7 +396,7 @@ view _ _ shared model _ =
                     , onOpenClick = Just (ShowView Duration)
                     , id = "varighet"
                     }
-                    [ viewProducts model defaultProduct shared.availableFareProducts ]
+                    [ viewProducts model defaultProduct availableProducts ]
                 , Ui.Group.view
                     { title = "Reisende"
                     , icon = Just Icon.bus

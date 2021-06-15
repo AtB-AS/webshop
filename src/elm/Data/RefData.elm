@@ -1,5 +1,6 @@
 module Data.RefData exposing
     ( Consent
+    , DistributionChannel(..)
     , FareProduct
     , LangString(..)
     , Limitation
@@ -25,6 +26,12 @@ type alias TariffZone =
 type ProductType
     = ProductTypePeriod
     | ProductTypeSingle
+    | ProductTypeCarnet
+
+
+type DistributionChannel
+    = DistributionChannelWeb
+    | DistributionChannelApp
 
 
 type alias FareProduct =
@@ -32,6 +39,7 @@ type alias FareProduct =
     , name : LangString
     , description : LangString
     , type_ : ProductType
+    , distributionChannel : List DistributionChannel
     , alternativeNames : List LangString
     , limitations : List String
     }
