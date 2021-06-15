@@ -602,10 +602,10 @@ viewEmailAddress model profile =
             EditSection.init "Administrer e-post"
                 |> EditSection.setEditButtonType
                     (if hasEmail then
-                        ( "Endre epostadresse", Icon.edit )
+                        ( "Endre e-postadresse", Icon.edit )
 
                      else
-                        ( "Legg til epostadresse", Icon.edit )
+                        ( "Legg til e-postadresse", Icon.edit )
                     )
                 |> EditSection.setOnSave onSave
                 |> EditSection.setOnEdit (Just <| SetEditSection (Just EmailSection) (Just "email"))
@@ -761,9 +761,7 @@ viewTravelCard model profile =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ MiscService.onProfileChange ProfileChange
-        ]
+    MiscService.onProfileChange ProfileChange
 
 
 
