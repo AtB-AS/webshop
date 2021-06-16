@@ -376,10 +376,10 @@ view _ _ shared model _ =
                    )
     in
         H.div [ A.class "page" ]
-            [ H.div []
+            [ Section.view
                 [ Ui.Group.view
                     { title = "Reisetype"
-                    , icon = Just Icon.bus
+                    , icon = Icon.bus
                     , value = Just "Buss og trikk"
                     , open = False
                     , disabled = True
@@ -387,19 +387,14 @@ view _ _ shared model _ =
                     , id = "reisetype"
                     }
                     []
-                , Ui.Group.view
-                    { title = "Billettype"
-                    , icon = Just Icon.duration
-                    , value = summary.duration
-                    , open = model.mainView == Duration
-                    , disabled = False
-                    , onOpenClick = Just (ShowView Duration)
-                    , id = "varighet"
-                    }
-                    [ viewProducts model defaultProduct availableProducts ]
+                , Section.viewWithIcon (Icon.viewLarge Icon.tickets)
+                    [ Section.viewLabelItem "Antall billetter"
+                        [ H.text <| Maybe.withDefault "Ikke lastet" summary.product
+                        ]
+                    ]
                 , Ui.Group.view
                     { title = "Reisende"
-                    , icon = Just Icon.bus
+                    , icon = Icon.bus
                     , value =
                         summary.users
                             |> List.head
@@ -412,7 +407,7 @@ view _ _ shared model _ =
                     [ viewUserProfiles defaultProduct model shared ]
                 , Ui.Group.view
                     { title = "Soner"
-                    , icon = Just Icon.ticket
+                    , icon = Icon.map
                     , value = summary.zones
                     , open = model.mainView == Zones
                     , disabled = False
@@ -485,7 +480,7 @@ stringFromZone tariffZones defaultZone model =
 
 type alias ModelSummary =
     { users : List ( String, Int )
-    , duration : Maybe String
+    , product : Maybe String
     , start : Maybe String
     , zones : Maybe String
     }
@@ -501,7 +496,7 @@ modelSummary ( defaultZone, defaultProduct ) shared model =
             model.users
                 |> List.map
                     (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
-        , duration = nameFromFareProduct shared.fareProducts product
+        , product = nameFromFareProduct shared.fareProducts product
         , start = Just ""
         , zones = stringFromZone shared.tariffZones defaultZone model
         }
@@ -608,30 +603,6 @@ maybeBuyNotice users =
 langString : LangString -> String
 langString (LangString _ value) =
     value
-
-
-viewProducts : Model -> String -> List FareProduct -> Html Msg
-viewProducts model defaultProduct products =
-    products
-        |> List.map (viewProduct model defaultProduct)
-        |> Radio.viewGroup "Velg billettype"
-
-
-viewProduct : Model -> String -> FareProduct -> Html Msg
-viewProduct model defaultProduct product =
-    let
-        selectedProduct =
-            Maybe.withDefault defaultProduct model.product
-
-        isCurrent =
-            selectedProduct == product.id
-    in
-        Radio.init product.id
-            |> Radio.setTitle (langString product.name)
-            |> Radio.setName "product"
-            |> Radio.setChecked isCurrent
-            |> Radio.setOnCheck (Just <| SetProduct product.id)
-            |> Radio.view
 
 
 viewZones : Model -> String -> List TariffZone -> Html Msg

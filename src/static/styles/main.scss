@@ -1,6 +1,11 @@
 @import '~@atb-as/theme/lib/theme.css';
 @import '~@atb-as/theme/lib/typography.css';
 
+// Extra settings in addition to shared theme.
+:root {
+    --icon-size-xLarge: 2.5rem;
+}
+
 html {
     box-sizing: border-box;
 }
