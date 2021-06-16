@@ -176,10 +176,22 @@
 .ui-group {
     width: 100%;
     overflow: hidden;
-    border-radius: var(--border-radius-regular);
     background: var(--colors-background_0-backgroundColor);
     color: var(--colors-background_0-color);
-    margin-bottom: var(--spacings-medium);
+
+    display: flex;
+    align-items: stretch;
+}
+.ui-group__innerContainer {
+    flex: 1;
+}
+.ui-group__icon {
+    display: block;
+    padding: var(--spacings-xLarge);
+
+    svg {
+        display: block;
+    }
 }
 .ui-group__header {
     margin: 0;
@@ -209,6 +221,8 @@
     justify-content: space-between;
     align-items: center;
     color: var(--text-colors-primary);
+    text-align: left;
+    cursor: pointer;
 
     transition: all 150ms ease-in-out;
     border: var(--border-width-medium) solid transparent;
@@ -233,20 +247,10 @@
     background: var(--colors-background_3-backgroundColor);
     color: var(--colors-background_3-color);
 }
-.ui-group__headerButton--disabled,
-.ui-group__headerButton--disabled:hover {
-    background: var(--colors-background_0-backgroundColor);
-    color: var(--colors-background_0-color);
-    opacity: 0.4;
-}
 .ui-group__headerButton__title {
     display: block;
     flex: 1;
     text-align: left;
-    padding: 0 var(--spacings-medium);
-}
-.ui-group__headerButton__value {
-    margin: 0 var(--spacings-medium);
 }
 
 .ui-ticketDetails {
@@ -631,10 +635,6 @@
     border: var(--border-width-medium) solid transparent;
     // Remove border from padding.
     padding: calc(var(--spacings-xLarge) - 2 * var(--border-width-medium));
-}
-.ui-input-radioGroup .ui-group__item:last-of-type .ui-input-radio {
-    border-bottom-left-radius: var(--border-radius-regular);
-    border-bottom-right-radius: var(--border-radius-regular);
 }
 .ui-input-radio:hover {
     background: var(--colors-background_2-backgroundColor);
@@ -1090,4 +1090,15 @@ a.ui-button--link,
     position: absolute !important;
     width: 1px !important;
     white-space: nowrap !important;
+}
+
+.ui-icon--large svg {
+    width: var(--icon-size-xLarge);
+    height: var(--icon-size-xLarge);
+}
+.ui-icon--monochrome {
+    svg,
+    path {
+        fill: currentColor;
+    }
 }

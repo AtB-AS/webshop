@@ -274,7 +274,7 @@ viewOrder shared model order =
         Ui.Group.view
             { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
             , id = order.id
-            , icon = Nothing
+            , icon = Icon.ticket
             , value =
                 Just
                     (if expanded then

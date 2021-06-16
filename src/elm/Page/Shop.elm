@@ -467,10 +467,10 @@ view _ _ shared model _ =
                    )
     in
         H.div [ A.class "page" ]
-            [ H.div []
+            [ Section.view
                 [ Ui.Group.view
                     { title = "Reisetype"
-                    , icon = Just Icon.bus
+                    , icon = Icon.bus
                     , value = Just "Buss og trikk"
                     , open = False
                     , disabled = True
@@ -480,7 +480,7 @@ view _ _ shared model _ =
                     []
                 , Ui.Group.view
                     { title = "Billettype"
-                    , icon = Just Icon.duration
+                    , icon = Icon.duration
                     , value = summary.duration
                     , open = model.mainView == Duration
                     , disabled = False
@@ -490,7 +490,7 @@ view _ _ shared model _ =
                     [ viewProducts model defaultProduct shared.availableFareProducts ]
                 , Ui.Group.view
                     { title = "Reisende"
-                    , icon = Just Icon.bus
+                    , icon = Icon.bus
                     , value =
                         summary.users
                             |> List.head
@@ -503,7 +503,7 @@ view _ _ shared model _ =
                     [ viewUserProfiles defaultProduct model shared ]
                 , Ui.Group.view
                     { title = "Gyldig fra og med"
-                    , icon = Just Icon.ticket
+                    , icon = Icon.ticket
                     , value = summary.start
                     , open = model.mainView == Start
                     , disabled = False
@@ -513,7 +513,7 @@ view _ _ shared model _ =
                     (viewStart model)
                 , Ui.Group.view
                     { title = "Soner"
-                    , icon = Just Icon.ticket
+                    , icon = Icon.map
                     , value = summary.zones
                     , open = model.mainView == Zones
                     , disabled = False
