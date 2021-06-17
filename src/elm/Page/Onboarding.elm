@@ -502,7 +502,7 @@ viewConsents env shared model =
             , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
         , Section.viewLabelItem "Velg samtykker" (List.filterMap (viewConsent model) shared.consents)
-        , if not (Set.isEmpty model.consents) then
+        , if not (Set.isEmpty model.consents) && String.isEmpty model.savedEmail then
             Section.viewItem
                 [ TextInput.init "consent-email"
                     |> TextInput.setTitle (Just "E-postadresse")
