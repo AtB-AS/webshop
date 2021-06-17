@@ -284,7 +284,7 @@ viewOrder shared model order =
                         "Vis"
                     )
             , open = expanded
-            , disabled = False
+            , readonly = False
             , onOpenClick = Just (ToggleOrder order.id)
             }
             [ Ui.Section.viewPaddedItem

@@ -382,7 +382,7 @@ view _ _ shared model _ =
                     , icon = Icon.bus
                     , value = Just "Buss og trikk"
                     , open = False
-                    , disabled = True
+                    , readonly = True
                     , onOpenClick = Nothing
                     , id = "reisetype"
                     }
@@ -392,7 +392,7 @@ view _ _ shared model _ =
                     , icon = Icon.tickets
                     , value = summary.product
                     , open = False
-                    , disabled = True
+                    , readonly = True
                     , onOpenClick = Nothing
                     , id = "product"
                     }
@@ -405,7 +405,7 @@ view _ _ shared model _ =
                             |> List.head
                             |> Maybe.map (\( name, num ) -> String.fromInt num ++ " " ++ name)
                     , open = model.mainView == Travelers
-                    , disabled = False
+                    , readonly = False
                     , onOpenClick = Just (ShowView Travelers)
                     , id = "reisende"
                     }
@@ -415,7 +415,7 @@ view _ _ shared model _ =
                     , icon = Icon.map
                     , value = summary.zones
                     , open = model.mainView == Zones
-                    , disabled = False
+                    , readonly = False
                     , onOpenClick = Just (ShowView Zones)
                     , id = "zones"
                     }
