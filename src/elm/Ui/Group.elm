@@ -18,13 +18,13 @@ type alias Group msg =
     , icon : Html msg
     , value : Maybe String
     , open : Bool
-    , disabled : Bool
+    , readonly : Bool
     , onOpenClick : Maybe msg
     }
 
 
 view : Group msg -> List (Html msg) -> Html msg
-view { open, disabled, onOpenClick, icon, id, title, value } children =
+view { open, readonly, onOpenClick, icon, id, title, value } children =
     let
         classList =
             [ ( "ui-group", True )
@@ -47,7 +47,7 @@ view { open, disabled, onOpenClick, icon, id, title, value } children =
             id ++ "region"
     in
         Ui.TextContainer.primary
-            [ if disabled then
+            [ if readonly then
                 Ui.Section.viewWithIcon (Fragment.Icon.viewLargeMonochrome icon)
                     [ Ui.Section.viewLabelItem title
                         [ H.text <| Maybe.withDefault "" value
@@ -62,7 +62,7 @@ view { open, disabled, onOpenClick, icon, id, title, value } children =
                         [ H.h3 [ A.class "ui-group__header" ]
                             [ H.button
                                 [ A.class "ui-group__headerButton"
-                                , A.disabled disabled
+                                , A.disabled readonly
                                 , A.attribute "aria-expanded" (boolAsString open)
                                 , A.attribute "aria-controls" regionId
                                 , A.id id
