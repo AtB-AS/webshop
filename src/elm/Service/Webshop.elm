@@ -3,6 +3,7 @@ module Service.Webshop exposing
     , addTravelCard
     , deleteToken
     , deleteTravelCard
+    , getConsents
     , getFareContracts
     , getProfile
     , getToken
@@ -16,7 +17,7 @@ module Service.Webshop exposing
     , updateProfile
     )
 
-import Data.Webshop exposing (FareContract, FareContractState(..), Inspection(..), Profile, Rejection(..), Token, TokenAction(..), TokenStatus(..), TokenType(..))
+import Data.Webshop exposing (FareContract, FareContractState(..), GivenConsent, Inspection(..), Profile, Rejection(..), Token, TokenAction(..), TokenStatus(..), TokenType(..))
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -136,7 +137,7 @@ save env firstName lastName phone email =
             (Http.expectJson (Decode.succeed ()))
 
 
-registerConsent : Environment -> Int -> Bool -> String -> Http.Request ()
+registerConsent : Environment -> Int -> Bool -> String -> Http.Request GivenConsent
 registerConsent env id choice email =
     let
         payload =
@@ -155,7 +156,14 @@ registerConsent env id choice email =
         HttpUtil.post env
             (env.baseUrl ++ "/webshop/v1/consent")
             (Http.jsonBody payload)
-            (Http.expectJson (Decode.succeed ()))
+            (Http.expectJson consentDecoder)
+
+
+getConsents : Environment -> Http.Request (List GivenConsent)
+getConsents env =
+    HttpUtil.get env
+        (env.baseUrl ++ "/webshop/v1/consent")
+        (Http.expectJson (Decode.list consentDecoder))
 
 
 
@@ -384,3 +392,12 @@ tokenTypeDecoder =
                     Decode.fail "Invalid token type"
         )
         (Decode.field "type" Decode.int)
+
+
+consentDecoder : Decoder GivenConsent
+consentDecoder =
+    Decode.succeed GivenConsent
+        |> DecodeP.required "id" Decode.int
+        |> DecodeP.required "consentId" Decode.int
+        |> DecodeP.required "choice" Decode.bool
+        |> DecodeP.required "email" Decode.string

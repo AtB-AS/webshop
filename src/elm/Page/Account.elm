@@ -2,12 +2,14 @@ module Page.Account exposing (EditSection(..), Model, Msg(..), init, setEditSect
 
 import Base exposing (AppInfo)
 import Browser.Dom as Dom
+import Data.RefData exposing (Consent)
+import Data.Webshop exposing (GivenConsent)
+import Dict exposing (Dict)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Attributes.Autocomplete exposing (ContactCompletion(..))
 import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
@@ -20,18 +22,19 @@ import Service.Misc as MiscService exposing (Profile, SignInMethod, SignInProvid
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
-import Time exposing (Month(..), ZoneName(..))
 import Ui.Button as B
 import Ui.InlineButtonLink
+import Ui.Input.Checkbox as Checkbox
 import Ui.Input.EditSection as EditSection
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
-import Ui.Message exposing (error)
+import Ui.Message as Message
 import Ui.Section
 import Ui.TravelCardText
 import Url.Builder as Url
-import Util.Maybe
+import Util.Maybe as MaybeUtil
 import Util.PhoneNumber
+import Util.Task as TaskUtil
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
@@ -77,6 +80,10 @@ type Msg
     | FocusItem String
     | ResetState
     | NoOp
+    | ToggleConsent Int Bool
+    | ReceiveUpdateConsent (Result Http.Error GivenConsent)
+    | FetchConsents
+    | ReceiveConsents (Result Http.Error (List GivenConsent))
 
 
 type alias Model =
@@ -87,6 +94,7 @@ type alias Model =
     , travelCard : String
     , travelCardState : MaskedInput.State
     , profile : Maybe Profile
+    , givenConsents : Dict Int GivenConsent
     , editSection : Maybe EditSection
     , loadingEditSection : Maybe EditSection
     , validationErrors : ValidationErrors FieldName
@@ -102,6 +110,7 @@ init =
       , travelCard = ""
       , travelCardState = MaskedInput.initState
       , profile = Nothing
+      , givenConsents = Dict.empty
       , editSection = Nothing
       , loadingEditSection = Nothing
       , validationErrors = []
@@ -115,15 +124,13 @@ update msg env model =
     case msg of
         OnEnterPage ->
             PageUpdater.init model
-                |> (Just "Min profil"
-                        |> GA.SetTitle
-                        |> PageUpdater.addGlobalAction
-                   )
+                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Min profil")
+                |> (PageUpdater.addCmd <| TaskUtil.doTask FetchConsents)
 
         ResetState ->
             let
                 mapProfileWithDefault s =
-                    model.profile |> Maybe.map s |> Maybe.withDefault ""
+                    MaybeUtil.mapWithDefault s "" model.profile
             in
                 PageUpdater.init
                     { model
@@ -133,7 +140,10 @@ update msg env model =
                         , email = mapProfileWithDefault .email
                         , phone = mapProfileWithDefault .phone
                         , travelCardState = MaskedInput.initState
-                        , travelCard = model.profile |> Util.Maybe.flatMap .travelCard |> Maybe.map (.id >> String.fromInt) |> Maybe.withDefault ""
+                        , travelCard =
+                            model.profile
+                                |> MaybeUtil.flatMap .travelCard
+                                |> MaybeUtil.mapWithDefault (.id >> String.fromInt) ""
                         , loadingEditSection = Nothing
                         , validationErrors = []
                     }
@@ -235,7 +245,7 @@ update msg env model =
                     , lastName = profile.lastName
                     , email = profile.email
                     , phone = profile.phone
-                    , travelCard = Maybe.withDefault "" (Maybe.map (.id >> String.fromInt) profile.travelCard)
+                    , travelCard = MaybeUtil.mapWithDefault (.id >> String.fromInt) "" profile.travelCard
                     , validationErrors = []
                 }
 
@@ -324,6 +334,61 @@ update msg env model =
         NoOp ->
             PageUpdater.init model
 
+        FetchConsents ->
+            PageUpdater.fromPair ( model, fetchConsents env )
+
+        ReceiveConsents result ->
+            case result of
+                Ok givenConsents ->
+                    PageUpdater.init
+                        { model
+                            | givenConsents =
+                                givenConsents
+                                    |> List.map
+                                        (\givenConsent ->
+                                            ( givenConsent.consentId, givenConsent )
+                                        )
+                                    |> Dict.fromList
+                        }
+
+                Err err ->
+                    -- TODO: Handle errors
+                    PageUpdater.init model
+
+        ToggleConsent id value ->
+            case model.profile of
+                Just profile ->
+                    -- NOTE: No field for entering specific email for consents, so we are
+                    -- using the profile email for now.
+                    if String.isEmpty profile.email then
+                        PageUpdater.init model
+                            |> PageUpdater.addGlobalAction
+                                (H.text "E-postadresse må fylles ut først."
+                                    |> Message.Error
+                                    |> Message.message
+                                    |> (\s -> Notification.setContent s Notification.init)
+                                    |> GA.ShowNotification
+                                )
+
+                    else
+                        PageUpdater.fromPair ( model, updateConsent env id value profile.email )
+
+                Nothing ->
+                    PageUpdater.init model
+
+        ReceiveUpdateConsent result ->
+            case result of
+                Ok givenConsent ->
+                    PageUpdater.init
+                        { model
+                            | givenConsents =
+                                Dict.insert givenConsent.consentId givenConsent model.givenConsents
+                        }
+
+                Err err ->
+                    -- TODO: Handle errors
+                    PageUpdater.init model
+
 
 validateEmail : (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)
 validateEmail sel model =
@@ -352,9 +417,9 @@ focusBox id =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ _ model _ =
+view _ _ shared model _ =
     H.div [ A.class "page" ]
-        [ viewMain model
+        [ viewMain model shared
         , H.div [] [ viewSidebar model ]
         ]
 
@@ -363,9 +428,7 @@ viewSidebar : Model -> Html Msg
 viewSidebar model =
     let
         phoneNumber =
-            model.profile
-                |> Maybe.map .phone
-                |> Maybe.withDefault "<Telefonnummer her>"
+            MaybeUtil.mapWithDefault .phone "<Telefonnummer her>" model.profile
 
         subject =
             "Slett AtB-profilen min"
@@ -403,8 +466,8 @@ viewSidebar model =
             ]
 
 
-viewMain : Model -> Html Msg
-viewMain model =
+viewMain : Model -> Shared -> Html Msg
+viewMain model shared =
     H.div [ A.class "main" ]
         [ Ui.Section.view
             (case model.profile of
@@ -412,11 +475,7 @@ viewMain model =
                     [ viewProfile model profile
                     , viewSignIn model profile
                     , viewTravelCard model profile
-                    , Ui.Section.viewGroup "Personvern"
-                        [ Ui.Section.viewPaddedItem
-                            [ H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
-                            ]
-                        ]
+                    , viewPrivacy model shared
                     ]
 
                 Nothing ->
@@ -438,7 +497,7 @@ viewProfile model profile =
             model.loadingEditSection == Just EmailSection
     in
         Ui.Section.viewGroup "Profilinformasjon"
-            [ Html.Extra.viewMaybe Ui.Message.error (Validation.select NameFields model.validationErrors)
+            [ Html.Extra.viewMaybe Message.error (Validation.select NameFields model.validationErrors)
             , EditSection.init
                 "Administrer profilinformasjon"
                 |> EditSection.setEditButtonType
@@ -636,7 +695,7 @@ viewEmailAddress model profile =
                             [ Ui.Section.viewLabelItem "E-post" [ viewField identity profile.email ]
                             , model.validationErrors
                                 |> Validation.select Email
-                                |> Html.Extra.viewMaybe Ui.Message.error
+                                |> Html.Extra.viewMaybe Message.error
                             ]
                     )
 
@@ -753,10 +812,41 @@ viewTravelCard model profile =
                                 ]
                             , model.validationErrors
                                 |> Validation.select TravelCard
-                                |> Html.Extra.viewMaybe Ui.Message.error
+                                |> Html.Extra.viewMaybe Message.error
                             ]
                     )
             ]
+
+
+viewPrivacy : Model -> Shared -> Html Msg
+viewPrivacy model shared =
+    Ui.Section.viewGroup "Personvern"
+        [ Ui.Section.viewWithIcon Icon.checkmarkCircle
+            [ Ui.Section.viewLabelItem "Samtykke"
+                (List.filterMap (viewConsent model) shared.consents)
+            ]
+        , Ui.Section.viewPaddedItem
+            [ H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
+            ]
+        ]
+
+
+viewConsent : Model -> Consent -> Maybe (Html Msg)
+viewConsent model consent =
+    Dict.get "nob" consent.title
+        |> Maybe.andThen
+            (\title ->
+                Checkbox.init ("consent" ++ String.fromInt consent.id)
+                    |> Checkbox.setChecked
+                        (model.givenConsents
+                            |> Dict.get consent.id
+                            |> MaybeUtil.mapWithDefault .choice False
+                        )
+                    |> Checkbox.setOnCheck (Just <| ToggleConsent consent.id)
+                    |> Checkbox.setTitle title
+                    |> Checkbox.view
+                    |> Just
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -829,3 +919,17 @@ removeTravelCard env travelCard =
 resetUsingEmail : String -> Cmd Msg
 resetUsingEmail email =
     FirebaseAuth.resetPassword email
+
+
+updateConsent : Environment -> Int -> Bool -> String -> Cmd Msg
+updateConsent env id choice email =
+    WebshopService.registerConsent env id choice email
+        |> Http.toTask
+        |> Task.attempt ReceiveUpdateConsent
+
+
+fetchConsents : Environment -> Cmd Msg
+fetchConsents env =
+    WebshopService.getConsents env
+        |> Http.toTask
+        |> Task.attempt ReceiveConsents
