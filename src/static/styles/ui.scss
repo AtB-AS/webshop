@@ -202,6 +202,10 @@
     transition: max-height 200ms ease-in-out;
     position: relative;
 }
+.ui-group__content--open {
+    border-top: var(--border-width-slim) solid
+        var(--colors-background_1-backgroundColor);
+}
 .ui-group__item:not(:last-child) {
     border-bottom: var(--border-width-slim) solid
         var(--colors-background_1-backgroundColor);

@@ -72,7 +72,6 @@ view { open, disabled, onOpenClick, icon, id, title, value } children =
                                 , chevronIcon
                                 ]
                             ]
-                            |> viewItem
                         , H.div
                             [ A.classList classListContent
                             , A.attribute "aria-labelledby" id
