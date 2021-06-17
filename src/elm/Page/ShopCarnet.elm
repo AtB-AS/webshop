@@ -387,11 +387,16 @@ view _ _ shared model _ =
                     , id = "reisetype"
                     }
                     []
-                , Section.viewWithIcon (Icon.viewLarge Icon.tickets)
-                    [ Section.viewLabelItem "Antall billetter"
-                        [ H.text <| Maybe.withDefault "Ikke lastet" summary.product
-                        ]
-                    ]
+                , Ui.Group.view
+                    { title = "Antall billetter"
+                    , icon = Icon.tickets
+                    , value = summary.product
+                    , open = False
+                    , disabled = True
+                    , onOpenClick = Nothing
+                    , id = "product"
+                    }
+                    []
                 , Ui.Group.view
                     { title = "Reisende"
                     , icon = Icon.bus
