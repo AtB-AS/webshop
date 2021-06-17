@@ -1,6 +1,7 @@
 module Data.Webshop exposing
     ( FareContract
     , FareContractState(..)
+    , GivenConsent
     , Inspection(..)
     , Profile
     , Rejection(..)
@@ -91,3 +92,11 @@ type Inspection
     = InspectionGreen
     | InspectionYellow
     | InspectionRed Rejection
+
+
+type alias GivenConsent =
+    { id : Int
+    , consentId : Int
+    , choice : Bool
+    , email : String
+    }

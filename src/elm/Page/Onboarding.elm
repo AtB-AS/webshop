@@ -1,6 +1,7 @@
 module Page.Onboarding exposing (Model, Msg, init, subscriptions, update, view)
 
 import Data.RefData exposing (Consent)
+import Data.Webshop exposing (GivenConsent)
 import Dict
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -46,7 +47,7 @@ type Msg
     | ReceiveRegisterTravelCard (Result Http.Error ())
     | InputConsentEmail String
     | RegisterConsents
-    | ReceiveRegisterConsent Int (Result Http.Error ())
+    | ReceiveRegisterConsent (Result Http.Error GivenConsent)
     | Finish
     | NextStep
     | PrevStep
@@ -245,12 +246,12 @@ update msg env shared model =
                     -- No consents were ticked, but we still register all of them as not accepted.
                     validUpdater
 
-        ReceiveRegisterConsent id result ->
+        ReceiveRegisterConsent result ->
             case result of
-                Ok () ->
+                Ok givenConsent ->
                     let
                         newModel =
-                            { model | unsavedConsents = List.filter ((/=) id) model.unsavedConsents }
+                            { model | unsavedConsents = List.filter ((/=) givenConsent.consentId) model.unsavedConsents }
                     in
                         if List.isEmpty newModel.unsavedConsents then
                             PageUpdater.init newModel
@@ -721,6 +722,6 @@ registerConsents env consents choices email =
             (\id ->
                 WebshopService.registerConsent env id (Set.member id choices) email
                     |> Http.toTask
-                    |> Task.attempt (ReceiveRegisterConsent id)
+                    |> Task.attempt ReceiveRegisterConsent
             )
         |> Cmd.batch
