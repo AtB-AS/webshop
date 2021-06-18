@@ -13,7 +13,6 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
-import Json.Decode as Decode exposing (Error(..))
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
@@ -165,8 +164,8 @@ update msg env model =
                 |> ("E-post med for å sette nytt passord er sendt til "
                         ++ email
                         |> H.text
-                        |> Ui.Message.Valid
-                        |> Ui.Message.message
+                        |> Message.Valid
+                        |> Message.message
                         |> (\s -> Notification.setContent s Notification.init)
                         |> GA.ShowNotification
                         |> PageUpdater.addGlobalAction
@@ -634,7 +633,7 @@ viewPhoneNumber model profile =
                             [ Ui.Section.viewLabelItem "Telefonnummer" [ viewField identity profile.phone ]
                             , model.validationErrors
                                 |> Validation.select PhoneInput
-                                |> Html.Extra.viewMaybe Ui.Message.error
+                                |> Html.Extra.viewMaybe Message.error
                             ]
                     )
 
