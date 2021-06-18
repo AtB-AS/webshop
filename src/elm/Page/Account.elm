@@ -53,6 +53,7 @@ type FieldName
     | FirstName
     | LastName
     | NameFields
+    | Consent
 
 
 type Msg
@@ -360,17 +361,18 @@ update msg env model =
                     -- NOTE: No field for entering specific email for consents, so we are
                     -- using the profile email for now.
                     if String.isEmpty profile.email then
-                        PageUpdater.init model
-                            |> PageUpdater.addGlobalAction
-                                (H.text "E-postadresse må fylles ut først."
-                                    |> Message.Error
-                                    |> Message.message
-                                    |> (\s -> Notification.setContent s Notification.init)
-                                    |> GA.ShowNotification
-                                )
+                        model
+                            |> addValidationError Consent "E-postadresse må fylles ut først."
+                            |> PageUpdater.init
 
                     else
-                        PageUpdater.fromPair ( model, updateConsent env id value profile.email )
+                        PageUpdater.fromPair
+                            ( { model
+                                | validationErrors =
+                                    Validation.remove Consent model.validationErrors
+                              }
+                            , updateConsent env id value profile.email
+                            )
 
                 Nothing ->
                     PageUpdater.init model
@@ -385,14 +387,14 @@ update msg env model =
                         }
 
                 Err _ ->
-                    PageUpdater.init model
-                        |> PageUpdater.addGlobalAction
-                            (H.text "Fikk ikke til å lagre samtykke."
-                                |> Message.Error
-                                |> Message.message
-                                |> (\s -> Notification.setContent s Notification.init)
-                                |> GA.ShowNotification
-                            )
+                    model
+                        |> addValidationError Consent "Fikk ikke til å lagre samtykke."
+                        |> PageUpdater.init
+
+
+addValidationError : FieldName -> String -> Model -> Model
+addValidationError field error model =
+    { model | validationErrors = Validation.add [ field ] error model.validationErrors }
 
 
 validateEmail : (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)
@@ -830,6 +832,9 @@ viewPrivacy model shared =
             [ Ui.Section.viewLabelItem "Samtykke"
                 (List.filterMap (viewConsent model) shared.consents)
             ]
+        , model.validationErrors
+            |> Validation.select Consent
+            |> Html.Extra.viewMaybe Message.error
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
             ]
