@@ -81,7 +81,7 @@ type Msg
     | ResetState
     | NoOp
     | ToggleConsent Int Bool
-    | ReceiveUpdateConsent (Result Http.Error GivenConsent)
+    | ReceiveUpdateConsent Int (Result Http.Error GivenConsent)
     | FetchConsents
     | ReceiveConsents (Result Http.Error (List GivenConsent))
 
@@ -95,6 +95,7 @@ type alias Model =
     , travelCardState : MaskedInput.State
     , profile : Maybe Profile
     , givenConsents : Dict Int GivenConsent
+    , pendingConsents : Dict Int Bool
     , editSection : Maybe EditSection
     , loadingEditSection : Maybe EditSection
     , validationErrors : ValidationErrors FieldName
@@ -111,6 +112,7 @@ init =
       , travelCardState = MaskedInput.initState
       , profile = Nothing
       , givenConsents = Dict.empty
+      , pendingConsents = Dict.empty
       , editSection = Nothing
       , loadingEditSection = Nothing
       , validationErrors = []
@@ -349,10 +351,13 @@ update msg env model =
                                             ( givenConsent.consentId, givenConsent )
                                         )
                                     |> Dict.fromList
+                            , pendingConsents = Dict.empty
                         }
 
-                Err err ->
-                    -- TODO: Handle errors
+                Err _ ->
+                    -- TODO: There is an issue with this call being made two times when a user
+                    -- refreshes and thus we can't handle this properly currently. A refactor of
+                    -- the way we handle user data and tokens will fix this.
                     PageUpdater.init model
 
         ToggleConsent id value ->
@@ -370,6 +375,8 @@ update msg env model =
                             ( { model
                                 | validationErrors =
                                     Validation.remove Consent model.validationErrors
+                                , pendingConsents =
+                                    Dict.insert id value model.pendingConsents
                               }
                             , updateConsent env id value profile.email
                             )
@@ -377,19 +384,23 @@ update msg env model =
                 Nothing ->
                     PageUpdater.init model
 
-        ReceiveUpdateConsent result ->
-            case result of
-                Ok givenConsent ->
-                    PageUpdater.init
-                        { model
-                            | givenConsents =
-                                Dict.insert givenConsent.consentId givenConsent model.givenConsents
-                        }
+        ReceiveUpdateConsent consentId result ->
+            let
+                newModel =
+                    { model | pendingConsents = Dict.remove consentId model.pendingConsents }
+            in
+                case result of
+                    Ok givenConsent ->
+                        PageUpdater.init
+                            { newModel
+                                | givenConsents =
+                                    Dict.insert consentId givenConsent model.givenConsents
+                            }
 
-                Err _ ->
-                    model
-                        |> addValidationError Consent "Fikk ikke til å lagre samtykke."
-                        |> PageUpdater.init
+                    Err _ ->
+                        newModel
+                            |> addValidationError Consent "Fikk ikke til å lagre samtykke."
+                            |> PageUpdater.init
 
 
 addValidationError : FieldName -> String -> Model -> Model
@@ -848,9 +859,14 @@ viewConsent model consent =
             (\title ->
                 Checkbox.init ("consent" ++ String.fromInt consent.id)
                     |> Checkbox.setChecked
-                        (model.givenConsents
-                            |> Dict.get consent.id
-                            |> MaybeUtil.mapWithDefault .choice False
+                        (case Dict.get consent.id model.pendingConsents of
+                            Just value ->
+                                value
+
+                            Nothing ->
+                                model.givenConsents
+                                    |> Dict.get consent.id
+                                    |> MaybeUtil.mapWithDefault .choice False
                         )
                     |> Checkbox.setOnCheck (Just <| ToggleConsent consent.id)
                     |> Checkbox.setTitle title
@@ -935,7 +951,7 @@ updateConsent : Environment -> Int -> Bool -> String -> Cmd Msg
 updateConsent env id choice email =
     WebshopService.registerConsent env id choice email
         |> Http.toTask
-        |> Task.attempt ReceiveUpdateConsent
+        |> Task.attempt (ReceiveUpdateConsent id)
 
 
 fetchConsents : Environment -> Cmd Msg
