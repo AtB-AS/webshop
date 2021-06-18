@@ -450,14 +450,34 @@ update msg model =
                             }
 
                         newModel =
-                            { model | userData = Loaded value, environment = newEnvironment, verifyUser = Nothing }
+                            { model
+                                | userData = Loaded value
+                                , environment = newEnvironment
+                                , verifyUser = Nothing
+                            }
                     in
                         ( if value.stopOnboarding then
                             { newModel | onboarding = Nothing }
 
                           else
                             newModel
-                        , Cmd.none
+                        , -- If we are on one of the pages of the main app (so excluding login, onboarding, etc.),
+                          -- enter that page.
+                          case model.route of
+                            Just Route.Home ->
+                                TaskUtil.doTask <| OverviewMsg OverviewPage.OnEnterPage
+
+                            Just Route.Shop ->
+                                TaskUtil.doTask <| ShopMsg ShopPage.OnEnterPage
+
+                            Just Route.History ->
+                                TaskUtil.doTask <| HistoryMsg HistoryPage.OnEnterPage
+
+                            Just Route.Settings ->
+                                TaskUtil.doTask <| AccountMsg AccountPage.OnEnterPage
+
+                            _ ->
+                                Cmd.none
                         )
 
                 Err error ->
