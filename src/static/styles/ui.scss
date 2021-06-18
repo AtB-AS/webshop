@@ -671,6 +671,7 @@
     --border: 2px;
     border: var(--border) solid var(--text-colors-primary);
     padding: var(--padding);
+    margin-right: var(--spacings-medium);
 }
 .ui-input-radio__box::after {
     content: '';
