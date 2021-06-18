@@ -208,7 +208,7 @@ validateLogin : Model -> Result (List (FormError FieldName)) (Valid Model)
 validateLogin model =
     case model.loginMethod of
         PhoneMethod ->
-            validatePhone model
+            validatePhone { model | phone = Util.PhoneNumber.withCountryCode model.phone }
 
         ResetEmailMethod ->
             validateEmail model
