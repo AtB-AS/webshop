@@ -384,9 +384,15 @@ update msg env model =
                                 Dict.insert givenConsent.consentId givenConsent model.givenConsents
                         }
 
-                Err err ->
-                    -- TODO: Handle errors
+                Err _ ->
                     PageUpdater.init model
+                        |> PageUpdater.addGlobalAction
+                            (H.text "Fikk ikke til å lagre samtykke."
+                                |> Message.Error
+                                |> Message.message
+                                |> (\s -> Notification.setContent s Notification.init)
+                                |> GA.ShowNotification
+                            )
 
 
 validateEmail : (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)
