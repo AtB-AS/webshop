@@ -139,6 +139,7 @@
 
     svg {
         display: block;
+        width: 44px;
     }
     svg,
     path {
@@ -862,6 +863,10 @@ a.ui-button--link,
     svg,
     path {
         fill: currentColor;
+    }
+
+    svg {
+        width: 44px;
     }
 }
 .ui-editSection__editButton {
