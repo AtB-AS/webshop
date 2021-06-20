@@ -354,7 +354,7 @@ viewEmailLogin model =
                 , H.text "."
                 ]
             ]
-        , Ui.Section.viewItem <| viewEmailInputs "Logg inn med din e-postadresse" "Skriv inn passordet ditt" model
+        , Ui.Section.viewItem <| viewEmailInputs "Logg inn med din e-postadresse" "Skriv inn passordet ditt" "current-password" model
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ Route.href <| Route.Login RegisterEmailPath ] [ H.text "Opprett en ny profil" ] ]
             ]
@@ -376,7 +376,7 @@ viewEmailRegister model =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
-        , Ui.Section.viewItem <| viewEmailInputs "Skriv inn din e-postadresse" "Velg et passord" model
+        , Ui.Section.viewItem <| viewEmailInputs "Skriv inn din e-postadresse" "Velg et passord" "new-password" model
         , betaNotice
         , B.init "Opprett profil"
             |> B.setIcon (Just Icon.rightArrow)
@@ -442,8 +442,8 @@ viewPhoneInputs model =
     ]
 
 
-viewEmailInputs : String -> String -> Model -> List (Html Msg)
-viewEmailInputs emailPlaceholder passwordPlaceholder model =
+viewEmailInputs : String -> String -> String -> Model -> List (Html Msg)
+viewEmailInputs emailPlaceholder passwordPlaceholder passwordAutocomplete model =
     [ Html.Extra.viewMaybe Message.error model.error
     , T.init "email"
         |> T.setValue (Just model.email)
@@ -465,7 +465,7 @@ viewEmailInputs emailPlaceholder passwordPlaceholder model =
         |> T.setTitle (Just "Passord")
         |> T.setError (V.select PasswordField model.validationErrors)
         |> T.setAttributes
-            [ A.attribute "autocomplete" "password"
+            [ A.attribute "autocomplete" passwordAutocomplete
             ]
         |> T.setPlaceholder passwordPlaceholder
         |> T.view
