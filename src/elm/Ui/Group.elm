@@ -38,6 +38,13 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
         editIcon =
             Icon.viewMonochrome Icon.edit
 
+        editText =
+            if not open then
+                "Endre " ++ editTextSuffix
+
+            else
+                "Endre"
+
         regionId =
             id ++ "region"
     in
@@ -64,7 +71,7 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
                                 , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                                 ]
                                 [ Ui.LabelItem.viewInline title [ H.text <| Maybe.withDefault "" value ]
-                                , H.span [ A.class "ui-group__headerButton__editText" ] [ H.text editTextSuffix, editIcon ]
+                                , H.span [ A.class "ui-group__headerButton__editText" ] [ H.text editText, editIcon ]
                                 ]
                             ]
                         , H.div
