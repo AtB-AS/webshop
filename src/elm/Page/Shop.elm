@@ -476,6 +476,7 @@ view _ _ shared model _ =
                     , readonly = True
                     , onOpenClick = Nothing
                     , id = "reisetype"
+                    , editTextSuffix = "billett"
                     }
                     []
                 , Ui.Group.view
@@ -486,6 +487,7 @@ view _ _ shared model _ =
                     , readonly = False
                     , onOpenClick = Just (ShowView Duration)
                     , id = "varighet"
+                    , editTextSuffix = "varighet"
                     }
                     [ viewProducts model defaultProduct shared.availableFareProducts ]
                 , Ui.Group.view
@@ -499,6 +501,7 @@ view _ _ shared model _ =
                     , readonly = False
                     , onOpenClick = Just (ShowView Travelers)
                     , id = "reisende"
+                    , editTextSuffix = "reisende"
                     }
                     [ viewUserProfiles defaultProduct model shared ]
                 , Ui.Group.view
@@ -509,6 +512,7 @@ view _ _ shared model _ =
                     , readonly = False
                     , onOpenClick = Just (ShowView Start)
                     , id = "duration"
+                    , editTextSuffix = "tid"
                     }
                     (viewStart model)
                 , Ui.Group.view
@@ -519,6 +523,7 @@ view _ _ shared model _ =
                     , readonly = False
                     , onOpenClick = Just (ShowView Zones)
                     , id = "zones"
+                    , editTextSuffix = "sone"
                     }
                     [ viewZones model defaultZone shared.tariffZones ]
                 ]

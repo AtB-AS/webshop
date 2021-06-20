@@ -22,6 +22,7 @@ import Service.Ticket as TicketService
 import Shared exposing (Shared)
 import Task
 import Ui.Button as B
+import Ui.Expandable
 import Ui.Group
 import Ui.Message as Message
 import Ui.Section
@@ -271,20 +272,11 @@ viewOrder shared model order =
         isRefunded =
             order.state == FareContractStateRefunded
     in
-        Ui.Group.view
+        Ui.Expandable.view
             { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
             , id = order.id
-            , icon = Icon.ticket
-            , value =
-                Just
-                    (if expanded then
-                        "Skjul"
-
-                     else
-                        "Vis"
-                    )
+            , icon = Nothing
             , open = expanded
-            , readonly = False
             , onOpenClick = Just (ToggleOrder order.id)
             }
             [ Ui.Section.viewPaddedItem
