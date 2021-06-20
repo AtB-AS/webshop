@@ -2,7 +2,7 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
-import Data.RefData exposing (LangString(..))
+import Data.RefData exposing (DistributionChannel(..), LangString(..), ProductType(..))
 import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
@@ -19,7 +19,7 @@ import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
-import Svg.Attributes exposing (result)
+import Svg.Attributes exposing (result, type_)
 import Task
 import Time
 import Ui.Button as B
@@ -243,7 +243,7 @@ viewSidebar : Shared -> Model -> Html Msg
 viewSidebar shared model =
     H.div [ A.class "sidebar" ]
         [ viewAccountInfo shared model
-        , viewActions model
+        , viewActions shared
         ]
 
 
@@ -286,8 +286,8 @@ viewAccountInfo shared _ =
             ]
 
 
-viewActions : Model -> Html Msg
-viewActions _ =
+viewActions : Shared -> Html Msg
+viewActions shared =
     Ui.Section.view
         [ B.init "Kjøp ny periodebillett"
             |> B.setDisabled False
@@ -295,12 +295,14 @@ viewActions _ =
             |> B.setAttributes [ Route.href Route.Shop ]
             |> B.setElement H.a
             |> B.primary B.Primary_2
+            |> Html.Extra.viewIf (hasPeriodTickets shared)
         , B.init "Kjøp nytt klippekort"
             |> B.setDisabled False
             |> B.setElement H.a
             |> B.setIcon (Just Icon.tickets)
             |> B.setAttributes [ Route.href Route.ShopCarnet ]
             |> B.primary B.Primary_2
+            |> Html.Extra.viewIf (hasCarnetTickets shared)
         ]
 
 
@@ -370,6 +372,28 @@ subscriptions _ =
 
 
 -- INTERNAL
+
+
+hasPeriodTickets : Shared -> Bool
+hasPeriodTickets shared =
+    shared.fareProducts
+        |> List.any
+            (\product ->
+                product.type_
+                    == ProductTypePeriod
+                    && List.member DistributionChannelWeb product.distributionChannel
+            )
+
+
+hasCarnetTickets : Shared -> Bool
+hasCarnetTickets shared =
+    shared.fareProducts
+        |> List.any
+            (\product ->
+                product.type_
+                    == ProductTypeCarnet
+                    && List.member DistributionChannelWeb product.distributionChannel
+            )
 
 
 tokenPayloadDecoder : Decoder ( String, String )
