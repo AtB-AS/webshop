@@ -23,7 +23,6 @@ import Shared exposing (Shared)
 import Task
 import Ui.Button as B
 import Ui.Expandable
-import Ui.Group
 import Ui.Message as Message
 import Ui.Section
 import Util.Format as Format
