@@ -4,6 +4,7 @@ import Base exposing (AppInfo)
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
+import Data.RefData exposing (DistributionChannel(..), ProductType(..))
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
@@ -564,10 +565,10 @@ header : Model -> Html Msg
 header model =
     let
         links =
-            [ ( "Ny periodebillett", Route.Shop )
-            , ( "Nytt klippekort", Route.ShopCarnet )
-            , ( "Kjøpshistorikk", Route.History )
-            , ( "Min profil", Route.Settings )
+            [ ( "Ny periodebillett", Route.Shop, hasPeriodTickets model.shared )
+            , ( "Nytt klippekort", Route.ShopCarnet, hasCarnetTickets model.shared )
+            , ( "Kjøpshistorikk", Route.History, True )
+            , ( "Min profil", Route.Settings, True )
             ]
 
         showHeader =
@@ -576,14 +577,18 @@ header model =
         navigation =
             if model.onboarding == Nothing && model.verifyUser == Nothing then
                 List.map
-                    (\( name, route ) ->
-                        H.li
-                            [ A.classList
-                                [ ( "pageHeader__nav__item", True )
-                                , ( "pageHeader__nav__item--active", Just route == model.route )
+                    (\( name, route, visible ) ->
+                        if not visible then
+                            Html.Extra.nothing
+
+                        else
+                            H.li
+                                [ A.classList
+                                    [ ( "pageHeader__nav__item", True )
+                                    , ( "pageHeader__nav__item--active", Just route == model.route )
+                                    ]
                                 ]
-                            ]
-                            [ H.a [ Route.href route ] [ H.text name ] ]
+                                [ H.a [ Route.href route ] [ H.text name ] ]
                     )
                     links
 
@@ -712,6 +717,34 @@ subs model =
 
 
 --
+
+
+{-| Check if we have period tickets
+@TODO - Reusable as utils?
+-}
+hasPeriodTickets : Shared -> Bool
+hasPeriodTickets shared =
+    shared.fareProducts
+        |> List.any
+            (\product ->
+                product.type_
+                    == ProductTypePeriod
+                    && List.member DistributionChannelWeb product.distributionChannel
+            )
+
+
+{-| Check if we have carnet tickets
+@TODO - Reusable as utils?
+-}
+hasCarnetTickets : Shared -> Bool
+hasCarnetTickets shared =
+    shared.fareProducts
+        |> List.any
+            (\product ->
+                product.type_
+                    == ProductTypeCarnet
+                    && List.member DistributionChannelWeb product.distributionChannel
+            )
 
 
 type AuthError
