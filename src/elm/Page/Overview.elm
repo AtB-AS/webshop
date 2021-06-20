@@ -19,7 +19,6 @@ import Route exposing (Route)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
-import Svg.Attributes exposing (result, type_)
 import Task
 import Time
 import Ui.Button as B

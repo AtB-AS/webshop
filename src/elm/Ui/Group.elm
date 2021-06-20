@@ -5,8 +5,6 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra as Attr
 import Html.Events as E
-import Html.Extra
-import Ui.Heading
 import Ui.LabelItem
 import Ui.Section
 import Ui.TextContainer
