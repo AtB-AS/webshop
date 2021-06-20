@@ -639,18 +639,6 @@ viewAppAdvert _ _ =
     ]
 
 
-sectionTextInput : String -> String -> (String -> msg) -> String -> String -> Html msg
-sectionTextInput id value action title placeholder =
-    Section.viewItem
-        [ TextInput.init id
-            |> TextInput.setTitle (Just title)
-            |> TextInput.setPlaceholder placeholder
-            |> TextInput.setOnInput (Just action)
-            |> TextInput.setValue (Just value)
-            |> TextInput.view
-        ]
-
-
 nextStep : Step -> Maybe Step
 nextStep step =
     case step of
