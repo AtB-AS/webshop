@@ -1,6 +1,6 @@
 module Ui.Group exposing (view, viewItem)
 
-import Fragment.Icon
+import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra as Attr
@@ -13,6 +13,7 @@ import Ui.TextContainer
 type alias Group msg =
     { title : String
     , id : String
+    , editTextSuffix : String
     , icon : Html msg
     , value : Maybe String
     , open : Bool
@@ -22,7 +23,7 @@ type alias Group msg =
 
 
 view : Group msg -> List (Html msg) -> Html msg
-view { open, readonly, onOpenClick, icon, id, title, value } children =
+view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } children =
     let
         classList =
             [ ( "ui-group", True )
@@ -34,19 +35,15 @@ view { open, readonly, onOpenClick, icon, id, title, value } children =
             , ( "ui-group__content--open", open )
             ]
 
-        chevronIcon =
-            if open then
-                Fragment.Icon.upArrow
-
-            else
-                Fragment.Icon.downArrow
+        editIcon =
+            Icon.viewMonochrome Icon.edit
 
         regionId =
             id ++ "region"
     in
         Ui.TextContainer.primary
             [ if readonly then
-                Ui.Section.viewWithIcon (Fragment.Icon.viewLargeMonochrome icon)
+                Ui.Section.viewWithIcon (Icon.viewLargeMonochrome icon)
                     [ Ui.Section.viewLabelItem title
                         [ H.text <| Maybe.withDefault "" value
                         ]
@@ -55,7 +52,7 @@ view { open, readonly, onOpenClick, icon, id, title, value } children =
               else
                 H.section
                     [ A.classList classList ]
-                    [ H.div [ A.class "ui-group__icon" ] [ Fragment.Icon.viewLargeMonochrome icon ]
+                    [ H.div [ A.class "ui-group__icon" ] [ Icon.viewLargeMonochrome icon ]
                     , H.div [ A.class "ui-group__innerContainer" ]
                         [ H.h3 [ A.class "ui-group__header" ]
                             [ H.button
@@ -67,7 +64,7 @@ view { open, readonly, onOpenClick, icon, id, title, value } children =
                                 , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                                 ]
                                 [ Ui.LabelItem.viewInline title [ H.text <| Maybe.withDefault "" value ]
-                                , chevronIcon
+                                , H.span [ A.class "ui-group__headerButton__editText" ] [ H.text editTextSuffix, editIcon ]
                                 ]
                             ]
                         , H.div

@@ -256,6 +256,13 @@
     flex: 1;
     text-align: left;
 }
+.ui-group__headerButton__editText {
+    display: flex;
+
+    svg {
+        margin-left: var(--spacings-medium);
+    }
+}
 
 .ui-ticketDetails {
     width: 100%;
@@ -1106,4 +1113,76 @@ a.ui-button--link,
     path {
         fill: currentColor;
     }
+}
+
+.ui-expandable {
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--border-radius-regular);
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+    margin-bottom: var(--spacings-medium);
+}
+.ui-expandable__header {
+    margin: 0;
+    padding: 0;
+}
+.ui-expandable__content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 200ms ease-in-out;
+    position: relative;
+}
+.ui-expandable__item:not(:last-child) {
+    border-bottom: var(--border-width-slim) solid
+        var(--colors-background_1-backgroundColor);
+}
+.ui-expandable__content--open {
+    max-height: 600px;
+    overflow: auto;
+}
+
+.ui-expandable__headerButton {
+    font-family: var(--font-main);
+    background: none;
+    display: flex;
+    width: 100%;
+    border: 0;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-colors-primary);
+
+    cursor: pointer;
+
+    transition: all 150ms ease-in-out;
+    border: var(--border-width-medium) solid transparent;
+    // Remove border from padding.
+    padding: calc(var(--spacings-xLarge) - 2 * var(--border-width-medium));
+
+    svg,
+    path {
+        fill: currentColor;
+    }
+}
+.ui-expandable__headerButton:hover {
+    background: var(--colors-background_2-backgroundColor);
+    color: var(--colors-background_2-color);
+}
+.ui-expandable__headerButton:focus {
+    outline: 0;
+    border: var(--border-width-medium) solid
+        var(--colors-primary_2-backgroundColor);
+}
+.ui-expandable__headerButton:active {
+    background: var(--colors-background_3-backgroundColor);
+    color: var(--colors-background_3-color);
+}
+.ui-expandable__headerButton__title {
+    display: block;
+    flex: 1;
+    text-align: left;
+    padding: 0 var(--spacings-medium);
+}
+.ui-expandable__headerButton__expandText {
+    margin: 0 var(--spacings-medium);
 }
