@@ -21,6 +21,7 @@ jobs:
       - name: Run Cypress test
         run: ./node_modules/.bin/cypress run --reporter mocha-multi-reporters --reporter-options configFile=cypress-reporter-config.json 
         working-directory: ./e2e-tests
+        continue-on-error: true
         
       - name: Merge results
         run: node cypress/scripts/combineTestReports.js 
@@ -29,6 +30,13 @@ jobs:
       - name: Create HTML report
         run: node_modules/.bin/marge cypress/results/cypressTestReport.json --code false --reportFilename cypressTestReport --reportDir ./cypress/results
         working-directory: ./e2e-tests
+        
+      - name: Upload Junit
+        uses: actions/upload-artifact@v2
+        with:
+          name: junit-results
+          path: ./e2e-tests/cypress/results/result_*.xml
+          retention-days: 3
 
       - name: Finish
         run: echo Finished
