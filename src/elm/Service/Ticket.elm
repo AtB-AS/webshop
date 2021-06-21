@@ -57,6 +57,9 @@ reserve env phoneNumber paymentType offers =
             , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
             ]
                 ++ (case phoneNumber of
+                        Just "" ->
+                            []
+
                         Just phone ->
                             [ ( "phone_number", Encode.string <| Util.PhoneNumber.withoutCountryCode phone ) ]
 
