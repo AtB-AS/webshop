@@ -4,7 +4,6 @@ import Base exposing (AppInfo)
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
-import Data.RefData exposing (DistributionChannel(..), ProductType(..))
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
@@ -565,8 +564,8 @@ header : Model -> Html Msg
 header model =
     let
         links =
-            [ ( "Ny periodebillett", Route.Shop, hasPeriodTickets model.shared )
-            , ( "Nytt klippekort", Route.ShopCarnet, hasCarnetTickets model.shared )
+            [ ( "Ny periodebillett", Route.Shop, Shared.hasPeriodTickets model.shared )
+            , ( "Nytt klippekort", Route.ShopCarnet, Shared.hasCarnetTickets model.shared )
             , ( "Kjøpshistorikk", Route.History, True )
             , ( "Min profil", Route.Settings, True )
             ]
@@ -717,34 +716,6 @@ subs model =
 
 
 --
-
-
-{-| Check if we have period tickets
-@TODO - Reusable as utils?
--}
-hasPeriodTickets : Shared -> Bool
-hasPeriodTickets shared =
-    shared.fareProducts
-        |> List.any
-            (\product ->
-                product.type_
-                    == ProductTypePeriod
-                    && List.member DistributionChannelWeb product.distributionChannel
-            )
-
-
-{-| Check if we have carnet tickets
-@TODO - Reusable as utils?
--}
-hasCarnetTickets : Shared -> Bool
-hasCarnetTickets shared =
-    shared.fareProducts
-        |> List.any
-            (\product ->
-                product.type_
-                    == ProductTypeCarnet
-                    && List.member DistributionChannelWeb product.distributionChannel
-            )
 
 
 type AuthError
