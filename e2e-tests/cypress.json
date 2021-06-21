@@ -1,0 +1,13 @@
+{
+  "baseUrl": "https://atb-webshop-staging.web.app",
+  "integrationFolder": "cypress/integration/tests",
+  "watchForFileChanges": false,
+
+  "env": {
+    "a11yTags": ["wcag2a", "wcag2aa"],
+    "a11ySkipFailures": false,
+    "email": "tor.moseng+test3@gmail.com",
+    "password": "qwer1234",
+    "withBuyTicket": true
+  }
+}
