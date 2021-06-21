@@ -294,14 +294,14 @@ viewActions shared =
             |> B.setAttributes [ Route.href Route.Shop ]
             |> B.setElement H.a
             |> B.primary B.Primary_2
-            |> Html.Extra.viewIf (hasPeriodTickets shared)
+            |> Html.Extra.viewIf (Shared.hasPeriodTickets shared)
         , B.init "Kjøp nytt klippekort"
             |> B.setDisabled False
             |> B.setElement H.a
             |> B.setIcon (Just Icon.tickets)
             |> B.setAttributes [ Route.href Route.ShopCarnet ]
             |> B.primary B.Primary_2
-            |> Html.Extra.viewIf (hasCarnetTickets shared)
+            |> Html.Extra.viewIf (Shared.hasCarnetTickets shared)
         ]
 
 
@@ -371,28 +371,6 @@ subscriptions _ =
 
 
 -- INTERNAL
-
-
-hasPeriodTickets : Shared -> Bool
-hasPeriodTickets shared =
-    shared.fareProducts
-        |> List.any
-            (\product ->
-                product.type_
-                    == ProductTypePeriod
-                    && List.member DistributionChannelWeb product.distributionChannel
-            )
-
-
-hasCarnetTickets : Shared -> Bool
-hasCarnetTickets shared =
-    shared.fareProducts
-        |> List.any
-            (\product ->
-                product.type_
-                    == ProductTypeCarnet
-                    && List.member DistributionChannelWeb product.distributionChannel
-            )
 
 
 tokenPayloadDecoder : Decoder ( String, String )

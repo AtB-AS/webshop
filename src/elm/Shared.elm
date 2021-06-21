@@ -1,6 +1,6 @@
-module Shared exposing (Msg, Shared, init, subscriptions, update)
+module Shared exposing (Msg, Shared, hasCarnetTickets, hasPeriodTickets, init, subscriptions, update)
 
-import Data.RefData exposing (Consent, FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
+import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
 import Data.RemoteConfig exposing (RemoteConfig)
 import List exposing (product)
 import List.Extra
@@ -99,6 +99,48 @@ update msg model =
             { model | profile = profile }
 
 
+{-| Check if we have period tickets valid for Web
+-}
+hasPeriodTickets : Shared -> Bool
+hasPeriodTickets shared =
+    shared.fareProducts
+        |> List.any
+            (\product ->
+                product.type_
+                    == ProductTypePeriod
+                    && List.member DistributionChannelWeb product.distributionChannel
+            )
+
+
+{-| Check if we have carnet tickets valid for Web
+-}
+hasCarnetTickets : Shared -> Bool
+hasCarnetTickets shared =
+    shared.fareProducts
+        |> List.any
+            (\product ->
+                product.type_
+                    == ProductTypeCarnet
+                    && List.member DistributionChannelWeb product.distributionChannel
+            )
+
+
+subscriptions : Sub Msg
+subscriptions =
+    Sub.batch
+        [ RefDataService.onTariffZones ReceiveTariffZones
+        , RefDataService.onFareProducts ReceiveFareProducts
+        , RefDataService.onUserProfiles ReceiveUserProfiles
+        , RefDataService.onConsents ReceiveConsents
+        , RCConfig.onRemoteConfig ReceiveRemoteConfig
+        , MiscService.onProfileChange ProfileChange
+        ]
+
+
+
+-- INTERNALS
+
+
 getMappedLimitations : List FareProduct -> List UserProfile -> List Limitation
 getMappedLimitations products userProfiles =
     let
@@ -113,15 +155,3 @@ getMappedLimitations products userProfiles =
                     , limitations = List.filterMap userIdToType product.limitations
                     }
                 )
-
-
-subscriptions : Sub Msg
-subscriptions =
-    Sub.batch
-        [ RefDataService.onTariffZones ReceiveTariffZones
-        , RefDataService.onFareProducts ReceiveFareProducts
-        , RefDataService.onUserProfiles ReceiveUserProfiles
-        , RefDataService.onConsents ReceiveConsents
-        , RCConfig.onRemoteConfig ReceiveRemoteConfig
-        , MiscService.onProfileChange ProfileChange
-        ]
