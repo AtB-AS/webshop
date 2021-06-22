@@ -695,7 +695,16 @@
     padding: 0;
     margin: 0;
 }
-.ui-input-radioGroup__hiddenLegend {
+.ui-input-radioGroup__legend {
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+    display: block;
+    width: 100%;
+
+    padding: var(--spacings-large);
+    padding-bottom: 0;
+}
+.ui-input-radioGroup__legend--hidden {
     position: absolute;
     clip: rect(0 0 0 0);
 }
