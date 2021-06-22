@@ -127,7 +127,7 @@ Cypress.Commands.add("logIn", () => {
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/verifyPassword**").as("login")
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/getAccountInfo**").as("accountInfo")
     cy.intercept("POST", "**/v1/token**").as("refreshToken")
-    
+
     cy.get(".ui-section").find("a").contains("Jeg vil heller bruke e-post").click()
     cy.get("#email").type(Cypress.env("email"))
     cy.get("#password").type(Cypress.env("password"))

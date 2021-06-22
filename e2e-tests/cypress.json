@@ -3,6 +3,11 @@
   "integrationFolder": "cypress/integration/tests",
   "watchForFileChanges": false,
 
+  "retries": {
+    "runMode": 1,
+    "openMode": 0
+  },
+
   "env": {
     "a11yTags": ["wcag2a", "wcag2aa"],
     "a11ySkipFailures": false,
