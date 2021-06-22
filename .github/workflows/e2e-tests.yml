@@ -2,6 +2,11 @@ name: E2E-tests of webshop
 
 on:
   workflow_dispatch:
+    inputs:
+      videoRecording:
+        description: 'Record video of the tests'
+        required: true
+        default: 'false'
 
 jobs:
   e2e-test:
@@ -19,7 +24,7 @@ jobs:
         working-directory: ./e2e-tests
         
       - name: Run Cypress test
-        run: ./node_modules/.bin/cypress run --reporter mocha-multi-reporters --reporter-options configFile=cypress-reporter-config.json 
+        run: ./node_modules/.bin/cypress run --reporter mocha-multi-reporters --reporter-options configFile=cypress-reporter-config.json --config video=${{ github.event.inputs.videoRecording }}
         working-directory: ./e2e-tests
         continue-on-error: true
         
