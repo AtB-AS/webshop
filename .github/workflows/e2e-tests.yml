@@ -31,12 +31,21 @@ jobs:
         run: node_modules/.bin/marge cypress/results/cypressTestReport.json --code false --reportFilename cypressTestReport --reportDir ./cypress/results
         working-directory: ./e2e-tests
         
-      - name: Upload Junit
+      - name: Upload test report html
         uses: actions/upload-artifact@v2
         with:
-          name: junit-results
-          path: ./e2e-tests/cypress/results/result_*.xml
+          name: test-results
+          path: |
+            ./e2e-tests/cypress/results/assets
+            ./e2e-tests/cypress/results/cypressTestReport.html
           retention-days: 3
+          
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: ./e2e-tests/cypress/results/*.xml
+          report_individual_runs: true
 
       - name: Finish
         run: echo Finished
