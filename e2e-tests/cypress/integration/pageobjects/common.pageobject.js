@@ -1,8 +1,8 @@
 export const menu = {
   myProfile: () => cy.get("nav").find("a").contains("Min profil"),
   history: () => cy.get("nav").find("a").contains("Kjøpshistorikk"),
-  buyTicket: () => cy.get("nav").find("a").contains("Kjøp billett"),
-  buyCutTicket: () => cy.get("nav").find("a").contains("Nytt klippekort"),
+  buyPeriodTicket: () => cy.get("nav").find("a").contains("Ny periodebillett"),
+  buyCarnetTicket: () => cy.get("nav").find("a").contains("Nytt klippekort"),
   startPage: () => cy.get("h1.pageHeader__logo")
 };
 

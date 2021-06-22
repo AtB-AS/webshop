@@ -127,8 +127,7 @@ Cypress.Commands.add("logIn", () => {
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/verifyPassword**").as("login")
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/getAccountInfo**").as("accountInfo")
     cy.intercept("POST", "**/v1/token**").as("refreshToken")
-    //cy.visit("")
-    //cy.reload()
+    
     cy.get(".ui-section").find("a").contains("Jeg vil heller bruke e-post").click()
     cy.get("#email").type(Cypress.env("email"))
     cy.get("#password").type(Cypress.env("password"))
@@ -140,7 +139,7 @@ Cypress.Commands.add("logIn", () => {
 
 //Log out
 Cypress.Commands.add("logOut", () => {
-    cy.get("button.pageHeader__nav__logout").click()
+    cy.get("button.pageHeader__nav__logout").click({force: true})
     cy.reload()
     cy.get("h2.ui-section__headerTitle").should("contain", "Velkommen til AtBs nettbutikk")
 })

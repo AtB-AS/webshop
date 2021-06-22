@@ -10,16 +10,16 @@ import { buy, travelTime } from '../pageobjects/buyticket.pageobject.js'
  */
 
 describe("a11y check authentication", () => {
-    it("a11y check - sms login", () => {
+    it("sms login", () => {
         cy.visitMainAsNotAuthorized()
         cy.a11yCheck(null, null)
     })
-    it("a11y check - email login", () => {
+    it("email login", () => {
         cy.visitMainAsNotAuthorized()
         auth.useEmailAsLogIn()
         cy.a11yCheck(null, null)
     })
-    it("a11y check - email create", () => {
+    it("email create", () => {
         cy.visitMainAsNotAuthorized()
         auth.useEmailAsLogIn()
         auth.createNewEmailProfile()
@@ -27,7 +27,7 @@ describe("a11y check authentication", () => {
     })
 })
 
-describe("a11y check webshop", () => {
+describe("a11y check webshop overview", () => {
     after(() => {
         cy.logOut()
     })
@@ -77,10 +77,19 @@ describe("a11y check webshop", () => {
             })
         })
     }
+})
 
-    it.only("my profile", () => {
+describe("a11y check webshop my profile", () => {
+    after(() => {
+        cy.logOut()
+    })
+    beforeEach(function() {
+        cy.visitMainAsAuthorized()
+    });
+
+    it("my profile", () => {
         menu.myProfile().click()
-        verify.verifyHeader("h2", "Profilinformasjon ERROR")
+        verify.verifyHeader("h2", "Profilinformasjon")
 
         cy.a11yCheck(null, null)
     })
@@ -118,6 +127,34 @@ describe("a11y check webshop", () => {
         })
     })
 
+    it("my profile - change consent", () => {
+        cy.intercept("POST", "**/webshop/v1/consent").as("consent")
+
+        menu.myProfile().click()
+        verify.verifyHeader("h2", "Profilinformasjon")
+
+        myprofile.consent().check()
+        cy.wait("@consent")
+        cy.injectAxe().then(() => {
+            cy.a11yCheck(null, null)
+        })
+
+        myprofile.consent().uncheck()
+        cy.wait("@consent")
+        cy.injectAxe().then(() => {
+            cy.a11yCheck(null, null)
+        })
+    })
+})
+
+describe("a11y check webshop ticket history", () => {
+    after(() => {
+        cy.logOut()
+    })
+    beforeEach(function() {
+        cy.visitMainAsAuthorized()
+    });
+
     it("ticket history", () => {
         const order_id = "XHUZBHFS"
 
@@ -137,13 +174,29 @@ describe("a11y check webshop", () => {
 
         cy.a11yCheck(null, null)
     })
+})
 
-    it("buy ticket - open categories", () => {
-        menu.buyTicket().click()
-        verify.verifyHeader("h2", "Kjøp ny billett")
+describe("a11y check webshop buy ticket", () => {
+    after(() => {
+        cy.logOut()
+    })
+    beforeEach(function() {
+        cy.visitMainAsAuthorized()
+    });
+
+    it("period ticket", () => {
+        menu.buyPeriodTicket().click()
+        verify.verifyHeader("h2", "Kjøp ny periodebillett")
+
+        cy.a11yCheck(null, null)
+    })
+
+    it("period ticket - open categories", () => {
+        menu.buyPeriodTicket().click()
+        verify.verifyHeader("h2", "Kjøp ny periodebillett")
 
         buy.ticketCategoryDetails().then($categoryDetails => {
-            if (!$categoryDetails.hasClass('ui-group__content--open')){
+            if (!$categoryDetails.hasClass('ui-group__content--open')) {
                 buy.ticketCategory().click()
             }
             buy.ticketProduct("30-dagersbillett")
@@ -153,19 +206,12 @@ describe("a11y check webshop", () => {
         cy.a11yCheck(null, null)
     })
 
-    xit("buy cut card", () => {
-        menu.buyCutTicket().click()
-        verify.verifyHeader("h2", "Kjøp nytt klippekort")
-
-        cy.a11yCheck(null, null)
-    })
-
-    it("buy ticket - open travellers", () => {
-        menu.buyTicket().click()
-        verify.verifyHeader("h2", "Kjøp ny billett")
+    it("period ticket - open travellers", () => {
+        menu.buyPeriodTicket().click()
+        verify.verifyHeader("h2", "Kjøp ny periodebillett")
 
         buy.travellerDetails().then($travellerDetails => {
-            if (!$travellerDetails.hasClass('ui-group__content--open')){
+            if (!$travellerDetails.hasClass('ui-group__content--open')) {
                 buy.travellers().click()
             }
             buy.traveller("Adult")
@@ -175,13 +221,13 @@ describe("a11y check webshop", () => {
         cy.a11yCheck(null, null)
     })
 
-    it("buy ticket - open time picker", () => {
-        menu.buyTicket().click()
-        verify.verifyHeader("h2", "Kjøp ny billett")
+    it("period ticket - open time picker", () => {
+        menu.buyPeriodTicket().click()
+        verify.verifyHeader("h2", "Kjøp ny periodebillett")
 
         //Check travel now
         buy.travelTimeDetails().then($travelTimeDetails => {
-            if (!$travelTimeDetails.hasClass('ui-group__content--open')){
+            if (!$travelTimeDetails.hasClass('ui-group__content--open')) {
                 buy.travelTime().click()
             }
             travelTime.now().should("be.visible")
@@ -189,7 +235,7 @@ describe("a11y check webshop", () => {
         cy.a11yCheck(null, null)
 
         //Check travel in future
-        travelTime.inFuture().check({force: true})
+        travelTime.inFuture().check({ force: true })
         travelTime.date()
             .should("be.visible")
         cy.a11yCheck(null, null)
@@ -203,6 +249,26 @@ describe("a11y check webshop", () => {
         cy.a11yCheck(null, null)
     })
 
-    //TODO Add test for consents
+    it("carnet ticket", () => {
+        menu.buyCarnetTicket().click()
+        verify.verifyHeader("h2", "Kjøp nytt klippekort")
+
+        cy.a11yCheck(null, null)
+    })
+
+    it("carnet ticket - open travellers", () => {
+        menu.buyCarnetTicket().click()
+        verify.verifyHeader("h2", "Kjøp nytt klippekort")
+
+        buy.travellerDetails().then($travellerDetails => {
+            if (!$travellerDetails.hasClass('ui-group__content--open')) {
+                buy.travellers().click()
+            }
+            buy.traveller("Adult")
+                .should("be.visible")
+        })
+
+        cy.a11yCheck(null, null)
+    })
 
 })
