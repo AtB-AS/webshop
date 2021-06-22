@@ -6,12 +6,14 @@ import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
-import Html as H exposing (Html)
+import Html as H exposing (Html, summary)
 import Html.Attributes as A
+import Html.Events as E
 import Html.Extra
 import Http
 import List.Extra
 import Notification
+import Page.Shop.Summary as SummaryPage
 import PageUpdater exposing (PageUpdater)
 import Process
 import Route exposing (Route)
@@ -27,6 +29,7 @@ import Ui.Input.Select as Select
 import Ui.LabelItem
 import Ui.LoadingText
 import Ui.Message as Message
+import Ui.PageHeader as PH
 import Ui.Section as Section
 import Util.Format
 import Util.Func as Func
@@ -49,6 +52,9 @@ type Msg
     | ModUser UserType Int
     | SetUser UserType Bool
     | ShowView MainView
+    | CloseSummary
+    | GoToSummary
+    | SummarySubMsg SummaryPage.Msg
 
 
 type MainView
@@ -66,6 +72,7 @@ type alias Model =
     , offers : Status (List Offer)
     , reservation : Status Reservation
     , mainView : MainView
+    , summary : Maybe SummaryPage.Model
     }
 
 
@@ -78,6 +85,7 @@ init =
       , offers = NotLoaded
       , reservation = NotLoaded
       , mainView = Duration
+      , summary = Nothing
       }
     , TaskUtil.doTask FetchOffers
     )
@@ -105,7 +113,7 @@ update msg env model shared =
                        )
 
             OnLeavePage ->
-                PageUpdater.init model
+                PageUpdater.init { model | summary = Nothing }
 
             SetProduct product _ ->
                 PageUpdater.fromPair
@@ -281,6 +289,26 @@ update msg env model shared =
             ShowView mainView ->
                 PageUpdater.init (toggleShowMainView model mainView)
 
+            CloseSummary ->
+                PageUpdater.init { model | summary = Nothing }
+
+            GoToSummary ->
+                case model.offers of
+                    Loaded offers ->
+                        PageUpdater.init { model | summary = Just <| SummaryPage.init offers }
+
+                    _ ->
+                        PageUpdater.init model
+
+            SummarySubMsg subMsg ->
+                case model.summary of
+                    Nothing ->
+                        PageUpdater.init model
+
+                    Just summary ->
+                        SummaryPage.update subMsg env summary shared
+                            |> PageUpdater.map (\newModel -> { model | summary = Just newModel }) SummarySubMsg
+
 
 defaultDerivedData : Shared -> List FareProduct -> ( String, String )
 defaultDerivedData shared products =
@@ -375,80 +403,78 @@ view _ _ shared model _ =
                             False
                    )
     in
-        H.div [ A.class "page" ]
-            [ Section.view
-                [ Ui.Group.view
-                    { title = "Reisetype"
-                    , icon = Icon.bus
-                    , value = Just "Buss og trikk"
-                    , open = False
-                    , readonly = True
-                    , onOpenClick = Nothing
-                    , id = "reisetype"
-                    , editTextSuffix = "billett"
-                    }
-                    []
-                , Ui.Group.view
-                    { title = "Antall billetter"
-                    , icon = Icon.tickets
-                    , value = summary.product
-                    , open = False
-                    , readonly = True
-                    , onOpenClick = Nothing
-                    , id = "product"
-                    , editTextSuffix = "antall"
-                    }
-                    []
-                , Ui.Group.view
-                    { title = "Reisende"
-                    , icon = Icon.bus
-                    , value =
-                        summary.users
-                            |> List.head
-                            |> Maybe.map (\( name, num ) -> String.fromInt num ++ " " ++ name)
-                    , open = model.mainView == Travelers
-                    , readonly = False
-                    , onOpenClick = Just (ShowView Travelers)
-                    , id = "reisende"
-                    , editTextSuffix = "reisende"
-                    }
-                    [ viewUserProfiles defaultProduct model shared ]
-                , Ui.Group.view
-                    { title = "Soner"
-                    , icon = Icon.map
-                    , value = summary.zones
-                    , open = model.mainView == Zones
-                    , readonly = False
-                    , onOpenClick = Just (ShowView Zones)
-                    , id = "zones"
-                    , editTextSuffix = "sone"
-                    }
-                    [ viewZones model defaultZone shared.tariffZones ]
-                ]
-            , H.div []
-                [ summaryView shared model summary
-                , Section.init
-                    |> Section.setMarginBottom True
-                    |> Section.viewWithOptions
-                        [ Html.Extra.viewMaybe Message.error errorMessage
-                        , B.init "Kjøp med bankkort"
-                            |> B.setDisabled disableButtons
-                            |> B.setIcon (Just Icon.creditcard)
-                            |> B.setOnClick (Just (BuyOffers Nets))
-                            |> B.primary Secondary_1
-                        , B.init "Kjøp med Vipps"
-                            |> B.setDisabled disableButtons
-                            |> B.setIcon (Just (B.coloredIcon Icon.vipps))
-                            |> B.setOnClick (Just (BuyOffers Vipps))
-                            |> B.primary Secondary_1
-                        , B.init "Avbryt"
-                            |> B.setDisabled False
-                            |> B.setIcon (Just Icon.cross)
-                            |> B.setOnClick (Just CloseShop)
-                            |> B.tertiary
+        case model.summary of
+            Just summaryModel ->
+                H.div []
+                    [ PH.init
+                        |> PH.setTitle (Just "Oppsummering")
+                        |> PH.setBackButton (Just ( "Tilbake", E.onClick CloseSummary ))
+                        |> PH.view
+                    , SummaryPage.view shared summaryModel
+                        |> H.map SummarySubMsg
+                    ]
+
+            _ ->
+                H.div []
+                    [ PH.init
+                        |> PH.setTitle (Just "Kjøp nytt klippekort")
+                        |> PH.setBackButton (Just ( "Avbryt", E.onClick CloseShop ))
+                        |> PH.view
+                    , H.div [ A.class "page" ]
+                        [ Section.view
+                            [ Ui.Group.view
+                                { title = "Reisetype"
+                                , icon = Icon.bus
+                                , value = Just "Buss og trikk"
+                                , open = False
+                                , readonly = True
+                                , onOpenClick = Nothing
+                                , id = "reisetype"
+                                , editTextSuffix = "billett"
+                                }
+                                []
+                            , Ui.Group.view
+                                { title = "Antall billetter"
+                                , icon = Icon.tickets
+                                , value = summary.product
+                                , open = False
+                                , readonly = True
+                                , onOpenClick = Nothing
+                                , id = "product"
+                                , editTextSuffix = "antall"
+                                }
+                                []
+                            , Ui.Group.view
+                                { title = "Reisende"
+                                , icon = Icon.bus
+                                , value =
+                                    summary.users
+                                        |> List.head
+                                        |> Maybe.map (\( name, num ) -> String.fromInt num ++ " " ++ name)
+                                , open = model.mainView == Travelers
+                                , readonly = False
+                                , onOpenClick = Just (ShowView Travelers)
+                                , id = "reisende"
+                                , editTextSuffix = "reisende"
+                                }
+                                [ viewUserProfiles defaultProduct model shared ]
+                            , Ui.Group.view
+                                { title = "Soner"
+                                , icon = Icon.map
+                                , value = summary.zones
+                                , open = model.mainView == Zones
+                                , readonly = False
+                                , onOpenClick = Just (ShowView Zones)
+                                , id = "zones"
+                                , editTextSuffix = "sone"
+                                }
+                                [ viewZones model defaultZone shared.tariffZones ]
+                            ]
+                        , H.div []
+                            [ summaryView shared model disableButtons
+                            ]
                         ]
-                ]
-            ]
+                    ]
 
 
 nameFromUserType : List UserProfile -> UserType -> Maybe String
@@ -511,8 +537,8 @@ modelSummary ( defaultZone, defaultProduct ) shared model =
         }
 
 
-summaryView : Shared -> Model -> ModelSummary -> Html Msg
-summaryView shared model _ =
+summaryView : Shared -> Model -> Bool -> Html Msg
+summaryView shared model disableButtons =
     let
         emptyOffers =
             case model.offers of
@@ -541,8 +567,7 @@ summaryView shared model _ =
         Section.init
             |> Section.setMarginBottom True
             |> Section.viewWithOptions
-                [ Section.viewHeader "Oppsummering"
-                , if emptyOffers then
+                [ if emptyOffers then
                     Message.warning "Finner ingen tilgjengelige billetter."
 
                   else
@@ -565,7 +590,11 @@ summaryView shared model _ =
                                 |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                             ]
                         ]
-                , maybeBuyNotice model.users
+                , B.init "Gå til oppsummering"
+                    |> B.setDisabled disableButtons
+                    |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
+                    |> B.setOnClick (Just GoToSummary)
+                    |> B.primary Primary_2
                 ]
 
 
@@ -694,7 +723,8 @@ viewUserProfile model userProfile =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    SummaryPage.subscriptions
+        |> Sub.map SummarySubMsg
 
 
 
