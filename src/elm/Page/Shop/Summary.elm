@@ -112,23 +112,21 @@ view _ model =
                 ]
             , Section.view
                 [ Section.viewHeader "Betaling"
-                , Section.viewLabelItem "Betalingsmetode"
-                    [ Radio.viewGroup "Betalingsmetode"
-                        [ Radio.init "vipps"
-                            |> Radio.setTitle "Vipps"
-                            |> Radio.setName "paymentType"
-                            |> Radio.setChecked (model.paymentType == Vipps)
-                            |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Vipps)
-                            |> Radio.view
-                        , Radio.init "visa"
-                            |> Radio.setTitle "Bankkort"
-                            |> Radio.setName "paymentType"
-                            |> Radio.setChecked (model.paymentType == Nets)
-                            |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Nets)
-                            |> Radio.view
-                        ]
+                , Radio.viewLabelGroup "Betalingsmetode"
+                    [ Radio.init "vipps"
+                        |> Radio.setTitle "Vipps"
+                        |> Radio.setName "paymentType"
+                        |> Radio.setChecked (model.paymentType == Vipps)
+                        |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Vipps)
+                        |> Radio.view
+                    , Radio.init "visa"
+                        |> Radio.setTitle "Bankkort"
+                        |> Radio.setName "paymentType"
+                        |> Radio.setChecked (model.paymentType == Nets)
+                        |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Nets)
+                        |> Radio.view
                     ]
-                , B.init "Gå til oppsummering"
+                , B.init "Gå til betaling"
                     |> B.setDisabled disableButtons
                     |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
                     |> B.setOnClick (Just BuyOffers)

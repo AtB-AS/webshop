@@ -10,6 +10,7 @@ module Ui.Input.Radio exposing
     , setTitle
     , view
     , viewGroup
+    , viewLabelGroup
     )
 
 import Html as H exposing (Attribute, Html)
@@ -83,8 +84,18 @@ viewGroup : String -> List (Html msg) -> Html msg
 viewGroup hiddenTitle children =
     H.fieldset [ A.class "ui-input-radioGroup" ]
         (H.legend
-            [ A.class "ui-input-radioGroup__hiddenLegend" ]
+            [ A.class "ui-input-radioGroup__legend ui-input-radioGroup__legend--hidden" ]
             [ H.text hiddenTitle ]
+            :: List.map Ui.Group.viewItem children
+        )
+
+
+viewLabelGroup : String -> List (Html msg) -> Html msg
+viewLabelGroup title children =
+    H.fieldset [ A.class "ui-input-radioGroup" ]
+        (H.legend
+            [ A.class "ui-input-radioGroup__legend" ]
+            [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text title ] ]
             :: List.map Ui.Group.viewItem children
         )
 
