@@ -27,7 +27,7 @@ describe("a11y check authentication", () => {
     })
 })
 
-xdescribe("a11y check webshop", () => {
+describe("a11y check webshop", () => {
     after(() => {
         cy.logOut()
     })
@@ -78,9 +78,9 @@ xdescribe("a11y check webshop", () => {
         })
     }
 
-    it("my profile", () => {
+    it.only("my profile", () => {
         menu.myProfile().click()
-        verify.verifyHeader("h2", "Profilinformasjon")
+        verify.verifyHeader("h2", "Profilinformasjon ERROR")
 
         cy.a11yCheck(null, null)
     })
@@ -149,6 +149,13 @@ xdescribe("a11y check webshop", () => {
             buy.ticketProduct("30-dagersbillett")
                 .should("be.visible")
         })
+
+        cy.a11yCheck(null, null)
+    })
+
+    xit("buy cut card", () => {
+        menu.buyCutTicket().click()
+        verify.verifyHeader("h2", "Kjøp nytt klippekort")
 
         cy.a11yCheck(null, null)
     })
