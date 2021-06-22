@@ -132,7 +132,7 @@ setRouteInternal initialRoute maybeRoute model =
                     TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
 
                 ( Just _, Just Route.ShopCarnet ) ->
-                    TaskUtil.doTask <| ShopMsg ShopPage.OnLeavePage
+                    TaskUtil.doTask <| ShopCarnetMsg ShopCarnetPage.OnLeavePage
 
                 _ ->
                     Cmd.none
@@ -664,7 +664,6 @@ viewPage model =
             Just Route.ShopCarnet ->
                 ShopCarnetPage.view env model.appInfo shared model.shopCarnet model.route
                     |> H.map ShopCarnetMsg
-                    |> wrapSubPage "Kjøp nytt klippekort"
 
             Just Route.History ->
                 HistoryPage.view env model.appInfo shared model.history model.route
