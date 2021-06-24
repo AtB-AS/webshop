@@ -50,13 +50,16 @@ viewUserProfile model onUserSelect userProfile =
 viewSummary : Shared -> CommonModel a -> Bool -> msg -> Html msg
 viewSummary shared model disableButtons onToSummaryClick =
     let
-        emptyOffers =
+        error =
             case model.offers of
-                Loaded offers ->
-                    List.isEmpty offers
+                Loaded [] ->
+                    Just "Finner ingen tilgjengelige billetter."
+
+                Failed errorMessage ->
+                    Just errorMessage
 
                 _ ->
-                    False
+                    Nothing
 
         summary =
             case model.offers of
@@ -77,31 +80,32 @@ viewSummary shared model disableButtons onToSummaryClick =
     in
         Section.init
             |> Section.viewWithOptions
-                [ if emptyOffers then
-                    Message.warning "Finner ingen tilgjengelige billetter."
+                [ case error of
+                    Just errorMessage ->
+                        Message.warning errorMessage
 
-                  else
-                    Section.viewPaddedItem
-                        [ Ui.LabelItem.viewHorizontal
-                            "Total:"
-                            [ H.p [ A.class "shop__summaryPrice" ]
+                    _ ->
+                        Section.viewPaddedItem
+                            [ Ui.LabelItem.viewHorizontal
+                                "Total:"
+                                [ H.p [ A.class "shop__summaryPrice" ]
+                                    [ summary
+                                        |> Maybe.map .totalPrice
+                                        |> Maybe.map (Func.flip Util.Format.float 2)
+                                        |> Maybe.map H.text
+                                        |> Maybe.withDefault (Ui.LoadingText.view "1.6875rem" "5rem")
+                                    , H.small [] [ H.text "kr" ]
+                                    ]
+                                ]
+                            , Ui.LabelItem.viewHorizontal "Hvorav mva:"
                                 [ summary
-                                    |> Maybe.map .totalPrice
+                                    |> Maybe.map .totalVat
                                     |> Maybe.map (Func.flip Util.Format.float 2)
+                                    |> Maybe.map (Func.flip (++) " kr")
                                     |> Maybe.map H.text
-                                    |> Maybe.withDefault (Ui.LoadingText.view "1.6875rem" "5rem")
-                                , H.small [] [ H.text "kr" ]
+                                    |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                                 ]
                             ]
-                        , Ui.LabelItem.viewHorizontal "Hvorav mva:"
-                            [ summary
-                                |> Maybe.map .totalVat
-                                |> Maybe.map (Func.flip Util.Format.float 2)
-                                |> Maybe.map (Func.flip (++) " kr")
-                                |> Maybe.map H.text
-                                |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
-                            ]
-                        ]
                 , B.init "Gå til oppsummering"
                     |> B.setDisabled disableButtons
                     |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)

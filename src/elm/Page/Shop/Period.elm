@@ -11,7 +11,6 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
 import Http
-import Notification
 import Page.Shop.CommonViews as Common
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (TravelDateTime(..))
@@ -27,7 +26,6 @@ import Time exposing (Posix)
 import Ui.Group
 import Ui.Input.Radio as Radio
 import Ui.Input.Text as Text
-import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
 import Util.Func as Func
@@ -109,233 +107,224 @@ init =
 
 update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
 update msg env model shared =
-    let
-        addGlobalNotification statusText =
-            statusText
-                |> Message.message
-                |> (\s -> Notification.setContent s Notification.init)
-                |> GA.ShowNotification
-                |> PageUpdater.addGlobalAction
-    in
-        case msg of
-            ResetState ->
-                PageUpdater.init <| Tuple.first init
+    case msg of
+        ResetState ->
+            PageUpdater.init <| Tuple.first init
 
-            OnEnterPage ->
-                PageUpdater.fromPair ( model, Tuple.second init )
-                    |> (Just "Kjøp billett"
-                            |> GA.SetTitle
-                            |> PageUpdater.addGlobalAction
-                       )
+        OnEnterPage ->
+            PageUpdater.fromPair ( model, Tuple.second init )
+                |> (Just "Kjøp billett"
+                        |> GA.SetTitle
+                        |> PageUpdater.addGlobalAction
+                   )
 
-            OnLeavePage ->
-                PageUpdater.init { model | summary = Nothing }
+        OnLeavePage ->
+            PageUpdater.init { model | summary = Nothing }
 
-            SetProduct product _ ->
-                PageUpdater.fromPair
-                    ( { model | product = Just product, users = maybeResetUsers shared product model.users }
-                    , TaskUtil.doTask FetchOffers
-                    )
+        SetProduct product _ ->
+            PageUpdater.fromPair
+                ( { model | product = Just product, users = maybeResetUsers shared product model.users }
+                , TaskUtil.doTask FetchOffers
+                )
 
-            SetFromZone zone ->
-                PageUpdater.fromPair
-                    ( { model | fromZone = Just zone }
-                    , TaskUtil.doTask FetchOffers
-                    )
+        SetFromZone zone ->
+            PageUpdater.fromPair
+                ( { model | fromZone = Just zone }
+                , TaskUtil.doTask FetchOffers
+                )
 
-            SetToZone zone ->
-                PageUpdater.fromPair
-                    ( { model | toZone = Just zone }
-                    , TaskUtil.doTask FetchOffers
-                    )
+        SetToZone zone ->
+            PageUpdater.fromPair
+                ( { model | toZone = Just zone }
+                , TaskUtil.doTask FetchOffers
+                )
 
-            SetUser userType _ ->
-                PageUpdater.fromPair
-                    ( { model | users = [ ( userType, 1 ) ] }
-                    , TaskUtil.doTask FetchOffers
-                    )
+        SetUser userType _ ->
+            PageUpdater.fromPair
+                ( { model | users = [ ( userType, 1 ) ] }
+                , TaskUtil.doTask FetchOffers
+                )
 
-            SetTravelDateTime (TravelFuture maybeFuture) ->
-                case maybeFuture of
-                    Nothing ->
-                        let
-                            travelDate =
-                                if String.isEmpty model.inputTravelDate then
-                                    TimeUtil.toIsoDate model.timeZone model.now
-
-                                else
-                                    model.inputTravelDate
-
-                            travelTime =
-                                if String.isEmpty model.inputTravelTime then
-                                    TimeUtil.toHoursAndMinutes model.timeZone <| TimeUtil.addHours 1 model.now
-
-                                else
-                                    model.inputTravelTime
-                        in
-                            PageUpdater.fromPair
-                                ( { model
-                                    | travelDateTime = TravelFuture Nothing
-                                    , inputTravelDate = travelDate
-                                    , inputTravelTime = travelTime
-                                  }
-                                , MiscService.convertTime ( travelDate, travelTime )
-                                )
-
-                    future ->
-                        PageUpdater.fromPair
-                            ( { model | travelDateTime = TravelFuture <| future }
-                            , TaskUtil.doTask FetchOffers
-                            )
-
-            SetTravelDateTime TravelNow ->
-                PageUpdater.fromPair
-                    ( { model | travelDateTime = TravelNow }
-                    , TaskUtil.doTask FetchOffers
-                    )
-
-            FetchOffers ->
-                if List.isEmpty model.users then
-                    PageUpdater.init model
-
-                else
+        SetTravelDateTime (TravelFuture maybeFuture) ->
+            case maybeFuture of
+                Nothing ->
                     let
-                        oldOffers =
-                            case model.offers of
-                                Loaded offers ->
-                                    Just offers
+                        travelDate =
+                            if String.isEmpty model.inputTravelDate then
+                                TimeUtil.toIsoDate model.timeZone model.now
 
-                                Loading offers ->
-                                    offers
-
-                                _ ->
-                                    Nothing
-
-                        availableProducts =
-                            shared.fareProducts
-                                |> List.filter (.type_ >> (==) ProductTypePeriod)
-
-                        ( firstZone, defaultProduct ) =
-                            Utils.defaultDerivedData shared availableProducts
-
-                        dataNotLoadedYet =
-                            List.isEmpty shared.availableFareProducts && List.isEmpty shared.tariffZones
-
-                        newProduct =
-                            Maybe.withDefault defaultProduct model.product
-
-                        newFromZone =
-                            Maybe.withDefault firstZone model.fromZone
-
-                        newToZone =
-                            Maybe.withDefault firstZone model.toZone
+                            else
+                                model.inputTravelDate
 
                         travelTime =
-                            case model.travelDateTime of
-                                TravelFuture (Just time) ->
-                                    Just time
+                            if String.isEmpty model.inputTravelTime then
+                                TimeUtil.toHoursAndMinutes model.timeZone <| TimeUtil.addHours 1 model.now
 
-                                _ ->
-                                    Nothing
+                            else
+                                model.inputTravelTime
                     in
-                        if dataNotLoadedYet then
-                            PageUpdater.fromPair
-                                ( model
-                                , Process.sleep 500 |> Task.attempt (\_ -> FetchOffers)
-                                )
+                        PageUpdater.fromPair
+                            ( { model
+                                | travelDateTime = TravelFuture Nothing
+                                , inputTravelDate = travelDate
+                                , inputTravelTime = travelTime
+                              }
+                            , MiscService.convertTime ( travelDate, travelTime )
+                            )
 
-                        else
-                            PageUpdater.fromPair
-                                ( { model
-                                    | offers = Loading oldOffers
-                                    , reservation = NotLoaded
-                                    , product = Just newProduct
-                                    , fromZone = Just newFromZone
-                                    , toZone = Just newToZone
-                                  }
-                                , fetchOffers env
-                                    newProduct
-                                    newFromZone
-                                    newToZone
-                                    model.users
-                                    travelTime
-                                )
+                future ->
+                    PageUpdater.fromPair
+                        ( { model | travelDateTime = TravelFuture <| future }
+                        , TaskUtil.doTask FetchOffers
+                        )
 
-            ReceiveOffers result ->
-                case result of
-                    Ok offers ->
-                        PageUpdater.init { model | offers = Loaded offers }
+        SetTravelDateTime TravelNow ->
+            PageUpdater.fromPair
+                ( { model | travelDateTime = TravelNow }
+                , TaskUtil.doTask FetchOffers
+                )
 
-                    Err _ ->
-                        let
-                            errorMessage =
-                                "Kunne ikke laste inn billettinformasjon. Prøv igjen."
-                        in
-                            PageUpdater.init { model | offers = Failed errorMessage }
-                                |> addGlobalNotification (Message.Error <| H.text errorMessage)
+        FetchOffers ->
+            if List.isEmpty model.users then
+                PageUpdater.init model
 
-            CloseShop ->
-                PageUpdater.fromPair ( model, TaskUtil.doTask ResetState )
-                    |> PageUpdater.addGlobalAction (GA.RouteTo Route.Home)
+            else
+                let
+                    oldOffers =
+                        case model.offers of
+                            Loaded offers ->
+                                Just offers
 
-            ShowView mainView ->
-                PageUpdater.init (toggleShowMainView model mainView)
+                            Loading offers ->
+                                offers
 
-            SetDate date ->
-                PageUpdater.fromPair
-                    ( { model | inputTravelDate = date }
-                    , MiscService.convertTime ( date, model.inputTravelTime )
-                    )
+                            _ ->
+                                Nothing
 
-            SetTime time ->
-                PageUpdater.fromPair
-                    ( { model | inputTravelTime = time }
-                    , MiscService.convertTime ( model.inputTravelDate, time )
-                    )
+                    availableProducts =
+                        shared.fareProducts
+                            |> List.filter (.type_ >> (==) ProductTypePeriod)
 
-            UpdateNow now ->
-                PageUpdater.init { model | now = now }
+                    ( firstZone, defaultProduct ) =
+                        Utils.defaultDerivedData shared availableProducts
 
-            UpdateZone zone ->
-                PageUpdater.init { model | timeZone = zone }
+                    dataNotLoadedYet =
+                        List.isEmpty shared.availableFareProducts && List.isEmpty shared.tariffZones
 
-            GetIsoTime isoTime ->
-                PageUpdater.fromPair
-                    ( model
-                    , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
-                    )
+                    newProduct =
+                        Maybe.withDefault defaultProduct model.product
 
-            CloseSummary ->
-                PageUpdater.init { model | summary = Nothing }
+                    newFromZone =
+                        Maybe.withDefault firstZone model.fromZone
 
-            GoToSummary ->
-                case model.offers of
-                    Loaded offers ->
-                        PageUpdater.init
-                            { model
-                                | summary =
-                                    Just <|
-                                        SummaryPage.init
-                                            { productId = Maybe.withDefault "" model.product
-                                            , fromZoneId = Maybe.withDefault "" model.fromZone
-                                            , toZoneId = Maybe.withDefault "" model.toZone
-                                            , travelDate = model.travelDateTime
-                                            , timeZone = model.timeZone
-                                            }
-                                            offers
-                            }
+                    newToZone =
+                        Maybe.withDefault firstZone model.toZone
 
-                    _ ->
-                        PageUpdater.init model
+                    travelTime =
+                        case model.travelDateTime of
+                            TravelFuture (Just time) ->
+                                Just time
 
-            SummarySubMsg subMsg ->
-                case model.summary of
-                    Nothing ->
-                        PageUpdater.init model
+                            _ ->
+                                Nothing
+                in
+                    if dataNotLoadedYet then
+                        PageUpdater.fromPair
+                            ( model
+                            , Process.sleep 500 |> Task.attempt (\_ -> FetchOffers)
+                            )
 
-                    Just summary ->
-                        SummaryPage.update subMsg env summary shared
-                            |> PageUpdater.map (\newModel -> { model | summary = Just newModel }) SummarySubMsg
+                    else
+                        PageUpdater.fromPair
+                            ( { model
+                                | offers = Loading oldOffers
+                                , reservation = NotLoaded
+                                , product = Just newProduct
+                                , fromZone = Just newFromZone
+                                , toZone = Just newToZone
+                              }
+                            , fetchOffers env
+                                newProduct
+                                newFromZone
+                                newToZone
+                                model.users
+                                travelTime
+                            )
+
+        ReceiveOffers result ->
+            case result of
+                Ok offers ->
+                    PageUpdater.init { model | offers = Loaded offers }
+
+                Err _ ->
+                    let
+                        errorMessage =
+                            "Kunne ikke laste inn billettinformasjon. Prøv igjen."
+                    in
+                        PageUpdater.init { model | offers = Failed errorMessage }
+
+        CloseShop ->
+            PageUpdater.fromPair ( model, TaskUtil.doTask ResetState )
+                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Home)
+
+        ShowView mainView ->
+            PageUpdater.init (toggleShowMainView model mainView)
+
+        SetDate date ->
+            PageUpdater.fromPair
+                ( { model | inputTravelDate = date }
+                , MiscService.convertTime ( date, model.inputTravelTime )
+                )
+
+        SetTime time ->
+            PageUpdater.fromPair
+                ( { model | inputTravelTime = time }
+                , MiscService.convertTime ( model.inputTravelDate, time )
+                )
+
+        UpdateNow now ->
+            PageUpdater.init { model | now = now }
+
+        UpdateZone zone ->
+            PageUpdater.init { model | timeZone = zone }
+
+        GetIsoTime isoTime ->
+            PageUpdater.fromPair
+                ( model
+                , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
+                )
+
+        CloseSummary ->
+            PageUpdater.init { model | summary = Nothing }
+
+        GoToSummary ->
+            case model.offers of
+                Loaded offers ->
+                    PageUpdater.init
+                        { model
+                            | summary =
+                                Just <|
+                                    SummaryPage.init
+                                        { productId = Maybe.withDefault "" model.product
+                                        , fromZoneId = Maybe.withDefault "" model.fromZone
+                                        , toZoneId = Maybe.withDefault "" model.toZone
+                                        , travelDate = model.travelDateTime
+                                        , timeZone = model.timeZone
+                                        }
+                                        offers
+                        }
+
+                _ ->
+                    PageUpdater.init model
+
+        SummarySubMsg subMsg ->
+            case model.summary of
+                Nothing ->
+                    PageUpdater.init model
+
+                Just summary ->
+                    SummaryPage.update subMsg env summary shared
+                        |> PageUpdater.map (\newModel -> { model | summary = Just newModel }) SummarySubMsg
 
 
 maybeResetUsers : Shared -> String -> List ( UserType, Int ) -> List ( UserType, Int )
