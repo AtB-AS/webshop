@@ -1,6 +1,7 @@
 module Ui.Button exposing
     ( Button
     , ButtonMode(..)
+    , IconPosition(..)
     , ThemeColor(..)
     , button
     , coloredIcon
@@ -16,6 +17,7 @@ module Ui.Button exposing
     , setDisabled
     , setElement
     , setIcon
+    , setIconPosition
     , setOnClick
     , setText
     , setType
@@ -29,6 +31,11 @@ import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
 import Ui.TextContainer
+
+
+type IconPosition
+    = Left
+    | Right
 
 
 type ButtonMode
@@ -56,6 +63,7 @@ type alias Button msg =
     { text : String
     , disabled : Bool
     , icon : Maybe (Html msg)
+    , iconPosition : IconPosition
     , onClick : Maybe msg
     , type_ : String
     , attributes : List (H.Attribute msg)
@@ -68,6 +76,7 @@ init text =
     { text = text
     , disabled = False
     , icon = Nothing
+    , iconPosition = Right
     , onClick = Nothing
     , type_ = "button"
     , attributes = []
@@ -88,6 +97,11 @@ setText text opts =
 setIcon : Maybe (Html msg) -> Button msg -> Button msg
 setIcon icon opts =
     { opts | icon = icon }
+
+
+setIconPosition : IconPosition -> Button msg -> Button msg
+setIconPosition iconPosition opts =
+    { opts | iconPosition = iconPosition }
 
 
 setOnClick : Maybe msg -> Button msg -> Button msg
@@ -111,7 +125,7 @@ setAttributes attributes opts =
 
 
 button : ButtonMode -> ThemeColor -> Button msg -> Html msg
-button mode color { text, disabled, icon, onClick, type_, attributes, element } =
+button mode color { text, disabled, icon, iconPosition, onClick, type_, attributes, element } =
     let
         classList =
             [ ( buttonModeToClass mode, True )
@@ -126,6 +140,15 @@ button mode color { text, disabled, icon, onClick, type_, attributes, element } 
 
             else
                 onClick
+
+        iconClassList =
+            [ ( "ui-button__icon", True )
+            , ( "ui-button__icon--left", iconPosition == Left )
+            , ( "ui-button__icon--right", iconPosition == Right )
+            ]
+
+        iconEl =
+            Html.Extra.viewMaybe (List.singleton >> H.span [ A.classList iconClassList ]) icon
     in
         element
             ([ A.classList classList
@@ -135,7 +158,10 @@ button mode color { text, disabled, icon, onClick, type_, attributes, element } 
              ]
                 ++ attributes
             )
-            [ Ui.TextContainer.primaryBoldInline [ H.text text ], Html.Extra.viewMaybe (List.singleton >> H.span [ A.class "ui-button__icon" ]) icon ]
+            [ Html.Extra.viewIf (iconPosition == Left) iconEl
+            , Ui.TextContainer.primaryBoldInline [ H.text text ]
+            , Html.Extra.viewIf (iconPosition == Right) iconEl
+            ]
 
 
 boolToString : Bool -> String

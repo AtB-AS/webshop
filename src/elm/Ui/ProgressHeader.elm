@@ -137,6 +137,14 @@ viewMaybeButton direction maybeButton =
                 B.init title
                     |> B.setOnClick (Just action)
                     |> B.setIcon (Just icon)
+                    |> B.setIconPosition
+                        (case direction of
+                            Left ->
+                                B.Left
+
+                            Right ->
+                                B.Right
+                        )
                     |> B.setAttributes [ A.classList classList ]
                     |> B.tertiaryCompact
 

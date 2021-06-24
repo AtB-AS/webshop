@@ -7,7 +7,6 @@ import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode
@@ -390,19 +389,19 @@ view env shared model =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
-                |> wrapHeader model True "Ny profil (1 av 4)"
+                |> wrapHeader model True "Profilinformasjon"
 
         Consents ->
             viewConsents env shared model
-                |> wrapHeader model True "Mine samtykker (2 av 4)"
+                |> wrapHeader model True "Samtykker"
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader model False "Legg til t:kort (3 av 4)"
+                |> wrapHeader model False "Legg til t:kort"
 
         AppAdvert ->
             viewAppAdvert env model
-                |> wrapHeader model True "Psst! Har du prøvd AtB-appen?"
+                |> wrapHeader model True "Har du prøvd appen?"
 
 
 wrapHeader : Model -> Bool -> String -> List (Html Msg) -> Html Msg
@@ -411,7 +410,7 @@ wrapHeader model narrowPage title children =
         [ PH.init title
             |> PH.setNext (Just ( "Hopp over dette steget", NextStep ))
             |> PH.setTotalSteps 4
-            |> PH.setStep 1
+            |> PH.setStep (stepNumber model.step)
             |> PH.setBack
                 (if model.step == ProfileInfo then
                     Nothing
@@ -655,6 +654,22 @@ nextStep step =
 
         AppAdvert ->
             Nothing
+
+
+stepNumber : Step -> Int
+stepNumber step =
+    case step of
+        ProfileInfo ->
+            1
+
+        Consents ->
+            2
+
+        TravelCard ->
+            3
+
+        AppAdvert ->
+            4
 
 
 prevStep : Step -> Maybe Step
