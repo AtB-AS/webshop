@@ -4,6 +4,8 @@
 // Extra settings in addition to shared theme.
 :root {
     --ws-icon-size-xLarge: 2.5rem;
+
+    --ws-colors-primary_2-backgroundColor--transparent: rgba(0, 124, 146, 0.2);
 }
 @media (max-width: 400px) {
     :root {
@@ -166,7 +168,7 @@ p + p {
     margin-left: auto;
 }
 .pageHeader__nav__item--active {
-    text-decoration: underline;
+    background: var(--ws-colors-primary_2-backgroundColor--transparent);
 }
 .pageHeader__nav a {
     display: block;
