@@ -18,7 +18,7 @@ import Ui.Heading exposing (title)
 import Ui.TextContainer
 
 
-type alias PageHeader msg =
+type alias ProgressHeader msg =
     { back : Maybe ( String, msg )
     , title : String
     , next : Maybe ( String, msg )
@@ -27,7 +27,7 @@ type alias PageHeader msg =
     }
 
 
-init : String -> PageHeader msg
+init : String -> ProgressHeader msg
 init title =
     { back = Nothing
     , title = title
@@ -37,32 +37,32 @@ init title =
     }
 
 
-setBack : Maybe ( String, msg ) -> PageHeader msg -> PageHeader msg
+setBack : Maybe ( String, msg ) -> ProgressHeader msg -> ProgressHeader msg
 setBack back opts =
     { opts | back = back }
 
 
-setTitle : String -> PageHeader msg -> PageHeader msg
+setTitle : String -> ProgressHeader msg -> ProgressHeader msg
 setTitle title opts =
     { opts | title = title }
 
 
-setNext : Maybe ( String, msg ) -> PageHeader msg -> PageHeader msg
+setNext : Maybe ( String, msg ) -> ProgressHeader msg -> ProgressHeader msg
 setNext next opts =
     { opts | next = next }
 
 
-setStep : Int -> PageHeader msg -> PageHeader msg
+setStep : Int -> ProgressHeader msg -> ProgressHeader msg
 setStep step opts =
     { opts | step = step }
 
 
-setTotalSteps : Int -> PageHeader msg -> PageHeader msg
+setTotalSteps : Int -> ProgressHeader msg -> ProgressHeader msg
 setTotalSteps totalSteps opts =
     { opts | totalSteps = totalSteps }
 
 
-view : PageHeader msg -> Html msg
+view : ProgressHeader msg -> Html msg
 view { title, back, next, step, totalSteps } =
     H.div [ A.class "ui-progressHeader" ]
         [ H.h2 [ A.class "ui-progressHeader__title" ] [ Ui.TextContainer.primaryJumboInline [ H.text title ] ]
