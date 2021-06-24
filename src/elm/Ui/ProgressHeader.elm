@@ -137,6 +137,7 @@ viewMaybeButton direction maybeButton =
                 B.init title
                     |> B.setOnClick (Just action)
                     |> B.setIcon (Just icon)
+                    |> B.setTransparent True
                     |> B.setIconPosition
                         (case direction of
                             Left ->

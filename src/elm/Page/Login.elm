@@ -284,7 +284,7 @@ view env model =
 
             StepConfirm ->
                 PH.init
-                    |> PH.setBackButton (Just ( "Avbryt", E.onClick BackLogin ))
+                    |> PH.setBackButton ( "Avbryt", BackLogin )
                     |> PH.view
                     |> List.singleton
                     |> H.div [ A.class "pageLogin__header" ]

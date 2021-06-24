@@ -20,6 +20,7 @@ module Ui.Button exposing
     , setIconPosition
     , setOnClick
     , setText
+    , setTransparent
     , setType
     , tertiary
     , tertiaryCompact
@@ -64,6 +65,7 @@ type alias Button msg =
     , disabled : Bool
     , icon : Maybe (Html msg)
     , iconPosition : IconPosition
+    , transparent : Bool
     , onClick : Maybe msg
     , type_ : String
     , attributes : List (H.Attribute msg)
@@ -77,6 +79,7 @@ init text =
     , disabled = False
     , icon = Nothing
     , iconPosition = Right
+    , transparent = False
     , onClick = Nothing
     , type_ = "button"
     , attributes = []
@@ -119,18 +122,24 @@ setElement element opts =
     { opts | element = element }
 
 
+setTransparent : Bool -> Button msg -> Button msg
+setTransparent transparent opts =
+    { opts | transparent = transparent }
+
+
 setAttributes : List (H.Attribute msg) -> Button msg -> Button msg
 setAttributes attributes opts =
     { opts | attributes = attributes }
 
 
 button : ButtonMode -> ThemeColor -> Button msg -> Html msg
-button mode color { text, disabled, icon, iconPosition, onClick, type_, attributes, element } =
+button mode color { text, disabled, icon, iconPosition, transparent, onClick, type_, attributes, element } =
     let
         classList =
             [ ( buttonModeToClass mode, True )
             , ( "ui-button", True )
             , ( "ui-button--disabled", disabled )
+            , ( "ui-button--transparent", transparent )
             , ( themeColorToClass color, mode /= Tertiary && mode /= Link )
             ]
 

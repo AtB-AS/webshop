@@ -542,92 +542,19 @@
 .ui-pageHeader {
     padding: var(--spacings-medium);
     margin-bottom: var(--spacings-xLarge);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 .ui-pageHeader__title {
     padding: var(--spacings-medium);
+    order: 2;
 }
-.ui-pageHeader__back,
-.ui-pageHeader__back:link,
-.ui-pageHeader__back:visited {
-    padding: var(--spacings-medium);
-    color: var(--text-colors-primary);
-    text-decoration: none;
-    transition: opacity 150ms ease-in;
-
-    border: 0;
-    background: transparent;
-    cursor: pointer;
+.ui-pageHeader__back {
+    order: 1;
 
     svg {
         margin-right: var(--spacings-medium);
-    }
-
-    svg,
-    path {
-        fill: currentColor;
-    }
-}
-.ui-pageHeader__back:hover {
-    opacity: 0.6;
-}
-.ui-pageHeader__back:active {
-    opacity: 0.5;
-}
-
-.ui-pageHeader__cancel,
-.ui-pageHeader__cancel:link,
-.ui-pageHeader__cancel:visited {
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: var(--spacings-xLarge);
-    color: var(--text-colors-primary);
-    text-decoration: none;
-    transition: opacity 150ms ease-in;
-
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-
-    display: flex;
-
-    svg {
-        margin-left: var(--spacings-medium);
-        display: block;
-    }
-    svg,
-    path {
-        fill: currentColor;
-    }
-}
-.ui-pageHeader__cancel:hover {
-    opacity: 0.6;
-}
-.ui-pageHeader__cancel:active {
-    opacity: 0.5;
-}
-
-@media (max-width: 700px) {
-    .ui-heading {
-        width: 100%;
-        text-align: center;
-    }
-    .ui-pageHeader {
-        padding: 0;
-        justify-content: flex-start;
-    }
-    .ui-pageHeader__back:link,
-    .ui-pageHeader__back:visited,
-    .ui-pageHeader__back:hover,
-    .ui-pageHeader__cancel,
-    .ui-pageHeader__cancel:link,
-    .ui-pageHeader__cancel:visited,
-    .ui-pageHeader__cancel:hover {
-        position: relative;
-        order: -1;
-    }
-    .ui-pageHeader__cancel {
-        margin-left: auto;
     }
 }
 
@@ -842,6 +769,9 @@ a.ui-button--link,
 .ui-button--compact.ui-button--tertiary:hover {
     filter: none;
     opacity: 0.6;
+}
+.ui-button--transparent {
+    background: transparent;
 }
 
 .ui-textContainer--primary {
@@ -1221,7 +1151,6 @@ a.ui-button--link,
 }
 
 .ui-progressHeader__button {
-    background-color: transparent;
     position: absolute;
     top: 0;
 }
