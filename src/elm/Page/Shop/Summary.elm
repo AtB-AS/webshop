@@ -43,6 +43,8 @@ type alias Summary =
     , travellers : String
     , validFrom : String
     , travellerData : List TravellerData
+    , totalPrice : Float
+    , totalVat : Float
     }
 
 
@@ -125,7 +127,7 @@ view shared model =
     in
         H.div [ A.class "page page--threeColumns" ]
             [ viewTicketSection summary
-            , viewPriceSection summary.travellerData shared model
+            , viewPriceSection summary
             , viewPaymentSection model
             ]
 
@@ -138,6 +140,9 @@ makeSummary query offers shared =
 
         travellerData =
             summerizeOffers shared.userProfiles offers
+
+        price =
+            totalPrice offers
     in
         { -- @TODO At some point when expanding to different modes, this should be updated.
           travelMode = "Buss / trikk"
@@ -146,6 +151,8 @@ makeSummary query offers shared =
         , travellers = humanizeTravellerData travellerData
         , validFrom = Maybe.withDefault "Nå" query.travelDate
         , travellerData = summerizeOffers shared.userProfiles offers
+        , totalPrice = price
+        , totalVat = vatAmount price shared
         }
 
 
@@ -198,25 +205,24 @@ viewTicketSection summary =
         ]
 
 
-viewPriceSection : List TravellerData -> Shared -> Model -> Html Msg
-viewPriceSection travellerData shared model =
+viewPriceSection : Summary -> Html Msg
+viewPriceSection summary =
     let
         price =
-            totalPrice model.offers
+            Util.Format.float summary.totalPrice 2
 
         vat =
-            vatAmount price shared
-                |> Util.Func.flip Util.Format.float 2
+            Util.Format.float summary.totalVat 2
     in
         Section.view
             [ Section.viewHeader "Pris"
             , Section.viewPaddedItem
-                (List.map viewTravellerData travellerData
+                (List.map viewTravellerData summary.travellerData
                     ++ [ H.hr [ A.class "shopPage__separator" ] []
                        , LabelItem.viewHorizontal
                             "Total:"
                             [ H.p [ A.class "shop__summaryPrice" ]
-                                [ price |> Util.Func.flip Util.Format.float 2 |> H.text
+                                [ H.text price
                                 , H.small [] [ H.text "kr" ]
                                 ]
                             ]
