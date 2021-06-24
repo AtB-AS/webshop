@@ -761,7 +761,7 @@ a.ui-button--link,
 .ui-button--compact {
     display: inline-flex;
     flex: initial;
-    padding: calc(var(--spacings-medium) - 2 * var(--border-width-medium));
+    padding: var(--spacings-medium);
 }
 .ui-button--compact:not(.ui-button--tertiary) {
     border-radius: var(--border-radius-regular);
