@@ -168,6 +168,7 @@ p + p {
     margin-left: auto;
 }
 .pageHeader__nav__item--active {
+    border-radius: var(--border-radius-regular);
     background: var(--ws-colors-primary_2-backgroundColor--transparent);
 }
 .pageHeader__nav a {
