@@ -10,15 +10,16 @@ module Ui.PageHeader exposing
 import Fragment.Icon as Icon
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
+import Html.Events as E
 import Html.Extra
 import Route exposing (Route)
+import Ui.Button as B
 import Ui.TextContainer
 
 
 type alias PageHeader msg =
     { back : Maybe ( String, Attribute msg, List (Attribute msg) -> List (Html msg) -> Html msg )
     , title : Maybe String
-    , onCancel : Maybe ( String, Html msg, msg )
     , backIcon : Html msg
     }
 
@@ -27,18 +28,13 @@ init : PageHeader msg
 init =
     { back = Nothing
     , title = Nothing
-    , onCancel = Nothing
     , backIcon = Icon.leftArrow
     }
 
 
-setBackButton : Maybe ( String, Attribute msg ) -> PageHeader msg -> PageHeader msg
-setBackButton maybeAction opts =
-    let
-        newBack =
-            Maybe.map (\( text, action ) -> ( text, action, H.button )) maybeAction
-    in
-        { opts | back = newBack }
+setBackButton : ( String, msg ) -> PageHeader msg -> PageHeader msg
+setBackButton ( backText, action ) opts =
+    { opts | back = Just ( backText, E.onClick action, H.button ) }
 
 
 setBackRoute : ( String, Route ) -> PageHeader msg -> PageHeader msg
@@ -59,11 +55,22 @@ setBackIcon backIcon opts =
 view : PageHeader msg -> Html msg
 view { back, title, backIcon } =
     H.div [ A.class "ui-pageHeader" ]
-        [ case back of
-            Just ( backTitle, action, el ) ->
-                el [ action, A.class "ui-pageHeader__back" ] [ backIcon, H.text backTitle ]
-
-            Nothing ->
-                Html.Extra.nothing
-        , Html.Extra.viewMaybe (\text -> H.h2 [ A.class "ui-pageHeader__title" ] [ Ui.TextContainer.primaryJumboInline [ H.text text ] ]) title
+        [ Html.Extra.viewMaybe (\text -> H.h2 [ A.class "ui-pageHeader__title" ] [ Ui.TextContainer.primaryJumboInline [ H.text text ] ]) title
+        , viewMaybeButton back backIcon
         ]
+
+
+viewMaybeButton : Maybe ( String, Attribute msg, List (Attribute msg) -> List (Html msg) -> Html msg ) -> Html msg -> Html msg
+viewMaybeButton maybeButton backIcon =
+    case maybeButton of
+        Just ( title, action, el ) ->
+            B.init title
+                |> B.setIcon (Just backIcon)
+                |> B.setIconPosition B.Left
+                |> B.setElement el
+                |> B.setTransparent True
+                |> B.setAttributes [ action, A.class "ui-pageHeader__back" ]
+                |> B.tertiaryCompact
+
+        _ ->
+            Html.Extra.nothing
