@@ -1,6 +1,7 @@
 module Ui.PageHeader exposing
     ( init
     , setBackButton
+    , setBackIcon
     , setBackRoute
     , setOnCancel
     , setTitle
@@ -20,6 +21,7 @@ type alias PageHeader msg =
     { back : Maybe ( String, Attribute msg, List (Attribute msg) -> List (Html msg) -> Html msg )
     , title : Maybe String
     , onCancel : Maybe ( String, Html msg, msg )
+    , backIcon : Html msg
     }
 
 
@@ -28,6 +30,7 @@ init =
     { back = Nothing
     , title = Nothing
     , onCancel = Nothing
+    , backIcon = Icon.leftArrow
     }
 
 
@@ -50,17 +53,22 @@ setTitle title opts =
     { opts | title = title }
 
 
+setBackIcon : Html msg -> PageHeader msg -> PageHeader msg
+setBackIcon backIcon opts =
+    { opts | backIcon = backIcon }
+
+
 setOnCancel : Maybe ( String, Html msg, msg ) -> PageHeader msg -> PageHeader msg
 setOnCancel onCancel opts =
     { opts | onCancel = onCancel }
 
 
 view : PageHeader msg -> Html msg
-view { back, title, onCancel } =
+view { back, title, onCancel, backIcon } =
     H.div [ A.class "ui-pageHeader" ]
         [ case back of
             Just ( backTitle, action, el ) ->
-                el [ action, A.class "ui-pageHeader__back" ] [ Icon.leftArrow, H.text backTitle ]
+                el [ action, A.class "ui-pageHeader__back" ] [ backIcon, H.text backTitle ]
 
             Nothing ->
                 Html.Extra.nothing

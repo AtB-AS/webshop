@@ -412,6 +412,7 @@ view _ _ shared model _ =
                     [ PH.init
                         |> PH.setTitle (Just "Kjøp nytt periodebillett")
                         |> PH.setBackButton (Just ( "Avbryt", E.onClick CloseShop ))
+                        |> PH.setBackIcon Icon.cross
                         |> PH.view
                     , H.div [ A.class "page" ]
                         [ Section.view
