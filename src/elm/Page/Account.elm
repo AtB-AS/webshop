@@ -812,7 +812,7 @@ viewTravelCard model profile =
                                         H.div [ A.class "pageAccount__noTravelCard" ]
                                             [ Icon.warningColor
                                             , H.p []
-                                                [ H.text "Du har ingen billettbærere! Last ned appen vår eller "
+                                                [ H.text "Du har ingen t:kort registrert. "
                                                 , Ui.InlineButtonLink.view
                                                     [ E.onClick <| SetEditSection (Just TravelCardSection) (Just "tkort")
                                                     ]
