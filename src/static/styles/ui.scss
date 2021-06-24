@@ -540,20 +540,16 @@
 }
 
 .ui-pageHeader {
-    display: flex;
-    flex-wrap: wrap;
-    padding: var(--spacings-xLarge);
-    position: relative;
-    justify-content: center;
+    padding: var(--spacings-medium);
     margin-bottom: var(--spacings-xLarge);
+}
+.ui-pageHeader__title {
+    padding: var(--spacings-medium);
 }
 .ui-pageHeader__back,
 .ui-pageHeader__back:link,
 .ui-pageHeader__back:visited {
-    position: absolute;
-    left: 0;
-    top: 0;
-    padding: var(--spacings-xLarge);
+    padding: var(--spacings-medium);
     color: var(--text-colors-primary);
     text-decoration: none;
     transition: opacity 150ms ease-in;
@@ -1193,4 +1189,51 @@ a.ui-button--link,
 }
 .ui-expandable__headerButton__expandText {
     margin: 0 var(--spacings-medium);
+}
+
+.ui-progressHeader {
+    display: flex;
+    flex-direction: column;
+}
+.ui-progressHeader__progressContainer {
+    order: 1;
+    position: relative;
+}
+.ui-progressHeader__title {
+    order: 2;
+    text-align: center;
+    margin: var(--spacings-medium);
+}
+.ui-progressHeader__button {
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+}
+.ui-progressHeader__button--left {
+    left: 0;
+}
+.ui-progressHeader__button--right {
+    right: 0;
+}
+
+.ui-progressHeader__dots {
+    padding: var(--spacings-medium);
+    display: flex;
+    justify-content: center;
+}
+
+.ui-progressHeader__dot {
+    border-radius: 50%;
+    display: block;
+    background: var(--colors-background_0-backgroundColor);
+    height: var(--icon-size-normal);
+    width: var(--icon-size-normal);
+}
+
+.ui-progressHeader__dot:not(:last-child) {
+    margin-right: var(--spacings-medium);
+}
+
+.ui-progressHeader__dot--active {
+    background: var(--colors-primary_2-backgroundColor);
 }

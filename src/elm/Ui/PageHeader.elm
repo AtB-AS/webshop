@@ -3,7 +3,6 @@ module Ui.PageHeader exposing
     , setBackButton
     , setBackIcon
     , setBackRoute
-    , setOnCancel
     , setTitle
     , view
     )
@@ -11,10 +10,9 @@ module Ui.PageHeader exposing
 import Fragment.Icon as Icon
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
-import Html.Events as E
 import Html.Extra
 import Route exposing (Route)
-import Ui.Heading
+import Ui.TextContainer
 
 
 type alias PageHeader msg =
@@ -58,13 +56,8 @@ setBackIcon backIcon opts =
     { opts | backIcon = backIcon }
 
 
-setOnCancel : Maybe ( String, Html msg, msg ) -> PageHeader msg -> PageHeader msg
-setOnCancel onCancel opts =
-    { opts | onCancel = onCancel }
-
-
 view : PageHeader msg -> Html msg
-view { back, title, onCancel, backIcon } =
+view { back, title, backIcon } =
     H.div [ A.class "ui-pageHeader" ]
         [ case back of
             Just ( backTitle, action, el ) ->
@@ -72,16 +65,5 @@ view { back, title, onCancel, backIcon } =
 
             Nothing ->
                 Html.Extra.nothing
-        , Html.Extra.viewMaybe (Ui.Heading.titleWithEl H.h2) title
-        , case onCancel of
-            Just ( text, icon, action ) ->
-                H.button
-                    [ E.onClick action
-                    , A.class "ui-pageHeader__cancel"
-                    , A.type_ "button"
-                    ]
-                    [ H.text text, icon ]
-
-            Nothing ->
-                Html.Extra.nothing
+        , Html.Extra.viewMaybe (\text -> H.h2 [ A.class "ui-pageHeader__title" ] [ Ui.TextContainer.primaryJumboInline [ H.text text ] ]) title
         ]

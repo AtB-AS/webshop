@@ -23,7 +23,7 @@ import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as TextInput
 import Ui.LabelItem
 import Ui.Message as Message
-import Ui.PageHeader as PH
+import Ui.ProgressHeader as PH
 import Ui.Section as Section
 import Util.PhoneNumber
 import Util.Task
@@ -408,15 +408,16 @@ view env shared model =
 wrapHeader : Model -> Bool -> String -> List (Html Msg) -> Html Msg
 wrapHeader model narrowPage title children =
     H.div []
-        [ PH.init
-            |> PH.setTitle (Just title)
-            |> PH.setOnCancel (Just ( "Hopp over dette steget", Icon.rightArrow, NextStep ))
-            |> PH.setBackButton
+        [ PH.init title
+            |> PH.setNext (Just ( "Hopp over dette steget", NextStep ))
+            |> PH.setTotalSteps 4
+            |> PH.setStep 1
+            |> PH.setBack
                 (if model.step == ProfileInfo then
                     Nothing
 
                  else
-                    Just ( "Tilbake", E.onClick PrevStep )
+                    Just ( "Tilbake", PrevStep )
                 )
             |> PH.view
         , H.div
