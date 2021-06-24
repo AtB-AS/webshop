@@ -16,16 +16,15 @@ import Json.Decode as Decode exposing (Decoder)
 import PageUpdater exposing (PageUpdater)
 import Process
 import Route exposing (Route)
-import Service.Misc as MiscService
+import Service.Misc as MiscService exposing (Profile)
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Button as B
-import Ui.Heading
 import Ui.Message as Message
 import Ui.PageHeader as PH
-import Ui.Section
+import Ui.Section as S
 import Ui.TicketDetails
 import Ui.TravelCardText
 import Util.FareContract
@@ -227,7 +226,7 @@ update msg env model =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view env _ shared model _ =
+view _ _ shared model _ =
     H.div []
         [ PH.init
             |> PH.setTitle (Just "Mine billetter")
@@ -249,46 +248,91 @@ viewSidebar shared model =
 
 viewAccountInfo : Shared -> Model -> Html Msg
 viewAccountInfo shared _ =
-    Ui.Section.init
-        |> Ui.Section.setMarginBottom True
-        |> Ui.Section.viewWithOptions
-            [ Ui.Section.viewPaddedItem
-                [ Ui.Heading.component "Min profil"
-                , Html.Extra.viewMaybe
-                    (\d -> H.p [ A.class "accountInfo__item" ] [ H.text <| Util.PhoneNumber.format d.phone ])
-                    shared.profile
-                , shared.profile
-                    |> Util.Maybe.flatMap .travelCard
-                    |> Maybe.map .id
-                    |> Html.Extra.viewMaybe
-                        (\id ->
-                            H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
-                                [ Icon.travelCard
-                                , Ui.TravelCardText.view id
-                                ]
-                        )
-                ]
-            , B.init "Rediger profil"
-                |> B.setDisabled False
-                |> B.setIcon (Just Icon.edit)
-                |> B.setOnClick (Just OpenSettings)
-                |> B.tertiary
-            , case Util.Maybe.flatMap .travelCard shared.profile of
-                Just _ ->
-                    Html.Extra.nothing
+    let
+        name =
+            viewNameMaybe shared.profile
 
-                _ ->
-                    B.init "Legg til t:kort "
-                        |> B.setDisabled False
-                        |> B.setIcon (Just Icon.travelCard)
-                        |> B.setOnClick (Just OpenEditTravelCard)
-                        |> B.tertiary
-            ]
+        phone =
+            viewPhoneMaybe shared.profile
+    in
+        S.init
+            |> S.setMarginBottom True
+            |> S.viewWithOptions
+                [ S.viewLabelItem "Min profil"
+                    [ Html.Extra.viewMaybe identity name
+                    , Html.Extra.viewMaybe identity phone
+                    , if phone == Nothing && name == Nothing then
+                        H.p [] [ H.text "Ingen informasjon satt" ]
+
+                      else
+                        Html.Extra.nothing
+                    ]
+                , S.viewLabelItem "T:kort"
+                    [ shared.profile
+                        |> Util.Maybe.flatMap .travelCard
+                        |> Maybe.map .id
+                        |> Html.Extra.viewMaybe
+                            (\id ->
+                                H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
+                                    [ Icon.travelCard
+                                    , Ui.TravelCardText.view id
+                                    ]
+                            )
+                    ]
+                , B.init "Rediger profil"
+                    |> B.setDisabled False
+                    |> B.setIcon (Just Icon.edit)
+                    |> B.setOnClick (Just OpenSettings)
+                    |> B.tertiary
+                , case Util.Maybe.flatMap .travelCard shared.profile of
+                    Just _ ->
+                        Html.Extra.nothing
+
+                    _ ->
+                        B.init "Legg til t:kort "
+                            |> B.setDisabled False
+                            |> B.setIcon (Just Icon.travelCard)
+                            |> B.setOnClick (Just OpenEditTravelCard)
+                            |> B.tertiary
+                ]
+
+
+viewNameMaybe : Maybe Profile -> Maybe (Html msg)
+viewNameMaybe maybeProfile =
+    case maybeProfile of
+        Just { firstName, lastName } ->
+            if hasField firstName || hasField lastName then
+                Just <| H.p [] [ H.text <| firstName ++ " " ++ lastName ]
+
+            else
+                Nothing
+
+        _ ->
+            Nothing
+
+
+viewPhoneMaybe : Maybe Profile -> Maybe (Html msg)
+viewPhoneMaybe maybeProfile =
+    case maybeProfile of
+        Just { phone } ->
+            if hasField phone then
+                Just <| H.p [] [ H.text <| Util.PhoneNumber.format phone ]
+
+            else
+                Nothing
+
+        _ ->
+            Nothing
+
+
+hasField : String -> Bool
+hasField x =
+    x /= "" && x /= "_"
 
 
 viewActions : Shared -> Html Msg
 viewActions shared =
-    Ui.Section.view
+    S.view
         [ B.init "Kjøp ny periodebillett"
             |> B.setDisabled False
             |> B.setIcon (Just Icon.ticketAdd)
@@ -313,9 +357,9 @@ viewMain shared model =
             Util.FareContract.filterValidNow model.currentTime model.tickets
 
         infoMessage =
-            Ui.Section.init
-                |> Ui.Section.setMarginBottom True
-                |> Ui.Section.viewWithOptions
+            S.init
+                |> S.setMarginBottom True
+                |> S.viewWithOptions
                     [ H.p []
                         [ H.text "Denne billettvisningen er ikke gyldig ved eventuell billettkontroll."
                         , H.br [] []
