@@ -1194,6 +1194,7 @@ a.ui-button--link,
 .ui-progressHeader {
     display: flex;
     flex-direction: column;
+    padding: var(--spacings-medium);
 }
 .ui-progressHeader__progressContainer {
     order: 1;
@@ -1210,10 +1211,10 @@ a.ui-button--link,
     top: 0;
 }
 .ui-progressHeader__button--left {
-    left: 0;
+    left: var(--spacings-medium);
 }
 .ui-progressHeader__button--right {
-    right: 0;
+    right: var(--spacings-medium);
 }
 
 .ui-progressHeader__dots {
