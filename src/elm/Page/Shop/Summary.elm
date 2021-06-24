@@ -22,7 +22,6 @@ import Ui.LabelItem as LabelItem
 import Ui.Message
 import Ui.Section as Section
 import Util.Format
-import Util.Func
 import Util.Status exposing (Status(..))
 
 
@@ -138,6 +137,10 @@ makeSummary query offers shared =
         productName =
             nameFromFareProduct shared.fareProducts query.productId
 
+        productType =
+            nameTypeFromFareProduct shared.fareProducts query.productId
+                |> Maybe.withDefault ProductTypePeriod
+
         travellerData =
             summerizeOffers shared.userProfiles offers
 
@@ -146,7 +149,7 @@ makeSummary query offers shared =
     in
         { -- @TODO At some point when expanding to different modes, this should be updated.
           travelMode = "Buss / trikk"
-        , productType = ProductTypeCarnet
+        , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
         , validFrom = Maybe.withDefault "Nå" query.travelDate
@@ -310,6 +313,13 @@ nameFromFareProduct products productId =
     products
         |> List.Extra.find (.id >> (==) productId)
         |> Maybe.map (.name >> langString)
+
+
+nameTypeFromFareProduct : List FareProduct -> String -> Maybe ProductType
+nameTypeFromFareProduct products productId =
+    products
+        |> List.Extra.find (.id >> (==) productId)
+        |> Maybe.map .type_
 
 
 nameFromProductType : ProductType -> String

@@ -1,17 +1,19 @@
 module Page.Shop exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.RefData exposing (FareProduct, LangString(..), Limitation, TariffZone, UserProfile, UserType(..))
+import Data.RefData exposing (FareProduct, LangString(..), UserType(..))
 import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Events as E
 import Html.Extra
 import Http
-import List.Extra
 import Notification
+import Page.Shop.Common as Common exposing (TravelDateTime(..))
+import Page.Shop.Summary as SummaryPage
 import PageUpdater exposing (PageUpdater)
 import Process
 import Route exposing (Route)
@@ -21,16 +23,12 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time exposing (Posix)
-import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Group
 import Ui.Input.Radio as Radio
-import Ui.Input.Select as Select
 import Ui.Input.Text as Text
-import Ui.LabelItem
-import Ui.LoadingText
 import Ui.Message as Message
+import Ui.PageHeader as PH
 import Ui.Section as Section
-import Util.Format
 import Util.Func as Func
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -43,13 +41,10 @@ type Msg
     | ResetState
     | FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
-    | BuyOffers PaymentType
-    | ReceiveBuyOffers (Result Http.Error Reservation)
     | CloseShop
     | SetProduct String Bool
     | SetFromZone String
     | SetToZone String
-    | ModUser UserType Int
     | SetUser UserType Bool
     | ShowView MainView
     | SetTime String
@@ -58,6 +53,9 @@ type Msg
     | UpdateZone Time.Zone
     | GetIsoTime String
     | SetTravelDateTime TravelDateTime
+    | CloseSummary
+    | GoToSummary
+    | SummarySubMsg SummaryPage.Msg
 
 
 type MainView
@@ -66,11 +64,6 @@ type MainView
     | Start
     | Zones
     | None
-
-
-type TravelDateTime
-    = TravelNow
-    | TravelFuture (Maybe String)
 
 
 type alias Model =
@@ -86,6 +79,7 @@ type alias Model =
     , inputTravelDate : String
     , inputTravelTime : String
     , timeZone : Time.Zone
+    , summary : Maybe SummaryPage.Model
     }
 
 
@@ -103,6 +97,7 @@ init =
       , inputTravelDate = ""
       , inputTravelTime = ""
       , timeZone = Time.utc
+      , summary = Nothing
       }
     , Cmd.batch
         [ TaskUtil.doTask FetchOffers
@@ -133,7 +128,7 @@ update msg env model shared =
                        )
 
             OnLeavePage ->
-                PageUpdater.init model
+                PageUpdater.init { model | summary = Nothing }
 
             SetProduct product _ ->
                 PageUpdater.fromPair
@@ -197,36 +192,6 @@ update msg env model shared =
                     ( { model | travelDateTime = TravelNow }
                     , TaskUtil.doTask FetchOffers
                     )
-
-            ModUser userType change ->
-                let
-                    users =
-                        model.users
-
-                    otherUsers =
-                        List.filter (Tuple.first >> (/=) userType) users
-
-                    user =
-                        users
-                            |> List.filter (Tuple.first >> (==) userType)
-                            |> List.head
-
-                    newValue =
-                        case user of
-                            Just ( _, count ) ->
-                                count + change
-
-                            Nothing ->
-                                change
-
-                    newUsers =
-                        if newValue < 1 then
-                            otherUsers
-
-                        else
-                            ( userType, newValue ) :: otherUsers
-                in
-                    PageUpdater.init { model | users = newUsers }
 
             FetchOffers ->
                 if List.isEmpty model.users then
@@ -304,47 +269,6 @@ update msg env model shared =
                             PageUpdater.init { model | offers = Failed errorMessage }
                                 |> addGlobalNotification (Message.Error <| H.text errorMessage)
 
-            BuyOffers paymentType ->
-                case model.offers of
-                    Loaded offers ->
-                        let
-                            offerCounts =
-                                List.filterMap
-                                    (\offer ->
-                                        model.users
-                                            |> List.filter (Tuple.first >> (==) offer.userType)
-                                            |> List.head
-                                            |> Maybe.map (\( _, count ) -> ( offer.offerId, count ))
-                                    )
-                                    offers
-
-                            phone =
-                                Maybe.map .phone shared.profile
-                        in
-                            PageUpdater.fromPair
-                                ( { model | reservation = Loading Nothing }
-                                , buyOffers env phone paymentType offerCounts
-                                )
-
-                    _ ->
-                        PageUpdater.init model
-
-            ReceiveBuyOffers result ->
-                case result of
-                    Ok reservation ->
-                        PageUpdater.fromPair
-                            ( { model | reservation = Loaded reservation }
-                            , MiscService.navigateTo reservation.url
-                            )
-
-                    Err _ ->
-                        let
-                            errorMessage =
-                                "Fikk ikke reservert billett. Prøv igjen."
-                        in
-                            PageUpdater.init { model | reservation = Failed errorMessage }
-                                |> addGlobalNotification (Message.Error <| H.text errorMessage)
-
             CloseShop ->
                 PageUpdater.fromPair ( model, TaskUtil.doTask ResetState )
                     |> PageUpdater.addGlobalAction (GA.RouteTo Route.Home)
@@ -376,6 +300,37 @@ update msg env model shared =
                     , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
                     )
 
+            CloseSummary ->
+                PageUpdater.init { model | summary = Nothing }
+
+            GoToSummary ->
+                case model.offers of
+                    Loaded offers ->
+                        PageUpdater.init
+                            { model
+                                | summary =
+                                    Just <|
+                                        SummaryPage.init
+                                            { productId = Maybe.withDefault "" model.product
+                                            , fromZoneId = Maybe.withDefault "" model.fromZone
+                                            , toZoneId = Maybe.withDefault "" model.toZone
+                                            , travelDate = Nothing
+                                            }
+                                            offers
+                            }
+
+                    _ ->
+                        PageUpdater.init model
+
+            SummarySubMsg subMsg ->
+                case model.summary of
+                    Nothing ->
+                        PageUpdater.init model
+
+                    Just summary ->
+                        SummaryPage.update subMsg env summary shared
+                            |> PageUpdater.map (\newModel -> { model | summary = Just newModel }) SummarySubMsg
+
 
 defaultDerivedData : Shared -> ( String, String )
 defaultDerivedData shared =
@@ -406,7 +361,7 @@ maybeResetUsers shared product users =
     let
         data =
             users
-                |> List.filter (Tuple.first >> Func.flip List.member (findLimitations product shared.productLimitations))
+                |> List.filter (Tuple.first >> Func.flip List.member (Common.findLimitations product shared.productLimitations))
     in
         if List.isEmpty data then
             [ ( UserTypeAdult, 1 ) ]
@@ -434,7 +389,7 @@ view _ _ shared model _ =
             defaultDerivedData shared
 
         summary =
-            modelSummary ( defaultZone, defaultProduct ) shared model
+            Common.modelSummary ( defaultZone, defaultProduct ) shared model
 
         errorMessage =
             case model.offers of
@@ -466,283 +421,87 @@ view _ _ shared model _ =
                             False
                    )
     in
-        H.div [ A.class "page" ]
-            [ Section.view
-                [ Ui.Group.view
-                    { title = "Reisetype"
-                    , icon = Icon.bus
-                    , value = Just "Buss og trikk"
-                    , open = False
-                    , readonly = True
-                    , onOpenClick = Nothing
-                    , id = "reisetype"
-                    , editTextSuffix = "billett"
-                    }
-                    []
-                , Ui.Group.view
-                    { title = "Billettype"
-                    , icon = Icon.duration
-                    , value = summary.duration
-                    , open = model.mainView == Duration
-                    , readonly = False
-                    , onOpenClick = Just (ShowView Duration)
-                    , id = "varighet"
-                    , editTextSuffix = "varighet"
-                    }
-                    [ viewProducts model defaultProduct shared.availableFareProducts ]
-                , Ui.Group.view
-                    { title = "Reisende"
-                    , icon = Icon.bus
-                    , value =
-                        summary.users
-                            |> List.head
-                            |> Maybe.map (\( name, num ) -> String.fromInt num ++ " " ++ name)
-                    , open = model.mainView == Travelers
-                    , readonly = False
-                    , onOpenClick = Just (ShowView Travelers)
-                    , id = "reisende"
-                    , editTextSuffix = "reisende"
-                    }
-                    [ viewUserProfiles defaultProduct model shared ]
-                , Ui.Group.view
-                    { title = "Gyldig fra og med"
-                    , icon = Icon.ticket
-                    , value = summary.start
-                    , open = model.mainView == Start
-                    , readonly = False
-                    , onOpenClick = Just (ShowView Start)
-                    , id = "duration"
-                    , editTextSuffix = "tid"
-                    }
-                    (viewStart model)
-                , Ui.Group.view
-                    { title = "Soner"
-                    , icon = Icon.map
-                    , value = summary.zones
-                    , open = model.mainView == Zones
-                    , readonly = False
-                    , onOpenClick = Just (ShowView Zones)
-                    , id = "zones"
-                    , editTextSuffix = "sone"
-                    }
-                    [ viewZones model defaultZone shared.tariffZones ]
-                ]
-            , H.div []
-                [ summaryView shared model summary
-                , Section.init
-                    |> Section.setMarginBottom True
-                    |> Section.viewWithOptions
-                        [ Html.Extra.viewMaybe Message.error errorMessage
-                        , B.init "Kjøp med bankkort"
-                            |> B.setDisabled disableButtons
-                            |> B.setIcon (Just Icon.creditcard)
-                            |> B.setOnClick (Just (BuyOffers Nets))
-                            |> B.primary Secondary_1
-                        , B.init "Kjøp med Vipps"
-                            |> B.setDisabled disableButtons
-                            |> B.setIcon (Just (B.coloredIcon Icon.vipps))
-                            |> B.setOnClick (Just (BuyOffers Vipps))
-                            |> B.primary Secondary_1
-                        , B.init "Avbryt"
-                            |> B.setDisabled False
-                            |> B.setIcon (Just Icon.cross)
-                            |> B.setOnClick (Just CloseShop)
-                            |> B.tertiary
-                        ]
-                ]
-            ]
+        case model.summary of
+            Just summaryModel ->
+                H.div []
+                    [ PH.init
+                        |> PH.setTitle (Just "Oppsummering")
+                        |> PH.setBackButton (Just ( "Tilbake", E.onClick CloseSummary ))
+                        |> PH.view
+                    , SummaryPage.view shared summaryModel
+                        |> H.map SummarySubMsg
+                    ]
 
-
-nameFromUserType : List UserProfile -> UserType -> Maybe String
-nameFromUserType profiles userType =
-    profiles
-        |> List.Extra.find (.userType >> (==) userType)
-        |> Maybe.map (.name >> langString)
-
-
-nameFromFareProduct : List FareProduct -> String -> Maybe String
-nameFromFareProduct products productId =
-    products
-        |> List.Extra.find (.id >> (==) productId)
-        |> Maybe.map (.name >> langString)
-
-
-stringFromStart : Model -> Maybe String
-stringFromStart model =
-    case model.travelDateTime of
-        TravelNow ->
-            Just "Kjøpstidspunkt"
-
-        TravelFuture (Just time) ->
-            TimeUtil.isoStringToFullHumanized model.timeZone time
-
-        _ ->
-            Nothing
-
-
-stringFromZone : List TariffZone -> String -> Model -> Maybe String
-stringFromZone tariffZones defaultZone model =
-    let
-        findName zone =
-            tariffZones
-                |> List.Extra.find (.id >> (==) zone)
-                |> Maybe.map (.name >> langString)
-                |> Maybe.withDefault "-"
-
-        fromZoneName =
-            findName (Maybe.withDefault defaultZone model.fromZone)
-
-        toZoneName =
-            findName (Maybe.withDefault defaultZone model.toZone)
-    in
-        if model.fromZone == model.toZone then
-            Just <| "Reise i 1 sone (" ++ fromZoneName ++ ")"
-
-        else
-            Just <| "Reise fra sone " ++ fromZoneName ++ " til sone " ++ toZoneName
-
-
-type alias ModelSummary =
-    { users : List ( String, Int )
-    , duration : Maybe String
-    , start : Maybe String
-    , zones : Maybe String
-    }
-
-
-modelSummary : ( String, String ) -> Shared -> Model -> ModelSummary
-modelSummary ( defaultZone, defaultProduct ) shared model =
-    let
-        product =
-            Maybe.withDefault defaultProduct model.product
-    in
-        { users =
-            model.users
-                |> List.map
-                    (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
-        , duration = nameFromFareProduct shared.fareProducts product
-        , start = stringFromStart model
-        , zones = stringFromZone shared.tariffZones defaultZone model
-        }
-
-
-summaryView : Shared -> Model -> ModelSummary -> Html Msg
-summaryView shared model _ =
-    let
-        emptyOffers =
-            case model.offers of
-                Loaded offers ->
-                    List.isEmpty offers
-
-                _ ->
-                    False
-
-        totalPrice =
-            case model.offers of
-                Loaded offers ->
-                    offers
-                        |> List.map (calculateOfferPrice model.users)
-                        |> List.sum
-                        |> round
-                        |> toFloat
-                        |> Just
-
-                _ ->
-                    Nothing
-
-        vatAmount =
-            Maybe.map ((*) (toFloat shared.remoteConfig.vat_percent / 100)) totalPrice
-
-        validFrom =
-            case model.travelDateTime of
-                TravelNow ->
-                    H.text "Kjøpstidspunkt"
-
-                TravelFuture (Just time) ->
-                    TimeUtil.isoStringToFullHumanized model.timeZone time
-                        |> Maybe.map
-                            (\dateTime ->
-                                H.time [ A.datetime time ] [ H.text <| dateTime ]
-                            )
-                        |> Maybe.withDefault Html.Extra.nothing
-
-                TravelFuture Nothing ->
-                    Html.Extra.nothing
-    in
-        Section.init
-            |> Section.setMarginBottom True
-            |> Section.viewWithOptions
-                [ Section.viewHeader "Oppsummering"
-                , if emptyOffers then
-                    Message.warning "Finner ingen tilgjengelige billetter."
-
-                  else
-                    Section.viewPaddedItem
-                        [ Ui.LabelItem.viewHorizontal
-                            "Total:"
-                            [ H.p [ A.class "shop__summaryPrice" ]
-                                [ totalPrice
-                                    |> Maybe.map (Func.flip Util.Format.float 2)
-                                    |> Maybe.map H.text
-                                    |> Maybe.withDefault (Ui.LoadingText.view "1.6875rem" "5rem")
-                                , H.small [] [ H.text "kr" ]
-                                ]
+            _ ->
+                H.div []
+                    [ PH.init
+                        |> PH.setTitle (Just "Kjøp nytt periodebillett")
+                        |> PH.setBackButton (Just ( "Avbryt", E.onClick CloseShop ))
+                        |> PH.view
+                    , H.div [ A.class "page" ]
+                        [ Section.view
+                            [ Ui.Group.view
+                                { title = "Reisetype"
+                                , icon = Icon.bus
+                                , value = Just "Buss og trikk"
+                                , open = False
+                                , readonly = True
+                                , onOpenClick = Nothing
+                                , id = "reisetype"
+                                , editTextSuffix = "billett"
+                                }
+                                []
+                            , Ui.Group.view
+                                { title = "Billettype"
+                                , icon = Icon.duration
+                                , value = summary.duration
+                                , open = model.mainView == Duration
+                                , readonly = False
+                                , onOpenClick = Just (ShowView Duration)
+                                , id = "varighet"
+                                , editTextSuffix = "varighet"
+                                }
+                                [ viewProducts model defaultProduct shared.availableFareProducts ]
+                            , Ui.Group.view
+                                { title = "Reisende"
+                                , icon = Icon.bus
+                                , value =
+                                    summary.users
+                                        |> List.head
+                                        |> Maybe.map (\( name, num ) -> String.fromInt num ++ " " ++ name)
+                                , open = model.mainView == Travelers
+                                , readonly = False
+                                , onOpenClick = Just (ShowView Travelers)
+                                , id = "reisende"
+                                , editTextSuffix = "reisende"
+                                }
+                                [ Common.viewUserProfiles defaultProduct model SetUser shared ]
+                            , Ui.Group.view
+                                { title = "Gyldig fra og med"
+                                , icon = Icon.ticket
+                                , value = summary.start
+                                , open = model.mainView == Start
+                                , readonly = False
+                                , onOpenClick = Just (ShowView Start)
+                                , id = "duration"
+                                , editTextSuffix = "tid"
+                                }
+                                (viewStart model)
+                            , Ui.Group.view
+                                { title = "Soner"
+                                , icon = Icon.map
+                                , value = summary.zones
+                                , open = model.mainView == Zones
+                                , readonly = False
+                                , onOpenClick = Just (ShowView Zones)
+                                , id = "zones"
+                                , editTextSuffix = "sone"
+                                }
+                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
                             ]
-                        , Ui.LabelItem.viewHorizontal "Hvorav mva:"
-                            [ vatAmount
-                                |> Maybe.map (Func.flip Util.Format.float 2)
-                                |> Maybe.map (Func.flip (++) " kr")
-                                |> Maybe.map H.text
-                                |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
-                            ]
-                        ]
-                , Section.viewPaddedItem
-                    [ Ui.LabelItem.viewCompact "Gyldig fra"
-                        [ validFrom
+                        , Common.viewSummary shared model disableButtons GoToSummary
                         ]
                     ]
-                , maybeBuyNotice model.users
-                ]
-
-
-hasReducedCost : UserType -> Bool
-hasReducedCost userType =
-    case userType of
-        UserTypeAdult ->
-            False
-
-        UserTypeInfant ->
-            False
-
-        UserTypeSchoolPupil ->
-            False
-
-        UserTypeAnimal ->
-            False
-
-        UserTypeAnyone ->
-            False
-
-        _ ->
-            True
-
-
-maybeBuyNotice : List ( UserType, Int ) -> Html msg
-maybeBuyNotice users =
-    let
-        reduced =
-            List.any (Tuple.first >> hasReducedCost) users
-
-        result =
-            if reduced then
-                Just <| Message.info "Husk at du må reise med gyldig moderasjonsbevis"
-
-            else
-                Nothing
-
-        --
-    in
-        Html.Extra.viewMaybe identity result
 
 
 langString : LangString -> String
@@ -815,89 +574,12 @@ viewProduct model defaultProduct product =
             |> Radio.view
 
 
-viewZones : Model -> String -> List TariffZone -> Html Msg
-viewZones model defaultZone zones =
-    let
-        sortedZones =
-            List.sortWith
-                (\a b ->
-                    case ( a.name, b.name ) of
-                        ( LangString _ nameA, LangString _ nameB ) ->
-                            compare nameA nameB
-                )
-                zones
-
-        selectedFromZone =
-            Maybe.withDefault defaultZone model.fromZone
-
-        selectedToZone =
-            Maybe.withDefault defaultZone model.toZone
-    in
-        Section.viewItem
-            [ Section.viewHorizontalGroup
-                [ Select.init "travelFromZone"
-                    |> Select.setTitle (Just "Avreisesone")
-                    |> Select.setOnInput (Just SetFromZone)
-                    |> Select.view (List.map (viewZone selectedFromZone) sortedZones)
-                , Select.init "travelToZone"
-                    |> Select.setTitle (Just "Ankomstsone")
-                    |> Select.setOnInput (Just SetToZone)
-                    |> Select.view (List.map (viewZone selectedToZone) sortedZones)
-                ]
-            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser (åpner ny side)" ] ] ]
-            ]
-
-
-viewZone : String -> TariffZone -> Html msg
-viewZone current zone =
-    H.option
-        [ A.value zone.id
-        , A.selected (current == zone.id)
-        ]
-        [ H.text <| langString zone.name ]
-
-
-viewUserProfiles : String -> Model -> Shared -> Html Msg
-viewUserProfiles defaultProduct model shared =
-    let
-        product =
-            Maybe.withDefault defaultProduct model.product
-    in
-        shared.userProfiles
-            |> List.filter (.userType >> Func.flip List.member (findLimitations product shared.productLimitations))
-            |> List.filter (.userType >> (/=) UserTypeAnyone)
-            |> List.map (viewUserProfile model)
-            |> Radio.viewGroup "Reisende"
-
-
-findLimitations : String -> List Limitation -> List UserType
-findLimitations productId fareProducts =
-    fareProducts
-        |> List.Extra.find (.productId >> (==) productId)
-        |> Maybe.map .limitations
-        |> Maybe.withDefault []
-
-
-viewUserProfile : Model -> UserProfile -> Html Msg
-viewUserProfile model userProfile =
-    let
-        isCurrent =
-            List.any (Tuple.first >> (==) userProfile.userType) model.users
-    in
-        Radio.init (userTypeAsIdString userProfile.userType)
-            |> Radio.setTitle (langString userProfile.name)
-            |> Radio.setName "userprofile"
-            |> Radio.setSubtitle (Just <| langString userProfile.description)
-            |> Radio.setChecked isCurrent
-            |> Radio.setOnCheck (Just <| SetUser userProfile.userType)
-            |> Radio.view
-
-
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ MiscService.convertedTime GetIsoTime
         , Time.every 1000 UpdateNow
+        , SummaryPage.subscriptions |> Sub.map SummarySubMsg
         ]
 
 
@@ -913,82 +595,3 @@ fetchOffers env product fromZone toZone users travelDate =
         |> TicketService.search env travelDate product users
         |> Http.toTask
         |> Task.attempt ReceiveOffers
-
-
-buyOffers : Environment -> Maybe String -> PaymentType -> List ( String, Int ) -> Cmd Msg
-buyOffers env phone paymentType offerCounts =
-    offerCounts
-        |> TicketService.reserve env phone paymentType
-        |> Http.toTask
-        |> Task.attempt ReceiveBuyOffers
-
-
-calculateOfferPrice : List ( UserType, Int ) -> Offer -> Float
-calculateOfferPrice users offer =
-    let
-        price =
-            offer.prices
-                |> List.map .amountFloat
-                |> List.head
-                |> Maybe.withDefault 0.0
-
-        count =
-            users
-                |> List.filterMap
-                    (\( userType, userCount ) ->
-                        if userType == offer.userType then
-                            Just userCount
-
-                        else
-                            Nothing
-                    )
-                |> List.head
-                |> Maybe.withDefault 0
-    in
-        price * toFloat count
-
-
-userTypeAsIdString : UserType -> String
-userTypeAsIdString userType =
-    case userType of
-        UserTypeAdult ->
-            "UserTypeAdult"
-
-        UserTypeChild ->
-            "UserTypeChild"
-
-        UserTypeInfant ->
-            "UserTypeInfant"
-
-        UserTypeSenior ->
-            "UserTypeSenior"
-
-        UserTypeStudent ->
-            "UserTypeStudent"
-
-        UserTypeYoungPerson ->
-            "UserTypeYoungPerson"
-
-        UserTypeSchoolPupil ->
-            "UserTypeSchoolPupil"
-
-        UserTypeMilitary ->
-            "UserTypeMilitary"
-
-        UserTypeDisabled ->
-            "UserTypeDisabled"
-
-        UserTypeDisabledCompanion ->
-            "UserTypeDisabledCompanion"
-
-        UserTypeJobSeeker ->
-            "UserTypeJobSeeker"
-
-        UserTypeEmployee ->
-            "UserTypeEmployee"
-
-        UserTypeAnimal ->
-            "UserTypeAnimal"
-
-        UserTypeAnyone ->
-            "UserTypeAnyone"
