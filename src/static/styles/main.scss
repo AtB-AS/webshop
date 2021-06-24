@@ -5,6 +5,11 @@
 :root {
     --ws-icon-size-xLarge: 2.5rem;
 }
+@media (max-width: 400px) {
+    :root {
+        --ws-icon-size-xLarge: 1.75rem;
+    }
+}
 
 html {
     box-sizing: border-box;
