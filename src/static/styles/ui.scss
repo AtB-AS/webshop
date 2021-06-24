@@ -791,12 +791,17 @@ a.ui-button {
     width: 100%;
 }
 .ui-button__icon {
-    margin-left: var(--spacings-small);
     display: block;
 
     svg {
         display: block;
     }
+}
+.ui-button__icon--left {
+    margin-right: var(--spacings-small);
+}
+.ui-button__icon--right {
+    margin-left: var(--spacings-small);
 }
 a.ui-button--link,
 .ui-button--link {
