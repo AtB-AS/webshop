@@ -1,13 +1,16 @@
-module Page.Shop.Common exposing (CommonModel, TravelDateTime(..), viewSummary, viewZones)
+module Page.Shop.Common exposing (CommonModel, TravelDateTime(..), findLimitations, modelSummary, nameFromFareProduct, nameFromUserType, stringFromZone, viewSummary, viewUserProfiles, viewZones)
 
-import Data.RefData exposing (LangString(..), TariffZone)
+import Data.RefData exposing (FareProduct, LangString(..), Limitation, TariffZone, UserProfile, UserType(..))
 import Data.Ticket exposing (Offer)
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
+import List.Extra
 import Page.Shop.Summary as SummaryPage
 import Shared exposing (Shared)
+import Time
 import Ui.Button as B exposing (ThemeColor(..))
+import Ui.Input.Radio as Radio
 import Ui.Input.Select as Select
 import Ui.LabelItem
 import Ui.LoadingText
@@ -16,6 +19,7 @@ import Ui.Section as Section
 import Util.Format
 import Util.Func as Func
 import Util.Status exposing (Status(..))
+import Util.Time as TimeUtil
 
 
 type TravelDateTime
@@ -26,11 +30,41 @@ type TravelDateTime
 type alias CommonModel a =
     { a
         | offers : Status (List Offer)
+        , users : List ( UserType, Int )
         , product : Maybe String
         , fromZone : Maybe String
         , toZone : Maybe String
+        , timeZone : Time.Zone
         , travelDateTime : TravelDateTime
     }
+
+
+viewUserProfiles : String -> CommonModel a -> (UserType -> Bool -> msg) -> Shared -> Html msg
+viewUserProfiles defaultProduct model onUserSelect shared =
+    let
+        product =
+            Maybe.withDefault defaultProduct model.product
+    in
+        shared.userProfiles
+            |> List.filter (.userType >> Func.flip List.member (findLimitations product shared.productLimitations))
+            |> List.filter (.userType >> (/=) UserTypeAnyone)
+            |> List.map (viewUserProfile model onUserSelect)
+            |> Radio.viewGroup "Reisende"
+
+
+viewUserProfile : CommonModel a -> (UserType -> Bool -> msg) -> UserProfile -> Html msg
+viewUserProfile model onUserSelect userProfile =
+    let
+        isCurrent =
+            List.any (Tuple.first >> (==) userProfile.userType) model.users
+    in
+        Radio.init (userTypeAsIdString userProfile.userType)
+            |> Radio.setTitle (langString userProfile.name)
+            |> Radio.setName "userprofile"
+            |> Radio.setSubtitle (Just <| langString userProfile.description)
+            |> Radio.setChecked isCurrent
+            |> Radio.setOnCheck (Just <| onUserSelect userProfile.userType)
+            |> Radio.view
 
 
 viewSummary : Shared -> CommonModel a -> Bool -> msg -> Html msg
@@ -137,6 +171,81 @@ viewZone current zone =
         [ H.text <| langString zone.name ]
 
 
+type alias ModelSummary =
+    { users : List ( String, Int )
+    , product : Maybe String
+    , start : Maybe String
+    , zones : Maybe String
+    , duration : Maybe String
+    }
+
+
+modelSummary : ( String, String ) -> Shared -> CommonModel a -> ModelSummary
+modelSummary ( defaultZone, defaultProduct ) shared model =
+    let
+        product =
+            Maybe.withDefault defaultProduct model.product
+    in
+        { users =
+            model.users
+                |> List.map
+                    (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
+        , product = nameFromFareProduct shared.fareProducts product
+        , start = stringFromStart model
+        , zones = stringFromZone shared.tariffZones defaultZone model
+        , duration = nameFromFareProduct shared.fareProducts product
+        }
+
+
+stringFromStart : CommonModel a -> Maybe String
+stringFromStart model =
+    case model.travelDateTime of
+        TravelNow ->
+            Just "Kjøpstidspunkt"
+
+        TravelFuture (Just time) ->
+            TimeUtil.isoStringToFullHumanized model.timeZone time
+
+        _ ->
+            Nothing
+
+
+nameFromUserType : List UserProfile -> UserType -> Maybe String
+nameFromUserType profiles userType =
+    profiles
+        |> List.Extra.find (.userType >> (==) userType)
+        |> Maybe.map (.name >> langString)
+
+
+nameFromFareProduct : List FareProduct -> String -> Maybe String
+nameFromFareProduct products productId =
+    products
+        |> List.Extra.find (.id >> (==) productId)
+        |> Maybe.map (.name >> langString)
+
+
+stringFromZone : List TariffZone -> String -> CommonModel a -> Maybe String
+stringFromZone tariffZones defaultZone model =
+    let
+        findName zone =
+            tariffZones
+                |> List.Extra.find (.id >> (==) zone)
+                |> Maybe.map (.name >> langString)
+                |> Maybe.withDefault "-"
+
+        fromZoneName =
+            findName (Maybe.withDefault defaultZone model.fromZone)
+
+        toZoneName =
+            findName (Maybe.withDefault defaultZone model.toZone)
+    in
+        if model.fromZone == model.toZone then
+            Just <| "Reise i 1 sone (" ++ fromZoneName ++ ")"
+
+        else
+            Just <| "Reise fra sone " ++ fromZoneName ++ " til sone " ++ toZoneName
+
+
 langString : LangString -> String
 langString (LangString _ value) =
     value
@@ -150,3 +259,57 @@ stringFromtravelDateTime travelDateTime =
 
         _ ->
             Nothing
+
+
+findLimitations : String -> List Limitation -> List UserType
+findLimitations productId fareProducts =
+    fareProducts
+        |> List.Extra.find (.productId >> (==) productId)
+        |> Maybe.map .limitations
+        |> Maybe.withDefault []
+
+
+userTypeAsIdString : UserType -> String
+userTypeAsIdString userType =
+    case userType of
+        UserTypeAdult ->
+            "UserTypeAdult"
+
+        UserTypeChild ->
+            "UserTypeChild"
+
+        UserTypeInfant ->
+            "UserTypeInfant"
+
+        UserTypeSenior ->
+            "UserTypeSenior"
+
+        UserTypeStudent ->
+            "UserTypeStudent"
+
+        UserTypeYoungPerson ->
+            "UserTypeYoungPerson"
+
+        UserTypeSchoolPupil ->
+            "UserTypeSchoolPupil"
+
+        UserTypeMilitary ->
+            "UserTypeMilitary"
+
+        UserTypeDisabled ->
+            "UserTypeDisabled"
+
+        UserTypeDisabledCompanion ->
+            "UserTypeDisabledCompanion"
+
+        UserTypeJobSeeker ->
+            "UserTypeJobSeeker"
+
+        UserTypeEmployee ->
+            "UserTypeEmployee"
+
+        UserTypeAnimal ->
+            "UserTypeAnimal"
+
+        UserTypeAnyone ->
+            "UserTypeAnyone"

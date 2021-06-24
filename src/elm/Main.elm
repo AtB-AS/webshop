@@ -659,7 +659,6 @@ viewPage model =
             Just Route.Shop ->
                 ShopPage.view env model.appInfo shared model.shop model.route
                     |> H.map ShopMsg
-                    |> wrapSubPage "Kjøp ny periodebillett"
 
             Just Route.ShopCarnet ->
                 ShopCarnetPage.view env model.appInfo shared model.shopCarnet model.route
