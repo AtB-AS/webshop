@@ -20,8 +20,8 @@ import Page.History as HistoryPage
 import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
 import Page.Overview as OverviewPage
-import Page.Shop as ShopPage
-import Page.ShopCarnet as ShopCarnetPage
+import Page.Shop.Carnet as ShopCarnetPage
+import Page.Shop.Period as ShopPage
 import Page.VerifyUser as VerifyUserPage
 import PageUpdater exposing (PageUpdater)
 import Route exposing (LoginMethodPath(..), Route(..))
