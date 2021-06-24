@@ -361,9 +361,7 @@ viewMain shared model =
                 |> S.setMarginBottom True
                 |> S.viewWithOptions
                     [ H.p []
-                        [ H.text "Denne billettvisningen er ikke gyldig ved eventuell billettkontroll."
-                        , H.br [] []
-                        , H.text "På reise vil det t:kortet du har registrert på din profil være gyldig billettbevis."
+                        [ H.text "Obs! Husk at nettbutikken ikke kan brukes som billettbevis i en eventuell kontroll."
                         ]
                         |> Message.Info
                         |> Message.message
