@@ -401,7 +401,7 @@ view _ _ shared model _ =
                 H.div []
                     [ PH.init
                         |> PH.setTitle (Just "Oppsummering")
-                        |> PH.setBackButton (Just ( "Tilbake", E.onClick CloseSummary ))
+                        |> PH.setBackButton ( "Tilbake", CloseSummary )
                         |> PH.view
                     , SummaryPage.view shared summaryModel
                         |> H.map SummarySubMsg
@@ -411,7 +411,7 @@ view _ _ shared model _ =
                 H.div []
                     [ PH.init
                         |> PH.setTitle (Just "Kjøp nytt periodebillett")
-                        |> PH.setBackButton (Just ( "Avbryt", E.onClick CloseShop ))
+                        |> PH.setBackButton ( "Avbryt", CloseShop )
                         |> PH.setBackIcon Icon.cross
                         |> PH.view
                     , H.div [ A.class "page" ]
