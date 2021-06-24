@@ -408,7 +408,16 @@ wrapHeader : Model -> Bool -> String -> List (Html Msg) -> Html Msg
 wrapHeader model narrowPage title children =
     H.div []
         [ PH.init title
-            |> PH.setNext (Just ( "Hopp over dette steget", NextStep ))
+            |> PH.setNext
+                (Just
+                    ( if model.step == AppAdvert then
+                        "Fullfør"
+
+                      else
+                        "Hopp over"
+                    , NextStep
+                    )
+                )
             |> PH.setTotalSteps 4
             |> PH.setStep (stepNumber model.step)
             |> PH.setBack
@@ -547,8 +556,7 @@ viewTravelCard _ model =
                 [ Message.info "Du har alt lagt til et t:kort."
                 , Section.viewPaddedItem
                     [ H.div [ A.class "onboarding__travelCard__input" ]
-                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                        , Section.viewPaddedItem
+                        [ Section.viewPaddedItem
                             [ Ui.LabelItem.view "t:kortnummer (16-siffer)"
                                 [ H.text (Util.TravelCard.format model.travelCard)
                                 ]
@@ -577,8 +585,7 @@ viewTravelCard _ model =
             [ Section.view
                 [ Section.viewPaddedItem
                     [ H.div [ A.class "onboarding__travelCard__input" ]
-                        [ H.div [] [] -- used for placeholder for upcommit box to have CSS work for future use.
-                        , MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
+                        [ MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
                             |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
                             |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
                             |> MaskedInput.setPattern "#### #### ########"
@@ -596,18 +603,16 @@ viewTravelCard _ model =
                         ]
                         []
                     ]
-                ]
-            , Section.view
-                [ Button.init "Jeg bruker ikke t:kort"
-                    |> Button.setIcon (Just Icon.rightArrow)
-                    |> Button.setOnClick (Just NextStep)
-                    |> Button.tertiary
-                ]
-            , Section.view
-                [ Button.init "Legg til t:kort"
-                    |> Button.setIcon (Just Icon.rightArrow)
-                    |> Button.setOnClick (Just RegisterTravelCard)
-                    |> Button.primaryDefault
+                , Section.viewHorizontalGroup
+                    [ Button.init "Legg til t:kort"
+                        |> Button.setIcon (Just Icon.checkmark)
+                        |> Button.setOnClick (Just RegisterTravelCard)
+                        |> Button.primaryDefault
+                    , Button.init "Hopp over"
+                        |> Button.setIcon (Just Icon.rightArrow)
+                        |> Button.setOnClick (Just NextStep)
+                        |> Button.tertiary
+                    ]
                 ]
             ]
         ]
