@@ -11,11 +11,13 @@ import Html.Extra
 import Http
 import List.Extra
 import Notification
+import Page.Shop.Utils as Utils exposing (TravelDateTime)
 import PageUpdater exposing (PageUpdater)
 import Service.Misc as MiscService
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
 import Task
+import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Input.Radio as Radio
 import Ui.LabelItem as LabelItem
@@ -40,7 +42,7 @@ type alias Summary =
     , productType : ProductType
     , product : String
     , travellers : String
-    , validFrom : String
+    , validFrom : Maybe String
     , travellerData : List TravellerData
     , totalPrice : Float
     , totalVat : Float
@@ -51,7 +53,8 @@ type alias OffersQuery =
     { productId : String
     , fromZoneId : String
     , toZoneId : String
-    , travelDate : Maybe String
+    , travelDate : TravelDateTime
+    , timeZone : Time.Zone
     }
 
 
@@ -152,7 +155,7 @@ makeSummary query offers shared =
         , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
-        , validFrom = Maybe.withDefault "Nå" query.travelDate
+        , validFrom = Utils.stringFromTravelDate query.travelDate query.timeZone
         , travellerData = summerizeOffers shared.userProfiles offers
         , totalPrice = price
         , totalVat = vatAmount price shared
@@ -203,7 +206,7 @@ viewTicketSection summary =
               else
                 LabelItem.viewHorizontal "Periode:" [ H.text summary.product ]
             , LabelItem.viewHorizontal "Reisende:" [ H.text summary.travellers ]
-            , LabelItem.viewHorizontal "Gyldig fra:" [ H.text summary.validFrom ]
+            , LabelItem.viewHorizontal "Gyldig fra:" [ H.text <| Maybe.withDefault "Nå" summary.validFrom ]
             ]
         ]
 
