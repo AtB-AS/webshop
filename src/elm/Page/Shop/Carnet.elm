@@ -10,7 +10,6 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Http
-import Notification
 import Page.Shop.CommonViews as Common
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (TravelDateTime(..))
@@ -24,7 +23,6 @@ import Task
 import Time
 import Ui.Button exposing (ThemeColor(..))
 import Ui.Group
-import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
 import Util.Status exposing (Status(..))
@@ -300,6 +298,7 @@ view _ _ shared model _ =
                     [ PH.init
                         |> PH.setTitle (Just "Kjøp nytt klippekort")
                         |> PH.setBackButton (Just ( "Avbryt", E.onClick CloseShop ))
+                        |> PH.setBackIcon Icon.cross
                         |> PH.view
                     , H.div [ A.class "page" ]
                         [ Section.view
