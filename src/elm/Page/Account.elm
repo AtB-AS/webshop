@@ -816,7 +816,7 @@ viewTravelCard model profile =
                                                 , Ui.InlineButtonLink.view
                                                     [ E.onClick <| SetEditSection (Just TravelCardSection) (Just "tkort")
                                                     ]
-                                                    [ H.text "legg til et t:kort" ]
+                                                    [ H.text "Legg til et t:kort" ]
                                                 , H.text ". Har du ikke t:kort kan du "
                                                 , H.a
                                                     [ A.href "https://www.atb.no/bestill-tkort/"
