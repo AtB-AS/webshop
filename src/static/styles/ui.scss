@@ -256,6 +256,13 @@
     }
 }
 
+@media (max-width: 500px) {
+    .ui-group__headerButton__editText__text {
+        position: absolute;
+        clip: rect(0 0 0 0);
+    }
+}
+
 .ui-ticketDetails {
     width: 100%;
     border-radius: var(--border-radius-regular);

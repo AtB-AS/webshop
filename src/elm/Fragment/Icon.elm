@@ -67,17 +67,17 @@ wrapper size iconHtml =
 
 viewLarge : Html msg -> Html msg
 viewLarge =
-    List.singleton >> H.div [ A.class "ui-icon ui-icon--large" ]
+    List.singleton >> H.span [ A.class "ui-icon ui-icon--large" ]
 
 
 viewLargeMonochrome : Html msg -> Html msg
 viewLargeMonochrome =
-    List.singleton >> H.div [ A.class "ui-icon ui-icon--large ui-icon--monochrome" ]
+    List.singleton >> H.span [ A.class "ui-icon ui-icon--large ui-icon--monochrome" ]
 
 
 viewMonochrome : Html msg -> Html msg
 viewMonochrome =
-    List.singleton >> H.div [ A.class "ui-icon ui-icon--monochrome" ]
+    List.singleton >> H.span [ A.class "ui-icon ui-icon--monochrome" ]
 
 
 checkmark : Html msg

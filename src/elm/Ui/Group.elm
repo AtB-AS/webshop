@@ -40,7 +40,10 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
 
         editText =
             if not open then
-                H.span [ A.class "ui-group__headerButton__editText" ] [ H.text <| "Endre " ++ editTextSuffix, editIcon ]
+                H.span [ A.class "ui-group__headerButton__editText" ]
+                    [ H.span [ A.class "ui-group__headerButton__editText__text" ] [ H.text <| "Endre " ++ editTextSuffix ]
+                    , editIcon
+                    ]
 
             else
                 Icon.upArrow
