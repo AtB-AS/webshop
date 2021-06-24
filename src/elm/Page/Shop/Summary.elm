@@ -1,13 +1,15 @@
-module Page.Shop.Summary exposing (Model, Msg, Summary, init, subscriptions, update, view)
+module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, init, makeSummary, subscriptions, update, view)
 
-import Data.RefData exposing (UserType(..))
+import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
 import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Extra
 import Http
+import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.Misc as MiscService
@@ -16,8 +18,11 @@ import Shared exposing (Shared)
 import Task
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Input.Radio as Radio
+import Ui.LabelItem as LabelItem
 import Ui.Message
 import Ui.Section as Section
+import Util.Format
+import Util.Func
 import Util.Status exposing (Status(..))
 
 
@@ -27,20 +32,40 @@ type Msg
     | SetPaymentType PaymentType
 
 
+type alias TravellerData =
+    ( String, Int, Float )
+
+
 type alias Summary =
-    { product : String }
+    { travelMode : String
+    , productType : ProductType
+    , product : String
+    , travellers : String
+    , validFrom : String
+    , travellerData : List TravellerData
+    }
+
+
+type alias OffersQuery =
+    { productId : String
+    , fromZoneId : String
+    , toZoneId : String
+    , travelDate : Maybe String
+    }
 
 
 type alias Model =
     { offers : List Offer
+    , query : OffersQuery
     , paymentType : PaymentType
     , reservation : Status Reservation
     }
 
 
-init : List Offer -> Model
-init offers =
+init : OffersQuery -> List Offer -> Model
+init query offers =
     { offers = offers
+    , query = query
     , paymentType = Vipps
     , reservation = NotLoaded
     }
@@ -93,7 +118,118 @@ update msg env model shared =
 
 
 view : Shared -> Model -> Html Msg
-view _ model =
+view shared model =
+    let
+        summary =
+            makeSummary model.query model.offers shared
+    in
+        H.div [ A.class "page page--threeColumns" ]
+            [ viewTicketSection summary
+            , viewPriceSection summary.travellerData shared model
+            , viewPaymentSection model
+            ]
+
+
+makeSummary : OffersQuery -> List Offer -> Shared -> Summary
+makeSummary query offers shared =
+    let
+        productName =
+            nameFromFareProduct shared.fareProducts query.productId
+
+        travellerData =
+            summerizeOffers shared.userProfiles offers
+    in
+        { -- @TODO At some point when expanding to different modes, this should be updated.
+          travelMode = "Buss / trikk"
+        , productType = ProductTypeCarnet
+        , product = Maybe.withDefault "Ukjent" productName
+        , travellers = humanizeTravellerData travellerData
+        , validFrom = Maybe.withDefault "Nå" query.travelDate
+        , travellerData = summerizeOffers shared.userProfiles offers
+        }
+
+
+summerizeOffers : List UserProfile -> List Offer -> List TravellerData
+summerizeOffers userProfiles offers =
+    offers
+        |> List.Extra.gatherEqualsBy .userType
+        |> List.map
+            (\( first, others ) ->
+                ( Maybe.withDefault "Ukjent" (nameFromUserType userProfiles first.userType)
+                , others |> List.length >> (+) 1
+                , offerToPrice first + totalPrice others
+                )
+            )
+
+
+{-| Humanize and shorten text if more than two traveller groups, making
+'2 adults, 1 child, 2 senior' become '5 travellers'.
+-}
+humanizeTravellerData : List TravellerData -> String
+humanizeTravellerData offers =
+    if List.length offers > 2 then
+        let
+            totalTravelers =
+                0
+        in
+            String.fromInt totalTravelers ++ " reisende"
+
+    else
+        offers
+            |> List.map (\( traveller, count, _ ) -> String.fromInt count ++ " " ++ traveller)
+            |> String.join ", "
+
+
+viewTicketSection : Summary -> Html Msg
+viewTicketSection summary =
+    Section.view
+        [ Section.viewHeader "Om billetten"
+        , Section.viewPaddedItem
+            [ LabelItem.viewHorizontal "Billettype:" [ H.text <| nameFromProductType summary.productType ]
+            , LabelItem.viewHorizontal "Reisetype:" [ H.text <| summary.travelMode ]
+            , if summary.productType == ProductTypeCarnet then
+                LabelItem.viewHorizontal "Antall billetter:" [ H.text summary.product ]
+
+              else
+                LabelItem.viewHorizontal "Periode:" [ H.text summary.product ]
+            , LabelItem.viewHorizontal "Reisende:" [ H.text summary.travellers ]
+            , LabelItem.viewHorizontal "Gyldig fra:" [ H.text summary.validFrom ]
+            ]
+        ]
+
+
+viewPriceSection : List TravellerData -> Shared -> Model -> Html Msg
+viewPriceSection travellerData shared model =
+    let
+        price =
+            totalPrice model.offers
+
+        vat =
+            vatAmount price shared
+                |> Util.Func.flip Util.Format.float 2
+    in
+        Section.view
+            [ Section.viewHeader "Pris"
+            , Section.viewPaddedItem
+                (List.map viewTravellerData travellerData
+                    ++ [ H.hr [ A.class "shopPage__separator" ] []
+                       , LabelItem.viewHorizontal
+                            "Total:"
+                            [ H.p [ A.class "shop__summaryPrice" ]
+                                [ price |> Util.Func.flip Util.Format.float 2 |> H.text
+                                , H.small [] [ H.text "kr" ]
+                                ]
+                            ]
+                       , LabelItem.viewHorizontal "Hvorav mva:"
+                            [ H.text <| vat ++ " kr"
+                            ]
+                       ]
+                )
+            ]
+
+
+viewPaymentSection : Model -> Html Msg
+viewPaymentSection model =
     let
         disableButtons =
             case model.reservation of
@@ -103,36 +239,48 @@ view _ model =
                 _ ->
                     False
     in
-        H.div [ A.class "page page--threeColumns" ]
-            [ Section.view
-                [ Section.viewHeader "Om billetten"
+        Section.view
+            [ Section.viewHeader "Betaling"
+            , Radio.viewLabelGroup "Betalingsmetode"
+                [ Radio.init "vipps"
+                    |> Radio.setTitle "Vipps"
+                    |> Radio.setName "paymentType"
+                    |> Radio.setChecked (model.paymentType == Vipps)
+                    |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Vipps)
+                    |> Radio.view
+                , Radio.init "visa"
+                    |> Radio.setTitle "Bankkort"
+                    |> Radio.setName "paymentType"
+                    |> Radio.setChecked (model.paymentType == Nets)
+                    |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Nets)
+                    |> Radio.view
                 ]
-            , Section.view
-                [ Section.viewHeader "Pris"
-                ]
-            , Section.view
-                [ Section.viewHeader "Betaling"
-                , Radio.viewLabelGroup "Betalingsmetode"
-                    [ Radio.init "vipps"
-                        |> Radio.setTitle "Vipps"
-                        |> Radio.setName "paymentType"
-                        |> Radio.setChecked (model.paymentType == Vipps)
-                        |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Vipps)
-                        |> Radio.view
-                    , Radio.init "visa"
-                        |> Radio.setTitle "Bankkort"
-                        |> Radio.setName "paymentType"
-                        |> Radio.setChecked (model.paymentType == Nets)
-                        |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Nets)
-                        |> Radio.view
-                    ]
-                , B.init "Gå til betaling"
-                    |> B.setDisabled disableButtons
-                    |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
-                    |> B.setOnClick (Just BuyOffers)
-                    |> B.primary Primary_2
-                ]
+            , maybeBuyNotice model.offers
+            , B.init "Gå til betaling"
+                |> B.setDisabled disableButtons
+                |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
+                |> B.setOnClick (Just BuyOffers)
+                |> B.primary Primary_2
             ]
+
+
+viewTravellerData : TravellerData -> Html Msg
+viewTravellerData ( name, count, price ) =
+    let
+        formattedPrice =
+            Util.Format.float price 2
+    in
+        viewHorizontalItem
+            (H.text <| String.fromInt count ++ " " ++ name)
+            (H.text <| formattedPrice ++ " kr")
+
+
+viewHorizontalItem : Html msg -> Html msg -> Html msg
+viewHorizontalItem left right =
+    H.div [ A.class "summaryPage__horizontal" ]
+        [ H.div [] [ left ]
+        , H.div [] [ right ]
+        ]
 
 
 subscriptions : Sub Msg
@@ -141,7 +289,106 @@ subscriptions =
 
 
 
---
+-- Helpers
+
+
+nameFromUserType : List UserProfile -> UserType -> Maybe String
+nameFromUserType profiles userType =
+    profiles
+        |> List.Extra.find (.userType >> (==) userType)
+        |> Maybe.map (.name >> langString)
+
+
+nameFromFareProduct : List FareProduct -> String -> Maybe String
+nameFromFareProduct products productId =
+    products
+        |> List.Extra.find (.id >> (==) productId)
+        |> Maybe.map (.name >> langString)
+
+
+nameFromProductType : ProductType -> String
+nameFromProductType productType =
+    case productType of
+        ProductTypePeriod ->
+            "Periodebillett"
+
+        ProductTypeSingle ->
+            "Enkeltbillett"
+
+        ProductTypeCarnet ->
+            "Klippekort"
+
+
+langString : LangString -> String
+langString (LangString _ value) =
+    value
+
+
+maybeBuyNotice : List Offer -> Html msg
+maybeBuyNotice offers =
+    let
+        reduced =
+            offers
+                |> List.any (.userType >> hasReducedCost)
+
+        result =
+            if reduced then
+                Just <| Ui.Message.info "Husk at du må reise med gyldig moderasjonsbevis"
+
+            else
+                Nothing
+
+        --
+    in
+        Html.Extra.viewMaybe identity result
+
+
+hasReducedCost : UserType -> Bool
+hasReducedCost userType =
+    case userType of
+        UserTypeAdult ->
+            False
+
+        UserTypeInfant ->
+            False
+
+        UserTypeSchoolPupil ->
+            False
+
+        UserTypeAnimal ->
+            False
+
+        UserTypeAnyone ->
+            False
+
+        _ ->
+            True
+
+
+totalPrice : List Offer -> Float
+totalPrice offers =
+    offers
+        |> List.map offerToPrice
+        |> List.sum
+        |> round
+        |> toFloat
+
+
+offerToPrice : Offer -> Float
+offerToPrice offer =
+    offer.prices
+        |> List.map .amountFloat
+        |> List.head
+        |> Maybe.withDefault 0.0
+
+
+vatAmount : Float -> Shared -> Float
+vatAmount price shared =
+    (toFloat shared.remoteConfig.vat_percent / 100) * price
+
+
+
+-- IO
 
 
 buyOffers : Environment -> Maybe String -> PaymentType -> List ( String, Int ) -> Cmd Msg

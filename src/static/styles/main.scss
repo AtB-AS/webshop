@@ -335,6 +335,19 @@ p + p {
     }
 }
 
+// Summary page
+
+.summaryPage__horizontal {
+    display: flex;
+    justify-content: space-between;
+}
+
+.shopPage__separator {
+    margin: var(--spacings-large) 0;
+    border-color: var(--border-secondary);
+    border-top: 0;
+}
+
 // Basic responsiveness for pages
 
 @media (max-width: 768px) {

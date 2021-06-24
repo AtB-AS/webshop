@@ -9,7 +9,6 @@ import GlobalActions as GA
 import Html as H exposing (Html, summary)
 import Html.Attributes as A
 import Html.Events as E
-import Html.Extra
 import Http
 import List.Extra
 import Notification
@@ -295,7 +294,18 @@ update msg env model shared =
             GoToSummary ->
                 case model.offers of
                     Loaded offers ->
-                        PageUpdater.init { model | summary = Just <| SummaryPage.init offers }
+                        PageUpdater.init
+                            { model
+                                | summary =
+                                    Just <|
+                                        SummaryPage.init
+                                            { productId = Maybe.withDefault "" model.product
+                                            , fromZoneId = Maybe.withDefault "" model.fromZone
+                                            , toZoneId = Maybe.withDefault "" model.toZone
+                                            , travelDate = Nothing
+                                            }
+                                            offers
+                            }
 
                     _ ->
                         PageUpdater.init model
@@ -596,46 +606,6 @@ summaryView shared model disableButtons =
                     |> B.setOnClick (Just GoToSummary)
                     |> B.primary Primary_2
                 ]
-
-
-hasReducedCost : UserType -> Bool
-hasReducedCost userType =
-    case userType of
-        UserTypeAdult ->
-            False
-
-        UserTypeInfant ->
-            False
-
-        UserTypeSchoolPupil ->
-            False
-
-        UserTypeAnimal ->
-            False
-
-        UserTypeAnyone ->
-            False
-
-        _ ->
-            True
-
-
-maybeBuyNotice : List ( UserType, Int ) -> Html msg
-maybeBuyNotice users =
-    let
-        reduced =
-            List.any (Tuple.first >> hasReducedCost) users
-
-        result =
-            if reduced then
-                Just <| Message.info "Husk at du må reise med gyldig moderasjonsbevis"
-
-            else
-                Nothing
-
-        --
-    in
-        Html.Extra.viewMaybe identity result
 
 
 langString : LangString -> String
