@@ -6,7 +6,7 @@ import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
-import Html as H exposing (Html, summary)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Http
@@ -558,24 +558,23 @@ summaryView shared model disableButtons =
                 _ ->
                     False
 
-        totalPrice =
+        summary =
             case model.offers of
                 Loaded offers ->
-                    offers
-                        |> List.map (calculateOfferPrice model.users)
-                        |> List.sum
-                        |> round
-                        |> toFloat
-                        |> Just
+                    Just <|
+                        SummaryPage.makeSummary
+                            { productId = Maybe.withDefault "" model.product
+                            , fromZoneId = Maybe.withDefault "" model.fromZone
+                            , toZoneId = Maybe.withDefault "" model.toZone
+                            , travelDate = Nothing
+                            }
+                            offers
+                            shared
 
                 _ ->
                     Nothing
-
-        vatAmount =
-            Maybe.map ((*) (toFloat shared.remoteConfig.vat_percent / 100)) totalPrice
     in
         Section.init
-            |> Section.setMarginBottom True
             |> Section.viewWithOptions
                 [ if emptyOffers then
                     Message.warning "Finner ingen tilgjengelige billetter."
@@ -585,7 +584,8 @@ summaryView shared model disableButtons =
                         [ Ui.LabelItem.viewHorizontal
                             "Total:"
                             [ H.p [ A.class "shop__summaryPrice" ]
-                                [ totalPrice
+                                [ summary
+                                    |> Maybe.map .totalPrice
                                     |> Maybe.map (Func.flip Util.Format.float 2)
                                     |> Maybe.map H.text
                                     |> Maybe.withDefault (Ui.LoadingText.view "1.6875rem" "5rem")
@@ -593,7 +593,8 @@ summaryView shared model disableButtons =
                                 ]
                             ]
                         , Ui.LabelItem.viewHorizontal "Hvorav mva:"
-                            [ vatAmount
+                            [ summary
+                                |> Maybe.map .totalVat
                                 |> Maybe.map (Func.flip Util.Format.float 2)
                                 |> Maybe.map (Func.flip (++) " kr")
                                 |> Maybe.map H.text
@@ -717,31 +718,6 @@ buyOffers env phone paymentType offerCounts =
         |> TicketService.reserve env phone paymentType
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
-
-
-calculateOfferPrice : List ( UserType, Int ) -> Offer -> Float
-calculateOfferPrice users offer =
-    let
-        price =
-            offer.prices
-                |> List.map .amountFloat
-                |> List.head
-                |> Maybe.withDefault 0.0
-
-        count =
-            users
-                |> List.filterMap
-                    (\( userType, userCount ) ->
-                        if userType == offer.userType then
-                            Just userCount
-
-                        else
-                            Nothing
-                    )
-                |> List.head
-                |> Maybe.withDefault 0
-    in
-        price * toFloat count
 
 
 userTypeAsIdString : UserType -> String
