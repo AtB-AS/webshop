@@ -670,6 +670,10 @@ window.customElements.define(
 );
 
 // Intercom integration
+window.intercomSettings = {
+    'AtB-Install-Id': installId,
+    'AtB-Build-Number': elmFlags.commit
+};
 window.Intercom('boot', {
     app_id: 'vdemedo2'
 });
