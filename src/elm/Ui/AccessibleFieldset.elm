@@ -1,4 +1,4 @@
-module Ui.AccessibleFieldset exposing (..)
+module Ui.AccessibleFieldset exposing (view)
 
 import Html as H exposing (Html)
 import Html.Attributes as A
