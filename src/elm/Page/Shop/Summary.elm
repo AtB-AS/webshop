@@ -42,6 +42,7 @@ type alias Summary =
     , productType : ProductType
     , product : String
     , travellers : String
+    , zones : String
     , validFrom : Maybe String
     , travellerData : List TravellerData
     , totalPrice : Float
@@ -155,6 +156,14 @@ makeSummary query offers shared =
         , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
+        , zones =
+            Maybe.withDefault "Ukjent" <|
+                Utils.stringFromZone
+                    shared.tariffZones
+                    "defaultZone"
+                    { fromZone = Just query.fromZoneId
+                    , toZone = Just query.toZoneId
+                    }
         , validFrom = Utils.stringFromTravelDate query.travelDate query.timeZone
         , travellerData = summerizeOffers shared.userProfiles offers
         , totalPrice = price
@@ -206,6 +215,7 @@ viewTicketSection summary =
               else
                 LabelItem.viewHorizontal "Periode:" [ H.text summary.product ]
             , LabelItem.viewHorizontal "Reisende:" [ H.text summary.travellers ]
+            , LabelItem.viewHorizontal "Sone:" [ H.text summary.zones ]
             , LabelItem.viewHorizontal "Gyldig fra:" [ H.text <| Maybe.withDefault "Nå" summary.validFrom ]
             ]
         ]

@@ -146,6 +146,9 @@
         fill: currentColor;
     }
 }
+.ui-section__itemWithIcon__content {
+    flex: 1;
+}
 
 // Style for ./src/Ui/LabelItem.elm
 .ui-labelItem {
@@ -1174,11 +1177,19 @@ a.ui-button--link,
     height: var(--icon-size-normal);
     width: var(--icon-size-normal);
 }
-
 .ui-progressHeader__dot:not(:last-child) {
     margin-right: var(--spacings-medium);
 }
-
 .ui-progressHeader__dot--active {
     background: var(--colors-primary_2-backgroundColor);
+}
+
+.ui-accessibleFieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+.ui-accessibleFieldset__legend {
+    position: absolute;
+    clip: rect(0 0 0 0);
 }

@@ -7,6 +7,7 @@ import Html.Attributes as A
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (CommonModel)
 import Shared exposing (Shared)
+import Ui.AccessibleFieldset
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Input.Radio as Radio
 import Ui.Input.Select as Select
@@ -133,15 +134,17 @@ viewZones model defaultZone zones onFromZoneSelected onToZoneSelected =
             Maybe.withDefault defaultZone model.toZone
     in
         Section.viewItem
-            [ Section.viewHorizontalGroup
-                [ Select.init "travelFromZone"
-                    |> Select.setTitle (Just "Avreisesone")
-                    |> Select.setOnInput (Just onFromZoneSelected)
-                    |> Select.view (List.map (viewZone selectedFromZone) sortedZones)
-                , Select.init "travelToZone"
-                    |> Select.setTitle (Just "Ankomstsone")
-                    |> Select.setOnInput (Just onToZoneSelected)
-                    |> Select.view (List.map (viewZone selectedToZone) sortedZones)
+            [ Ui.AccessibleFieldset.view "Soner"
+                [ Section.viewHorizontalGroup
+                    [ Select.init "travelFromZone"
+                        |> Select.setTitle (Just "Avreisesone")
+                        |> Select.setOnInput (Just onFromZoneSelected)
+                        |> Select.view (List.map (viewZone selectedFromZone) sortedZones)
+                    , Select.init "travelToZone"
+                        |> Select.setTitle (Just "Ankomstsone")
+                        |> Select.setOnInput (Just onToZoneSelected)
+                        |> Select.view (List.map (viewZone selectedToZone) sortedZones)
+                    ]
                 ]
             , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser (åpner ny side)" ] ] ]
             ]
