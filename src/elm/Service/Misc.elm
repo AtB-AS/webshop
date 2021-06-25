@@ -3,6 +3,7 @@ port module Service.Misc exposing
     , SignInMethod
     , SignInProvider(..)
     , bodyClass
+    , closeValidityWarning
     , convertTime
     , convertedTime
     , fareContractDecoder
@@ -27,6 +28,9 @@ port navigateTo : String -> Cmd msg
 
 
 port reloadPage : () -> Cmd msg
+
+
+port closeValidityWarning : () -> Cmd msg
 
 
 port bodyClass : String -> Cmd msg

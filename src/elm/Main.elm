@@ -33,6 +33,7 @@ import Time
 import Ui.GlobalNotifications
 import Ui.Message
 import Ui.PageHeader as PH
+import Ui.ScreenReaderText
 import Url exposing (Url)
 import Util.PageTitle
 import Util.Status exposing (Status(..))
@@ -58,6 +59,7 @@ type Msg
     | StartOnboarding ( String, String, String )
     | StartVerifyUser String
     | LogOut
+    | CloseValidityWarning
     | LoggedInData (Result Decode.Error UserData)
     | LoggedInError (Result Decode.Error AuthError)
     | Focus (Result Dom.Error ())
@@ -94,6 +96,7 @@ type alias Flags =
     , commit : String
     , installId : String
     , loggedIn : Bool
+    , showValidityWarning : Bool
     }
 
 
@@ -217,6 +220,7 @@ init flags url navKey =
             , refDataUrl = flags.refDataUrl
             , language = English
             , installId = flags.installId
+            , showValidityWarning = flags.showValidityWarning
             , customerId = Nothing
             , customerNumber = 0
             , customerEmail = ""
@@ -450,6 +454,20 @@ update msg model =
                 , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                 )
 
+        CloseValidityWarning ->
+            let
+                oldEnvironment =
+                    model.environment
+
+                newEnvironment =
+                    { oldEnvironment
+                        | showValidityWarning = False
+                    }
+            in
+                ( { model | environment = newEnvironment }
+                , MiscService.closeValidityWarning ()
+                )
+
         LoggedInData result ->
             case result of
                 Ok value ->
@@ -552,12 +570,34 @@ wrapPage model children =
     H.div [ A.class "light container" ]
         [ viewAuthError model
         , header model
+        , Html.Extra.viewIf model.environment.showValidityWarning <| viewValidityWarning model
         , H.main_ [ A.class "app" ]
             [ Ui.GlobalNotifications.notifications model.notifications
             , H.div [ A.class "content" ]
                 children
             ]
         ]
+
+
+viewValidityWarning : Model -> Html Msg
+viewValidityWarning model =
+    if model.route == Just Route.Home then
+        H.div [ A.class "validityWarning" ]
+            [ H.div [ A.class "validityWarning__inner", A.attribute "role" "alert" ]
+                [ Icon.info
+                , H.text "Obs! Husk at nettbutikken ikke kan brukes som billettbevis i en eventuell kontroll."
+                , H.button
+                    [ E.onClick CloseValidityWarning
+                    , A.type_ "button"
+                    , A.class "validityWarning__button"
+                    , A.title "Fjern melding"
+                    ]
+                    [ Icon.cross, Ui.ScreenReaderText.view "Fjern melding" ]
+                ]
+            ]
+
+    else
+        Html.Extra.nothing
 
 
 header : Model -> Html Msg
