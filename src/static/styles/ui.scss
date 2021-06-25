@@ -820,7 +820,7 @@ a.ui-button--link,
     }
 
     svg {
-        width: 44px;
+        width: var(--ws-icon-size-xLarge);
     }
 }
 .ui-editSection__editButton {
