@@ -30,7 +30,6 @@ type alias ModelSummary =
     { users : List ( String, Int )
     , product : Maybe String
     , start : Maybe String
-    , zones : Maybe String
     , duration : Maybe String
     }
 
@@ -71,7 +70,6 @@ modelSummary ( defaultZone, defaultProduct ) shared model =
                     (Tuple.mapFirst (\a -> a |> nameFromUserType shared.userProfiles |> Maybe.withDefault "-"))
         , product = nameFromFareProduct shared.fareProducts product
         , start = stringFromTravelDate model.travelDateTime model.timeZone
-        , zones = stringFromZone shared.tariffZones defaultZone model
         , duration = nameFromFareProduct shared.fareProducts product
         }
 
