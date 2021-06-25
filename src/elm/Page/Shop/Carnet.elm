@@ -8,7 +8,6 @@ import Fragment.Icon as Icon
 import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Events as E
 import Http
 import Page.Shop.CommonViews as Common
 import Page.Shop.Summary as SummaryPage
