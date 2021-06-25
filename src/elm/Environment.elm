@@ -25,6 +25,7 @@ type alias Environment =
     , refDataUrl : String
     , language : Language
     , installId : String
+    , showValidityWarning : Bool
     , customerId : Maybe String
     , customerNumber : Int
     , customerEmail : String

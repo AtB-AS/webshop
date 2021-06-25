@@ -136,6 +136,7 @@ p + p {
     align-items: center;
     white-space: nowrap;
     padding: var(--spacings-medium);
+    padding-left: 0;
 
     svg {
         display: block;
@@ -202,6 +203,56 @@ p + p {
 .pageHeader__content a:hover,
 .pageHeader__nav__logout:hover {
     opacity: 0.6;
+}
+
+.validityWarning {
+    background: var(--status-info-main-backgroundColor);
+    color: var(--status-info-main-color);
+}
+.validityWarning__inner {
+    display: flex;
+    align-items: center;
+
+    margin: auto;
+    max-width: var(--maxPageWidth);
+    padding: var(--spacings-medium) var(--contentPadding);
+
+    > svg {
+        width: var(--icon-size-normal);
+        height: var(--icon-size-normal);
+        margin-right: var(--spacings-medium);
+
+        path {
+            fill: currentColor;
+        }
+    }
+}
+.validityWarning__button {
+    background: transparent;
+    border: 0;
+    font-size: var(--baseTypo-body__primary-fontSize, 1rem);
+    cursor: pointer;
+    padding: var(--spacings-small) 0;
+    padding-left: var(--spacings-large);
+    transition: opacity 150ms ease-in;
+
+    margin-left: auto;
+
+    svg {
+        width: var(--icon-size-small);
+        height: var(--icon-size-small);
+
+        display: block;
+        path {
+            fill: currentColor;
+        }
+    }
+}
+.validityWarning__button:hover {
+    opacity: 0.6;
+}
+.validityWarning__button:active {
+    opacity: 0.4;
 }
 
 .authErrorBox {

@@ -22,7 +22,6 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Button as B
-import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as S
 import Ui.TicketDetails
@@ -355,17 +354,6 @@ viewMain shared model =
     let
         validTickets =
             Util.FareContract.filterValidNow model.currentTime model.tickets
-
-        infoMessage =
-            S.init
-                |> S.setMarginBottom True
-                |> S.viewWithOptions
-                    [ H.p []
-                        [ H.text "Obs! Husk at nettbutikken ikke kan brukes som billettbevis i en eventuell kontroll."
-                        ]
-                        |> Message.Info
-                        |> Message.message
-                    ]
     in
         H.div [ A.class "main" ]
             [ if List.isEmpty validTickets && List.isEmpty model.reservations then
@@ -375,7 +363,7 @@ viewMain shared model =
                     ]
 
               else
-                H.div [] (infoMessage :: viewPending model ++ viewTicketCards shared validTickets model)
+                H.div [] (viewPending model ++ viewTicketCards shared validTickets model)
             ]
 
 

@@ -64,6 +64,8 @@ const app = Elm.Main.init({
         {
             installId: installId,
             loggedIn: localStorage['loggedIn'] === 'loggedIn',
+            showValidityWarning:
+                localStorage.getItem('hideValidityWarning') != 'yes',
             localUrl: window.location.origin
         },
         elmFlags
@@ -392,6 +394,10 @@ app.ports.checkVerifyUser.subscribe(async () => {
 
 app.ports.navigateTo.subscribe((url) => {
     window.location.assign(url);
+});
+
+app.ports.closeValidityWarning.subscribe(() => {
+    localStorage.setItem('hideValidityWarning', 'yes');
 });
 
 app.ports.reloadPage.subscribe(() => {
