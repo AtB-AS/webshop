@@ -410,7 +410,7 @@ view _ _ shared model _ =
             _ ->
                 H.div []
                     [ PH.init
-                        |> PH.setTitle (Just "Kjøp nytt periodebillett")
+                        |> PH.setTitle (Just "Kjøp ny periodebillett")
                         |> PH.setBackButton ( "Avbryt", CloseShop )
                         |> PH.setBackIcon Icon.cross
                         |> PH.view
