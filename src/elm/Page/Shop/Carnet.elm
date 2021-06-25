@@ -47,7 +47,6 @@ type Msg
 
 type MainView
     = Travelers
-    | Zones
     | None
 
 
@@ -338,16 +337,7 @@ view _ _ shared model _ =
                                 , editTextSuffix = "reisende"
                                 }
                                 [ Common.viewUserProfiles defaultProduct model SetUser shared ]
-                            , Ui.Group.view
-                                { title = "Soner"
-                                , icon = Icon.map
-                                , value = summary.zones
-                                , open = model.mainView == Zones
-                                , readonly = False
-                                , onOpenClick = Just (ShowView Zones)
-                                , id = "zones"
-                                , editTextSuffix = "sone"
-                                }
+                            , Section.viewWithIcon Icon.map
                                 [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
                             ]
                         , H.div []

@@ -103,7 +103,7 @@ nameFromFareProduct products productId =
         |> Maybe.map (.name >> langString)
 
 
-stringFromZone : List TariffZone -> String -> CommonModel a -> Maybe String
+stringFromZone : List TariffZone -> String -> { a | toZone : Maybe String, fromZone : Maybe String } -> Maybe String
 stringFromZone tariffZones defaultZone model =
     let
         findName zone =

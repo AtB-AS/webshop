@@ -61,7 +61,6 @@ type MainView
     = Travelers
     | Duration
     | Start
-    | Zones
     | None
 
 
@@ -463,16 +462,7 @@ view _ _ shared model _ =
                                 , editTextSuffix = "tid"
                                 }
                                 (viewStart model)
-                            , Ui.Group.view
-                                { title = "Soner"
-                                , icon = Icon.map
-                                , value = summary.zones
-                                , open = model.mainView == Zones
-                                , readonly = False
-                                , onOpenClick = Just (ShowView Zones)
-                                , id = "zones"
-                                , editTextSuffix = "sone"
-                                }
+                            , Section.viewWithIcon Icon.map
                                 [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
                             ]
                         , Common.viewSummary shared model disableButtons GoToSummary
