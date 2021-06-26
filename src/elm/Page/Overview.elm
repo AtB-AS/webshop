@@ -266,18 +266,18 @@ viewAccountInfo shared _ =
                       else
                         Html.Extra.nothing
                     ]
-                , S.viewLabelItem "T:kort"
-                    [ shared.profile
-                        |> Util.Maybe.flatMap .travelCard
-                        |> Maybe.map .id
-                        |> Html.Extra.viewMaybe
-                            (\id ->
-                                H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
+                , shared.profile
+                    |> Util.Maybe.flatMap .travelCard
+                    |> Maybe.map .id
+                    |> Html.Extra.viewMaybe
+                        (\id ->
+                            S.viewLabelItem "T:kort"
+                                [ H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
                                     [ Icon.travelCard
                                     , Ui.TravelCardText.view id
                                     ]
-                            )
-                    ]
+                                ]
+                        )
                 , B.init "Rediger profil"
                     |> B.setDisabled False
                     |> B.setIcon (Just Icon.edit)
