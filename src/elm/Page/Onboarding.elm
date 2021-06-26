@@ -418,7 +418,7 @@ wrapHeader model narrowPage title children =
                     , NextStep
                     )
                 )
-            |> PH.setTotalSteps 4
+            |> PH.setTotalSteps 3
             |> PH.setStep (stepNumber model.step)
             |> PH.setBack
                 (if model.step == ProfileInfo then
@@ -654,11 +654,15 @@ nextStep step =
         Consents ->
             Just TravelCard
 
-        TravelCard ->
-            Just AppAdvert
-
-        AppAdvert ->
+        _ ->
             Nothing
+
+
+
+-- TravelCard ->
+--     Just AppAdvert
+-- AppAdvert ->
+--     Nothing
 
 
 stepNumber : Step -> Int
@@ -686,9 +690,8 @@ prevStep step =
         TravelCard ->
             Just Consents
 
-        AppAdvert ->
-            Just TravelCard
-
+        -- AppAdvert ->
+        --     Just TravelCard
         _ ->
             Nothing
 
