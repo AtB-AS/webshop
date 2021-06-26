@@ -670,10 +670,25 @@ window.customElements.define(
 );
 
 // Intercom integration
-window.intercomSettings = {
+const baseSettings = {
     'AtB-Install-Id': installId,
     'AtB-Build-Number': elmFlags.commit
 };
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        window.Intercom('update', {
+            ...baseSettings,
+            'AtB-Firebase-Auth-Id': user.uid
+        });
+    } else {
+        window.Intercom('update', {
+            ...baseSettings,
+            'AtB-Firebase-Auth-Id': undefined
+        });
+    }
+});
+
 window.Intercom('boot', {
-    app_id: 'vdemedo2'
+    app_id: 'vdemedo2',
+    ...baseSettings
 });
