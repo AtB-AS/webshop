@@ -567,16 +567,25 @@ view model =
 
 wrapPage : Model -> List (Html Msg) -> Html Msg
 wrapPage model children =
-    H.div [ A.class "light container" ]
-        [ viewAuthError model
-        , header model
-        , Html.Extra.viewIf model.environment.showValidityWarning <| viewValidityWarning model
-        , H.main_ [ A.class "app" ]
-            [ Ui.GlobalNotifications.notifications model.notifications
-            , H.div [ A.class "content" ]
-                children
+    let
+        showVisibility =
+            case ( model.userData, model.verifyUser, model.onboarding ) of
+                ( _, Just _, Just _ ) ->
+                    False
+
+                _ ->
+                    model.environment.showValidityWarning && model.environment.customerId /= Nothing
+    in
+        H.div [ A.class "light container" ]
+            [ viewAuthError model
+            , header model
+            , Html.Extra.viewIf showVisibility (viewValidityWarning model)
+            , H.main_ [ A.class "app" ]
+                [ Ui.GlobalNotifications.notifications model.notifications
+                , H.div [ A.class "content" ]
+                    children
+                ]
             ]
-        ]
 
 
 viewValidityWarning : Model -> Html Msg
