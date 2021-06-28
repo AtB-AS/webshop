@@ -948,6 +948,11 @@ a.ui-button--link,
             color 5000s ease-in-out;
         -webkit-text-fill-color: currentColor !important;
     }
+
+    option {
+        background: var(--colors-background_0-backgroundColor);
+        color: var(--colors-background_0-color);
+    }
 }
 .ui-input-text__input[readonly] {
     color: var(--text-colors-secondary);
