@@ -39,6 +39,26 @@
                         "value": "max-age=604800"
                     }
                 ]
+            },
+            {
+                "source": "**",
+                "headers": [
+                    { "key": "X-Frame-Options", "value": "deny" },
+                    { "key": "X-Content-Type-Options", "value": "nosniff" },
+                    {
+                        "key": "Referrer-Policy",
+                        "value": "strict-origin-when-cross-origin"
+                    },
+                    { "key": "X-XSS-Protection", "value": "1; mode=block" },
+                    {
+                        "key": "Content-Security-Policy",
+                        "value": "default-src 'self';font-src fonts.gstatic.com;style-src 'self' fonts.googleapis.com;script-src https: https://www.googletagmanager.com https://widget.intercom.io/ https://js.intercomcdn.com 'unsafe-inline' 'self';"
+                    },
+                    {
+                        "key": "Strict-Transport-Security",
+                        "value": "max-age=63072000; includeSubDomains; preload"
+                    }
+                ]
             }
         ]
     }
