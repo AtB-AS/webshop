@@ -106,7 +106,7 @@ Cypress.Commands.add("visitMainAsNotAuthorized", () => {
 })
 
 //Log in if not authorized
-Cypress.Commands.add("visitMainAsAuthorized", () => {
+Cypress.Commands.add("visitMainAsAuthorized", (userEmail = Cypress.env("email"), userPassword = Cypress.env("password")) => {
     cy
         .visit("")
         .wait(2000)
@@ -114,23 +114,23 @@ Cypress.Commands.add("visitMainAsAuthorized", () => {
             //window.localStorage.getItem("loggedIn").length
             if (window.localStorage.getItem("loggedIn") === null){
                 console.log("*null* " + window.localStorage.getItem("loggedIn"))
-                cy.logIn()
+                cy.logIn(userEmail, userPassword)
             }
         })
     cy.get("h1.pageHeader__logo").click()
-    cy.get("h3").contains("Min profil")
-    cy.get("h3").should("contain", "Min profil")
+    cy.get("h2.ui-pageHeader__title").contains("Mine billetter")
+    cy.get("h2.ui-pageHeader__title").should("contain", "Mine billetter")
 })
 
 //Log in
-Cypress.Commands.add("logIn", () => {
+Cypress.Commands.add("logIn", (userEmail, userPassword) => {
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/verifyPassword**").as("login")
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/getAccountInfo**").as("accountInfo")
     cy.intercept("POST", "**/v1/token**").as("refreshToken")
 
     cy.get(".ui-section").find("a").contains("Jeg vil heller bruke e-post").click()
-    cy.get("#email").type(Cypress.env("email"))
-    cy.get("#password").type(Cypress.env("password"))
+    cy.get("#email").type(userEmail)
+    cy.get("#password").type(userPassword)
     cy.wait(100)
     cy.get("button[type=submit]").contains("Logg inn").click()
     cy.wait(["@login", "@accountInfo","@refreshToken"])

@@ -9,3 +9,9 @@ export const menu = {
 export const verify = {
   verifyHeader: (header, text) => cy.get(header).contains(text)
 }
+
+//external email
+export const email = {
+  body: () => cy.get("body"),
+  verifyUrl: () => cy.get("a")
+}

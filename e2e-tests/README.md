@@ -7,34 +7,35 @@ a browser, which ables control over all requests coming in and going out.
 
 **Dependencies**
 
-Cypress is installed through the npm package manager, along with other npm modules for a11y-testing (axe) and reporting.
+Cypress is installed as a node module with yarn (for other dependencies, see `package.json`)
 ```bash
 "devDependencies": {
-    "axe-core": "4.2.2",
+    ...
     "cypress": "7.1.0",
-    "cypress-axe": "0.12.2",
-    "mocha": "8.3.2",
-    "mocha-multi-reporters": "1.5.1",
-    "mocha-junit-reporter": "2.0.0",
-    "mochawesome": "6.2.2",
-    "mochawesome-report-generator": "5.2.0",
-    "prettier": "2.2.1"
+    ...
   }
 ```
 
 **Install**
 ```bash
-## install node_modules
-npm install
+## install Cypress and dependencies
+yarn install
 
+## install Cypress and dependencies (from root)
+yarn --cwd e2e-tests install
+```
+
+## Run commands
+If running the commands from root, add `---cwd e2e-tests` to the yarn command.
+```bash
 ## run Cypress tests (headless)
-./node_modules/.bin/cypress run
+yarn cypress:run
 
 ## run Cypress tests (headless) with mochawesome-report and junit outputs
-./node_modules/.bin/cypress run --reporter mocha-multi-reporters --reporter-options configFile=cypress-reporter-config.json
+yarn cypress:run_report
 
 ## start Cypress UI
-./node_modules/.bin/cypress open -d
+yarn cypress:open
 ```
 
 ## Generer HTML-testrapport
@@ -43,11 +44,8 @@ Running Cypress with the reporter options (see above), creates a result file per
 and a js-script, these specs can be combined and converted to an HTML test report. The js-script is based on [`cypress-mochawesome-s3`](https://github.com/testdrivenio/cypress-mochawesome-s3).
 
 ```bash
-## combine mochawesome reports per spec file into one
-node cypress/scripts/combineTestReports.js
-
-## create an HTML report of the combined mochawesome spec file
-node_modules/.bin/marge cypress/results/cypressTestReport.json --code false --reportFilename cypressTestReport --reportDir ./cypress/results
+## combine mochawesome reports per spec file into one + create an HTML-report
+yarn cypress:html-testreport
 ```
 
 ## a11y tests
