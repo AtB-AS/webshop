@@ -509,6 +509,9 @@ update msg model =
                             Just Route.Settings ->
                                 TaskUtil.doTask <| AccountMsg AccountPage.OnEnterPage
 
+                            Just (Route.Login path) ->
+                                TaskUtil.doTask <| LoginMsg <| LoginPage.OnEnterPage path
+
                             _ ->
                                 Cmd.none
                         )
