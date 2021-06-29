@@ -80,7 +80,6 @@ Cypress.Commands.add("a11yCheck", (context, inOptions) => {
 
 //Log out if authorized
 Cypress.Commands.add("visitMainAsNotAuthorized", () => {
-    return cy
         /*
         //Try with dark/light modes - not working
         //https://www.cypress.io/blog/2019/12/13/test-your-web-app-in-dark-mode/
@@ -94,13 +93,21 @@ Cypress.Commands.add("visitMainAsNotAuthorized", () => {
             },
         })
         */
+    cy
         .visit("")
         .wait(2000)
-        .window().then((win) => {
+        //.get(".ui-section").find("button").contains("neste").click({force:true})
+        //.wait(500)
+    cy.window().then((win) => {
             //window.localStorage.getItem("loggedIn").length
             if (window.localStorage.getItem("loggedIn") !== null){
                 console.log("*null* " + window.localStorage.getItem("loggedIn"))
                 cy.logOut()
+            }
+            else {
+                cy
+                    .get(".ui-section").find("button").contains("neste").click({force:true})
+                    .wait(500)
             }
         })
 })
@@ -110,7 +117,9 @@ Cypress.Commands.add("visitMainAsAuthorized", (userEmail = Cypress.env("email"),
     cy
         .visit("")
         .wait(2000)
-        .window().then((win) => {
+        //.get(".ui-section").find("button").contains("neste").click({force:true})
+        //.wait(500)
+    cy.window().then((win) => {
             //window.localStorage.getItem("loggedIn").length
             if (window.localStorage.getItem("loggedIn") === null){
                 console.log("*null* " + window.localStorage.getItem("loggedIn"))
@@ -128,6 +137,9 @@ Cypress.Commands.add("logIn", (userEmail, userPassword) => {
     cy.intercept("POST", "**/identitytoolkit/v3/relyingparty/getAccountInfo**").as("accountInfo")
     cy.intercept("POST", "**/v1/token**").as("refreshToken")
 
+    cy
+        .get(".ui-section").find("button").contains("neste").click({force:true})
+        .wait(500)
     cy.get(".ui-section").find("a").contains("Jeg vil heller bruke e-post").click()
     cy.get("#email").type(userEmail)
     cy.get("#password").type(userPassword)
@@ -141,6 +153,9 @@ Cypress.Commands.add("logIn", (userEmail, userPassword) => {
 Cypress.Commands.add("logOut", () => {
     cy.get("button.pageHeader__nav__logout").click({force: true})
     cy.reload()
+    cy
+        .get(".ui-section").find("button").contains("neste").click({force:true})
+        .wait(500)
     cy.get("h2.ui-section__headerTitle").should("contain", "Velkommen til AtBs nettbutikk")
 })
 

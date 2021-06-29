@@ -26,10 +26,13 @@ yarn --cwd e2e-tests install
 ```
 
 ## Run commands
-If running the commands from root, add `---cwd e2e-tests` to the yarn command.
+If running the specific commands from root, add `---cwd e2e-tests` to the yarn command.
 ```bash
 ## run Cypress tests (headless)
 yarn cypress:run
+
+## run Cypress tests (headless) (from root)
+yarn e2e-test
 
 ## run Cypress tests (headless) with mochawesome-report and junit outputs
 yarn cypress:run_report

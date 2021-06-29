@@ -252,6 +252,8 @@ describe('a11y check webshop buy ticket', () => {
     it('period ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
 
+        myprofile.travelCardOperation("add")
+
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
         cy.wait('@zones');
@@ -260,6 +262,8 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Oppsummering');
 
         cy.a11yCheck(null, null);
+
+        myprofile.travelCardOperation("remove")
     });
 
     it('carnet ticket', () => {
@@ -286,6 +290,8 @@ describe('a11y check webshop buy ticket', () => {
     it('carnet ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
 
+        myprofile.travelCardOperation("add")
+
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
         cy.wait('@zones');
@@ -294,5 +300,7 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Oppsummering');
 
         cy.a11yCheck(null, null);
+
+        myprofile.travelCardOperation("remove")
     });
 });
