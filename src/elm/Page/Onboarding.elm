@@ -608,7 +608,7 @@ viewTravelCard _ model =
                         |> Button.setIcon (Just Icon.checkmark)
                         |> Button.setOnClick (Just RegisterTravelCard)
                         |> Button.primaryDefault
-                    , Button.init "Hopp over"
+                    , Button.init "Legg til senere"
                         |> Button.setIcon (Just Icon.rightArrow)
                         |> Button.setOnClick (Just NextStep)
                         |> Button.tertiary
