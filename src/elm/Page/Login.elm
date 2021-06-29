@@ -292,9 +292,9 @@ view env model =
                     [ viewInfoPointWithIcon Icon.change
                         "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
                     , viewInfoPointWithIcon Icon.fastTime
-                        "Reis straks billetten er betalt. Du trenger ikke lenger vente på aktivering av t:kort."
+                        "Du kan reise straks billetten er betalt – uten å vente på aktivering av t:kort."
                     , viewInfoPointWithIcon Icon.travelCardOutlined
-                        "Mista t:kort? Sletting, bestilling og registrering av kort gjør du enkelt selv."
+                        "Mista t:kortet? Sletting, bestilling og registrering av t:kort gjør du enkelt selv."
                     , viewInfoPointWithIcon Icon.cloudOutlined
                         "Billetten ligger trygt forvart på din AtB-profil – uavhengig av hva som skjer med t:kortet ditt."
                     ]
