@@ -52,7 +52,7 @@
                     { "key": "X-XSS-Protection", "value": "1; mode=block" },
                     {
                         "key": "Content-Security-Policy",
-                        "value": "default-src 'self';font-src fonts.gstatic.com;style-src 'unsafe-inline' 'self' fonts.googleapis.com;connect-src https://*.googleapis.com https://*.mittatb.no 'self'; script-src https://www.googletagmanager.com https://widget.intercom.io/ https://js.intercomcdn.com 'unsafe-inline' 'self';"
+                        "value": "default-src 'self';font-src fonts.gstatic.com;style-src 'unsafe-inline' 'self' fonts.googleapis.com;connect-src https://*.intercom.io/ https://*.googleapis.com https://*.mittatb.no 'self'; script-src https://www.googletagmanager.com https://widget.intercom.io/ https://js.intercomcdn.com 'unsafe-inline' 'unsafe-eval' 'self';"
                     },
                     {
                         "key": "Strict-Transport-Security",
