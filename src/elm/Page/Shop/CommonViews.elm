@@ -4,6 +4,7 @@ import Data.RefData exposing (LangString(..), TariffZone, UserProfile, UserType(
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Extra
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (CommonModel)
 import Shared exposing (Shared)
@@ -17,6 +18,7 @@ import Ui.Message as Message
 import Ui.Section as Section
 import Util.Format
 import Util.Func as Func
+import Util.Maybe
 import Util.Status exposing (Status(..))
 
 
@@ -61,6 +63,11 @@ viewSummary shared model disableButtons onToSummaryClick =
 
                 _ ->
                     Nothing
+
+        noTravelCard =
+            shared.profile
+                |> Util.Maybe.flatMap .travelCard
+                |> Util.Maybe.mapWithDefault (\_ -> False) True
 
         summary =
             case model.offers of
@@ -107,8 +114,9 @@ viewSummary shared model disableButtons onToSummaryClick =
                                     |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                                 ]
                             ]
+                , Html.Extra.viewIf noTravelCard (Message.info "Legg til et t:kort før kjøp av billett")
                 , B.init "Gå til oppsummering"
-                    |> B.setDisabled disableButtons
+                    |> B.setDisabled (disableButtons || noTravelCard)
                     |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
                     |> B.setOnClick (Just onToSummaryClick)
                     |> B.primary Primary_2
