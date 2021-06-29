@@ -286,23 +286,29 @@ view env model =
     if model.showInfoStep then
         H.div [ A.class "page page--narrow" ]
             [ viewIllustration
-            , Ui.Section.view
-                [ Ui.Section.viewHeader "Nettbutikken er del av AtBs nye billettsystem. Her er noen ting du bør vite"
-                , Ui.Section.viewItem
-                    [ viewInfoPointWithIcon Icon.change
-                        "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
-                    , viewInfoPointWithIcon Icon.fastTime
-                        "Du kan reise straks billetten er betalt – uten å vente på aktivering av t:kort."
-                    , viewInfoPointWithIcon Icon.travelCardOutlined
-                        "Mista t:kortet? Sletting, bestilling og registrering av t:kort gjør du enkelt selv."
-                    , viewInfoPointWithIcon Icon.cloudOutlined
-                        "Billetten ligger trygt forvart på din AtB-profil – uavhengig av hva som skjer med t:kortet ditt."
+            , H.div []
+                [ Ui.Section.view
+                    [ Ui.Section.viewHeader "Nettbutikken er del av AtBs nye billettsystem. Her er noen ting du bør vite"
+                    , Ui.Section.viewItem
+                        [ viewInfoPointWithIcon Icon.change
+                            "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
+                        , viewInfoPointWithIcon Icon.fastTime
+                            "Du kan reise straks billetten er betalt – uten å vente på aktivering av t:kort."
+                        , viewInfoPointWithIcon Icon.travelCardOutlined
+                            "Mista t:kortet? Sletting, bestilling og registrering av t:kort gjør du enkelt selv."
+                        , viewInfoPointWithIcon Icon.cloudOutlined
+                            "Billetten ligger trygt forvart på din AtB-profil – uavhengig av hva som skjer med t:kortet ditt."
+                        ]
+                    , B.init "Jeg forstår - neste"
+                        |> B.setIcon (Just Icon.rightArrow)
+                        |> B.setType "button"
+                        |> B.setOnClick (Just HideInfoStep)
+                        |> B.primary B.Primary_2
                     ]
-                , B.init "Jeg forstår - neste"
-                    |> B.setIcon (Just Icon.rightArrow)
-                    |> B.setType "button"
-                    |> B.setOnClick (Just HideInfoStep)
-                    |> B.primary B.Primary_2
+                , B.init "Les mer om AtBs nye reisetjenester her"
+                    |> B.setElement H.a
+                    |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
+                    |> B.link
                 ]
             ]
 
