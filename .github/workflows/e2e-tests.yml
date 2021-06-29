@@ -21,32 +21,32 @@ jobs:
 
       - name: Cache node modules
         uses: actions/cache@v2
-          with:
-            path: '**/node_modules'
-            key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       # https://github.com/marketplace/actions/cypress-io
       - name: Run Cypress tests
-          uses: cypress-io/github-action@v2
-          #env:
-          #  CYPRESS_baseUrl: api.dev.local
-          with:
-            config: video=${{ github.event.inputs.videoRecording }}
-            command: yarn cypress:run:report
-            working-directory: e2e-tests
+        uses: cypress-io/github-action@v2
+        #env:
+        #  CYPRESS_baseUrl: api.dev.local
+        with:
+          config: video=${{ github.event.inputs.videoRecording }}
+          command: yarn cypress:run:report
+          working-directory: e2e-tests
 
       - name: Create HTML report
-          if: always()
-          run: yarn cypress:html-testreport
-          working-directory: ./e2e-tests
+        if: always()
+        run: yarn cypress:html-testreport
+        working-directory: ./e2e-tests
 
       - name: Upload test report html
-          if: always()
-          uses: actions/upload-artifact@v2
-          with:
-            name: test-results
-            path: |
-              ./e2e-tests/cypress/results/assets
-              ./e2e-tests/cypress/results/cypressTestReport.html
-            retention-days: 3
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: |
+            ./e2e-tests/cypress/results/assets
+            ./e2e-tests/cypress/results/cypressTestReport.html
+          retention-days: 3
             
