@@ -42,6 +42,7 @@ type FieldName
 type Msg
     = OnEnterPage LoginMethodPath
     | OnLeavePage LoginMethodPath
+    | HideInfoStep
     | InputPhone String
     | InputCode String
     | InputEmail String
@@ -67,6 +68,7 @@ type alias Model =
     , step : Step
     , error : Maybe String
     , loading : Bool
+    , showInfoStep : Bool
     , validationErrors : ValidationErrors FieldName
     }
 
@@ -86,6 +88,7 @@ init =
       , step = StepLogin
       , error = Nothing
       , loading = False
+      , showInfoStep = True
       , validationErrors = V.init
       }
     , Cmd.batch [ focusBox (Just "phone"), focusBox (Just "email") ]
@@ -112,6 +115,9 @@ update msg env model navKey =
 
         OnLeavePage _ ->
             PageUpdater.init <| Tuple.first init
+
+        HideInfoStep ->
+            PageUpdater.init { model | showInfoStep = False }
 
         InputPhone value ->
             PageUpdater.init { model | phone = value, validationErrors = V.remove PhoneField model.validationErrors }
@@ -277,27 +283,70 @@ focusBox id =
 
 view : Environment -> Model -> Html Msg
 view env model =
-    H.div []
-        [ case model.step of
-            StepLogin ->
-                Html.Extra.nothing
+    if model.showInfoStep then
+        H.div [ A.class "page page--narrow" ]
+            [ viewIllustration
+            , Ui.Section.view
+                [ Ui.Section.viewHeader "Nettbutikken er del av AtBs nye billettsystem. Her er noen ting du bør vite"
+                , Ui.Section.viewItem
+                    [ viewInfoPointWithIcon Icon.change
+                        "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
+                    , viewInfoPointWithIcon Icon.fastTime
+                        "Reis straks billetten er betalt. Du trenger ikke lenger vente på aktivering av t:kort."
+                    , viewInfoPointWithIcon Icon.travelCardOutlined
+                        "Mista t:kort? Sletting, bestilling og registrering av kort gjør du enkelt selv."
+                    , viewInfoPointWithIcon Icon.cloudOutlined
+                        "Billetten ligger trygt forvart på din AtB-profil – uavhengig av hva som skjer med t:kortet ditt."
+                    ]
+                , B.init "Jeg forstår - neste"
+                    |> B.setIcon (Just Icon.rightArrow)
+                    |> B.setType "button"
+                    |> B.setOnClick (Just HideInfoStep)
+                    |> B.primary B.Primary_2
+                ]
+            ]
 
-            StepConfirm ->
-                PH.init
-                    |> PH.setBackButton ( "Avbryt", BackLogin )
-                    |> PH.view
-                    |> List.singleton
-                    |> H.div [ A.class "pageLogin__header" ]
-        , H.div [ A.class "page page--narrow" ]
-            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
-            , case model.step of
+    else
+        H.div []
+            [ case model.step of
                 StepLogin ->
-                    viewLogin model
+                    Html.Extra.nothing
 
                 StepConfirm ->
-                    viewConfirm env model
-            , H.node "atb-login-recaptcha" [] []
+                    PH.init
+                        |> PH.setBackButton ( "Avbryt", BackLogin )
+                        |> PH.view
+                        |> List.singleton
+                        |> H.div [ A.class "pageLogin__header" ]
+            , H.div [ A.class "page page--narrow" ]
+                [ viewIllustration
+                , case model.step of
+                    StepLogin ->
+                        viewLogin model
+
+                    StepConfirm ->
+                        viewConfirm env model
+                , H.node "atb-login-recaptcha" [] []
+                ]
             ]
+
+
+viewIllustration : Html msg
+viewIllustration =
+    H.img
+        [ A.src "/images/travel-illustration.svg"
+        , A.class "pageLogin__illustration"
+        , A.alt ""
+        , A.attribute "role" "presentation"
+        ]
+        []
+
+
+viewInfoPointWithIcon : Html msg -> String -> Html msg
+viewInfoPointWithIcon icon text =
+    H.div [ A.class "pageLogin__infoItem" ]
+        [ Icon.viewLargeMonochrome icon
+        , H.p [ A.class "pageLogin__infoItem__content" ] [ H.text text ]
         ]
 
 

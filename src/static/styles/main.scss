@@ -429,6 +429,18 @@ p + p {
     margin: 0 auto;
     max-width: 100%;
 }
+.pageLogin__infoItem {
+    display: flex;
+    align-items: center;
+
+    svg {
+        margin: var(--spacings-large);
+        display: block;
+    }
+}
+.pageLogin__infoItem__content {
+    padding: var(--spacings-large);
+}
 
 .pageHome__successBuy {
     text-align: center;
