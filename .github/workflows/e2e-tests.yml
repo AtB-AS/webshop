@@ -18,37 +18,35 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: tor/e2e-tester
-          
-      - name: Install Cypress
-        run: npm install
-        working-directory: ./e2e-tests
-        
-      - name: Run Cypress test
-        run: ./node_modules/.bin/cypress run --reporter mocha-multi-reporters --reporter-options configFile=cypress-reporter-config.json --config video=${{ github.event.inputs.videoRecording }}
-        working-directory: ./e2e-tests
-        continue-on-error: true
-        
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        if: always()
-        with:
-          check_name: "E2E Test Results"
-          files: ./e2e-tests/cypress/results/*.xml
-          report_individual_runs: true
-        
-      - name: Merge results
-        run: node cypress/scripts/combineTestReports.js 
-        working-directory: ./e2e-tests
-        
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+          with:
+            path: '**/node_modules'
+            key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      # https://github.com/marketplace/actions/cypress-io
+      - name: Run Cypress tests
+          uses: cypress-io/github-action@v2
+          #env:
+          #  CYPRESS_baseUrl: api.dev.local
+          with:
+            config: video=${{ github.event.inputs.videoRecording }}
+            command: yarn cypress:run:report
+            working-directory: e2e-tests
+
       - name: Create HTML report
-        run: node_modules/.bin/marge cypress/results/cypressTestReport.json --code false --reportFilename cypressTestReport --reportDir ./cypress/results
-        working-directory: ./e2e-tests
-        
+          if: always()
+          run: yarn cypress:html-testreport
+          working-directory: ./e2e-tests
+
       - name: Upload test report html
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-results
-          path: |
-            ./e2e-tests/cypress/results/assets
-            ./e2e-tests/cypress/results/cypressTestReport.html
-          retention-days: 3
+          if: always()
+          uses: actions/upload-artifact@v2
+          with:
+            name: test-results
+            path: |
+              ./e2e-tests/cypress/results/assets
+              ./e2e-tests/cypress/results/cypressTestReport.html
+            retention-days: 3
+            
