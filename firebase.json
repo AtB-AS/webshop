@@ -52,7 +52,7 @@
                     { "key": "X-XSS-Protection", "value": "1; mode=block" },
                     {
                         "key": "Content-Security-Policy",
-                        "value": "default-src 'self';img-src data: https://static.intercomassets.com https://*.intercomcdn.com 'self';media-src https://*.intercomcdn.com 'self';font-src fonts.gstatic.com https://js.intercomcdn.com/ 'self'; style-src 'unsafe-inline' 'self' fonts.googleapis.com;connect-src wss://*.intercom.io/ https://*.intercom.io/ https://*.googleapis.com https://*.google-analytics.com https://*.mittatb.no 'self'; script-src https://*.gstatic.com https://*.google.com https://www.googletagmanager.com https://widget.intercom.io/ https://js.intercomcdn.com 'unsafe-inline' 'unsafe-eval' 'self';"
+                        "value": "default-src 'self';frame-src https://www.google.com/ 'self';img-src data: https://static.intercomassets.com https://*.intercomcdn.com 'self';media-src https://*.intercomcdn.com 'self';font-src fonts.gstatic.com https://js.intercomcdn.com/ 'self'; style-src 'unsafe-inline' 'self' fonts.googleapis.com;connect-src wss://*.intercom.io/ https://*.intercom.io/ https://*.googleapis.com https://*.google-analytics.com https://*.mittatb.no 'self'; script-src https://*.gstatic.com https://*.google.com https://www.googletagmanager.com https://widget.intercom.io/ https://js.intercomcdn.com 'unsafe-inline' 'unsafe-eval' 'self';"
                     },
                     {
                         "key": "Strict-Transport-Security",
