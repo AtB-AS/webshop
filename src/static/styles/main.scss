@@ -358,6 +358,14 @@ p + p {
     .page {
         grid-template-columns: 1fr;
     }
+
+    .pageHeader__logo a {
+        padding: var(--spacings-medium);
+    }
+
+    .validityWarning__inner {
+        padding: var(--spacings-medium);
+    }
 }
 
 .pageLogin__header {
