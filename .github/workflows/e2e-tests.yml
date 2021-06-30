@@ -65,7 +65,7 @@ jobs:
           retention-days: 3
           
       - name: Upload video recording
-        if: contains(env.INPUT_VIDEO, "true")
+        if: contains(env.INPUT_VIDEO, 'true')
         uses: actions/upload-artifact@v2
         with:
           name: video-recording
