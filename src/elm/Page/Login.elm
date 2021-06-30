@@ -484,10 +484,10 @@ betaNotice =
 
 viewPhoneInputs : Model -> List (Html Msg)
 viewPhoneInputs model =
-    [ T.init "phone"
+    [ Html.Extra.viewMaybe Message.error model.error
+    , T.init "phone"
         |> T.setValue (Just model.phone)
         |> T.setOnInput (Just InputPhone)
-        |> T.setError model.error
         |> T.setType "tel"
         |> T.setRequired True
         |> T.setError (V.select PhoneField model.validationErrors)
