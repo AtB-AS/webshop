@@ -1,12 +1,18 @@
 name: E2E-tests of webshop
 
 on:
+  schedule:
+    - cron:  '0 7,12,23 * * *'
   workflow_dispatch:
     inputs:
       videoRecording:
         description: 'Record video of the tests'
         required: true
         default: 'false'
+      branch:
+        description: 'Define branch to test'     
+        required: true
+        default: 'master'
 
 jobs:
   e2e-test:
@@ -14,10 +20,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set variables
+        env:
+          DEFAULT_VIDEO: "false"
+          DEFAULT_BRANCH: "master"
+        run: |
+          echo "INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}" >> $GITHUB_ENV
+          echo "INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
+      
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: tor/e2e-tester
+          ref: ${{ env.INPUT_BRANCH }}
 
       - name: Cache node modules
         uses: actions/cache@v2
@@ -31,7 +45,7 @@ jobs:
         #env:
         #  CYPRESS_baseUrl: api.dev.local
         with:
-          config: video=${{ github.event.inputs.videoRecording }}
+          config: video=${{ env.INPUT_VIDEO }}
           command: yarn cypress:run:report
           working-directory: e2e-tests
 
@@ -48,5 +62,14 @@ jobs:
           path: |
             ./e2e-tests/cypress/results/assets
             ./e2e-tests/cypress/results/cypressTestReport.html
+          retention-days: 3
+          
+      - name: Upload video recording
+        if: contains(env.INPUT_VIDEO, "true")
+        uses: actions/upload-artifact@v2
+        with:
+          name: video-recording
+          path: ./e2e-tests/cypress/videos
+          if-no-files-found: ignore
           retention-days: 3
             
