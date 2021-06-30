@@ -10,7 +10,8 @@
         "build": "rimraf dist && webpack --bail",
         "clean": "rimraf dist",
         "reinstall": "rimraf node_modules && yarn",
-        "webpack-defaults": "webpack-defaults"
+        "webpack-defaults": "webpack-defaults",
+        "e2e-test": "yarn --cwd e2e-tests install && yarn --cwd e2e-tests cypress:run"
     },
     "devDependencies": {
         "@atb-as/elm-format": "^1.0.0",

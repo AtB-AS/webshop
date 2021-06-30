@@ -1,0 +1,7 @@
+.idea
+*.iml
+*.mp4
+etc
+node
+node_modules
+target
