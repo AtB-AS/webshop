@@ -1,0 +1,43 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+template: |
+    # Endringer
+    $CHANGES
+categories:
+    - title: 'Breaking'
+      label: 'breaking'
+    - title: 'Nytt'
+      label: 'C-feature'
+    - title: 'Bugfikser'
+      label: 'C-bug'
+    - title: 'Vedlikehold'
+      label: 'C-chore'
+
+version-resolver:
+    major:
+        labels:
+            - 'breaking'
+    minor:
+        labels:
+            - 'C-feature'
+    patch:
+        labels:
+            - 'C-bug'
+            - 'C-chore'
+
+exclude-labels:
+    - 'skip-changelog'
+
+autolabeler:
+    - label: 'C-chore'
+      body:
+          - '/chore:/'
+    - label: 'C-bug'
+      body:
+          - '/fix:/'
+    - label: 'C-feature'
+      body:
+          - '/feat:/'
+    - label: 'breaking'
+      body:
+          - '/breaking-change:/'
