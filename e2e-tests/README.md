@@ -34,6 +34,9 @@ yarn cypress:run
 ## run Cypress tests (headless) (from root)
 yarn e2e-test
 
+## run a specific spec file (possible with also setting `it.only` in the spec file)
+yarn cypress:run --spec "cypress/integration/tests/<spec-file>.e2e_spec.js"
+
 ## run Cypress tests (headless) with mochawesome-report and junit outputs
 yarn cypress:run_report
 

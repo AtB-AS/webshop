@@ -12,21 +12,50 @@
 // the project's config changing)
 
 //module.exports = (on, config) => {
-  // `on` is used to hook into various events Cypress emits
-  // `config` is the resolved Cypress config
+// `on` is used to hook into various events Cypress emits
+// `config` is the resolved Cypress config
 //}
+
+//TODO https://www.npmjs.com/package/cypress-fail-fast#configuration-by-test
+// -> Not working in headed mode at the moment
 
 module.exports = (on, config) => {
     on('task', {
         log(message) {
-            console.log(message)
+            console.log(message);
 
-            return null
+            return null;
         },
         table(message) {
-            console.table(message)
+            console.table(message);
 
-            return null
+            return null;
         }
-    })
-}
+    });
+
+    //NEW
+    // important: return the changed config
+    return config;
+};
+
+/// <reference types="cypress" />
+const createEmailAccount = require('./email-account.js');
+
+module.exports = async (on, config) => {
+    const emailAccount = await createEmailAccount();
+
+    on('task', {
+        getUserEmail() {
+            return emailAccount.email;
+        },
+        getUserPw() {
+            return emailAccount.pass;
+        },
+        getLastEmail() {
+            return emailAccount.getLastEmail();
+        }
+    });
+
+    // important: return the changed config
+    return config;
+};
