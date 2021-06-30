@@ -45,8 +45,8 @@ jobs:
         #env:
         #  CYPRESS_baseUrl: api.dev.local
         with:
-          config: video=${{ env.INPUT_VIDEO }}
-          command: yarn cypress:run:report
+          #config: video=${{ env.INPUT_VIDEO }}
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }}
           working-directory: e2e-tests
 
       - name: Create HTML report
