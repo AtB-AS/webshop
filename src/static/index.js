@@ -329,6 +329,20 @@ function loadFareContracts(accountId) {
                     payload.travelRights = payload.travelRights.map((right) => {
                         right.startDateTime = convert_time(right.startDateTime);
                         right.endDateTime = convert_time(right.endDateTime);
+
+                        if (Array.isArray(right.usedAccesses)) {
+                            right.usedAccesses = right.usedAccesses.map(
+                                (access) => {
+                                    access.startDateTime = convert_time(
+                                        access.startDateTime
+                                    );
+                                    access.endDateTime = convert_time(
+                                        access.endDateTime
+                                    );
+                                    return access;
+                                }
+                            );
+                        }
                         return right;
                     });
                     payload.validFrom =

@@ -330,6 +330,9 @@ onlyTravelRightFull travelRights =
                 PeriodTicket x ->
                     Just x
 
+                CarnetTicket _ ->
+                    Nothing
+
                 UnknownTicket _ ->
                     Nothing
         )

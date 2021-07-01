@@ -238,6 +238,9 @@ viewOrder shared model order =
                             PeriodTicket data ->
                                 fareProductName shared data.fareProductRef
 
+                            CarnetTicket data ->
+                                fareProductName shared data.fareProductRef
+
                             UnknownTicket _ ->
                                 "Ukjent"
                     )
@@ -331,6 +334,12 @@ viewTravelRight shared total num travelRight =
                     )
 
                 PeriodTicket data ->
+                    ( fareProductName shared data.fareProductRef
+                    , userProfileName shared data.userProfileRef
+                    , zoneProfileNames shared data.tariffZoneRefs
+                    )
+
+                CarnetTicket data ->
                     ( fareProductName shared data.fareProductRef
                     , userProfileName shared data.userProfileRef
                     , zoneProfileNames shared data.tariffZoneRefs
