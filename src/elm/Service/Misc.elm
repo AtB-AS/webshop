@@ -3,6 +3,7 @@ port module Service.Misc exposing
     , SignInMethod
     , SignInProvider(..)
     , bodyClass
+    , carnetTravelRightDecoder
     , closeValidityWarning
     , convertTime
     , convertedTime
@@ -18,7 +19,7 @@ port module Service.Misc exposing
     , saveProfile
     )
 
-import Data.FareContract exposing (FareContract, FareContractState(..), FareTime, TravelRight(..), TravelRightBase, TravelRightFull)
+import Data.FareContract exposing (FareContract, FareContractState(..), FareTime, TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
@@ -258,6 +259,9 @@ travelRightDecoder =
                 "PreActivatedSingleTicket" ->
                     Decode.map SingleTicket fullTravelRightDecoder
 
+                "CarnetTicket" ->
+                    Decode.map CarnetTicket carnetTravelRightDecoder
+
                 _ ->
                     Decode.succeed TravelRightBase
                         |> DecodeP.required "id" Decode.string
@@ -279,3 +283,27 @@ fullTravelRightDecoder =
         |> DecodeP.required "userProfileRef" Decode.string
         |> DecodeP.required "authorityRef" Decode.string
         |> DecodeP.required "tariffZoneRefs" (Decode.list Decode.string)
+
+
+carnetTravelRightDecoder : Decoder TravelRightCarnet
+carnetTravelRightDecoder =
+    Decode.succeed TravelRightCarnet
+        |> DecodeP.required "id" Decode.string
+        |> DecodeP.required "status" Decode.int
+        |> DecodeP.required "fareProductRef" Decode.string
+        |> DecodeP.required "startDateTime" timestampDecoder
+        |> DecodeP.required "endDateTime" timestampDecoder
+        |> DecodeP.required "usageValidityPeriodRef" Decode.string
+        |> DecodeP.required "userProfileRef" Decode.string
+        |> DecodeP.required "authorityRef" Decode.string
+        |> DecodeP.required "tariffZoneRefs" (Decode.list Decode.string)
+        |> DecodeP.required "maximumNumberOfAccesses" Decode.int
+        |> DecodeP.required "numberOfUsedAccesses" Decode.int
+        |> DecodeP.required "usedAccesses" (Decode.list usedAccessDecoder)
+
+
+usedAccessDecoder : Decoder UsedAccess
+usedAccessDecoder =
+    Decode.succeed UsedAccess
+        |> DecodeP.required "startDateTime" timestampDecoder
+        |> DecodeP.required "endDateTime" timestampDecoder

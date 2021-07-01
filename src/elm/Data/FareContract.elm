@@ -4,13 +4,16 @@ module Data.FareContract exposing
     , FareTime
     , TravelRight(..)
     , TravelRightBase
+    , TravelRightCarnet
     , TravelRightFull
+    , UsedAccess
     )
 
 
 type TravelRight
     = SingleTicket TravelRightFull
     | PeriodTicket TravelRightFull
+    | CarnetTicket TravelRightCarnet
     | UnknownTicket TravelRightBase
 
 
@@ -24,6 +27,28 @@ type alias TravelRightFull =
     , userProfileRef : String
     , authorityRef : String
     , tariffZoneRefs : List String
+    }
+
+
+type alias TravelRightCarnet =
+    { id : String
+    , status : Int
+    , fareProductRef : String
+    , startDateTime : FareTime
+    , endDateTime : FareTime
+    , usageValidityPeriodRef : String
+    , userProfileRef : String
+    , authorityRef : String
+    , tariffZoneRefs : List String
+    , maximumNumberOfAccesses : Int
+    , numberOfUsedAccesses : Int
+    , usedAccesses : List UsedAccess
+    }
+
+
+type alias UsedAccess =
+    { startDateTime : FareTime
+    , endDateTime : FareTime
     }
 
 
