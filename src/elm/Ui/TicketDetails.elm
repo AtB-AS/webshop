@@ -17,6 +17,7 @@ import Shared exposing (Shared)
 import Time
 import Ui.LabelItem
 import Ui.TextContainer
+import Util.FareContract
 import Util.Format
 import Util.Time as TimeUtil
 
@@ -156,8 +157,7 @@ viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
             Just carnet ->
                 [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
                     [ Icon.viewLargeMonochrome Icon.tickets ]
-                , H.span [ A.classList classListButtonTitle ]
-                    [ viewCarnetHeader carnet classListButtonTitle ]
+                , viewCarnetHeader carnet classListButtonTitle currentTime timeZone
                 ]
 
             _ ->
@@ -168,14 +168,36 @@ viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
                 ]
 
 
-viewCarnetHeader : TravelRightCarnet -> List ( String, Bool ) -> Html msg
-viewCarnetHeader carnetType classListButtonTitle =
+viewCarnetHeader : TravelRightCarnet -> List ( String, Bool ) -> Time.Posix -> Time.Zone -> Html msg
+viewCarnetHeader carnetType classListButtonTitle now timeZone =
     let
         numberUsed =
-            String.fromInt <| carnetType.maximumNumberOfAccesses - carnetType.numberOfUsedAccesses
+            carnetType.maximumNumberOfAccesses - carnetType.numberOfUsedAccesses
+
+        validAccess =
+            carnetType.usedAccesses
+                |> List.filter (.endDateTime >> .timestamp >> Util.FareContract.isValid now)
+                |> List.head
     in
         H.span [ A.classList (( "ui-ticketDetails__headerButton__title--carnet", True ) :: classListButtonTitle) ]
-            [ H.text <| numberUsed ++ " klipp igjen" ]
+            [ H.span [ A.class "ui-ticketDetails__headerButton__title__line" ]
+                [ if numberUsed > 0 then
+                    H.text <| String.fromInt numberUsed ++ " klipp igjen"
+
+                  else
+                    H.text <| "Ingen klipp igjen"
+                ]
+            , H.span [ A.class "ui-ticketDetails__headerButton__title__line" ] <|
+                case validAccess of
+                    Nothing ->
+                        [ H.text "Ingen aktive klipp" ]
+
+                    Just access ->
+                        [ H.text "Aktivt klipp ("
+                        , viewValidity access.startDateTime.timestamp access.endDateTime.timestamp now timeZone
+                        , H.text ")"
+                        ]
+            ]
 
 
 viewActivation : ( Reservation, ReservationStatus ) -> Html msg
