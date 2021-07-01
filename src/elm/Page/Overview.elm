@@ -99,6 +99,12 @@ update msg env model =
                                 |> List.sortBy (.created >> .timestamp)
                                 |> List.reverse
 
+                        _ =
+                            tickets |> List.length |> Debug.log "Length 1:"
+
+                        _ =
+                            fareContracts |> List.length |> Debug.log "Length 2:"
+
                         orderIds =
                             List.map .orderId tickets
 
@@ -109,6 +115,7 @@ update msg env model =
                         PageUpdater.init { model | tickets = tickets, reservations = activeReservations }
 
                 Err _ ->
+                    -- @TODO Handle decode errors
                     PageUpdater.init model
 
         Receipt orderId ->

@@ -1,11 +1,11 @@
 module Ui.TicketDetails exposing (view, viewActivation)
 
-import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightFull)
+import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet, TravelRightFull)
 import Data.RefData exposing (LangString(..))
 import Data.Ticket exposing (Reservation, ReservationStatus(..))
 import Dict exposing (Dict)
 import Dict.Extra
-import Fragment.Icon
+import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Autocomplete exposing (DetailedCompletion(..))
@@ -38,16 +38,13 @@ type alias TravelRightSummary =
 
 
 view : Shared -> TicketDetails msg -> Html msg
-view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
+view shared ticketDetails =
     let
+        { fareContract, open, onOpenClick, timeZone } =
+            ticketDetails
+
         id =
             fareContract.orderId
-
-        now =
-            Time.posixToMillis currentTime
-
-        isCurrentlyActive =
-            fareContract.validFrom <= now
 
         classList =
             [ ( "ui-ticketDetails", True )
@@ -68,27 +65,15 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
             [ ( "ui-ticketDetails__headerButton", True )
             ]
 
-        classListButtonTitle =
-            [ ( "ui-ticketDetails__headerButton__title", True )
-            , ( "ui-ticketDetails__headerButton__title--active", isCurrentlyActive )
-            ]
-
         chevronIcon =
             if open then
-                Fragment.Icon.upArrow
+                Icon.upArrow
 
             else
-                Fragment.Icon.downArrow
+                Icon.downArrow
 
         regionId =
             id ++ "region"
-
-        icon =
-            if isCurrentlyActive then
-                Fragment.Icon.ticketLargeValid
-
-            else
-                Fragment.Icon.ticketLargeWaiting
     in
         Ui.TextContainer.primary
             [ H.section
@@ -101,22 +86,20 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
                         , A.id id
                         , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                         ]
-                        [ H.div [ A.class "ui-ticketDetails__headerButton__icon" ]
-                            [ icon ]
-                        , H.div [ A.classList classListButtonTitle ]
-                            [ viewValidity fareContract.validFrom fareContract.validTo currentTime timeZone ]
-                        , H.div [ A.class "ui-ticketDetails__headerButton__toggleText" ]
-                            [ Ui.TextContainer.tertiary
-                                [ H.text <|
-                                    if open then
-                                        "Skjul detaljer"
+                      <|
+                        viewTicketButtonTextAndIcon ticketDetails
+                            ++ [ H.span [ A.class "ui-ticketDetails__headerButton__toggleText" ]
+                                    [ Ui.TextContainer.tertiary
+                                        [ H.text <|
+                                            if open then
+                                                "Skjul detaljer"
 
-                                    else
-                                        "Vis detaljer"
-                                , chevronIcon
-                                ]
-                            ]
-                        ]
+                                            else
+                                                "Vis detaljer"
+                                        , chevronIcon
+                                        ]
+                                    ]
+                               ]
                     ]
                 , H.div [ A.classList classListMetadata ]
                     (fareContract.travelRights
@@ -143,6 +126,56 @@ view shared { fareContract, open, onOpenClick, currentTime, timeZone } =
                     ]
                 ]
             ]
+
+
+viewTicketButtonTextAndIcon : TicketDetails msg -> List (Html msg)
+viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
+    let
+        now =
+            Time.posixToMillis currentTime
+
+        isCurrentlyActive =
+            fareContract.validFrom <= now
+
+        firstCarnet =
+            getFirstCarnetType fareContract
+
+        classListButtonTitle =
+            [ ( "ui-ticketDetails__headerButton__title", True )
+            , ( "ui-ticketDetails__headerButton__title--active", isCurrentlyActive )
+            ]
+
+        icon =
+            if isCurrentlyActive then
+                Icon.ticketLargeValid
+
+            else
+                Icon.ticketLargeWaiting
+    in
+        case firstCarnet of
+            Just carnet ->
+                [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
+                    [ Icon.viewLargeMonochrome Icon.tickets ]
+                , H.span [ A.classList classListButtonTitle ]
+                    [ viewCarnetHeader carnet classListButtonTitle ]
+                ]
+
+            _ ->
+                [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
+                    [ icon ]
+                , H.span [ A.classList classListButtonTitle ]
+                    [ viewValidity fareContract.validFrom fareContract.validTo currentTime timeZone ]
+                ]
+
+
+viewCarnetHeader : TravelRightCarnet -> List ( String, Bool ) -> Html msg
+viewCarnetHeader carnetType classListButtonTitle =
+    let
+        numberUsed =
+            String.fromInt <| carnetType.maximumNumberOfAccesses - carnetType.numberOfUsedAccesses
+    in
+        H.span [ A.classList (( "ui-ticketDetails__headerButton__title--carnet", True ) :: classListButtonTitle) ]
+            [ H.text <| numberUsed ++ " klipp igjen" ]
 
 
 viewActivation : ( Reservation, ReservationStatus ) -> Html msg
@@ -317,6 +350,21 @@ groupTravelRights travelRights =
                     }
             )
         |> Dict.values
+
+
+getFirstCarnetType : FareContract -> Maybe TravelRightCarnet
+getFirstCarnetType fareContract =
+    fareContract.travelRights
+        |> List.filterMap
+            (\travelRight ->
+                case travelRight of
+                    CarnetTicket x ->
+                        Just x
+
+                    _ ->
+                        Nothing
+            )
+        |> List.head
 
 
 onlyTravelRightFull : List TravelRight -> List TravelRightFull
