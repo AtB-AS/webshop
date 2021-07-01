@@ -19,6 +19,7 @@ import Ui.LabelItem
 import Ui.TextContainer
 import Util.FareContract
 import Util.Format
+import Util.Maybe
 import Util.Time as TimeUtil
 
 
@@ -35,6 +36,15 @@ type alias TravelRightSummary =
     { zones : List String
     , fareProductRef : String
     , userProfilesRefs : List ( String, Int )
+    , isCarnet : Bool
+    }
+
+
+type alias EssentialTravelRight =
+    { fareProductRef : String
+    , tariffZoneRefs : List String
+    , userProfileRef : String
+    , isCarnet : Bool
     }
 
 
@@ -104,7 +114,7 @@ view shared ticketDetails =
                     ]
                 , H.div [ A.classList classListMetadata ]
                     (fareContract.travelRights
-                        |> onlyTravelRightFull
+                        |> onlyTravelRightEssentials
                         |> groupTravelRights
                         |> List.map (viewTravelRightSummary shared)
                     )
@@ -260,7 +270,13 @@ viewTravelRightSummary shared travelRight =
             Just p ->
                 viewHorizontalItem
                     [ H.div [ A.class "ui-ticketDetails__summaryBox" ]
-                        [ H.p [] [ H.text <| langString p.name ]
+                        [ H.p []
+                            [ if travelRight.isCarnet then
+                                H.text <| "Klippekort (" ++ langString p.name ++ ")"
+
+                              else
+                                H.text <| langString p.name
+                            ]
                         , viewZones shared travelRight.zones
                         ]
                     , H.div []
@@ -347,7 +363,7 @@ viewHorizontalItem =
     H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal" ]
 
 
-groupTravelRights : List TravelRightFull -> List TravelRightSummary
+groupTravelRights : List EssentialTravelRight -> List TravelRightSummary
 groupTravelRights travelRights =
     travelRights
         |> Dict.Extra.groupBy (\travelRight -> travelRight.fareProductRef)
@@ -365,10 +381,16 @@ groupTravelRights travelRights =
                             |> List.head
                             |> Maybe.map .tariffZoneRefs
                             |> Maybe.withDefault []
+
+                    isCarnet =
+                        value
+                            |> List.head
+                            |> Util.Maybe.mapWithDefault .isCarnet False
                 in
                     { zones = zones
                     , fareProductRef = key
                     , userProfilesRefs = userProfileCount
+                    , isCarnet = isCarnet
                     }
             )
         |> Dict.values
@@ -389,24 +411,32 @@ getFirstCarnetType fareContract =
         |> List.head
 
 
-onlyTravelRightFull : List TravelRight -> List TravelRightFull
-onlyTravelRightFull travelRights =
-    List.filterMap
-        (\travelRight ->
-            case travelRight of
-                SingleTicket x ->
-                    Just x
+onlyTravelRightEssentials : List TravelRight -> List EssentialTravelRight
+onlyTravelRightEssentials travelRights =
+    let
+        toEssential x isCarnet =
+            { fareProductRef = x.fareProductRef
+            , tariffZoneRefs = x.tariffZoneRefs
+            , userProfileRef = x.userProfileRef
+            , isCarnet = isCarnet
+            }
+    in
+        List.filterMap
+            (\travelRight ->
+                case travelRight of
+                    SingleTicket x ->
+                        Just <| toEssential x False
 
-                PeriodTicket x ->
-                    Just x
+                    PeriodTicket x ->
+                        Just <| toEssential x False
 
-                CarnetTicket _ ->
-                    Nothing
+                    CarnetTicket x ->
+                        Just <| toEssential x True
 
-                UnknownTicket _ ->
-                    Nothing
-        )
-        travelRights
+                    UnknownTicket _ ->
+                        Nothing
+            )
+            travelRights
 
 
 formatPaymentType : List String -> String
