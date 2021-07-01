@@ -478,6 +478,9 @@
 .ui-ticketDetails__headerButton__title--active {
     font-size: 2rem;
 }
+.ui-ticketDetails__headerButton__title--carnet {
+    font-size: 1rem;
+}
 @media (max-width: 768px) {
     .ui-ticketDetails__headerButton__title {
         font-size: 1.25rem;
@@ -485,6 +488,10 @@
         line-height: 1.25;
     }
 }
+.ui-ticketDetails__headerButton__title__line {
+    display: block;
+}
+
 .ui-ticketDetails__headerButton__toggleText {
     svg {
         margin-left: var(--spacings-medium);

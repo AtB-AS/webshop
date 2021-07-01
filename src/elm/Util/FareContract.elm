@@ -1,4 +1,4 @@
-module Util.FareContract exposing (filterValidNow)
+module Util.FareContract exposing (filterValidNow, isValid)
 
 import Data.FareContract exposing (FareContract, FareContractState(..))
 import Time
@@ -7,10 +7,10 @@ import Time
 filterValidNow : Time.Posix -> List FareContract -> List FareContract
 filterValidNow now fareContracts =
     fareContracts
-        |> List.filter (\{ validTo } -> isValid validTo now)
+        |> List.filter (.validTo >> isValid now)
         |> List.filter (.state >> (==) FareContractStateActivated)
 
 
-isValid : Int -> Time.Posix -> Bool
-isValid to posixNow =
+isValid : Time.Posix -> Int -> Bool
+isValid posixNow to =
     to >= Time.posixToMillis posixNow
