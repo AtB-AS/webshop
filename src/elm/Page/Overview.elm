@@ -345,7 +345,8 @@ viewMain : Shared -> Model -> Html Msg
 viewMain shared model =
     let
         validTickets =
-            Util.FareContract.filterValidNow model.currentTime model.tickets
+            model.tickets
+                |> Util.FareContract.filterValidNow model.currentTime
     in
         H.div [ A.class "main" ]
             [ if List.isEmpty validTickets && List.isEmpty model.reservations then
