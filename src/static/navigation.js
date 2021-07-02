@@ -46,11 +46,7 @@ class AtbNavigation extends HTMLElement {
     };
 
     setListeners() {
-        this.parentElement.addEventListener(
-            'click',
-            this.onElementClick,
-            false
-        );
+        this.parentElement.addEventListener('click', this.onElementClick);
         document.body.addEventListener('keydown', this.onKeyDown);
 
         if (typeof this.mql.onchange !== 'undefined') {
@@ -62,7 +58,7 @@ class AtbNavigation extends HTMLElement {
     }
 
     removeListeners() {
-        this.removeEventListener('click', this.onElementClick);
+        this.parentElement.removeEventListener('click', this.onElementClick);
         document.body.removeEventListener('keydown', this.onKeyDown);
 
         if (typeof this.mql.onchange !== 'undefined') {
