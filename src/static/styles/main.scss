@@ -125,7 +125,12 @@ p + p {
     padding: 0 var(--contentPadding);
     display: flex;
 }
-
+.pageHeader__inner {
+    display: flex;
+    background-color: var(--colors-background_gray-backgroundColor);
+    position: relative;
+    z-index: 250;
+}
 .pageHeader__logo {
     padding: 0;
     margin: 0;
@@ -151,11 +156,12 @@ p + p {
 .pageHeader__nav {
     flex: 1;
     display: flex;
+
+    transition: transform 250ms ease-in;
 }
-@media (max-width: 768px) {
-    .pageHeader__nav {
-        display: none;
-    }
+.pageHeader__nav nav {
+    flex: 1;
+    display: flex;
 }
 .pageHeader__nav ul {
     display: flex;
@@ -176,6 +182,10 @@ p + p {
     display: block;
     padding: var(--spacings-medium);
 }
+.pageHeader__toggleButton {
+    display: none;
+    margin-left: auto;
+}
 .pageHeader__nav__logout {
     background: transparent;
     border: 0;
@@ -191,6 +201,77 @@ p + p {
         fill: currentColor;
     }
 }
+
+@media (max-width: 850px) {
+    .pageHeader__inner {
+        flex: 1;
+    }
+
+    .pageHeader__toggleButton {
+        display: block;
+    }
+
+    .pageHeader__nav {
+        position: absolute;
+        transform: translateY(-100%);
+        top: 2.75rem;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        z-index: 100;
+
+        align-items: flex-start;
+    }
+    .pageHeader__nav::after {
+        background: rgba(0, 0, 0, 0.4);
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        opacity: 0;
+        transition: opacity 150ms ease-in;
+    }
+
+    .pageHeader__nav nav {
+        position: relative;
+        z-index: 150;
+        background-color: var(--colors-background_gray-backgroundColor);
+    }
+
+    .pageHeader__nav ul {
+        flex-direction: column;
+        justify-content: space-around;
+
+        max-height: 40rem;
+        align-items: stretch;
+        padding: var(--contentPadding);
+    }
+    .pageHeader__nav li:last-child {
+        margin: 0;
+    }
+    .pageHeader__nav__logout {
+        display: flex;
+        width: 100%;
+        padding: var(--spacings-medium);
+
+        svg {
+            margin-left: auto;
+        }
+    }
+
+    .pageHeader__nav[open] {
+        transform: translateY(0);
+    }
+    .pageHeader__nav[open]::after {
+        opacity: 1;
+        transition-delay: 150ms;
+    }
+}
+
 .pageHeader__content a,
 .pageHeader__nav__logout {
     font-size: var(--baseTypo-body__primary-fontSize, 1rem);

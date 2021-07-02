@@ -10,6 +10,7 @@ import Fragment.Icon as Icon
 import GlobalActions as GA exposing (GlobalAction(..))
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
 import Json.Decode as Decode exposing (Decoder)
@@ -60,6 +61,7 @@ type Msg
     | StartVerifyUser String
     | LogOut
     | CloseValidityWarning
+    | ToggleMenu Bool
     | LoggedInData (Result Decode.Error UserData)
     | LoggedInError (Result Decode.Error AuthError)
     | Focus (Result Dom.Error ())
@@ -83,6 +85,7 @@ type alias Model =
     , userData : Status UserData
     , authError : AuthError
     , navKey : Nav.Key
+    , openMenu : Bool
     }
 
 
@@ -271,6 +274,7 @@ init flags url navKey =
                 , authError = AuthErrorNone
                 , navKey = navKey
                 , verifyUser = Nothing
+                , openMenu = False
                 }
     in
         ( routeModel
@@ -337,6 +341,9 @@ update msg model =
                         ( { model | userData = NotLoaded, environment = newEnvironment, onboarding = Nothing, authError = AuthErrorNone }
                         , Cmd.batch [ FirebaseAuth.signOut, TaskUtil.doTask <| RouteTo Route.Home ]
                         )
+
+        ToggleMenu open ->
+            ( { model | openMenu = open }, Cmd.none )
 
         SetRoute route ->
             setRoute route model
@@ -578,12 +585,15 @@ wrapPage model children =
 
                 _ ->
                     model.environment.showValidityWarning && model.environment.customerId /= Nothing
+
+        contentClassName =
+            "app"
     in
         H.div [ A.class "light container" ]
             [ viewAuthError model
-            , header model
+            , header model contentClassName
             , Html.Extra.viewIf showVisibility (viewValidityWarning model)
-            , H.main_ [ A.class "app" ]
+            , H.main_ [ A.class contentClassName ]
                 [ Ui.GlobalNotifications.notifications model.notifications
                 , H.div [ A.class "content" ]
                     children
@@ -612,8 +622,8 @@ viewValidityWarning model =
         Html.Extra.nothing
 
 
-header : Model -> Html Msg
-header model =
+header : Model -> String -> Html Msg
+header model contentClass =
     let
         links =
             [ ( "Ny periodebillett", Route.Shop, Shared.hasPeriodTickets model.shared )
@@ -624,6 +634,9 @@ header model =
 
         showHeader =
             model.environment.customerId /= Nothing || model.onboarding /= Nothing || model.verifyUser /= Nothing
+
+        openAttribute =
+            Html.Attributes.Extra.attributeIf model.openMenu (A.attribute "open" "")
 
         navigation =
             if model.onboarding == Nothing && model.verifyUser == Nothing then
@@ -648,24 +661,36 @@ header model =
     in
         H.header [ A.class "pageHeader" ]
             [ H.div [ A.class "pageHeader__content" ]
-                [ H.h1 [ A.class "pageHeader__logo" ]
-                    [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
+                [ H.div [ A.class "pageHeader__inner" ]
+                    [ H.h1 [ A.class "pageHeader__logo" ]
+                        [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
+                        ]
+                    , H.button [ A.type_ "button", A.class "pageHeader__toggleButton", E.onClick <| ToggleMenu <| not model.openMenu ] [ H.text "toggle" ]
                     ]
                 , if showHeader then
-                    H.nav [ A.class "pageHeader__nav" ]
-                        [ H.ul []
-                            (navigation
-                                ++ [ H.li []
-                                        [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
-                                        ]
-                                   ]
-                            )
+                    H.node "atb-nav"
+                        [ A.class "pageHeader__nav", A.attribute "content-class" contentClass, openAttribute, E.on "change" decodeMenuToggle ]
+                        [ H.nav []
+                            [ H.ul []
+                                (navigation
+                                    ++ [ H.li []
+                                            [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
+                                            ]
+                                       ]
+                                )
+                            ]
                         ]
 
                   else
                     Html.Extra.nothing
                 ]
             ]
+
+
+decodeMenuToggle : Decoder Msg
+decodeMenuToggle =
+    Decode.map ToggleMenu
+        (Decode.at [ "target", "open" ] Decode.bool)
 
 
 {-| Always show error box, but offset to top and position absolute to animate in/out
