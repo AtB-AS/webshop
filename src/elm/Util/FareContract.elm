@@ -8,7 +8,6 @@ filterValidNow : Time.Posix -> List FareContract -> List FareContract
 filterValidNow now fareContracts =
     fareContracts
         |> List.filter (.validTo >> isValid now)
-        |> List.filter (.state >> (==) FareContractStateActivated)
 
 
 isValid : Time.Posix -> Int -> Bool

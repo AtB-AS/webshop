@@ -1,6 +1,6 @@
 module Ui.TicketDetails exposing (view, viewActivation)
 
-import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet, TravelRightFull)
+import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet)
 import Data.RefData exposing (LangString(..))
 import Data.Ticket exposing (Reservation, ReservationStatus(..))
 import Dict exposing (Dict)
