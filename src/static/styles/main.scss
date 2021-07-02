@@ -344,6 +344,8 @@ p + p {
     background: var(--colors-primary_destructive-backgroundColor);
     transition: transform 150ms ease-in;
     transform: translateY(-100%);
+
+    z-index: 300;
 }
 .authErrorBox--active {
     transform: translateY(0);
