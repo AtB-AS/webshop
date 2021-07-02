@@ -665,7 +665,11 @@ header model contentClass =
                     [ H.h1 [ A.class "pageHeader__logo" ]
                         [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
                         ]
-                    , H.button [ A.type_ "button", A.class "pageHeader__toggleButton", E.onClick <| ToggleMenu <| not model.openMenu ] [ H.text "toggle" ]
+                    , if showHeader then
+                        H.button [ A.type_ "button", A.class "pageHeader__toggleButton", E.onClick <| ToggleMenu <| not model.openMenu ] [ H.text "toggle" ]
+
+                      else
+                        Html.Extra.nothing
                     ]
                 , if showHeader then
                     H.node "atb-nav"
