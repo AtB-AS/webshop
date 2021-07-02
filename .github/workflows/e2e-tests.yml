@@ -64,10 +64,18 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: test-results
+          name: test-results-html
           path: |
             ./e2e-tests/cypress/results/assets
             ./e2e-tests/cypress/results/cypressTestReport.html
+          retention-days: 3
+          
+      - name: Upload test report json
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results-json
+          path: ./e2e-tests/cypress/results/cypressTestReport.json
           retention-days: 3
           
       - name: Upload video recording
