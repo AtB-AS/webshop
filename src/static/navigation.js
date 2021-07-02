@@ -36,7 +36,7 @@ class AtbNavigation extends HTMLElement {
 
     onElementClick = (e) => {
         const name = e.target.nodeName;
-        if (name == 'A' || name == 'BUTTON' || name == 'ATB-NAV') {
+        if (name == 'A' || name == 'ATB-NAV') {
             this.open = false;
         }
     };
@@ -46,7 +46,11 @@ class AtbNavigation extends HTMLElement {
     };
 
     setListeners() {
-        this.addEventListener('click', this.onElementClick, false);
+        this.parentElement.addEventListener(
+            'click',
+            this.onElementClick,
+            false
+        );
         document.body.addEventListener('keydown', this.onKeyDown);
 
         if (typeof this.mql.onchange !== 'undefined') {
