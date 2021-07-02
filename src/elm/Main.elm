@@ -32,6 +32,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.GlobalNotifications
+import Ui.HamburgerButton
 import Ui.Message
 import Ui.PageHeader as PH
 import Ui.ScreenReaderText
@@ -651,8 +652,9 @@ header model contentClass =
                                     [ ( "pageHeader__nav__item", True )
                                     , ( "pageHeader__nav__item--active", Just route == model.route )
                                     ]
+                                , A.attribute "role" "none"
                                 ]
-                                [ H.a [ Route.href route ] [ H.text name ] ]
+                                [ H.a [ Route.href route, A.attribute "role" "menuitem" ] [ H.text name ] ]
                     )
                     links
 
@@ -666,19 +668,24 @@ header model contentClass =
                         [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
                         ]
                     , if showHeader then
-                        H.button [ A.type_ "button", A.class "pageHeader__toggleButton", E.onClick <| ToggleMenu <| not model.openMenu ] [ H.text "toggle" ]
+                        H.div [ A.class "pageHeader__toggleButton" ] [ Ui.HamburgerButton.view "burgermenu" "menubox" model.openMenu (ToggleMenu <| not model.openMenu) ]
 
                       else
                         Html.Extra.nothing
                     ]
                 , if showHeader then
                     H.node "atb-nav"
-                        [ A.class "pageHeader__nav", A.attribute "content-class" contentClass, openAttribute, E.on "change" decodeMenuToggle ]
+                        [ A.id "menubox", A.attribute "role" "menu", A.attribute "aria-labelledby" "burgermenu", A.class "pageHeader__nav", A.attribute "content-class" contentClass, openAttribute, E.on "change" decodeMenuToggle ]
                         [ H.nav []
                             [ H.ul []
                                 (navigation
-                                    ++ [ H.li []
-                                            [ H.button [ A.class "pageHeader__nav__logout", E.onClick LogOut ] [ H.text "Logg ut", Icon.logout ]
+                                    ++ [ H.li [ A.attribute "role" "none" ]
+                                            [ H.button
+                                                [ A.class "pageHeader__nav__logout"
+                                                , A.attribute "role" "menuitem"
+                                                , E.onClick LogOut
+                                                ]
+                                                [ H.text "Logg ut", Icon.logout ]
                                             ]
                                        ]
                                 )
