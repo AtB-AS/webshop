@@ -1264,7 +1264,7 @@ a.ui-button--link,
     background: transparent;
     border: 0;
     cursor: pointer;
-    color: var(--colors-background_0-color);
+    color: var(--colors-background_gray-color);
 
     font-size: var(--baseTypo-body__primary-fontSize, 1rem);
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
@@ -1281,7 +1281,7 @@ a.ui-button--link,
     display: block;
     position: absolute;
     height: 0.25rem;
-    background: var(--colors-background_0-color);
+    background: var(--colors-background_gray-color);
     border-radius: 0.25rem;
     opacity: 1;
     left: var(--spacings-medium);
