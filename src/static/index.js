@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Elm } from '../elm/Main';
 
+import './navigation';
+
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js');
