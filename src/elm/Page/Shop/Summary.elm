@@ -128,10 +128,17 @@ view shared model =
         summary =
             makeSummary model.query model.offers shared
     in
-        H.div [ A.class "page page--threeColumns" ]
-            [ viewTicketSection summary
-            , viewPriceSection summary
-            , viewPaymentSection model
+        H.div []
+            [ Section.init
+                |> Section.setMarginBottom True
+                |> Section.viewWithOptions
+                    [ Ui.Message.info "I en overgangsperiode kan du oppleve at kortlesere på metrobussholdeplass og i regionbuss avviser t:kortet ditt. Ta det med ro – du kan fortsatt reise trygt! I en eventuell kontroll vil avlesing av kort fungere."
+                    ]
+            , H.div [ A.class "page page--threeColumns" ]
+                [ viewTicketSection summary
+                , viewPriceSection summary
+                , viewPaymentSection model
+                ]
             ]
 
 
