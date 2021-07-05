@@ -8,8 +8,9 @@ import 'wicg-inert';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Elm } from '../elm/Main';
-
 import './navigation';
+
+const MAX_RETRY_ATTEMPTS = 3;
 
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -32,14 +33,6 @@ XMLHttpRequest.prototype.open = function (...args) {
         )
     ) {
         this.setRequestHeader('Atb-Request-Id', uuidv4());
-        this.addEventListener('loadend', function (e) {
-            // When on custom services (e.g. ticketing service),
-            // if we get 401 due to some stale state and token not
-            // being refreshed, reload screen.
-            if (e.currentTarget.status === 401) {
-                document.location.reload();
-            }
-        });
     }
     return res;
 };
@@ -196,6 +189,7 @@ function clearRefreshToken() {
     }
 }
 
+let retryAttempts = MAX_RETRY_ATTEMPTS;
 function enqueueRefreshToken(user, expirationString) {
     const expiration = new Date(expirationString).valueOf();
     const now = new Date().valueOf();
@@ -207,7 +201,12 @@ function enqueueRefreshToken(user, expirationString) {
     // with Firebase or our clock.  We could refresh the token, but that could
     // just create an endless loop of errors.  Instead we just bail out.
     if (diff < 0) {
-        return;
+        if (retryAttempts <= 0) {
+            // Tried to recover from refresh. Not possible, bail.
+            return;
+        }
+        // Decrement retries.
+        retryAttempts--;
     }
 
     // Refresh one minute before the timeout.
@@ -236,6 +235,9 @@ async function fetchAuthInfo(user, stopOnboarding) {
             console.error('No idToken');
             return;
         }
+        // Valid login. Reset retries.
+        retryAttempts = MAX_RETRY_ATTEMPTS;
+
         const accountId = idToken.claims['sub'];
         const email = user.email || '';
         const phone = user.phoneNumber || '';
