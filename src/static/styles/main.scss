@@ -43,6 +43,10 @@ body {
     background-color: var(--colors-background_1-backgroundColor);
 }
 
+body.menuOpen {
+    overflow: hidden;
+}
+
 input,
 select,
 button {

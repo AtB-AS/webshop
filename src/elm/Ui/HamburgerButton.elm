@@ -20,10 +20,21 @@ view id menuId open onClick =
         , A.id id
         , A.attribute "aria-expanded" <| boolToString open
         ]
-        [ H.span [] []
-        , H.span [] []
-        , H.span [] []
+        [ viewSpan
+        , viewSpan
+        , viewSpan
         ]
+
+
+viewSpan : Html msg
+viewSpan =
+    H.span
+        [ A.attribute "aria-hidden" "true"
+        , A.attribute "role" "presentation"
+        , A.attribute "hidden" ""
+        , A.attribute "tabindex" "-1"
+        ]
+        []
 
 
 boolToString : Bool -> String

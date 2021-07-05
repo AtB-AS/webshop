@@ -85,10 +85,18 @@ class AtbNavigation extends HTMLElement {
             this.setAttribute('aria-disabled', 'true');
             this.setAttribute('inert', 'true');
             this.contentContainer.removeAttribute('inert');
+            this.contentContainer.setAttribute('tabIndex', '0');
+            this.contentContainer.setAttribute('aria-disabled', 'false');
+
+            document.body.classList.remove('menuOpen');
         } else {
             this.setAttribute('aria-disabled', 'false');
             this.removeAttribute('inert');
             this.contentContainer.setAttribute('inert', 'true');
+            this.contentContainer.setAttribute('tabIndex', '-1');
+            this.contentContainer.setAttribute('aria-disabled', 'true');
+
+            document.body.classList.add('menuOpen');
 
             this.setFirstInteractiveFocus();
         }
