@@ -46,6 +46,7 @@ type alias Model =
     , expanded : Maybe String
     , sendingReceipt : List String
     , profile : Maybe Profile
+    , error : Maybe String
     }
 
 
@@ -57,6 +58,7 @@ init =
     , expanded = Nothing
     , sendingReceipt = []
     , profile = Nothing
+    , error = Nothing
     }
 
 
@@ -96,10 +98,15 @@ update msg env model =
                                 fareContracts
                                     |> List.sortBy (.created >> .timestamp)
                                     |> List.reverse
+                            , error = Nothing
                         }
 
                 Err _ ->
-                    PageUpdater.init model
+                    PageUpdater.init
+                        { model
+                            | error =
+                                Just "Fikk ikke hentet billetter. Prøv igjen senere eller ta kontakt med kundeservice om problemet vedvarer."
+                        }
 
         ProfileChange (Just profile) ->
             PageUpdater.init
@@ -180,11 +187,15 @@ viewSidebar _ =
 viewMain : Shared -> Model -> Html Msg
 viewMain shared model =
     H.div [ A.class "main" ]
-        [ if List.isEmpty model.orders then
-            H.div [] [ H.text "Ingen billetter" ]
+        [ case ( List.isEmpty model.orders, model.error ) of
+            ( True, Nothing ) ->
+                H.div [] [ H.text "Ingen billetter" ]
 
-          else
-            H.div [] <| List.map (viewOrder shared model) model.orders
+            ( _, Just error ) ->
+                Message.error error
+
+            _ ->
+                H.div [] <| List.map (viewOrder shared model) model.orders
         ]
 
 
