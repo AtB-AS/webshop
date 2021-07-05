@@ -675,9 +675,9 @@ header model contentClass =
                     ]
                 , if showHeader then
                     H.node "atb-nav"
-                        [ A.id "menubox", A.attribute "role" "menu", A.attribute "aria-labelledby" "burgermenu", A.class "pageHeader__nav", A.attribute "content-class" contentClass, openAttribute, E.on "change" decodeMenuToggle ]
+                        [ A.id "menubox", A.attribute "aria-labelledby" "burgermenu", A.class "pageHeader__nav", A.attribute "content-class" contentClass, openAttribute, E.on "change" decodeMenuToggle ]
                         [ H.nav []
-                            [ H.ul []
+                            [ H.ul [ A.attribute "role" "menu" ]
                                 (navigation
                                     ++ [ H.li [ A.attribute "role" "none" ]
                                             [ H.button
