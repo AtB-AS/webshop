@@ -71,7 +71,6 @@ class AtbNavigation extends HTMLElement {
 
     setOptions() {
         if (this.alwaysOpen) {
-            console.log('setting options, always open');
             this.setAttribute('aria-disabled', 'true');
             this.removeAttribute('inert');
             this.contentContainer.removeAttribute('inert');
@@ -128,7 +127,6 @@ class AtbNavigation extends HTMLElement {
     }
 
     set alwaysOpen(val) {
-        console.log('setting always open', val);
         if (val) {
             this.setAttribute('always-open', '');
             this.dispatchEvent(new CustomEvent('change', { open: false }));
