@@ -65,7 +65,7 @@ class AtbNavigation extends HTMLElement {
             );
         }
 
-        if (this.parentElement) {
+        if (document.body) {
             document.body.removeEventListener('keydown', this.onKeyDown);
         }
 
