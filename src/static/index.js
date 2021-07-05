@@ -32,6 +32,14 @@ XMLHttpRequest.prototype.open = function (...args) {
         )
     ) {
         this.setRequestHeader('Atb-Request-Id', uuidv4());
+        this.addEventListener('loadend', function (e) {
+            // When on custom services (e.g. ticketing service),
+            // if we get 401 due to some stale state and token not
+            // being refreshed, reload screen.
+            if (e.currentTarget.status === 401) {
+                document.location.reload();
+            }
+        });
     }
     return res;
 };
