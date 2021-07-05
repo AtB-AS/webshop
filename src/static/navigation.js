@@ -58,8 +58,16 @@ class AtbNavigation extends HTMLElement {
     }
 
     removeListeners() {
-        this.parentElement.removeEventListener('click', this.onElementClick);
-        document.body.removeEventListener('keydown', this.onKeyDown);
+        if (this.parentElement) {
+            this.parentElement.removeEventListener(
+                'click',
+                this.onElementClick
+            );
+        }
+
+        if (this.parentElement) {
+            document.body.removeEventListener('keydown', this.onKeyDown);
+        }
 
         if (typeof this.mql.onchange !== 'undefined') {
             this.mql.removeEventListener('change', this.onMediaChange);
@@ -84,19 +92,23 @@ class AtbNavigation extends HTMLElement {
         if (!this.open) {
             this.setAttribute('aria-disabled', 'true');
             this.setAttribute('inert', 'true');
-            this.contentContainer.removeAttribute('inert');
-            this.contentContainer.setAttribute('tabIndex', '0');
-            this.contentContainer.setAttribute('aria-disabled', 'false');
-
             document.body.classList.remove('menuOpen');
+
+            if (this.contentContainer) {
+                this.contentContainer.removeAttribute('inert');
+                this.contentContainer.setAttribute('tabIndex', '0');
+                this.contentContainer.setAttribute('aria-disabled', 'false');
+            }
         } else {
             this.setAttribute('aria-disabled', 'false');
             this.removeAttribute('inert');
-            this.contentContainer.setAttribute('inert', 'true');
-            this.contentContainer.setAttribute('tabIndex', '-1');
-            this.contentContainer.setAttribute('aria-disabled', 'true');
-
             document.body.classList.add('menuOpen');
+
+            if (this.contentContainer) {
+                this.contentContainer.setAttribute('inert', 'true');
+                this.contentContainer.setAttribute('tabIndex', '-1');
+                this.contentContainer.setAttribute('aria-disabled', 'true');
+            }
 
             this.setFirstInteractiveFocus();
         }
