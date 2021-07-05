@@ -22,6 +22,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Button as B
+import Ui.Message
 import Ui.PageHeader as PH
 import Ui.Section as S
 import Ui.TicketDetails
@@ -59,6 +60,7 @@ type alias Model =
     , expanded : Maybe String
     , reservations : List ( Reservation, ReservationStatus )
     , timeZone : Time.Zone
+    , error : Maybe String
     }
 
 
@@ -73,6 +75,7 @@ init =
       , expanded = Nothing
       , reservations = []
       , timeZone = Time.utc
+      , error = Nothing
       }
     , Task.perform AdjustTimeZone Time.here
     )
@@ -106,11 +109,14 @@ update msg env model =
                             model.reservations
                                 |> List.filter (\( reservation, _ ) -> not <| List.member reservation.orderId orderIds)
                     in
-                        PageUpdater.init { model | tickets = tickets, reservations = activeReservations }
+                        PageUpdater.init { model | tickets = tickets, reservations = activeReservations, error = Nothing }
 
                 Err _ ->
-                    -- @TODO Handle decode errors
-                    PageUpdater.init model
+                    PageUpdater.init
+                        { model
+                            | error =
+                                Just "Fikk ikke hentet billetter. Prøv igjen senere eller ta kontakt med kundeservice om problemet vedvarer."
+                        }
 
         Receipt orderId ->
             PageUpdater.fromPair ( model, sendReceipt env orderId )
@@ -356,16 +362,23 @@ viewMain shared model =
         validTickets =
             model.tickets
                 |> Util.FareContract.filterValidNow model.currentTime
+
+        emptyResults =
+            List.isEmpty validTickets && List.isEmpty model.reservations
     in
         H.div [ A.class "main" ]
-            [ if List.isEmpty validTickets && List.isEmpty model.reservations then
-                H.div [ A.class "pageOverview__empty" ]
-                    [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
-                    , H.text "Ingen billetter er tilknyttet din konto."
-                    ]
+            [ case ( emptyResults, model.error ) of
+                ( True, Nothing ) ->
+                    H.div [ A.class "pageOverview__empty" ]
+                        [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
+                        , H.text "Ingen billetter er tilknyttet din konto."
+                        ]
 
-              else
-                H.div [] (viewPending model ++ viewTicketCards shared validTickets model)
+                ( _, Just error ) ->
+                    Ui.Message.error error
+
+                _ ->
+                    H.div [] (viewPending model ++ viewTicketCards shared validTickets model)
             ]
 
 
