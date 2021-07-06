@@ -24,6 +24,7 @@ import Ui.LabelItem as LabelItem
 import Ui.Message
 import Ui.Section as Section
 import Util.Format
+import Util.PhoneNumber
 import Util.Status exposing (Status(..))
 
 
@@ -137,7 +138,7 @@ view shared model =
             , H.div [ A.class "page page--threeColumns" ]
                 [ viewTicketSection summary
                 , viewPriceSection summary
-                , viewPaymentSection model
+                , viewPaymentSection model shared
                 ]
             ]
 
@@ -257,8 +258,8 @@ viewPriceSection summary =
             ]
 
 
-viewPaymentSection : Model -> Html Msg
-viewPaymentSection model =
+viewPaymentSection : Model -> Shared -> Html Msg
+viewPaymentSection model shared =
     let
         disableButtons =
             case model.reservation of
@@ -285,12 +286,34 @@ viewPaymentSection model =
                     |> Radio.view
                 ]
             , maybeBuyNotice model.offers
+            , maybeVippsNotice model shared
             , B.init "Gå til betaling"
                 |> B.setDisabled disableButtons
                 |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
                 |> B.setOnClick (Just BuyOffers)
                 |> B.primary Primary_2
             ]
+
+
+maybeVippsNotice : Model -> Shared -> Html Msg
+maybeVippsNotice model shared =
+    let
+        isVipps =
+            model.paymentType == Vipps
+
+        maybeIsNotDefaultCountryCode =
+            shared.profile
+                |> Maybe.map .phone
+                |> Maybe.map Util.PhoneNumber.isDefaultCountryCode
+                |> Maybe.map not
+                |> Maybe.map ((&&) isVipps)
+    in
+        case maybeIsNotDefaultCountryCode of
+            Just True ->
+                Ui.Message.warning "Vipps støtter ikke betaling fra telefonnummer med landskode annet enn +47."
+
+            _ ->
+                Html.Extra.nothing
 
 
 viewTravellerData : TravellerData -> Html Msg
