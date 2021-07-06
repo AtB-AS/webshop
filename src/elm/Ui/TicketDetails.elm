@@ -195,7 +195,7 @@ viewCarnetHeader carnetType classListButtonTitle now timeZone =
                     H.text <| String.fromInt numberUsed ++ " klipp igjen"
 
                   else
-                    H.text <| "Ingen klipp igjen"
+                    H.text "Ingen klipp igjen"
                 ]
             , H.span [ A.class "ui-ticketDetails__headerButton__title__line" ] <|
                 case validAccess of
