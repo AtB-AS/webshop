@@ -10,7 +10,7 @@ module Ui.Input.EditSection exposing
     , setButtonGroup
     , setCCGLoading
     , setCCGOnCancel
-    , setDGDisabled
+    , setDGLoading
     , setDGMessage
     , setDGOnCancel
     , setDGOnDestroy
@@ -172,7 +172,7 @@ type alias DestructiveGroup msg =
     { message : String
     , onCancel : Maybe msg
     , onDestroy : Maybe msg
-    , disabled : Bool
+    , loading : Bool
     }
 
 
@@ -181,7 +181,7 @@ initDestructiveGroup =
     { message = ""
     , onCancel = Nothing
     , onDestroy = Nothing
-    , disabled = False
+    , loading = False
     }
 
 
@@ -200,25 +200,25 @@ setDGOnDestroy onDestroy opts =
     { opts | onDestroy = onDestroy }
 
 
-setDGDisabled : Bool -> DestructiveGroup msg -> DestructiveGroup msg
-setDGDisabled disabled opts =
-    { opts | disabled = disabled }
+setDGLoading : Bool -> DestructiveGroup msg -> DestructiveGroup msg
+setDGLoading loading opts =
+    { opts | loading = loading }
 
 
 destructiveGroup : DestructiveGroup msg -> List (Html msg)
-destructiveGroup { message, onCancel, onDestroy, disabled } =
+destructiveGroup { message, onCancel, onDestroy, loading } =
     [ H.div [ A.class "ui-editSection__fieldset__buttonGroup__deleteText", A.attribute "role" "alert" ]
         [ H.text message ]
     , B.init
         "Avbryt"
         |> B.setIcon (Just Fragment.Icon.cross)
         |> B.setOnClick onCancel
-        |> B.setDisabled disabled
+        |> B.setDisabled loading
         |> B.tertiaryCompact
     , B.init "Fjern t:kort"
         |> B.setIcon (Just Fragment.Icon.checkmark)
         |> B.setOnClick onDestroy
-        |> B.setDisabled disabled
+        |> B.setLoading loading
         |> B.setAttributes [ A.classList [ ( "ui-editSection__fieldset__saveButton", True ) ] ]
         |> B.primaryCompact B.Primary_destructive
     ]
