@@ -430,8 +430,12 @@ validateEmail sel model =
 
 
 validatePhone : (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)
-validatePhone sel =
-    Validation.validate (Validation.phoneValidator PhoneInput sel)
+validatePhone sel model =
+    if String.isEmpty <| sel model then
+        Validation.validate Validation.void model
+
+    else
+        Validation.validate (Validation.phoneValidator PhoneInput sel) model
 
 
 validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
@@ -655,6 +659,7 @@ viewPhoneNumber model profile =
                                     |> Text.setPlaceholder "Legg til et telefonnummer"
                                     |> Text.setValue (Just model.phone)
                                     |> Text.setType "tel"
+                                    |> Text.setRequired False
                                     |> Text.setError (Validation.select PhoneInput model.validationErrors)
                                     |> Text.setAttributes [ E.onFocus OnInputPhoneFocus ]
                                     |> Text.view
