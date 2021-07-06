@@ -1,4 +1,4 @@
-module Util.PhoneNumber exposing (format, withDefaultCountryCode, withoutCountryCode)
+module Util.PhoneNumber exposing (format, isDefaultCountryCode, withDefaultCountryCode, withoutCountryCode)
 
 import Util.NumberFormater as NF
 
@@ -26,6 +26,11 @@ withDefaultCountryCode phone =
         "+47" ++ phone
 
 
+isDefaultCountryCode : String -> Bool
+isDefaultCountryCode =
+    String.startsWith "+47"
+
+
 format : String -> String
 format phone =
     let
@@ -35,18 +40,22 @@ format phone =
         actualPhone =
             withoutCountryCode phone
     in
-        -- @TODO This will be incorrect on country codes other than 2 digits.
-        -- Currently visual noice, but not critica. At some point extend to use
-        -- proper parsing of country codes.
-        NF.formatString
-            [ NF.Str countryCode
-            , NF.Space
-            , NF.Digits 2
-            , NF.Space
-            , NF.Digits 2
-            , NF.Space
-            , NF.Digits 2
-            , NF.Space
-            , NF.Digits 2
-            ]
-            actualPhone
+        if not (isDefaultCountryCode phone) then
+            phone
+
+        else
+            -- @TODO This will be incorrect on country codes other than 2 digits.
+            -- Currently visual noice, but not critica. At some point extend to use
+            -- proper parsing of country codes.
+            NF.formatString
+                [ NF.Str countryCode
+                , NF.Space
+                , NF.Digits 2
+                , NF.Space
+                , NF.Digits 2
+                , NF.Space
+                , NF.Digits 2
+                , NF.Space
+                , NF.Digits 2
+                ]
+                actualPhone
