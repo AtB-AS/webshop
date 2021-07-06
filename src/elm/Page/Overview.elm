@@ -368,7 +368,7 @@ viewMain shared model =
                 ( _, Just error ) ->
                     Ui.Message.error error
 
-                _ ->
+                ( False, Nothing ) ->
                     H.div [] (viewPending model ++ viewTicketCards shared validTickets model)
             ]
 

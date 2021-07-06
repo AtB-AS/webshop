@@ -194,7 +194,7 @@ viewMain shared model =
             ( _, Just error ) ->
                 Message.error error
 
-            _ ->
+            ( False, Nothing ) ->
                 H.div [] <| List.map (viewOrder shared model) model.orders
         ]
 
