@@ -8,7 +8,7 @@ module Ui.Input.EditSection exposing
     , initDestructiveGroup
     , setAccessibilityName
     , setButtonGroup
-    , setCCGDisabled
+    , setCCGLoading
     , setCCGOnCancel
     , setDGDisabled
     , setDGMessage
@@ -137,7 +137,7 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
 
 type alias CancelConfirmGroup msg =
     { onCancel : Maybe msg
-    , disabled : Bool
+    , loading : Bool
     }
 
 
@@ -146,23 +146,23 @@ setCCGOnCancel onCancel opts =
     { opts | onCancel = onCancel }
 
 
-setCCGDisabled : Bool -> CancelConfirmGroup msg -> CancelConfirmGroup msg
-setCCGDisabled disabled opts =
-    { opts | disabled = disabled }
+setCCGLoading : Bool -> CancelConfirmGroup msg -> CancelConfirmGroup msg
+setCCGLoading loading opts =
+    { opts | loading = loading }
 
 
 cancelConfirmGroup : CancelConfirmGroup msg -> List (Html msg)
-cancelConfirmGroup { onCancel, disabled } =
+cancelConfirmGroup { onCancel, loading } =
     [ B.init
         "Avbryt"
         |> B.setIcon (Just Fragment.Icon.cross)
         |> B.setOnClick onCancel
-        |> B.setDisabled disabled
+        |> B.setDisabled loading
         |> B.tertiaryCompact
     , B.init "Lagre"
         |> B.setIcon (Just Fragment.Icon.checkmark)
         |> B.setType "submit"
-        |> B.setDisabled disabled
+        |> B.setLoading loading
         |> B.setAttributes [ A.classList [ ( "ui-editSection__fieldset__saveButton", True ) ] ]
         |> B.primaryCompact B.Primary_2
     ]
