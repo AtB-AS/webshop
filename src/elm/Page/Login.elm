@@ -404,6 +404,7 @@ viewPhoneLogin model =
         , betaNotice
         , B.init "Send engangskode"
             |> B.setIcon (Just Icon.rightArrow)
+            |> B.setLoading model.loading
             |> B.setType "submit"
             |> B.primary B.Primary_2
         ]
@@ -428,6 +429,7 @@ viewEmailLogin model =
         , betaNotice
         , B.init "Logg inn"
             |> B.setIcon (Just Icon.rightArrow)
+            |> B.setLoading model.loading
             |> B.setType "submit"
             |> B.primary B.Primary_2
         ]
@@ -447,6 +449,7 @@ viewEmailRegister model =
         , betaNotice
         , B.init "Opprett profil"
             |> B.setIcon (Just Icon.rightArrow)
+            |> B.setLoading model.loading
             |> B.setType "submit"
             |> B.primary B.Primary_2
         ]
@@ -466,6 +469,7 @@ viewEmailReset model =
         , betaNotice
         , B.init "Tilbakestill passord"
             |> B.setIcon (Just Icon.rightArrow)
+            |> B.setLoading model.loading
             |> B.setType "submit"
             |> B.primary B.Primary_2
         ]
@@ -579,6 +583,7 @@ viewConfirm _ model =
                 ]
             , B.init "Logg inn"
                 |> B.setIcon (Just Icon.rightArrow)
+                |> B.setLoading model.loading
                 |> B.setType "submit"
                 |> B.primary B.Primary_2
             ]

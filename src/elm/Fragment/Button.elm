@@ -8,7 +8,8 @@ import Svg.Attributes as SA
 loading : Html msg
 loading =
     S.svg [ SA.width "40", SA.height "10", SA.viewBox "0 0 120 30", SA.fill "#fff" ]
-        [ S.circle [ SA.cx "15", SA.cy "15", SA.r "15" ]
+        [ S.title [] [ S.text "Laster" ]
+        , S.circle [ SA.cx "15", SA.cy "15", SA.r "15" ]
             [ S.animate
                 [ SA.attributeName "r"
                 , SA.from "15"
