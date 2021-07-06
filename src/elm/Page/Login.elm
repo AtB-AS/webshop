@@ -226,7 +226,7 @@ validateLogin : Model -> Result (List (FormError FieldName)) (Valid Model)
 validateLogin model =
     case model.loginMethod of
         PhoneMethod ->
-            validatePhone { model | phone = Util.PhoneNumber.withCountryCode model.phone }
+            validatePhone { model | phone = Util.PhoneNumber.withDefaultCountryCode model.phone }
 
         ResetEmailMethod ->
             validateEmail model
@@ -268,7 +268,7 @@ methodPathToPath path =
 
 loginUsingPhone : String -> Cmd Msg
 loginUsingPhone phoneNumber =
-    FirebaseAuth.loginPhone <| Util.PhoneNumber.withCountryCode phoneNumber
+    FirebaseAuth.loginPhone <| Util.PhoneNumber.withDefaultCountryCode phoneNumber
 
 
 loginUsingEmail : String -> String -> Cmd Msg

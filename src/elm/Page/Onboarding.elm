@@ -7,6 +7,7 @@ import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Events as E
 import Html.Extra
 import Http exposing (Error(..))
 import Json.Decode as Decode
@@ -36,6 +37,7 @@ type Msg
     | InputFirstName String
     | InputLastName String
     | InputPhone String
+    | OnInputPhoneFocus
     | ToggleConsent Int Bool
     | Register
     | ReceiveRegisterProfile (Result Http.Error ())
@@ -140,10 +142,21 @@ update msg env shared model =
         InputPhone value ->
             PageUpdater.init { model | phone = value, validationErrors = (V.remove PhoneField >> V.remove RegisterForm) model.validationErrors }
 
+        OnInputPhoneFocus ->
+            PageUpdater.init
+                { model
+                    | phone =
+                        if String.isEmpty model.phone then
+                            "+47"
+
+                        else
+                            model.phone
+                }
+
         Register ->
             let
                 modelWithCountryCode =
-                    { model | phone = Util.PhoneNumber.withCountryCode model.phone }
+                    { model | phone = Util.PhoneNumber.withDefaultCountryCode model.phone }
             in
                 case validatePersonalInfo modelWithCountryCode of
                     Ok _ ->
@@ -474,7 +487,7 @@ viewProfileInfo _ model =
                 |> TextInput.setOnInput (Just InputPhone)
                 |> TextInput.setValue (Just model.phone)
                 |> TextInput.setError (V.select PhoneField model.validationErrors)
-                |> TextInput.setAttributes [ A.readonly model.isReadonlyPhone ]
+                |> TextInput.setAttributes [ A.readonly model.isReadonlyPhone, E.onFocus OnInputPhoneFocus ]
                 |> TextInput.view
             ]
         , Section.viewItem
