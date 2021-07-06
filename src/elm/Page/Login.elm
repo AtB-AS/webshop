@@ -44,6 +44,7 @@ type Msg
     | OnLeavePage LoginMethodPath
     | HideInfoStep
     | InputPhone String
+    | OnPhoneInputFocus
     | InputCode String
     | InputEmail String
     | InputPassword String
@@ -121,6 +122,17 @@ update msg env model navKey =
 
         InputPhone value ->
             PageUpdater.init { model | phone = value, validationErrors = V.remove PhoneField model.validationErrors }
+
+        OnPhoneInputFocus ->
+            PageUpdater.init
+                { model
+                    | phone =
+                        if String.isEmpty model.phone then
+                            "+47"
+
+                        else
+                            model.phone
+                }
 
         InputCode value ->
             PageUpdater.init { model | code = value }
@@ -493,6 +505,7 @@ viewPhoneInputs model =
         |> T.setError (V.select PhoneField model.validationErrors)
         |> T.setTitle (Just "Telefonnummer")
         |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
+        |> T.setAttributes [ E.onFocus OnPhoneInputFocus ]
         |> T.view
     ]
 
