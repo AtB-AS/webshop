@@ -207,7 +207,7 @@ setDGDisabled disabled opts =
 
 destructiveGroup : DestructiveGroup msg -> List (Html msg)
 destructiveGroup { message, onCancel, onDestroy, disabled } =
-    [ H.div [ A.class "ui-editSection__fieldset__buttonGroup__deleteText" ]
+    [ H.div [ A.class "ui-editSection__fieldset__buttonGroup__deleteText", A.attribute "role" "alert" ]
         [ H.text message ]
     , B.init
         "Avbryt"
