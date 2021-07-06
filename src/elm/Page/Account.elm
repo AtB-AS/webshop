@@ -62,6 +62,7 @@ type Msg
     | UpdateLastName String
     | UpdateEmail String
     | UpdatePhone String
+    | OnInputPhoneFocus
     | InputTravelCard String
     | StateTravelCard MaskedInput.State
     | ReceiveUpdateProfile (List FieldName) (Result Http.Error ())
@@ -162,6 +163,17 @@ update msg env model =
         UpdatePhone value ->
             PageUpdater.init { model | phone = value }
 
+        OnInputPhoneFocus ->
+            PageUpdater.init
+                { model
+                    | phone =
+                        if String.isEmpty model.phone then
+                            "+47"
+
+                        else
+                            model.phone
+                }
+
         ResetPassword email ->
             PageUpdater.init model
                 |> ("E-post med for å sette nytt passord er sendt til "
@@ -206,7 +218,7 @@ update msg env model =
             let
                 modelWithCode =
                     { model
-                        | phone = Util.PhoneNumber.withCountryCode model.phone
+                        | phone = Util.PhoneNumber.withDefaultCountryCode model.phone
                     }
             in
                 case validatePhone .phone modelWithCode of
@@ -639,12 +651,12 @@ viewPhoneNumber model profile =
                             EditSection.horizontalGroup
                                 [ Text.init "phone"
                                     |> Text.setTitle (Just "Telefonnummer")
-                                    |> Text.setError (Validation.select PhoneInput model.validationErrors)
                                     |> Text.setOnInput (Just <| UpdatePhone)
                                     |> Text.setPlaceholder "Legg til et telefonnummer"
                                     |> Text.setValue (Just model.phone)
                                     |> Text.setType "tel"
                                     |> Text.setError (Validation.select PhoneInput model.validationErrors)
+                                    |> Text.setAttributes [ E.onFocus OnInputPhoneFocus ]
                                     |> Text.view
                                 ]
 

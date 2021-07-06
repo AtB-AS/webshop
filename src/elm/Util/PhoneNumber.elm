@@ -1,4 +1,4 @@
-module Util.PhoneNumber exposing (format, withCountryCode, withoutCountryCode)
+module Util.PhoneNumber exposing (format, withDefaultCountryCode, withoutCountryCode)
 
 import Util.NumberFormater as NF
 
@@ -14,8 +14,8 @@ withoutCountryCode phone =
         phone
 
 
-withCountryCode : String -> String
-withCountryCode phone =
+withDefaultCountryCode : String -> String
+withDefaultCountryCode phone =
     if String.isEmpty phone then
         phone
 
@@ -35,6 +35,9 @@ format phone =
         actualPhone =
             withoutCountryCode phone
     in
+        -- @TODO This will be incorrect on country codes other than 2 digits.
+        -- Currently visual noice, but not critica. At some point extend to use
+        -- proper parsing of country codes.
         NF.formatString
             [ NF.Str countryCode
             , NF.Space
