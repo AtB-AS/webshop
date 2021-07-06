@@ -12,5 +12,6 @@ view height width =
         , A.style "width" width
         , A.attribute "role" "progressbar"
         , A.attribute "aria-valuetext" "Laster inn"
+        , A.attribute "aria-label" "Laster"
         ]
         []
