@@ -301,19 +301,19 @@ maybeVippsNotice model shared =
         isVipps =
             model.paymentType == Vipps
 
-        maybeIsNotDefaultCountryCode =
+        phone =
             shared.profile
                 |> Maybe.map .phone
-                |> Maybe.map Util.PhoneNumber.isDefaultCountryCode
-                |> Maybe.map not
-                |> Maybe.map ((&&) isVipps)
-    in
-        case maybeIsNotDefaultCountryCode of
-            Just True ->
-                Ui.Message.warning "Vipps støtter ikke betaling fra telefonnummer med landskode annet enn +47."
+                |> Maybe.withDefault ""
 
-            _ ->
-                Html.Extra.nothing
+        hasDefaultCountryCode =
+            String.isEmpty phone || Util.PhoneNumber.isDefaultCountryCode phone
+    in
+        if hasDefaultCountryCode || not isVipps then
+            Html.Extra.nothing
+
+        else
+            Ui.Message.warning "Vipps støtter ikke betaling fra telefonnummer med landskode annet enn +47."
 
 
 viewTravellerData : TravellerData -> Html Msg
