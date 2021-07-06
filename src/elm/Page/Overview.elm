@@ -115,7 +115,7 @@ update msg env model =
                     PageUpdater.init
                         { model
                             | error =
-                                Just "Fikk ikke hentet billetter. Prøv igjen senere eller ta kontakt med kundeservice om problemet vedvarer."
+                                Just "Fikk ikke hentet billetter. Prøv igjen senere, eller ta kontakt med kundeservice om problemet vedvarer."
                         }
 
         Receipt orderId ->
