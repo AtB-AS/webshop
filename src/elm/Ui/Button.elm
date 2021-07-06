@@ -18,6 +18,7 @@ module Ui.Button exposing
     , setElement
     , setIcon
     , setIconPosition
+    , setLoading
     , setOnClick
     , setText
     , setTransparent
@@ -26,6 +27,8 @@ module Ui.Button exposing
     , tertiaryCompact
     )
 
+import Fragment.Button
+import Fragment.Icon
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Attributes.Extra
@@ -70,6 +73,7 @@ type alias Button msg =
     , type_ : String
     , attributes : List (H.Attribute msg)
     , element : List (Attribute msg) -> List (Html msg) -> Html msg
+    , isLoading : Bool
     }
 
 
@@ -84,12 +88,18 @@ init text =
     , type_ = "button"
     , attributes = []
     , element = H.button
+    , isLoading = False
     }
 
 
 setDisabled : Bool -> Button msg -> Button msg
 setDisabled disabled opts =
     { opts | disabled = disabled }
+
+
+setLoading : Bool -> Button msg -> Button msg
+setLoading isLoading opts =
+    { opts | isLoading = isLoading }
 
 
 setText : String -> Button msg -> Button msg
@@ -133,18 +143,21 @@ setAttributes attributes opts =
 
 
 button : ButtonMode -> ThemeColor -> Button msg -> Html msg
-button mode color { text, disabled, icon, iconPosition, transparent, onClick, type_, attributes, element } =
+button mode color { text, disabled, isLoading, icon, iconPosition, transparent, onClick, type_, attributes, element } =
     let
+        disabledOrLoading =
+            isLoading || disabled
+
         classList =
             [ ( buttonModeToClass mode, True )
             , ( "ui-button", True )
-            , ( "ui-button--disabled", disabled )
+            , ( "ui-button--disabled", disabledOrLoading )
             , ( "ui-button--transparent", transparent )
             , ( themeColorToClass color, mode /= Tertiary && mode /= Link )
             ]
 
         maybeOnClick =
-            if disabled then
+            if disabledOrLoading then
                 Nothing
 
             else
@@ -157,13 +170,28 @@ button mode color { text, disabled, icon, iconPosition, transparent, onClick, ty
             ]
 
         iconEl =
-            Html.Extra.viewMaybe (List.singleton >> H.span [ A.classList iconClassList ]) icon
+            if isLoading then
+                Fragment.Icon.viewMonochrome Fragment.Button.loading
+
+            else
+                Html.Extra.viewMaybe (List.singleton >> H.span [ A.classList iconClassList ]) icon
+
+        ariaLive =
+            case ( isLoading, disabled ) of
+                ( False, False ) ->
+                    "off"
+
+                ( _, _ ) ->
+                    "assertive"
     in
         element
             ([ A.classList classList
              , Html.Attributes.Extra.attributeMaybe E.onClick maybeOnClick
-             , A.attribute "aria-disabled" (boolToString disabled)
+             , A.attribute "aria-disabled" (boolToString disabledOrLoading)
              , A.type_ type_
+             , A.attribute "aria-live" ariaLive
+             , Html.Attributes.Extra.attributeIf isLoading <| A.attribute "aria-busy" "true"
+             , Html.Attributes.Extra.attributeIf isLoading <| A.attribute "aria-label" (text ++ " (Laster)")
              ]
                 ++ attributes
             )
