@@ -791,7 +791,7 @@ viewTravelCard model profile =
                                 { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
                                 , onCancel = onCancel
                                 , onDestroy = onRemove
-                                , disabled = loading
+                                , loading = loading
                                 }
 
                      else
