@@ -527,8 +527,8 @@ viewProfile model profile =
         onCancel =
             Just <| SetEditSection Nothing Nothing
 
-        disabledButtons =
-            model.loadingEditSection == Just EmailSection
+        loading =
+            model.loadingEditSection == Just NameSection
     in
         Ui.Section.viewGroup "Profilinformasjon"
             [ Html.Extra.viewMaybe Message.error (Validation.select NameFields model.validationErrors)
@@ -544,7 +544,7 @@ viewProfile model profile =
                     (Just <|
                         EditSection.cancelConfirmGroup
                             { onCancel = onCancel
-                            , disabled = disabledButtons
+                            , loading = loading
                             }
                     )
                 |> EditSection.editSection
@@ -623,7 +623,7 @@ viewPhoneNumber model profile =
         hasEmail =
             profile.phone /= ""
 
-        disabledButtons =
+        loading =
             model.loadingEditSection == Just PhoneSection
     in
         if hasProvider profile Phone then
@@ -646,7 +646,7 @@ viewPhoneNumber model profile =
                     (Just <|
                         EditSection.cancelConfirmGroup
                             { onCancel = onCancel
-                            , disabled = disabledButtons
+                            , loading = loading
                             }
                     )
                 |> EditSection.editSection
@@ -686,7 +686,7 @@ viewEmailAddress model profile =
         hasEmail =
             profile.email /= ""
 
-        disabledButtons =
+        loading =
             model.loadingEditSection == Just EmailSection
     in
         if hasProvider profile Password then
@@ -709,7 +709,7 @@ viewEmailAddress model profile =
                     (Just <|
                         EditSection.cancelConfirmGroup
                             { onCancel = onCancel
-                            , disabled = disabledButtons
+                            , loading = loading
                             }
                     )
                 |> EditSection.editSection
@@ -769,7 +769,7 @@ viewTravelCard model profile =
         hasTravelCard =
             profile.travelCard /= Nothing
 
-        disabledButtons =
+        loading =
             model.loadingEditSection == Just TravelCardSection
     in
         Ui.Section.viewGroup "Billettbærere"
@@ -792,14 +792,14 @@ viewTravelCard model profile =
                                 { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
                                 , onCancel = onCancel
                                 , onDestroy = onRemove
-                                , disabled = disabledButtons
+                                , disabled = loading
                                 }
 
                      else
                         Just <|
                             EditSection.cancelConfirmGroup
                                 { onCancel = onCancel
-                                , disabled = disabledButtons
+                                , loading = loading
                                 }
                     )
                 |> EditSection.editSection
