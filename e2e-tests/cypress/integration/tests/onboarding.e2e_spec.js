@@ -1,6 +1,6 @@
 import { auth, firebase } from '../pageobjects/authentication.pageobject';
 import { email, menu, verify } from '../pageobjects/common.pageobject';
-import { overview } from '../pageobjects/overview.pageobject';
+import { mytickets } from '../pageobjects/mytickets.pageobject';
 import { myprofile } from '../pageobjects/myprofile.pageobject';
 import {
     onboarding,
@@ -207,16 +207,11 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
 
             //Verify
             verify.verifyHeader('h2', 'Mine billetter');
-            overview
+            mytickets
                 .accountInfo()
                 .should('contain', firstname + ' ' + lastname)
                 .and('contain', phoneNumberFormatted);
-            /*
-            overview.phoneNumber().then($number => {
-                let number = $number.text().replace(/\s/g, "")
-                expect(number).to.eq(phoneNumber)
-            })
-            */
+
             menu.myProfile().click();
             verify.verifyHeader('h2', 'Profilinformasjon');
             myprofile.firstName().should('contain', firstname);
