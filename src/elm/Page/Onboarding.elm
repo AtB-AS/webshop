@@ -5,6 +5,7 @@ import Data.Webshop exposing (GivenConsent)
 import Dict
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
+import GlobalActions as GA
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Extra
@@ -285,6 +286,7 @@ update msg env shared model =
                     Just TravelCard ->
                         if model.profileSaved then
                             PageUpdater.init { model | step = TravelCard, validationErrors = V.init }
+                                |> PageUpdater.addGlobalAction (GA.FocusItem <| Just "travelCard")
 
                         else
                             PageUpdater.init model
