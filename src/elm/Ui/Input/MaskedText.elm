@@ -133,11 +133,6 @@ view state value { id, title, type_, error, placeholder, onInput, onState, patte
             , ( "ui-input-text--bordered", bordered )
             ]
 
-        -- {
-        --     , onInput : String -> msg
-        --     , toMsg : State -> msg
-        --     , hasFocus : Maybe (Bool -> msg)
-        --     }
         maskedOptions : MaskedInput.Text.Options msg
         maskedOptions =
             { pattern = pattern
@@ -146,6 +141,9 @@ view state value { id, title, type_, error, placeholder, onInput, onState, patte
             , toMsg = onState
             , hasFocus = Nothing
             }
+
+        errorId =
+            id ++ "-error"
     in
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe
@@ -161,6 +159,8 @@ view state value { id, title, type_, error, placeholder, onInput, onState, patte
                  , A.required required
                  , A.class "ui-input-text__input"
                  , Html.Attributes.Extra.attributeMaybe (\action -> E.onBlur action) onBlur
+                 , Html.Attributes.Extra.attributeMaybe (\_ -> A.attribute "aria-describedby" errorId) error
+                 , Html.Attributes.Extra.attributeMaybe (\_ -> A.attribute "aria-invalid" "true") error
                  ]
                     ++ attributes
                 )
@@ -169,7 +169,7 @@ view state value { id, title, type_, error, placeholder, onInput, onState, patte
             , Html.Extra.viewMaybe
                 (\t ->
                     Text.textContainer H.span (Just Text.DestructiveColor) <|
-                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage", A.attribute "role" "alert" ] [ Fragment.Icon.error, H.text t ] ]
+                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage", A.attribute "role" "alert", A.id errorId ] [ Fragment.Icon.error, H.text t ] ]
                 )
                 error
             ]

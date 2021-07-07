@@ -86,6 +86,9 @@ view children { id, title, error, onInput, required, attributes, bordered } =
             , ( "ui-input-text--error", error /= Nothing )
             , ( "ui-input-text--bordered", bordered )
             ]
+
+        errorId =
+            id ++ "-error"
     in
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe
@@ -98,6 +101,8 @@ view children { id, title, error, onInput, required, attributes, bordered } =
                  , A.required required
                  , A.class "ui-input-text__input"
                  , Html.Attributes.Extra.attributeMaybe (\action -> E.onInput action) onInput
+                 , Html.Attributes.Extra.attributeMaybe (\_ -> A.attribute "aria-describedby" errorId) error
+                 , Html.Attributes.Extra.attributeMaybe (\_ -> A.attribute "aria-invalid" "true") error
                  ]
                     ++ attributes
                 )
@@ -105,7 +110,7 @@ view children { id, title, error, onInput, required, attributes, bordered } =
             , Html.Extra.viewMaybe
                 (\t ->
                     Text.textContainer H.span (Just Text.DestructiveColor) <|
-                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage", A.attribute "role" "alert" ] [ Fragment.Icon.error, H.text t ] ]
+                        Text.Primary [ H.span [ A.class "ui-input-text__errorMessage", A.attribute "role" "alert", A.id errorId ] [ Fragment.Icon.error, H.text t ] ]
                 )
                 error
             ]
