@@ -454,7 +454,7 @@ view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ _ shared model _ =
     H.div [ A.class "page" ]
         [ viewMain model shared
-        , H.div [] [ viewSidebar model ]
+        , H.aside [] [ viewSidebar model ]
         ]
 
 

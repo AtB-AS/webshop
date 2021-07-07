@@ -38,8 +38,6 @@ type Msg
     | Receipt String
     | ReceiveReceipt (Result Http.Error ())
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
-    | OpenHistory
-    | OpenSettings
     | OpenEditTravelCard
     | UpdateTime Time.Posix
     | AdjustTimeZone Time.Zone
@@ -129,14 +127,6 @@ update msg env model =
 
                 Err _ ->
                     PageUpdater.init { model | tokenPayloads = [] }
-
-        OpenHistory ->
-            PageUpdater.init model
-                |> PageUpdater.addGlobalAction (GA.RouteTo Route.History)
-
-        OpenSettings ->
-            PageUpdater.init model
-                |> PageUpdater.addGlobalAction (GA.RouteTo Route.Settings)
 
         OpenEditTravelCard ->
             PageUpdater.init model
@@ -239,7 +229,7 @@ view _ _ shared model _ =
 
 viewSidebar : Shared -> Model -> Html Msg
 viewSidebar shared model =
-    H.div [ A.class "sidebar" ]
+    H.aside [ A.class "sidebar" ]
         [ viewAccountInfo shared model
         , viewActions shared
         ]
@@ -281,7 +271,8 @@ viewAccountInfo shared _ =
                 , B.init "Rediger profil"
                     |> B.setDisabled False
                     |> B.setIcon (Just Icon.edit)
-                    |> B.setOnClick (Just OpenSettings)
+                    |> B.setAttributes [ Route.href Route.Settings ]
+                    |> B.setElement H.a
                     |> B.tertiary
                 , case Util.Maybe.flatMap .travelCard shared.profile of
                     Just _ ->

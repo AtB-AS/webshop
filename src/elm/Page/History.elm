@@ -144,8 +144,10 @@ view _ _ shared model _ =
 
 viewSidebar : Model -> Html Msg
 viewSidebar _ =
-    Ui.Section.view
-        [ Ui.Section.viewPaddedItem [ H.text "Se historikk over alle kjøp og be om å få kvittering tilsendt via e-post." ]
+    H.aside []
+        [ Ui.Section.view
+            [ Ui.Section.viewPaddedItem [ H.text "Se historikk over alle kjøp og be om å få kvittering tilsendt via e-post." ]
+            ]
         ]
 
 
