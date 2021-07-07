@@ -25,8 +25,16 @@ export const history = {
                 .should('contain', 'Skjul');
         }
     },
-    showDetails: (tickets) =>
-        cy.wrap(tickets).find('button.ui-expandable__headerButton').click(),
-    hideDetails: (tickets) =>
-        cy.wrap(tickets).find('button.ui-expandable__headerButton').click()
+    showDetails: (ticket) =>
+        cy.wrap(ticket).find('button.ui-expandable__headerButton').click(),
+    hideDetails: (ticket) =>
+        cy.wrap(ticket).find('button.ui-expandable__headerButton').click(),
+    paymentInfo: (ticket) => cy.wrap(ticket).find('.metadata-list'),
+    ticketInfo: (ticket) => cy.wrap(ticket).find('.ticket-list'),
+    sendReceipt: (ticket) =>
+        cy
+            .wrap(ticket)
+            .find('button')
+            .contains('Be om kvittering på e-post')
+            .parents('button')
 };
