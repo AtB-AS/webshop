@@ -722,6 +722,7 @@ viewEmailAddress model profile =
                                     |> Text.setOnInput (Just <| UpdateEmail)
                                     |> Text.setPlaceholder "Legg til en e-postadresse"
                                     |> Text.setValue (Just model.email)
+                                    |> Text.setRequired False
                                     |> Text.setType "email"
                                     |> Text.view
                                 ]
