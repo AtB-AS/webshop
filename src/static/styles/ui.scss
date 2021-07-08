@@ -803,9 +803,14 @@ a.ui-button--link,
 }
 
 .ui-notifications {
-    position: absolute;
+    position: fixed;
     top: var(--spacings-xLarge);
-    right: var(--spacings-xLarge);
+    right: 0;
+
+    padding: var(--spacings-medium);
+    width: 100%;
+
+    max-width: 25rem;
 
     max-height: 70vh;
     overflow: auto;
