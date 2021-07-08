@@ -120,25 +120,32 @@ update msg env model =
                 Just profile ->
                     PageUpdater.fromPair
                         ( { model | sendingReceipt = orderId :: model.sendingReceipt }
-                        , TicketService.receipt env profile.email orderId
-                            |> Http.toTask
-                            |> Task.attempt (ReceiveReceipt orderId)
+                        , sendReceipt env profile orderId
                         )
 
                 Nothing ->
                     -- TODO: Handle no profile and no email in profile
                     PageUpdater.init model
 
-        ReceiveReceipt orderId _ ->
-            -- TODO: Show error
-            PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
-                |> (H.text "Kvitteringen ble sendt til din e-post."
-                        |> Message.Valid
-                        |> Message.message
-                        |> (\s -> Notification.setContent s Notification.init)
-                        |> GA.ShowNotification
-                        |> PageUpdater.addGlobalAction
-                   )
+        ReceiveReceipt orderId result ->
+            let
+                message =
+                    case result of
+                        Ok () ->
+                            H.text "Kvitteringen ble sendt til din e-post."
+                                |> Message.Valid
+
+                        Err _ ->
+                            H.text "Kunne ikke sende kvittering. Ta kontakt med kundeservice og oppgi ordre ID."
+                                |> Message.Error
+            in
+                PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
+                    |> PageUpdater.addGlobalAction
+                        (message
+                            |> Message.message
+                            |> (\s -> Notification.setContent s Notification.init)
+                            |> GA.ShowNotification
+                        )
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -417,3 +424,14 @@ formatPaymentType types =
 
         _ ->
             "??"
+
+
+sendReceipt : Environment -> Profile -> String -> Cmd Msg
+sendReceipt env profile orderId =
+    if String.isEmpty profile.email then
+        Cmd.none
+
+    else
+        TicketService.receipt env profile.email orderId
+            |> Http.toTask
+            |> Task.attempt (ReceiveReceipt orderId)
