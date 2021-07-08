@@ -184,10 +184,12 @@ viewCarnetHeader carnetType classListButtonTitle now timeZone =
         numberUsed =
             carnetType.maximumNumberOfAccesses - carnetType.numberOfUsedAccesses
 
-        validAccess =
+        validAccesses =
             carnetType.usedAccesses
                 |> List.filter (.endDateTime >> .timestamp >> Util.FareContract.isValid now)
-                |> List.head
+
+        firstValidAccess =
+            List.head validAccesses
     in
         H.span [ A.classList (( "ui-ticketDetails__headerButton__title--carnet", True ) :: classListButtonTitle) ]
             [ H.span [ A.class "ui-ticketDetails__headerButton__title__line" ]
@@ -198,16 +200,29 @@ viewCarnetHeader carnetType classListButtonTitle now timeZone =
                     H.text "Ingen klipp igjen"
                 ]
             , H.span [ A.class "ui-ticketDetails__headerButton__title__line" ] <|
-                case validAccess of
+                case firstValidAccess of
                     Nothing ->
                         [ H.text "Ingen aktive klipp" ]
 
                     Just access ->
-                        [ H.text "Aktivt klipp ("
+                        [ H.text <| viewActiveAccessText validAccesses ++ " ("
                         , viewValidity access.startDateTime.timestamp access.endDateTime.timestamp now timeZone
                         , H.text ")"
                         ]
             ]
+
+
+viewActiveAccessText : List a -> String
+viewActiveAccessText validAccesses =
+    let
+        num =
+            List.length validAccesses
+    in
+        if num == 1 then
+            "Aktivt klipp"
+
+        else
+            String.fromInt num ++ " aktive klipp"
 
 
 viewActivation : ( Reservation, ReservationStatus ) -> Html msg
