@@ -165,10 +165,7 @@ viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
     in
         case firstCarnet of
             Just carnet ->
-                [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
-                    [ Icon.viewLargeMonochrome Icon.tickets ]
-                , viewCarnetHeader carnet classListButtonTitle currentTime timeZone
-                ]
+                viewCarnetHeader carnet classListButtonTitle currentTime timeZone
 
             _ ->
                 [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
@@ -178,7 +175,7 @@ viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
                 ]
 
 
-viewCarnetHeader : TravelRightCarnet -> List ( String, Bool ) -> Time.Posix -> Time.Zone -> Html msg
+viewCarnetHeader : TravelRightCarnet -> List ( String, Bool ) -> Time.Posix -> Time.Zone -> List (Html msg)
 viewCarnetHeader carnetType classListButtonTitle now timeZone =
     let
         numberUsed =
@@ -190,8 +187,17 @@ viewCarnetHeader carnetType classListButtonTitle now timeZone =
 
         firstValidAccess =
             List.head validAccesses
+
+        icon =
+            if firstValidAccess == Nothing then
+                Icon.viewLargeMonochrome Icon.tickets
+
+            else
+                Icon.viewLarge Icon.ticketsValid
     in
-        H.span [ A.classList (( "ui-ticketDetails__headerButton__title--carnet", True ) :: classListButtonTitle) ]
+        [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
+            [ icon ]
+        , H.span [ A.classList (( "ui-ticketDetails__headerButton__title--carnet", True ) :: classListButtonTitle) ]
             [ H.span [ A.class "ui-ticketDetails__headerButton__title__line" ]
                 [ if numberUsed > 0 then
                     H.text <| String.fromInt numberUsed ++ " klipp igjen"
@@ -210,6 +216,7 @@ viewCarnetHeader carnetType classListButtonTitle now timeZone =
                         , H.text ")"
                         ]
             ]
+        ]
 
 
 viewActiveAccessText : List a -> String
