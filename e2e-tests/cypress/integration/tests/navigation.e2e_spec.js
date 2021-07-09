@@ -10,7 +10,7 @@ describe('maneuver in the webshop on desktop', () => {
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
 
-        menu.startPage().click();
+        menu.goToStartPage()
         verify.verifyHeader('h2', 'Mine billetter');
     });
 
@@ -77,7 +77,7 @@ describe('maneuver in the webshop on mobile', () => {
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
 
-        menu.startPage().click();
+        menu.goToStartPage()
         verify.verifyHeader('h2', 'Mine billetter');
     });
 

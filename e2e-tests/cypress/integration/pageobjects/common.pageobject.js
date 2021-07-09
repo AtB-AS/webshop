@@ -20,7 +20,8 @@ export const menu = {
     buyPeriodTicket: () =>
         cy.get('nav').find('a').contains('Ny periodebillett'),
     buyCarnetTicket: () => cy.get('nav').find('a').contains('Nytt klippekort'),
-    startPage: () => cy.get('h1.pageHeader__logo'),
+    startPage: () => cy.get('h1.pageHeader__logo').find("a"),
+    goToStartPage: () => cy.get('h1.pageHeader__logo').find("a").click({force: true}),
 
     cancel: () =>
         cy.get('button.ui-pageHeader__back').contains('Avbryt').click(),

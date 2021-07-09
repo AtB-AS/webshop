@@ -130,7 +130,7 @@ Cypress.Commands.add(
                 cy.logIn(userEmail, userPassword);
             }
         });
-        cy.get('h1.pageHeader__logo').click();
+        cy.get('h1.pageHeader__logo').click({force:true});
         cy.get('h2.ui-pageHeader__title').contains('Mine billetter');
         cy.get('h2.ui-pageHeader__title').should('contain', 'Mine billetter');
     }

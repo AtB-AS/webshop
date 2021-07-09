@@ -166,7 +166,7 @@ describe('a11y check webshop ticket history', () => {
     });
 
     it('ticket history', () => {
-        const order_id = 'XHUZBHFS';
+        const order_id = 'HUCVIBHX';
 
         menu.history().click();
         verify.verifyHeader('h2', 'Kjøpshistorikk');
@@ -176,7 +176,7 @@ describe('a11y check webshop ticket history', () => {
     });
 
     it('ticket history details', () => {
-        const order_id = 'XHUZBHFS';
+        const order_id = 'HUCVIBHX';
 
         menu.history().click();
         verify.verifyHeader('h2', 'Kjøpshistorikk');

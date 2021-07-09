@@ -91,7 +91,7 @@ describe('ticket details', () => {
 
     //** NOTE! Only valid until 31.08.2021 **
     it('future ticket should be waiting and correct', () => {
-        const order_id = '91YJDIGV';
+        const order_id = 'HUCVIBHX';
         const validFrom = '01.09.2021 - 12:00';
         const header = 'Gyldig fra ' + validFrom;
         const type = '7-dagersbillett';
