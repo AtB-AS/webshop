@@ -72,7 +72,7 @@ view { open, onOpenClick, icon, id, title } children =
                     , A.attribute "aria-labelledby" id
                     , Attr.role "region"
                     , A.id regionId
-                    , Attr.attributeIf (not open) (A.attribute "inert" "true")
+                    , Attr.attributeIf (not open) (A.attribute "inert" "")
                     ]
                     (children
                         |> List.map viewItem

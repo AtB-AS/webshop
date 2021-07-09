@@ -82,7 +82,7 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
                             , A.attribute "aria-labelledby" id
                             , Attr.role "region"
                             , A.id regionId
-                            , Attr.attributeIf (not open) (A.attribute "inert" "true")
+                            , Attr.attributeIf (not open) (A.attribute "inert" "")
                             ]
                             (children
                                 |> List.map viewItem
