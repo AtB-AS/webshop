@@ -130,7 +130,7 @@ Cypress.Commands.add(
                 cy.logIn(userEmail, userPassword);
             }
         });
-        cy.get('h1.pageHeader__logo').click();
+        cy.get('h1.pageHeader__logo').click({force:true});
         cy.get('h2.ui-pageHeader__title').contains('Mine billetter');
         cy.get('h2.ui-pageHeader__title').should('contain', 'Mine billetter');
     }
@@ -183,11 +183,11 @@ Cypress.Commands.add('logOut', () => {
 //Buy a ticket
 Cypress.Commands.add('buyTicket', () => {
     const script =
-        'python3 python-scripts/buyTicket.py --email ' +
+        'python3 python-scripts/buyTicket/buyTicket.py --email ' +
         Cypress.env('email') +
         ' --password ' +
         Cypress.env('password');
-    cy.exec(script, { timeout: 60000 })
+    cy.exec(script, { timeout: 120000 })
         .its('stdout')
         .then(($stdout) => {
             if ($stdout.includes('ORDER_ID')) {

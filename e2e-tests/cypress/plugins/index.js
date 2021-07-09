@@ -19,25 +19,6 @@
 //TODO https://www.npmjs.com/package/cypress-fail-fast#configuration-by-test
 // -> Not working in headed mode at the moment
 
-module.exports = (on, config) => {
-    on('task', {
-        log(message) {
-            console.log(message);
-
-            return null;
-        },
-        table(message) {
-            console.table(message);
-
-            return null;
-        }
-    });
-
-    //NEW
-    // important: return the changed config
-    return config;
-};
-
 /// <reference types="cypress" />
 const createEmailAccount = require('./email-account.js');
 
@@ -45,6 +26,14 @@ module.exports = async (on, config) => {
     const emailAccount = await createEmailAccount();
 
     on('task', {
+        log(message) {
+            console.log(message);
+            return null;
+        },
+        table(message) {
+            console.table(message);
+            return null;
+        },
         getUserEmail() {
             return emailAccount.email;
         },

@@ -22,9 +22,37 @@ export const myprofile = {
             .contains('Innloggingsmetode')
             .parents('.ui-section__item'),
 
+    saveValue: () =>
+        cy
+            .get('button.ui-editSection__fieldset__saveButton')
+            .contains('Lagre')
+            .click(),
+    setProfileName: (firstname, lastname) => {
+        cy.intercept('PATCH', '**/webshop/v1/profile').as('profile');
+
+        cy.get('button').contains('Endre navn').click();
+        cy.get('input#firstname').type('{selectall}{del}' + firstname);
+        cy.get('input#lastname').type('{selectall}{del}' + lastname);
+        cy.get('button.ui-editSection__fieldset__saveButton')
+            .contains('Lagre')
+            .click();
+        cy.wait('@profile');
+    },
     editPhoneNumber: () =>
         cy.get('button').contains('Endre telefonnummer').click(),
+    setPhoneNumber: (phoneNumber) => {
+        cy.intercept('PATCH', '**/webshop/v1/profile').as('profile');
+
+        cy.get('button').contains('Endre telefonnummer').click();
+        cy.get('input#phone').type('{selectall}{del}' + phoneNumber);
+        cy.get('button.ui-editSection__fieldset__saveButton')
+            .contains('Lagre')
+            .click();
+        cy.wait('@profile');
+    },
     addTravelCard: () => cy.get('button').contains('Legg til t:kort'),
+    travelCardInput: () => cy.get('input#tkort'),
+
     consent: () => cy.get('input#consent1186'),
 
     //remove or add

@@ -1,6 +1,6 @@
 import { auth } from '../pageobjects/authentication.pageobject.js';
 import { menu, verify } from '../pageobjects/common.pageobject.js';
-import { overview } from '../pageobjects/overview.pageobject.js';
+import { mytickets } from '../pageobjects/mytickets.pageobject.js';
 import { myprofile } from '../pageobjects/myprofile.pageobject.js';
 import { history } from '../pageobjects/history.pageobject.js';
 import { buy, travelTime } from '../pageobjects/buyticket.pageobject.js';
@@ -43,6 +43,7 @@ describe('a11y check webshop overview', () => {
     if (Cypress.env('withBuyTicket')) {
         it('overview with ticket', () => {
             let order_id = 'ERROR';
+            const timeoutValue = Cypress.env('buyTicketTimeout'); //default: 10 min
 
             //Only to navigate back to overview after buying a ticket
             menu.myProfile().click();
@@ -54,28 +55,31 @@ describe('a11y check webshop overview', () => {
                     //Set order_id to 'order_id' or ERROR
                     order_id = $order_id;
                 })
-                .wait(5000);
+                //Wait for ticket to appear
+                .then(() => {
+                    //Overview
+                    menu.startPage().click();
+                    verify.verifyHeader('h2', 'Mine billetter');
 
-            //Overview
-            menu.startPage().click();
-            verify.verifyHeader('h2', 'Mine billetter');
+                    mytickets.waitForTicket(order_id, timeoutValue);
+                });
 
-            overview.tickets().then(($tickets) => {
+            mytickets.tickets().then(($tickets) => {
                 if (!order_id.includes('ERROR')) {
-                    overview.ticket($tickets, order_id);
+                    mytickets.ticket(order_id).then(($ticket) => {
+                        mytickets
+                            .ticketDetails($ticket)
+                            .should('not.be.visible');
 
-                    //Check for collapsed tickets
-                    cy.a11yCheck(null, null);
+                        //Check for collapsed tickets
+                        cy.a11yCheck(null, null);
 
-                    //Check for open ticket
-                    overview.ticket($tickets, order_id).click();
-                    overview
-                        .ticketDetails(order_id)
-                        .should(
-                            'have.class',
-                            'ui-ticketDetails__content--open'
-                        );
-                    cy.a11yCheck(null, null);
+                        mytickets.showDetails($ticket);
+                        mytickets.ticketDetails($ticket).should('be.visible');
+
+                        //Check for open ticket
+                        cy.a11yCheck(null, null);
+                    });
                 }
             });
         });
@@ -111,6 +115,9 @@ describe('a11y check webshop my profile', () => {
     });
 
     it('my profile - change travel card', () => {
+        // Init
+        myprofile.travelCardOperation('remove');
+
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
 
@@ -159,7 +166,7 @@ describe('a11y check webshop ticket history', () => {
     });
 
     it('ticket history', () => {
-        const order_id = 'XHUZBHFS';
+        const order_id = 'HUCVIBHX';
 
         menu.history().click();
         verify.verifyHeader('h2', 'Kjøpshistorikk');
@@ -169,11 +176,14 @@ describe('a11y check webshop ticket history', () => {
     });
 
     it('ticket history details', () => {
-        const order_id = 'XHUZBHFS';
+        const order_id = 'HUCVIBHX';
 
         menu.history().click();
         verify.verifyHeader('h2', 'Kjøpshistorikk');
-        history.ticket(order_id).click();
+        history.ticket(order_id).then(($ticket) => {
+            history.showDetails($ticket);
+            history.ticketIsCollapsed($ticket, false);
+        });
 
         cy.a11yCheck(null, null);
     });
@@ -252,7 +262,7 @@ describe('a11y check webshop buy ticket', () => {
     it('period ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
 
-        myprofile.travelCardOperation("add")
+        myprofile.travelCardOperation('add');
 
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
@@ -263,7 +273,7 @@ describe('a11y check webshop buy ticket', () => {
 
         cy.a11yCheck(null, null);
 
-        myprofile.travelCardOperation("remove")
+        myprofile.travelCardOperation('remove');
     });
 
     it('carnet ticket', () => {
@@ -290,7 +300,7 @@ describe('a11y check webshop buy ticket', () => {
     it('carnet ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
 
-        myprofile.travelCardOperation("add")
+        myprofile.travelCardOperation('add');
 
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
@@ -301,6 +311,6 @@ describe('a11y check webshop buy ticket', () => {
 
         cy.a11yCheck(null, null);
 
-        myprofile.travelCardOperation("remove")
+        myprofile.travelCardOperation('remove');
     });
 });

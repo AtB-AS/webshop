@@ -13,8 +13,9 @@
   "env": {
     "a11yTags": ["wcag2a", "wcag2aa"],
     "a11ySkipFailures": false,
-    "email": "tor.moseng+test3@gmail.com",
+    "email": "tor.moseng+test200@gmail.com",
     "password": "qwer1234",
-    "withBuyTicket": true
+    "withBuyTicket": false,
+    "buyTicketTimeout": 600000
   }
 }
