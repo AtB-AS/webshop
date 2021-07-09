@@ -1,8 +1,8 @@
 name: E2E-tests of webshop
 
 on:
-  schedule:
-    - cron:  '0 7,12,23 * * *'
+  # schedule:
+  #  - cron:  '0 5,10,21 * * *'
   workflow_dispatch:
     inputs:
       videoRecording:
