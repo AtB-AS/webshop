@@ -123,7 +123,7 @@ view shared ticketDetails =
                     , A.attribute "aria-labelledby" id
                     , Attr.role "region"
                     , A.id regionId
-                    , Attr.attributeIf (not open) (A.attribute "inert" "true")
+                    , Attr.attributeIf (not open) (A.attribute "inert" "")
                     ]
                     [ viewHorizontalItem
                         [ viewLabelTime "Gyldig fra" fareContract.validFrom timeZone
