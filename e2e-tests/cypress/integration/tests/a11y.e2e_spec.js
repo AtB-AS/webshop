@@ -3,7 +3,7 @@ import { menu, verify } from '../pageobjects/common.pageobject.js';
 import { mytickets } from '../pageobjects/mytickets.pageobject.js';
 import { myprofile } from '../pageobjects/myprofile.pageobject.js';
 import { history } from '../pageobjects/history.pageobject.js';
-import { buy, travelTime } from '../pageobjects/buyticket.pageobject.js';
+import { newTicket, travelTime } from '../pageobjects/buyticket.pageobject.js';
 
 /**
  * Accessibility checks using axe (https://github.com/dequelabs/axe-core)
@@ -208,11 +208,11 @@ describe('a11y check webshop buy ticket', () => {
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
-        buy.ticketCategoryDetails().then(($categoryDetails) => {
+        newTicket.ticketCategoryDetails().then(($categoryDetails) => {
             if (!$categoryDetails.hasClass('ui-group__content--open')) {
-                buy.ticketCategory().click();
+                newTicket.ticketCategory().click();
             }
-            buy.ticketProduct('30-dagersbillett').should('be.visible');
+            newTicket.ticketProduct('30-dagersbillett').should('be.visible');
         });
 
         cy.a11yCheck(null, null);
@@ -222,11 +222,11 @@ describe('a11y check webshop buy ticket', () => {
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
-        buy.travellerDetails().then(($travellerDetails) => {
+        newTicket.travellerDetails().then(($travellerDetails) => {
             if (!$travellerDetails.hasClass('ui-group__content--open')) {
-                buy.travellers().click();
+                newTicket.travellers().click();
             }
-            buy.traveller('Adult').should('be.visible');
+            newTicket.traveller('Adult').should('be.visible');
         });
 
         cy.a11yCheck(null, null);
@@ -237,9 +237,9 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
         //Check travel now
-        buy.travelTimeDetails().then(($travelTimeDetails) => {
+        newTicket.travelTimeDetails().then(($travelTimeDetails) => {
             if (!$travelTimeDetails.hasClass('ui-group__content--open')) {
-                buy.travelTime().click();
+                newTicket.travelTime().click();
             }
             travelTime.now().should('be.visible');
         });
@@ -268,7 +268,7 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
         cy.wait('@zones');
 
-        buy.goToSummary();
+        newTicket.goToSummary();
         verify.verifyHeader('h2', 'Oppsummering');
 
         cy.a11yCheck(null, null);
@@ -287,11 +287,11 @@ describe('a11y check webshop buy ticket', () => {
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
 
-        buy.travellerDetails().then(($travellerDetails) => {
+        newTicket.travellerDetails().then(($travellerDetails) => {
             if (!$travellerDetails.hasClass('ui-group__content--open')) {
-                buy.travellers().click();
+                newTicket.travellers().click();
             }
-            buy.traveller('Adult').should('be.visible');
+            newTicket.traveller('Adult').should('be.visible');
         });
 
         cy.a11yCheck(null, null);
@@ -306,7 +306,7 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
         cy.wait('@zones');
 
-        buy.goToSummary();
+        newTicket.goToSummary();
         verify.verifyHeader('h2', 'Oppsummering');
 
         cy.a11yCheck(null, null);
