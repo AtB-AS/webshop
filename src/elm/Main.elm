@@ -383,7 +383,7 @@ update msg model =
                 ( { model | notifications = newNotifications }, Cmd.none )
 
         OverviewMsg subMsg ->
-            OverviewPage.update subMsg model.environment model.overview
+            OverviewPage.update subMsg model.environment model.overview model.shared
                 |> PageUpdater.map (\newModel -> { model | overview = newModel }) OverviewMsg
                 |> doPageUpdate
 

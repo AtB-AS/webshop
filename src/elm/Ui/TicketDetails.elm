@@ -8,14 +8,16 @@ import Dict.Extra
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Attributes.Autocomplete exposing (DetailedCompletion(..))
 import Html.Attributes.Extra as Attr
 import Html.Events as E
 import Html.Extra
 import List.Extra
+import Route
 import Shared exposing (Shared)
 import Time
+import Ui.Button as B
 import Ui.LabelItem
+import Ui.Message as Message
 import Ui.TextContainer
 import Util.FareContract
 import Util.Format
@@ -48,8 +50,8 @@ type alias EssentialTravelRight =
     }
 
 
-view : Shared -> TicketDetails msg -> Html msg
-view shared ticketDetails =
+view : Shared -> TicketDetails msg -> Maybe msg -> Html msg
+view shared ticketDetails onReceipt =
     let
         { fareContract, open, onOpenClick, timeZone } =
             ticketDetails
@@ -85,6 +87,14 @@ view shared ticketDetails =
 
         regionId =
             id ++ "region"
+
+        missingEmail =
+            case shared.profile of
+                Just profile ->
+                    String.isEmpty profile.email
+
+                Nothing ->
+                    True
     in
         Ui.TextContainer.primary
             [ H.section
@@ -134,6 +144,16 @@ view shared ticketDetails =
                         , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType fareContract.paymentType ]
                         , Ui.LabelItem.viewCompact "Ordre-ID" [ H.text fareContract.orderId ]
                         ]
+                    , B.init "Be om kvittering på e-post"
+                        |> B.setDisabled missingEmail
+                        |> B.setOnClick onReceipt
+                        |> B.setIcon (Just Icon.rightArrow)
+                        |> B.tertiary
+                    , Html.Extra.viewIf missingEmail
+                        (H.p [] [ H.a [ Route.href Route.Settings ] [ H.text "Du må legge til epost via profilen din for å kunne sende kvittering." ] ]
+                            |> Message.Warning
+                            |> Message.message
+                        )
                     ]
                 ]
             ]

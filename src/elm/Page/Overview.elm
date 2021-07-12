@@ -2,7 +2,6 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
-import Data.RefData exposing (DistributionChannel(..), LangString(..), ProductType(..))
 import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
@@ -13,6 +12,8 @@ import Html.Attributes as A
 import Html.Extra
 import Http
 import Json.Decode as Decode exposing (Decoder)
+import List.Extra
+import Notification
 import PageUpdater exposing (PageUpdater)
 import Process
 import Route exposing (Route)
@@ -22,7 +23,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Button as B
-import Ui.Message
+import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as S
 import Ui.TicketDetails
@@ -36,8 +37,6 @@ import Util.Status exposing (Status(..))
 type Msg
     = OnEnterPage
     | ReceiveFareContracts (Result Decode.Error (List FareContract))
-    | Receipt String
-    | ReceiveReceipt (Result Http.Error ())
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | OpenEditTravelCard
     | UpdateTime Time.Posix
@@ -46,6 +45,8 @@ type Msg
     | AddActiveReservation Reservation
     | Logout
     | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
+    | RequestReceipt String
+    | ReceiveReceipt String (Result Http.Error ())
 
 
 type alias Model =
@@ -59,6 +60,7 @@ type alias Model =
     , reservations : List ( Reservation, ReservationStatus )
     , timeZone : Time.Zone
     , error : Maybe String
+    , sendingReceipt : List String
     }
 
 
@@ -74,13 +76,14 @@ init =
       , reservations = []
       , timeZone = Time.utc
       , error = Nothing
+      , sendingReceipt = []
       }
     , Task.perform AdjustTimeZone Time.here
     )
 
 
-update : Msg -> Environment -> Model -> PageUpdater Model Msg
-update msg env model =
+update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
+update msg env model shared =
     case msg of
         OnEnterPage ->
             PageUpdater.init model
@@ -115,17 +118,6 @@ update msg env model =
                             | error =
                                 Just "Fikk ikke hentet billetter. Prøv igjen senere, eller ta kontakt med kundeservice om problemet vedvarer."
                         }
-
-        Receipt orderId ->
-            PageUpdater.fromPair ( model, sendReceipt env orderId )
-
-        ReceiveReceipt result ->
-            case result of
-                Ok () ->
-                    PageUpdater.init model
-
-                Err _ ->
-                    PageUpdater.init model
 
         ReceiveTokenPayloads result ->
             case result of
@@ -219,6 +211,38 @@ update msg env model =
                         -- as if the payment was cancelled so the user can try again.
                         PageUpdater.init
                             { model | reservations = withoutCurrentReservation }
+
+        RequestReceipt orderId ->
+            case shared.profile of
+                Just profile ->
+                    PageUpdater.fromPair
+                        ( { model | sendingReceipt = orderId :: model.sendingReceipt }
+                        , sendReceipt env profile orderId
+                        )
+
+                Nothing ->
+                    -- TODO: Handle no profile and no email in profile
+                    PageUpdater.init model
+
+        ReceiveReceipt orderId result ->
+            let
+                message =
+                    case result of
+                        Ok () ->
+                            H.text "Kvitteringen ble sendt til din e-post."
+                                |> Message.Valid
+
+                        Err _ ->
+                            H.text "Kunne ikke sende kvittering. Ta kontakt med kundeservice og oppgi ordre ID."
+                                |> Message.Error
+            in
+                PageUpdater.init { model | sendingReceipt = List.Extra.remove orderId model.sendingReceipt }
+                    |> PageUpdater.addGlobalAction
+                        (message
+                            |> Message.message
+                            |> (\s -> Notification.setContent s Notification.init)
+                            |> GA.ShowNotification
+                        )
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -366,7 +390,7 @@ viewMain shared model =
                         ]
 
                 ( _, Just error ) ->
-                    Ui.Message.error error
+                    Message.error error
 
                 ( False, Nothing ) ->
                     H.div [] (viewPending model ++ viewTicketCards shared validTickets model)
@@ -391,6 +415,12 @@ viewTicketCards shared validTickets model =
                     , currentTime = model.currentTime
                     , timeZone = model.timeZone
                     }
+                    (if List.member f.orderId model.sendingReceipt then
+                        Nothing
+
+                     else
+                        Just (RequestReceipt f.orderId)
+                    )
             )
 
 
@@ -420,15 +450,15 @@ tokenPayloadsDecoder =
     Decode.list tokenPayloadDecoder
 
 
-sendReceipt : Environment -> String -> Cmd Msg
-sendReceipt env orderId =
-    if env.customerEmail == "" then
+sendReceipt : Environment -> Profile -> String -> Cmd Msg
+sendReceipt env profile orderId =
+    if String.isEmpty profile.email then
         Cmd.none
 
     else
-        TicketService.receipt env env.customerEmail orderId
+        TicketService.receipt env profile.email orderId
             |> Http.toTask
-            |> Task.attempt ReceiveReceipt
+            |> Task.attempt (ReceiveReceipt orderId)
 
 
 fetchPaymentStatus : Environment -> Int -> Cmd Msg
