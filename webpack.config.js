@@ -346,6 +346,9 @@ const commonConfig = {
             gaTrackingId: JSON.stringify(
                 process.env.GA_TRACKING_ID || localConfig.gaTrackingId
             ),
+            intercomEnabled: JSON.stringify(
+                !!(process.env.INTERCOM_ENABLED || localConfig.intercomEnabled)
+            ),
             firebaseConfig: JSON.stringify(getFirebaseConfig(localConfig))
         })
     ]
