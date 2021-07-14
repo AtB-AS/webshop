@@ -46,7 +46,7 @@ port receiveFareContracts : (Encode.Value -> msg) -> Sub msg
 port convertTime : ( String, String ) -> Cmd msg
 
 
-port convertedTime : (String -> msg) -> Sub msg
+port convertedTime : (( String, Int ) -> msg) -> Sub msg
 
 
 port onboardingStart : (( String, String, String ) -> msg) -> Sub msg

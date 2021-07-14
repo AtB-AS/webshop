@@ -441,7 +441,7 @@ if (app.ports.convertTime) {
                 typeof dt !== 'undefined'
             ) {
                 app.ports.convertedTime.send(
-                    dt.toISOString().replace(/\.[0-9]*/, '')
+                    [dt.toISOString().replace(/\.[0-9]*/, ''), dt.valueOf()]
                 );
             }
         } catch {}

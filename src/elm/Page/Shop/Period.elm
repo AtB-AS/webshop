@@ -21,10 +21,11 @@ import Service.Ticket as TicketService
 import Set
 import Shared exposing (Shared)
 import Task
-import Time exposing (Posix)
+import Time exposing (Posix, posixToMillis)
 import Ui.Group
 import Ui.Input.Radio as Radio
 import Ui.Input.Text as Text
+import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
 import Util.Func as Func
@@ -49,7 +50,7 @@ type Msg
     | SetDate String
     | UpdateNow Time.Posix
     | UpdateZone Time.Zone
-    | GetIsoTime String
+    | GetIsoTime ( String, Int )
     | SetTravelDateTime TravelDateTime
     | CloseSummary
     | GoToSummary
@@ -77,6 +78,7 @@ type alias Model =
     , inputTravelTime : String
     , timeZone : Time.Zone
     , summary : Maybe SummaryPage.Model
+    , futureDateError : Maybe String
     }
 
 
@@ -95,6 +97,7 @@ init =
       , inputTravelTime = ""
       , timeZone = Time.utc
       , summary = Nothing
+      , futureDateError = Nothing
       }
     , Cmd.batch
         [ TaskUtil.doTask FetchOffers
@@ -126,16 +129,24 @@ update msg env model shared =
                 )
 
         SetFromZone zone ->
-            PageUpdater.fromPair
-                ( { model | fromZone = Just zone }
-                , TaskUtil.doTask FetchOffers
-                )
+            if String.isEmpty zone then
+                PageUpdater.init model
+
+            else
+                PageUpdater.fromPair
+                    ( { model | fromZone = Just zone }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
         SetToZone zone ->
-            PageUpdater.fromPair
-                ( { model | toZone = Just zone }
-                , TaskUtil.doTask FetchOffers
-                )
+            if String.isEmpty zone then
+                PageUpdater.init model
+
+            else
+                PageUpdater.fromPair
+                    ( { model | toZone = Just zone }
+                    , TaskUtil.doTask FetchOffers
+                    )
 
         SetUser userType _ ->
             PageUpdater.fromPair
@@ -286,11 +297,27 @@ update msg env model shared =
         UpdateZone zone ->
             PageUpdater.init { model | timeZone = zone }
 
-        GetIsoTime isoTime ->
-            PageUpdater.fromPair
-                ( model
-                , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
-                )
+        GetIsoTime ( isoTime, msTime ) ->
+            if msTime < posixToMillis model.now then
+                let
+                    errorMessage =
+                        "Starttidspunkt kan ikke være før nåværende tid og dato."
+                in
+                    PageUpdater.init { model | futureDateError = Just errorMessage, offers = Failed "Kunne ikke laste inn billettinformasjon. Prøv igjen." }
+
+            else if msTime > posixToMillis model.now + 7776000000 then
+                -- more than 90 days in the future
+                let
+                    errorMessage =
+                        "Starttidspunkt kan ikke være mer enn 90 dager fram i tid."
+                in
+                    PageUpdater.init { model | futureDateError = Just errorMessage, offers = Failed "Kunne ikke laste inn billettinformasjon. Prøv igjen." }
+
+            else
+                PageUpdater.fromPair
+                    ( { model | futureDateError = Nothing }
+                    , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
+                    )
 
         CloseSummary ->
             PageUpdater.init { model | summary = Nothing }
@@ -499,19 +526,30 @@ viewStart model =
                 [ Text.init "date"
                     |> Text.setTitle (Just "Dato")
                     |> Text.setOnInput (Just SetDate)
-                    |> Text.setAttributes [ A.min <| TimeUtil.toIsoDate model.timeZone model.now ]
+                    |> Text.setAttributes
+                        [ TimeUtil.toIsoDate model.timeZone model.now
+                            |> A.min
+                        , (Time.posixToMillis model.now + 7776000000)
+                            |> Time.millisToPosix
+                            |> TimeUtil.toIsoDate model.timeZone
+                            |> A.max
+                        ]
                     |> Text.setType "date"
                     |> Text.setValue (Just model.inputTravelDate)
                     |> Text.view
                 , Text.init "time"
                     |> Text.setTitle (Just "Tid")
                     |> Text.setOnInput (Just SetTime)
-                    |> Text.setAttributes
-                        [ A.min <| TimeUtil.toHoursAndMinutes model.timeZone model.now ]
                     |> Text.setType "time"
                     |> Text.setValue (Just model.inputTravelTime)
                     |> Text.view
                 ]
+        , case model.futureDateError of
+            Just error ->
+                Section.viewItem [ Message.error error ]
+
+            Nothing ->
+                H.text ""
         ]
 
 
