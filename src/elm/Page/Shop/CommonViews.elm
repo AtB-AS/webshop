@@ -4,6 +4,7 @@ import Data.RefData exposing (LangString(..), TariffZone, UserProfile, UserType(
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
+import Html.Attributes.Extra as Attr
 import Html.Extra
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (CommonModel)
@@ -96,7 +97,11 @@ viewSummary shared model disableButtons onToSummaryClick =
                         Section.viewPaddedItem
                             [ Ui.LabelItem.viewHorizontal
                                 "Total:"
-                                [ H.p [ A.class "shop__summaryPrice" ]
+                                [ H.p
+                                    [ A.class "shop__summaryPrice"
+                                    , A.attribute "aria-live" "assertive"
+                                    , Attr.role "alert"
+                                    ]
                                     [ summary
                                         |> Maybe.map .totalPrice
                                         |> Maybe.map (Func.flip Util.Format.float 2)
