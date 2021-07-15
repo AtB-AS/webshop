@@ -340,7 +340,7 @@ view _ _ shared model _ =
                                 [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
                             ]
                         , H.div []
-                            [ Common.viewSummary shared model disableButtons GoToSummary
+                            [ Common.viewSummary shared model disableButtons GoToSummary Nothing
                             ]
                         ]
                     ]
