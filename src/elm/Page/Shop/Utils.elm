@@ -11,7 +11,7 @@ import Util.Time as TimeUtil
 
 type TravelDateTime
     = TravelNow
-    | TravelFuture (Maybe String)
+    | TravelFuture (Maybe ( String, Int ))
 
 
 type alias CommonModel a =
@@ -80,7 +80,7 @@ stringFromTravelDate travelDateTime timeZone =
         TravelNow ->
             Just "Kjøpstidspunkt"
 
-        TravelFuture (Just time) ->
+        TravelFuture (Just ( time, _ )) ->
             TimeUtil.isoStringToFullHumanized timeZone time
 
         _ ->
@@ -131,7 +131,7 @@ langString (LangString _ value) =
 stringFromtravelDateTime : TravelDateTime -> Maybe String
 stringFromtravelDateTime travelDateTime =
     case travelDateTime of
-        TravelFuture (Just time) ->
+        TravelFuture (Just ( time, _ )) ->
             Just time
 
         _ ->

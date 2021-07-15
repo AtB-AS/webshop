@@ -51,8 +51,8 @@ viewUserProfile model onUserSelect userProfile =
             |> Radio.view
 
 
-viewSummary : Shared -> CommonModel a -> Bool -> msg -> Html msg
-viewSummary shared model disableButtons onToSummaryClick =
+viewSummary : Shared -> CommonModel a -> Bool -> msg -> Maybe (Html msg) -> Html msg
+viewSummary shared model disableButtons onToSummaryClick maybeInfo =
     let
         error =
             case model.offers of
@@ -120,6 +120,7 @@ viewSummary shared model disableButtons onToSummaryClick =
                                 ]
                             ]
                 , Html.Extra.viewIf noTravelCard (Message.info "Legg til et t:kort før kjøp av billett")
+                , Html.Extra.viewMaybe identity maybeInfo
                 , B.init "Gå til oppsummering"
                     |> B.setDisabled (disableButtons || noTravelCard)
                     |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)

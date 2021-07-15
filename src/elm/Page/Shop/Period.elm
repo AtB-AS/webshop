@@ -1,6 +1,7 @@
 module Page.Shop.Period exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
+import Data.FareContract exposing (FareContract)
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserType(..))
 import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
@@ -10,6 +11,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Extra
 import Http
+import Json.Decode as Decode
 import Page.Shop.CommonViews as Common
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (TravelDateTime(..))
@@ -21,7 +23,7 @@ import Service.Ticket as TicketService
 import Set
 import Shared exposing (Shared)
 import Task
-import Time exposing (Posix, posixToMillis)
+import Time exposing (Posix)
 import Ui.Group
 import Ui.Input.Radio as Radio
 import Ui.Input.Text as Text
@@ -40,6 +42,7 @@ type Msg
     | ResetState
     | FetchOffers
     | ReceiveOffers (Result Http.Error (List Offer))
+    | ReceiveFareContracts (Result Decode.Error (List FareContract))
     | CloseShop
     | SetProduct String Bool
     | SetFromZone String
@@ -79,6 +82,8 @@ type alias Model =
     , timeZone : Time.Zone
     , summary : Maybe SummaryPage.Model
     , futureDateError : Maybe String
+    , orders : List FareContract
+    , overlapMessage : Maybe String
     }
 
 
@@ -98,6 +103,8 @@ init =
       , timeZone = Time.utc
       , summary = Nothing
       , futureDateError = Nothing
+      , orders = []
+      , overlapMessage = Nothing
       }
     , Cmd.batch
         [ TaskUtil.doTask FetchOffers
@@ -188,10 +195,24 @@ update msg env model shared =
                         )
 
         SetTravelDateTime TravelNow ->
-            PageUpdater.fromPair
-                ( { model | travelDateTime = TravelNow }
-                , TaskUtil.doTask FetchOffers
-                )
+            let
+                selectedTime =
+                    Time.posixToMillis model.now
+
+                overlappingOrders =
+                    List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+            in
+                if overlappingOrders then
+                    PageUpdater.fromPair
+                        ( { model | travelDateTime = TravelNow, overlapMessage = Just "Du har allerede en billett i dette tidsrommet" }
+                        , TaskUtil.doTask FetchOffers
+                        )
+
+                else
+                    PageUpdater.fromPair
+                        ( { model | travelDateTime = TravelNow }
+                        , TaskUtil.doTask FetchOffers
+                        )
 
         FetchOffers ->
             if List.isEmpty model.users then
@@ -231,7 +252,7 @@ update msg env model shared =
 
                     travelTime =
                         case model.travelDateTime of
-                            TravelFuture (Just time) ->
+                            TravelFuture (Just ( time, _ )) ->
                                 Just time
 
                             _ ->
@@ -292,32 +313,76 @@ update msg env model shared =
                 )
 
         UpdateNow now ->
-            PageUpdater.init { model | now = now }
+            if model.travelDateTime == TravelNow then
+                let
+                    selectedTime =
+                        Time.posixToMillis now
+
+                    overlappingOrders =
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+                in
+                    if overlappingOrders then
+                        PageUpdater.init
+                            { model | futureDateError = Nothing, overlapMessage = Just "Du har allerede en billett i dette tidsrommet", now = now }
+
+                    else
+                        PageUpdater.init { model | now = now }
+
+            else
+                PageUpdater.init { model | now = now }
 
         UpdateZone zone ->
             PageUpdater.init { model | timeZone = zone }
 
         GetIsoTime ( isoTime, msTime ) ->
-            if msTime < posixToMillis model.now then
+            if msTime < Time.posixToMillis model.now then
                 let
                     errorMessage =
                         "Starttidspunkt kan ikke være før nåværende tid og dato."
                 in
-                    PageUpdater.init { model | futureDateError = Just errorMessage, offers = Failed "Kunne ikke laste inn billettinformasjon. Prøv igjen." }
+                    PageUpdater.init { model | futureDateError = Just errorMessage, overlapMessage = Nothing, offers = Failed "Kunne ikke laste inn billettinformasjon. Prøv igjen." }
 
-            else if msTime > posixToMillis model.now + 7776000000 then
+            else if msTime > Time.posixToMillis model.now + 7776000000 then
                 -- more than 90 days in the future
                 let
                     errorMessage =
                         "Starttidspunkt kan ikke være mer enn 90 dager fram i tid."
                 in
-                    PageUpdater.init { model | futureDateError = Just errorMessage, offers = Failed "Kunne ikke laste inn billettinformasjon. Prøv igjen." }
+                    PageUpdater.init { model | futureDateError = Just errorMessage, overlapMessage = Nothing, offers = Failed "Kunne ikke laste inn billettinformasjon. Prøv igjen." }
 
             else
-                PageUpdater.fromPair
-                    ( { model | futureDateError = Nothing }
-                    , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just isoTime)
-                    )
+                let
+                    selectedTime =
+                        msTime
+
+                    overlappingOrders =
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+                in
+                    if overlappingOrders then
+                        PageUpdater.fromPair
+                            ( { model | futureDateError = Nothing, overlapMessage = Just "Du har allerede en billett i dette tidsrommet" }
+                            , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just ( isoTime, selectedTime ))
+                            )
+
+                    else
+                        PageUpdater.fromPair
+                            ( { model | futureDateError = Nothing, overlapMessage = Nothing }
+                            , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just ( isoTime, selectedTime ))
+                            )
+
+        ReceiveFareContracts result ->
+            case result of
+                Ok fareContracts ->
+                    PageUpdater.init
+                        { model
+                            | orders =
+                                fareContracts
+                                    |> List.sortBy (.created >> .timestamp)
+                                    |> List.reverse
+                        }
+
+                Err _ ->
+                    PageUpdater.init model
 
         CloseSummary ->
             PageUpdater.init { model | summary = Nothing }
@@ -491,7 +556,11 @@ view _ _ shared model _ =
                             , Section.viewWithIcon Icon.map
                                 [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
                             ]
-                        , Common.viewSummary shared model disableButtons GoToSummary
+                        , Common.viewSummary shared
+                            model
+                            disableButtons
+                            GoToSummary
+                            (Maybe.map Message.warning model.overlapMessage)
                         ]
                     ]
 
@@ -581,6 +650,10 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ MiscService.convertedTime GetIsoTime
+        , MiscService.receiveFareContracts
+            (Decode.decodeValue (Decode.list MiscService.fareContractDecoder)
+                >> ReceiveFareContracts
+            )
         , Time.every 1000 UpdateNow
         , SummaryPage.subscriptions |> Sub.map SummarySubMsg
         ]
