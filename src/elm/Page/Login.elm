@@ -401,7 +401,7 @@ viewPhoneLogin model =
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ Route.href <| Route.Login EmailPath ] [ H.text "Jeg vil heller bruke e-post" ] ]
             ]
-        , betaNotice
+        , prerequisitesNotice
         , B.init "Send engangskode"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -426,7 +426,7 @@ viewEmailLogin model =
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ Route.href <| Route.Login RegisterEmailPath ] [ H.text "Opprett en ny profil" ] ]
             ]
-        , betaNotice
+        , prerequisitesNotice
         , B.init "Logg inn"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -446,7 +446,7 @@ viewEmailRegister model =
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
         , Ui.Section.viewItem <| viewEmailInputs "Skriv inn din e-postadresse" "Velg et passord" "new-password" model
-        , betaNotice
+        , prerequisitesNotice
         , B.init "Opprett profil"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -466,7 +466,7 @@ viewEmailReset model =
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Be om å tilbakestille passord på profilen." ] ]
         , Ui.Section.viewItem <| viewResetInputs model
-        , betaNotice
+        , prerequisitesNotice
         , B.init "Tilbakestill passord"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -488,11 +488,11 @@ viewWelcomeIllustration =
         ]
 
 
-betaNotice : Html msg
-betaNotice =
+prerequisitesNotice : Html msg
+prerequisitesNotice =
     H.p []
-        [ H.text "I BETA har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
-        , H.a [ A.href "https://beta.atb.no/onboarding/nettbutikk", A.target "_blank", A.title "Les mer om begrensninger og forutsetninger for piloten på AtBeta (åpner ny side)" ] [ H.text "Forutsetninger (åpner ny side)." ]
+        [ H.text "I en periode har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
+        , H.a [ A.href "https://www.atb.no/vi-oppgraderer", A.target "_blank", A.title "Les mer på AtBs nettside (åpner ny side)" ] [ H.text "Vi oppgrader (åpner ny side)." ]
         ]
         |> Message.Warning
         |> Message.message
