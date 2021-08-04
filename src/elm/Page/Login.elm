@@ -492,7 +492,7 @@ prerequisitesNotice : Html msg
 prerequisitesNotice =
     H.p []
         [ H.text "I en periode har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
-        , H.a [ A.href "https://www.atb.no/vi-oppgraderer", A.target "_blank", A.title "Les mer på AtBs nettside (åpner ny side)" ] [ H.text "Vi oppgrader (åpner ny side)." ]
+        , H.a [ A.href "https://www.atb.no/vi-oppgraderer", A.target "_blank", A.title "Les mer på AtBs nettside (åpner ny side)" ] [ H.text "Vi oppgraderer (åpner ny side)." ]
         ]
         |> Message.Warning
         |> Message.message
