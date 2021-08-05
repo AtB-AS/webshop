@@ -9,6 +9,16 @@ filterValidNow now fareContracts =
     fareContracts
         |> List.filter (.validTo >> isValid now)
         |> List.filter (hasValidTravelRight now)
+        |> List.filter hasValidState
+
+
+isValid : Time.Posix -> Int -> Bool
+isValid posixNow to =
+    to >= Time.posixToMillis posixNow
+
+
+
+-- INTERNAL
 
 
 {-| Check if a FareContract has valid travelRights.
@@ -35,6 +45,9 @@ hasValidTravelRight now contract =
             )
 
 
-isValid : Time.Posix -> Int -> Bool
-isValid posixNow to =
-    to >= Time.posixToMillis posixNow
+{-| Check if a FareContract has valid state. If it is refunded or
+cancelled it is not valid.
+-}
+hasValidState : FareContract -> Bool
+hasValidState contract =
+    contract.state == FareContractStateNotActivated || contract.state == FareContractStateActivated
