@@ -527,11 +527,7 @@ function handleAuthError(error) {
             );
             break;
         default:
-            if (error.message) {
-                app.ports.authError.send(error.message);
-            } else {
-                app.ports.authError.send('En ukjent feil oppstod.');
-            }
+            app.ports.authError.send('En ukjent feil oppstod. Vent litt og prøv på nytt.');
     }
 }
 
