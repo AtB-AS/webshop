@@ -1,7 +1,7 @@
 module Page.Shop.Period exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.FareContract exposing (FareContract)
+import Data.FareContract exposing (FareContract, FareContractState(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserType(..))
 import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
@@ -319,7 +319,7 @@ update msg env model shared =
                         Time.posixToMillis now
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && order.state /= FareContractStateRefunded) model.orders
                 in
                     if overlappingOrders then
                         PageUpdater.init
@@ -356,7 +356,7 @@ update msg env model shared =
                         msTime
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && order.state /= FareContractStateRefunded) model.orders
                 in
                     if overlappingOrders then
                         PageUpdater.fromPair
