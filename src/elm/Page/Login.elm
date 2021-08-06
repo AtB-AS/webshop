@@ -321,6 +321,10 @@ view env model =
                     |> B.setElement H.a
                     |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
                     |> B.link
+                , B.init "For our English speaking travellers"
+                    |> B.setElement H.a
+                    |> B.setAttributes [ A.href "https://www.atb.no/ny-nettbutikk/key-words-and-phrases-article17509-2740.html" ]
+                    |> B.link
                 ]
             ]
 
