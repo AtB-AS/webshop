@@ -34,6 +34,8 @@ type alias Offer =
     , userType : UserType
     , prices : List Price
     , travellerId : String
+    , validTo : String
+    , validFrom : String
     }
 
 
