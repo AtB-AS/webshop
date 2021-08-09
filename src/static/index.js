@@ -483,7 +483,7 @@ function handleAuthError(error) {
 
     switch (error.code) {
         case 'auth/invalid-phone-number':
-            app.ports.authError.send('Ugyldig telefonnummer.');
+            app.ports.authError.send('Ugyldig telefonnummer. Sjekk at telefonnummeret består av 8 siffer.');
             break;
         case 'auth/too-many-requests':
             app.ports.authError.send(
@@ -496,7 +496,7 @@ function handleAuthError(error) {
             );
             break;
         case 'auth/missing-phone-number':
-            app.ports.authError.send('Ugyldig telefonnummer.');
+            app.ports.authError.send('Manglende telefonnummer.');
             break;
         case 'auth/user-disabled':
             app.ports.authError.send(
@@ -505,7 +505,7 @@ function handleAuthError(error) {
             break;
         case 'auth/invalid-verification-code':
             app.ports.authError.send(
-                'Passordet stemmer ikke, vennligst prøv på nytt eller be om et nytt engangskode.'
+                'Engangskoden stemmer ikke. Vennligst sjekk at det er riktig kode eller be om en ny engangskode.'
             );
             break;
         case 'auth/code-expired':
