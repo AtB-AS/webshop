@@ -492,10 +492,10 @@ viewSidebar model =
                 |> B.setIcon (Just Icon.logout)
                 |> B.setOnClick (Just Logout)
                 |> B.tertiary
-            , B.init "Slett konto"
+            , B.init "Slett profil"
                 |> B.setIcon (Just Icon.delete)
                 |> B.setElement H.a
-                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet konto." ]
+                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet din AtB-profil." ]
                 |> B.primary B.Primary_destructive
             ]
 

@@ -386,7 +386,7 @@ viewMain shared model =
                 ( True, Nothing ) ->
                     H.div [ A.class "pageOverview__empty" ]
                         [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
-                        , H.text "Ingen billetter er tilknyttet din konto."
+                        , H.text "Ingen billetter er tilknyttet din AtB-profil."
                         ]
 
                 ( _, Just error ) ->
