@@ -1,4 +1,4 @@
-module Util.FareContract exposing (filterValidNow, isValid)
+module Util.FareContract exposing (filterValidNow, hasValidState, isValid)
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Time

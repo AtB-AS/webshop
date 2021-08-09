@@ -30,6 +30,7 @@ import Ui.Input.Text as Text
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
+import Util.FareContract exposing (hasValidState)
 import Util.Func as Func
 import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
@@ -200,7 +201,7 @@ update msg env model shared =
                     Time.posixToMillis model.now
 
                 overlappingOrders =
-                    List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+                    List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && hasValidState order) model.orders
             in
                 if overlappingOrders then
                     PageUpdater.fromPair
@@ -319,7 +320,7 @@ update msg env model shared =
                         Time.posixToMillis now
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && order.state /= FareContractStateRefunded) model.orders
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && hasValidState order) model.orders
                 in
                     if overlappingOrders then
                         PageUpdater.init
@@ -356,7 +357,7 @@ update msg env model shared =
                         msTime
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && order.state /= FareContractStateRefunded) model.orders
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && hasValidState order) model.orders
                 in
                     if overlappingOrders then
                         PageUpdater.fromPair
