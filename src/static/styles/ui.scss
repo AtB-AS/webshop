@@ -273,6 +273,9 @@
     margin-bottom: var(--spacings-medium);
 
     --minWidthItems: 200px;
+    button {
+        margin-top: var(--border-width-slim);
+    }
 }
 .ui-ticketDetails__header {
     margin: 0;
