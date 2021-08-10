@@ -12,6 +12,7 @@ import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
+import Html.Keyed as Keyed
 import Route exposing (Route)
 import Ui.Button as B
 import Ui.TextContainer
@@ -55,7 +56,7 @@ setBackIcon backIcon opts =
 view : PageHeader msg -> Html msg
 view { back, title, backIcon } =
     H.div [ A.class "ui-pageHeader" ]
-        [ Html.Extra.viewMaybe (\text -> H.h2 [ A.class "ui-pageHeader__title" ] [ Ui.TextContainer.primaryJumboInline [ H.text text ] ]) title
+        [ Html.Extra.viewMaybe (\text -> Keyed.node "h2" [ A.class "ui-pageHeader__title" ] [ ( text, Ui.TextContainer.primaryJumboInline [ H.text text ] ) ]) title
         , viewMaybeButton back backIcon
         ]
 
