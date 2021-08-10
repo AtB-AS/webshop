@@ -45,6 +45,7 @@ type alias Summary =
     , travellers : String
     , zones : String
     , validFrom : Maybe String
+    , validTo : Maybe String
     , travellerData : List TravellerData
     , totalPrice : Float
     , totalVat : Float
@@ -56,6 +57,7 @@ type alias OffersQuery =
     , fromZoneId : String
     , toZoneId : String
     , travelDate : TravelDateTime
+    , travelDateEnd : TravelDateTime
     , timeZone : Time.Zone
     }
 
@@ -173,6 +175,7 @@ makeSummary query offers shared =
                     , toZone = Just query.toZoneId
                     }
         , validFrom = Utils.stringFromTravelDate query.travelDate query.timeZone
+        , validTo = Utils.stringFromTravelDate query.travelDateEnd query.timeZone
         , travellerData = summerizeOffers shared.userProfiles offers
         , totalPrice = price
         , totalVat = vatAmount price shared
@@ -225,6 +228,7 @@ viewTicketSection summary =
             , LabelItem.viewHorizontal "Reisende:" [ H.text summary.travellers ]
             , LabelItem.viewHorizontal "Sone:" [ H.text summary.zones ]
             , LabelItem.viewHorizontal "Gyldig fra:" [ H.text <| Maybe.withDefault "Nå" summary.validFrom ]
+            , Html.Extra.viewMaybe (\validTo -> LabelItem.viewHorizontal "Gyldig til:" [ H.text validTo ]) summary.validTo
             ]
         ]
 

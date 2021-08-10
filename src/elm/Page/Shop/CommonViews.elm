@@ -79,6 +79,7 @@ viewSummary shared model disableButtons onToSummaryClick maybeInfo =
                             , fromZoneId = Maybe.withDefault "" model.fromZone
                             , toZoneId = Maybe.withDefault "" model.toZone
                             , travelDate = model.travelDateTime
+                            , travelDateEnd = model.travelDateTimeEnd
                             , timeZone = model.timeZone
                             }
                             offers

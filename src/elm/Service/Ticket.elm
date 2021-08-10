@@ -187,6 +187,8 @@ offerDecoder =
         |> DecodeP.required "traveller_id" decodeUserType
         |> DecodeP.required "prices" (Decode.list priceDecoder)
         |> DecodeP.required "traveller_id" Decode.string
+        |> DecodeP.required "valid_to" Decode.string
+        |> DecodeP.required "valid_from" Decode.string
 
 
 decodeUserType : Decoder UserType

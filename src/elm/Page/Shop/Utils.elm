@@ -23,6 +23,7 @@ type alias CommonModel a =
         , toZone : Maybe String
         , timeZone : Time.Zone
         , travelDateTime : TravelDateTime
+        , travelDateTimeEnd : TravelDateTime
     }
 
 

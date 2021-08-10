@@ -20,7 +20,6 @@ import Set
 import Shared exposing (Shared)
 import Task
 import Time
-import Ui.Button exposing (ThemeColor(..))
 import Ui.Group
 import Ui.PageHeader as PH
 import Ui.Section as Section
@@ -60,6 +59,7 @@ type alias Model =
     , summary : Maybe SummaryPage.Model
     , timeZone : Time.Zone
     , travelDateTime : TravelDateTime
+    , travelDateTimeEnd : TravelDateTime
     }
 
 
@@ -74,6 +74,7 @@ init =
       , mainView = Travelers
       , summary = Nothing
       , travelDateTime = TravelNow
+      , travelDateTimeEnd = TravelFuture Nothing
       , timeZone = Time.utc
       }
     , TaskUtil.doTask FetchOffers
@@ -176,7 +177,11 @@ update msg env model shared =
         ReceiveOffers result ->
             case result of
                 Ok offers ->
-                    PageUpdater.init { model | offers = Loaded offers }
+                    PageUpdater.init
+                        { model
+                            | offers = Loaded offers
+                            , travelDateTimeEnd = TravelFuture Nothing
+                        }
 
                 Err _ ->
                     let
@@ -207,6 +212,7 @@ update msg env model shared =
                                         , fromZoneId = Maybe.withDefault "" model.fromZone
                                         , toZoneId = Maybe.withDefault "" model.toZone
                                         , travelDate = model.travelDateTime
+                                        , travelDateEnd = model.travelDateTimeEnd
                                         , timeZone = model.timeZone
                                         }
                                         offers

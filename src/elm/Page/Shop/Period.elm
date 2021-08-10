@@ -1,7 +1,7 @@
 module Page.Shop.Period exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
-import Data.FareContract exposing (FareContract)
+import Data.FareContract exposing (FareContract, FareContractState(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserType(..))
 import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
 import Environment exposing (Environment)
@@ -76,6 +76,7 @@ type alias Model =
     , reservation : Status Reservation
     , mainView : MainView
     , travelDateTime : TravelDateTime
+    , travelDateTimeEnd : TravelDateTime
     , now : Posix
     , inputTravelDate : String
     , inputTravelTime : String
@@ -97,6 +98,7 @@ init =
       , reservation = NotLoaded
       , mainView = Duration
       , travelDateTime = TravelNow
+      , travelDateTimeEnd = TravelFuture Nothing
       , now = Time.millisToPosix 0
       , inputTravelDate = ""
       , inputTravelTime = ""
@@ -284,7 +286,37 @@ update msg env model shared =
         ReceiveOffers result ->
             case result of
                 Ok offers ->
-                    PageUpdater.init { model | offers = Loaded offers }
+                    let
+                        offer =
+                            List.head offers
+
+                        travelTimeEnd =
+                            case offer of
+                                Nothing ->
+                                    "0"
+
+                                Just off ->
+                                    off.validTo
+
+                        maybeTravelTimeMillis =
+                            String.toInt travelTimeEnd
+
+                        travelTimeMillis =
+                            case maybeTravelTimeMillis of
+                                Nothing ->
+                                    0
+
+                                Just millis ->
+                                    millis
+
+                        maybeTime =
+                            Just ( travelTimeEnd, travelTimeMillis )
+                    in
+                        PageUpdater.init
+                            { model
+                                | offers = Loaded offers
+                                , travelDateTimeEnd = TravelFuture maybeTime
+                            }
 
                 Err _ ->
                     let
@@ -356,17 +388,23 @@ update msg env model shared =
                         msTime
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo) model.orders
+                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && order.state /= FareContractStateRefunded) model.orders
                 in
                     if overlappingOrders then
                         PageUpdater.fromPair
-                            ( { model | futureDateError = Nothing, overlapMessage = Just "Du har allerede en billett i dette tidsrommet" }
+                            ( { model
+                                | futureDateError = Nothing
+                                , overlapMessage = Just "Du har allerede en billett i dette tidsrommet"
+                              }
                             , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just ( isoTime, selectedTime ))
                             )
 
                     else
                         PageUpdater.fromPair
-                            ( { model | futureDateError = Nothing, overlapMessage = Nothing }
+                            ( { model
+                                | futureDateError = Nothing
+                                , overlapMessage = Nothing
+                              }
                             , TaskUtil.doTask <| SetTravelDateTime <| TravelFuture (Just ( isoTime, selectedTime ))
                             )
 
@@ -399,6 +437,7 @@ update msg env model shared =
                                         , fromZoneId = Maybe.withDefault "" model.fromZone
                                         , toZoneId = Maybe.withDefault "" model.toZone
                                         , travelDate = model.travelDateTime
+                                        , travelDateEnd = model.travelDateTimeEnd
                                         , timeZone = model.timeZone
                                         }
                                         offers
