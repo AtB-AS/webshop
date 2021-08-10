@@ -570,7 +570,7 @@ viewConfirm : Environment -> Model -> Html Msg
 viewConfirm _ model =
     H.form [ E.onSubmit Confirm ]
         [ Ui.Section.view
-            [ Ui.Section.viewPaddedItem [ H.p [] [ H.text ("Vi har sendt et engangskode til " ++ model.phone) ] ]
+            [ Ui.Section.viewPaddedItem [ H.p [] [ H.text ("Vi har sendt en engangskode til " ++ model.phone) ] ]
             , Ui.Section.viewItem
                 [ T.init "confirmbox"
                     |> T.setValue (Just model.code)
