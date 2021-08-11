@@ -5,8 +5,9 @@ module Service.Ticket exposing
     , search
     )
 
+import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentType(..))
 import Data.RefData exposing (UserType(..))
-import Data.Ticket exposing (Offer, PaymentStatus, PaymentType(..), Price, Reservation)
+import Data.Ticket exposing (Offer, PaymentStatus, Price, Reservation)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -250,10 +251,5 @@ reservationDecoder =
 
 
 encodePaymentType : PaymentType -> Value
-encodePaymentType paymentType =
-    case paymentType of
-        Nets ->
-            Encode.int 1
-
-        Vipps ->
-            Encode.int 2
+encodePaymentType =
+    PaymentType.toInt >> Encode.int

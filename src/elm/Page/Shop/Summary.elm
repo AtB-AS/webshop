@@ -1,7 +1,8 @@
 module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, init, makeSummary, subscriptions, update, view)
 
+import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
-import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
+import Data.Ticket exposing (Offer, Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
@@ -272,23 +273,23 @@ viewPaymentSection model shared =
 
                 _ ->
                     False
+
+        paymentTypes =
+            [ ( "Vipps", Vipps )
+            , ( "MasterCard", Nets MasterCard )
+            , ( "Visa", Nets Visa )
+            , ( "American Express", Nets AmericanExpress )
+            ]
     in
         Section.view
             [ Section.viewHeader "Betaling"
-            , Radio.viewLabelGroup "Betalingsmetode"
-                [ Radio.init "vipps"
-                    |> Radio.setTitle "Vipps"
-                    |> Radio.setName "paymentType"
-                    |> Radio.setChecked (model.paymentType == Vipps)
-                    |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Vipps)
-                    |> Radio.view
-                , Radio.init "visa"
-                    |> Radio.setTitle "Bankkort"
-                    |> Radio.setName "paymentType"
-                    |> Radio.setChecked (model.paymentType == Nets)
-                    |> Radio.setOnCheck (Just <| \_ -> SetPaymentType Nets)
-                    |> Radio.view
-                ]
+            , paymentTypes
+                |> List.filter
+                    (\( _, paymentType ) ->
+                        List.member paymentType shared.paymentTypes
+                    )
+                |> List.map (paymentTypeRadio model)
+                |> Radio.viewLabelGroup "Betalingsmetode"
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
             , B.init "Gå til betaling"
@@ -297,6 +298,16 @@ viewPaymentSection model shared =
                 |> B.setOnClick (Just BuyOffers)
                 |> B.primary Primary_2
             ]
+
+
+paymentTypeRadio : Model -> ( String, PaymentType ) -> Html Msg
+paymentTypeRadio model ( title, paymentType ) =
+    Radio.init (PaymentType.toString paymentType)
+        |> Radio.setTitle title
+        |> Radio.setName "paymentType"
+        |> Radio.setChecked (model.paymentType == paymentType)
+        |> Radio.setOnCheck (Just <| \_ -> SetPaymentType paymentType)
+        |> Radio.view
 
 
 maybeVippsNotice : Model -> Shared -> Html Msg
