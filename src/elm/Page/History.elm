@@ -67,10 +67,8 @@ update msg env model =
     case msg of
         OnEnterPage ->
             PageUpdater.init model
-                |> (Just "Kjøpshistorikk"
-                        |> GA.SetTitle
-                        |> PageUpdater.addGlobalAction
-                   )
+                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Kjøpshistorikk")
+                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
         InputFrom value ->
             PageUpdater.init { model | from = Just value }

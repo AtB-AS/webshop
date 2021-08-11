@@ -56,8 +56,17 @@ setBackIcon backIcon opts =
 view : PageHeader msg -> Html msg
 view { back, title, backIcon } =
     H.div [ A.class "ui-pageHeader" ]
-        [ Html.Extra.viewMaybe (\text -> Keyed.node "h2" [ A.class "ui-pageHeader__title" ] [ ( text, Ui.TextContainer.primaryJumboInline [ H.text text ] ) ]) title
-        , viewMaybeButton back backIcon
+        [ viewMaybeButton back backIcon
+        , Html.Extra.viewMaybe
+            (\text ->
+                Keyed.node "h2"
+                    [ A.id "page-header"
+                    , A.class "ui-pageHeader__title"
+                    , A.tabindex -1
+                    ]
+                    [ ( text, Ui.TextContainer.primaryJumboInline [ H.text text ] ) ]
+            )
+            title
         ]
 
 

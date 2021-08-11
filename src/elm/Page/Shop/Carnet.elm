@@ -89,10 +89,8 @@ update msg env model shared =
 
         OnEnterPage ->
             PageUpdater.fromPair ( model, Tuple.second init )
-                |> (Just "Kjøp billett"
-                        |> GA.SetTitle
-                        |> PageUpdater.addGlobalAction
-                   )
+                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Kjøp billett")
+                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
         OnLeavePage ->
             PageUpdater.init { model | summary = Nothing }
