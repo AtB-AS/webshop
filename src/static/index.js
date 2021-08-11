@@ -79,7 +79,7 @@ app.ports.bodyClass.subscribe(function (className) {
     document.body.className = className;
 });
 
-function fetchRemoteConfigData(port, key) {
+function fetchRemoteConfigData(port, key, prop) {
     if (!port) {
         return;
     }
@@ -96,7 +96,11 @@ function fetchRemoteConfigData(port, key) {
         return;
     }
 
-    port.send(data);
+    if (typeof prop === 'string' && data.hasOwnProperty(prop)) {
+        port.send(data[prop]);
+    } else {
+        port.send(data);
+    }
 }
 
 function sendRemoteConfigVatPercent(port) {
@@ -131,6 +135,7 @@ remoteConfig
             'tariff_zones'
         );
         fetchRemoteConfigData(app.ports.remoteConfigConsents, 'consents');
+        fetchRemoteConfigData(app.ports.remoteConfigPaymentTypes, 'payment_types', 'web');
         sendRemoteConfigVatPercent();
     })
     .catch((err) => {

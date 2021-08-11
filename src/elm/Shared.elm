@@ -1,5 +1,6 @@
 module Shared exposing (Msg, Shared, hasCarnetTickets, hasPeriodTickets, init, subscriptions, update)
 
+import Data.PaymentType exposing (PaymentType)
 import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
 import Data.RemoteConfig exposing (RemoteConfig)
 import List exposing (product)
@@ -14,6 +15,7 @@ type Msg
     | ReceiveFareProducts (Result () (List FareProduct))
     | ReceiveUserProfiles (Result () (List UserProfile))
     | ReceiveConsents (Result () (List Consent))
+    | ReceivePaymentTypes (Result () (List PaymentType))
     | ReceiveRemoteConfig (Result () RemoteConfig)
     | ProfileChange (Maybe Profile)
 
@@ -28,6 +30,7 @@ type alias Shared =
     , remoteConfig : RemoteConfig
     , productLimitations : List Limitation
     , consents : List Consent
+    , paymentTypes : List PaymentType
     , profile : Maybe Profile
     }
 
@@ -40,6 +43,7 @@ init =
     , userProfiles = []
     , productLimitations = []
     , consents = []
+    , paymentTypes = []
     , profile = Nothing
     , remoteConfig = RCConfig.init
     }
@@ -83,6 +87,14 @@ update msg model =
             case result of
                 Ok value ->
                     { model | consents = value }
+
+                Err _ ->
+                    model
+
+        ReceivePaymentTypes result ->
+            case result of
+                Ok value ->
+                    { model | paymentTypes = value }
 
                 Err _ ->
                     model
@@ -132,6 +144,7 @@ subscriptions =
         , RefDataService.onFareProducts ReceiveFareProducts
         , RefDataService.onUserProfiles ReceiveUserProfiles
         , RefDataService.onConsents ReceiveConsents
+        , RefDataService.onPaymentTypes ReceivePaymentTypes
         , RCConfig.onRemoteConfig ReceiveRemoteConfig
         , MiscService.onProfileChange ProfileChange
         ]

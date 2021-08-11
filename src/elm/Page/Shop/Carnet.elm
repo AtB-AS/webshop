@@ -2,7 +2,7 @@ module Page.Shop.Carnet exposing (Model, Msg(..), init, subscriptions, update, v
 
 import Base exposing (AppInfo)
 import Data.RefData exposing (LangString(..), ProductType(..), UserType(..))
-import Data.Ticket exposing (Offer, PaymentType(..), Reservation)
+import Data.Ticket exposing (Offer, Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA

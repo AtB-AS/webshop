@@ -4,10 +4,12 @@ port module Service.RefData exposing
     , getUserProfiles
     , onConsents
     , onFareProducts
+    , onPaymentTypes
     , onTariffZones
     , onUserProfiles
     )
 
+import Data.PaymentType as PaymentType exposing (PaymentType)
 import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
 import Environment exposing (Environment)
 import Http
@@ -185,6 +187,20 @@ consentDecoder =
         |> DecodeP.required "title" (Decode.dict Decode.string)
 
 
+paymentTypeDecoder : Decoder PaymentType
+paymentTypeDecoder =
+    Decode.andThen
+        (\value ->
+            case PaymentType.fromString value of
+                Just paymentType ->
+                    Decode.succeed paymentType
+
+                Nothing ->
+                    Decode.fail "Invalid payment type"
+        )
+        Decode.string
+
+
 onTariffZones : (Result () (List TariffZone) -> msg) -> Sub msg
 onTariffZones =
     remoteConfigDecoder tariffZoneDecoder >> remoteConfigTariffZones
@@ -205,6 +221,11 @@ onConsents =
     remoteConfigDecoder consentDecoder >> remoteConfigConsents
 
 
+onPaymentTypes : (Result () (List PaymentType) -> msg) -> Sub msg
+onPaymentTypes =
+    remoteConfigDecoder paymentTypeDecoder >> remoteConfigPaymentTypes
+
+
 
 -- INTERNAL
 
@@ -219,6 +240,9 @@ port remoteConfigUserProfiles : (Decode.Value -> msg) -> Sub msg
 
 
 port remoteConfigConsents : (Decode.Value -> msg) -> Sub msg
+
+
+port remoteConfigPaymentTypes : (Decode.Value -> msg) -> Sub msg
 
 
 remoteConfigDecoder : Decoder a -> (Result () (List a) -> msg) -> (Decode.Value -> msg)
