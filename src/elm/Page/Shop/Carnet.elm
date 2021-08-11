@@ -38,6 +38,7 @@ type Msg
     | SetToZone String
     | SetUser UserType Bool
     | ShowView MainView
+    | UpdateZone Time.Zone
     | CloseSummary
     | GoToSummary
     | SummarySubMsg SummaryPage.Msg
@@ -77,7 +78,10 @@ init =
       , travelDateTimeEnd = TravelFuture Nothing
       , timeZone = Time.utc
       }
-    , TaskUtil.doTask FetchOffers
+    , Cmd.batch
+        [ TaskUtil.doTask FetchOffers
+        , Task.perform UpdateZone Time.here
+        ]
     )
 
 
@@ -196,6 +200,9 @@ update msg env model shared =
 
         ShowView mainView ->
             PageUpdater.init (toggleShowMainView model mainView)
+
+        UpdateZone zone ->
+            PageUpdater.init { model | timeZone = zone }
 
         CloseSummary ->
             PageUpdater.init { model | summary = Nothing }
