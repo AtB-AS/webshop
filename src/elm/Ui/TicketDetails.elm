@@ -1,6 +1,7 @@
 module Ui.TicketDetails exposing (view, viewActivation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet)
+import Data.PaymentType as PaymentType exposing (PaymentType)
 import Data.RefData exposing (LangString(..))
 import Data.Ticket exposing (Reservation, ReservationStatus(..))
 import Dict exposing (Dict)
@@ -481,17 +482,9 @@ onlyTravelRightEssentials travelRights =
             travelRights
 
 
-formatPaymentType : List String -> String
-formatPaymentType types =
-    case types of
-        [ "VIPPS" ] ->
-            "Vipps"
-
-        [ "VISA" ] ->
-            "Bankkort"
-
-        _ ->
-            "Ukjent"
+formatPaymentType : List PaymentType -> String
+formatPaymentType =
+    List.head >> Maybe.map PaymentType.format >> Maybe.withDefault "Ukjent"
 
 
 boolAsString : Bool -> String

@@ -9,6 +9,8 @@ module Data.FareContract exposing
     , UsedAccess
     )
 
+import Data.PaymentType exposing (PaymentType)
+
 
 type TravelRight
     = SingleTicket TravelRightFull
@@ -81,7 +83,7 @@ type alias FareContract =
     , validFrom : Int
     , validTo : Int
     , totalAmount : Maybe String
-    , paymentType : List String
+    , paymentType : List PaymentType
     }
 
 

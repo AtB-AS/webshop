@@ -275,17 +275,17 @@ viewPaymentSection model shared =
                     False
 
         paymentTypes =
-            [ ( "Vipps", Vipps )
-            , ( "MasterCard", Nets MasterCard )
-            , ( "Visa", Nets Visa )
-            , ( "American Express", Nets AmericanExpress )
+            [ Vipps
+            , Nets MasterCard
+            , Nets Visa
+            , Nets AmericanExpress
             ]
     in
         Section.view
             [ Section.viewHeader "Betaling"
             , paymentTypes
                 |> List.filter
-                    (\( _, paymentType ) ->
+                    (\paymentType ->
                         List.member paymentType shared.paymentTypes
                     )
                 |> List.map (paymentTypeRadio model)
@@ -300,10 +300,10 @@ viewPaymentSection model shared =
             ]
 
 
-paymentTypeRadio : Model -> ( String, PaymentType ) -> Html Msg
-paymentTypeRadio model ( title, paymentType ) =
+paymentTypeRadio : Model -> PaymentType -> Html Msg
+paymentTypeRadio model paymentType =
     Radio.init (PaymentType.toString paymentType)
-        |> Radio.setTitle title
+        |> Radio.setTitle (PaymentType.format paymentType)
         |> Radio.setName "paymentType"
         |> Radio.setChecked (model.paymentType == paymentType)
         |> Radio.setOnCheck (Just <| \_ -> SetPaymentType paymentType)

@@ -20,6 +20,7 @@ port module Service.Misc exposing
     )
 
 import Data.FareContract exposing (FareContract, FareContractState(..), FareTime, TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
+import Data.PaymentType as PaymentType
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
@@ -197,7 +198,12 @@ fareContractDecoder =
         |> DecodeP.required "validFrom" Decode.int
         |> DecodeP.required "validTo" Decode.int
         |> DecodeP.optional "totalAmount" (Decode.map Just Decode.string) Nothing
-        |> DecodeP.optional "paymentType" (Decode.list Decode.string) []
+        |> DecodeP.optional "paymentType"
+            (Decode.andThen
+                (List.filterMap PaymentType.fromEntur >> Decode.succeed)
+                (Decode.list Decode.string)
+            )
+            []
 
 
 

@@ -4,6 +4,7 @@ module Page.History exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
+import Data.PaymentType as PaymentType exposing (PaymentType)
 import Data.RefData exposing (LangString(..))
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -410,20 +411,9 @@ formatTotal value =
             "??"
 
 
-formatPaymentType : List String -> String
-formatPaymentType types =
-    case types of
-        [] ->
-            "??"
-
-        [ "VIPPS" ] ->
-            "Vipps"
-
-        [ "VISA" ] ->
-            "bankkort"
-
-        _ ->
-            "??"
+formatPaymentType : List PaymentType -> String
+formatPaymentType =
+    List.head >> Maybe.map PaymentType.format >> Maybe.withDefault "Ukjent"
 
 
 sendReceipt : Environment -> Profile -> String -> Cmd Msg
