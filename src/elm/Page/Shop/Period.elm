@@ -120,7 +120,16 @@ update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
 update msg env model shared =
     case msg of
         ResetState ->
-            PageUpdater.init <| Tuple.first init
+            let
+                ( newModel, _ ) =
+                    init
+            in
+                PageUpdater.init
+                    { newModel
+                        | orders = model.orders
+                        , now = model.now
+                        , timeZone = model.timeZone
+                    }
 
         OnEnterPage ->
             PageUpdater.fromPair ( model, Tuple.second init )

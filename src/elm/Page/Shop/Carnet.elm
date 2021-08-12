@@ -38,6 +38,7 @@ type Msg
     | SetToZone String
     | SetUser UserType Bool
     | ShowView MainView
+    | UpdateZone Time.Zone
     | CloseSummary
     | GoToSummary
     | SummarySubMsg SummaryPage.Msg
@@ -77,7 +78,10 @@ init =
       , travelDateTimeEnd = TravelFuture Nothing
       , timeZone = Time.utc
       }
-    , TaskUtil.doTask FetchOffers
+    , Cmd.batch
+        [ TaskUtil.doTask FetchOffers
+        , Task.perform UpdateZone Time.here
+        ]
     )
 
 
@@ -85,7 +89,12 @@ update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
 update msg env model shared =
     case msg of
         ResetState ->
-            PageUpdater.init <| Tuple.first init
+            let
+                ( newModel, _ ) =
+                    init
+            in
+                PageUpdater.init
+                    { newModel | timeZone = model.timeZone }
 
         OnEnterPage ->
             PageUpdater.fromPair ( model, Tuple.second init )
@@ -196,6 +205,9 @@ update msg env model shared =
 
         ShowView mainView ->
             PageUpdater.init (toggleShowMainView model mainView)
+
+        UpdateZone zone ->
+            PageUpdater.init { model | timeZone = zone }
 
         CloseSummary ->
             PageUpdater.init { model | summary = Nothing }
