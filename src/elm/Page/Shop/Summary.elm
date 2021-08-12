@@ -276,8 +276,8 @@ viewPaymentSection model shared =
 
         paymentTypes =
             [ Vipps
-            , Nets MasterCard
             , Nets Visa
+            , Nets MasterCard
             , Nets AmericanExpress
             ]
     in
