@@ -25,6 +25,7 @@ import Task
 import Ui.Button as B
 import Ui.Expandable
 import Ui.Message as Message
+import Ui.ScreenReaderText as SR
 import Ui.Section
 import Util.Format as Format
 
@@ -294,6 +295,12 @@ viewOrder shared model order =
 
         isRefunded =
             order.state == FareContractStateRefunded
+
+        orderIdText =
+            "Ordre-ID: " ++ order.orderId
+
+        spellableOrderIdText =
+            "Ordre-ID: " ++ SR.makeSpellable order.orderId
     in
         Ui.Expandable.view
             { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
@@ -307,7 +314,7 @@ viewOrder shared model order =
                 , H.div [ A.class "metadata-list" ]
                     (if isRefunded then
                         [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                        , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
+                        , H.div [] <| SR.readAndView spellableOrderIdText orderIdText
                         , H.div [] [ H.text <| "Refundert" ]
                         ]
 
@@ -315,7 +322,7 @@ viewOrder shared model order =
                         [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
                         , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
                         , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
-                        , H.div [] [ H.text <| "Ordre-ID: " ++ order.orderId ]
+                        , H.div [] <| SR.readAndView spellableOrderIdText orderIdText
                         ]
                     )
                 ]

@@ -19,6 +19,7 @@ import Time
 import Ui.Button as B
 import Ui.LabelItem
 import Ui.Message as Message
+import Ui.ScreenReaderText as SR
 import Ui.TextContainer
 import Util.FareContract
 import Util.Format
@@ -96,6 +97,9 @@ view shared ticketDetails onReceipt =
 
                 Nothing ->
                     True
+
+        spellableOrderId =
+            SR.makeSpellable fareContract.orderId
     in
         Ui.TextContainer.primary
             [ H.section
@@ -143,7 +147,7 @@ view shared ticketDetails onReceipt =
                     , H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal ui-ticketDetails__item--statusLine" ]
                         [ Ui.LabelItem.viewCompact "Kjøpstidspunkt" [ H.text <| Util.Format.dateTime fareContract.created ]
                         , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType fareContract.paymentType ]
-                        , Ui.LabelItem.viewCompact "Ordre-ID" [ H.text fareContract.orderId ]
+                        , Ui.LabelItem.viewCompact "Ordre-ID" <| SR.readAndView spellableOrderId fareContract.orderId
                         ]
                     , B.init "Be om kvittering på e-post"
                         |> B.setDisabled missingEmail
@@ -275,6 +279,9 @@ viewActivation ( reservation, status ) =
 
                 NotCaptured ->
                     "Prosesseres... ikke gyldig enda."
+
+        spellableOrderId =
+            SR.makeSpellable reservation.orderId
     in
         Ui.TextContainer.primary
             [ H.section
@@ -290,7 +297,7 @@ viewActivation ( reservation, status ) =
                 , H.div [ A.classList classListMetadata ]
                     [ Ui.LabelItem.viewCompact
                         "Ordre-ID"
-                        [ H.text reservation.orderId ]
+                        (SR.readAndView spellableOrderId reservation.orderId)
                     ]
                 ]
             ]
