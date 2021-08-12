@@ -66,6 +66,19 @@ statusToIcon status =
             Icon.info
 
 
+statusToRole : UserStatus msg -> String
+statusToRole status =
+    case status of
+        Warning _ ->
+            "alert"
+
+        Error _ ->
+            "alert"
+
+        _ ->
+            ""
+
+
 stringOfStatus : UserStatus msg -> Html msg
 stringOfStatus status =
     case status of
@@ -113,7 +126,11 @@ messageWithOptions options statusType =
     in
         H.div [ A.classList classList ]
             [ icon
-            , H.div [ A.class "ui-message__content", A.attribute "role" "alert" ] [ text ]
+            , H.div
+                [ A.class "ui-message__content"
+                , A.attribute "role" (statusToRole statusType)
+                ]
+                [ text ]
             ]
 
 

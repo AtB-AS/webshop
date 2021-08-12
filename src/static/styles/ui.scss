@@ -563,6 +563,9 @@
     padding: var(--spacings-medium);
     order: 2;
 }
+.ui-pageHeader__title:focus {
+    outline: none;
+}
 .ui-pageHeader__back {
     order: 1;
 
@@ -1162,6 +1165,10 @@ a.ui-button--link,
     order: 2;
     text-align: center;
     margin: var(--spacings-medium);
+}
+
+.ui-progressHeader__title:focus {
+    outline: none;
 }
 
 @media (max-width: 400px) {

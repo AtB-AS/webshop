@@ -175,21 +175,12 @@ button mode color { text, disabled, isLoading, icon, iconPosition, transparent, 
 
             else
                 Html.Extra.viewMaybe (List.singleton >> H.span [ A.classList iconClassList ]) icon
-
-        ariaLive =
-            case ( isLoading, disabled ) of
-                ( False, False ) ->
-                    "off"
-
-                ( _, _ ) ->
-                    "assertive"
     in
         element
             ([ A.classList classList
              , Html.Attributes.Extra.attributeMaybe E.onClick maybeOnClick
              , A.attribute "aria-disabled" (boolToString disabledOrLoading)
              , A.type_ type_
-             , A.attribute "aria-live" ariaLive
              , Html.Attributes.Extra.attributeIf isLoading <| A.attribute "aria-busy" "true"
              , Html.Attributes.Extra.attributeIf isLoading <| A.attribute "aria-label" (text ++ " (Laster)")
              ]

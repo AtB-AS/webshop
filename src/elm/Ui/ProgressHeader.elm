@@ -8,14 +8,12 @@ module Ui.ProgressHeader exposing
     , view
     )
 
-import Browser.Navigation exposing (back)
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Extra
 import Html.Keyed as Keyed
 import Ui.Button as B
-import Ui.Heading exposing (title)
 import Ui.TextContainer
 
 
@@ -66,7 +64,9 @@ setTotalSteps totalSteps opts =
 view : ProgressHeader msg -> Html msg
 view { title, back, next, step, totalSteps } =
     H.div [ A.class "ui-progressHeader" ]
-        [ Keyed.node "h2" [ A.class "ui-progressHeader__title" ] [ ( title, Ui.TextContainer.primaryJumboInline [ H.text title ] ) ]
+        [ Keyed.node "h2"
+            [ A.id "progress-header", A.tabindex -1, A.class "ui-progressHeader__title" ]
+            [ ( title, Ui.TextContainer.primaryJumboInline [ H.text title ] ) ]
         , H.div [ A.class "ui-progressHeader__progressContainer" ]
             [ viewMaybeButton Left back
             , viewProgress title step totalSteps

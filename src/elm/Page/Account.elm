@@ -126,9 +126,9 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         OnEnterPage ->
-            PageUpdater.init model
+            PageUpdater.fromPair ( model, TaskUtil.doTask FetchConsents )
                 |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Min profil")
-                |> (PageUpdater.addCmd <| TaskUtil.doTask FetchConsents)
+                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
         ResetState ->
             let

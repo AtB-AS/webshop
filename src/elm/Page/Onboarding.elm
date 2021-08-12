@@ -299,7 +299,7 @@ update msg env shared model =
                     Just TravelCard ->
                         if model.profileSaved then
                             PageUpdater.init { model | step = TravelCard, validationErrors = V.init }
-                                |> PageUpdater.addGlobalAction (GA.FocusItem <| Just "travelCard")
+                                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "travelCard")
 
                         else
                             PageUpdater.init model
@@ -313,6 +313,7 @@ update msg env shared model =
                                     , consentEmail = model.savedEmail
                                     , validationErrors = V.init
                                 }
+                                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "progress-header")
 
                         else
                             PageUpdater.init model
@@ -323,6 +324,7 @@ update msg env shared model =
 
                     Just next ->
                         PageUpdater.init { model | step = next, validationErrors = V.init }
+                            |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "progress-header")
 
         PrevStep ->
             let
@@ -335,6 +337,7 @@ update msg env shared model =
 
                     Just prev ->
                         PageUpdater.init { model | step = prev, validationErrors = V.init }
+                            |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "progress-header")
 
 
 getError : Http.Error -> Maybe String

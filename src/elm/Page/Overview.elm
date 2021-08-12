@@ -87,10 +87,8 @@ update msg env model shared =
     case msg of
         OnEnterPage ->
             PageUpdater.init model
-                |> (Nothing
-                        |> GA.SetTitle
-                        |> PageUpdater.addGlobalAction
-                   )
+                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Nothing)
+                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
         ReceiveFareContracts result ->
             case result of
