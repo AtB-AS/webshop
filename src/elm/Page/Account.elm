@@ -465,15 +465,15 @@ viewSidebar model =
             MaybeUtil.mapWithDefault .phone "<Telefonnummer her>" model.profile
 
         subject =
-            "Slett AtB-profilen min"
+            "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min AtB-profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
+            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
                 ++ phoneNumber
             )
                 ++ """
 
-                Jeg forstår at sletting av min AtB-profil innebærer følgende:
+                Jeg forstår at sletting av min profil innebærer følgende:
                 
                 - Eventuelle fortsatt gyldige eller fremtidige billetter på min profil vil slettes.
                 - Jeg får ikke lenger tilgang til billetthistorikk eller kvitteringer.
@@ -492,10 +492,10 @@ viewSidebar model =
                 |> B.setIcon (Just Icon.logout)
                 |> B.setOnClick (Just Logout)
                 |> B.tertiary
-            , B.init "Slett konto"
+            , B.init "Slett profil"
                 |> B.setIcon (Just Icon.delete)
                 |> B.setElement H.a
-                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet konto." ]
+                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet din profil." ]
                 |> B.primary B.Primary_destructive
             ]
 

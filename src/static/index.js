@@ -596,7 +596,7 @@ app.ports.registerEmail.subscribe(async ({ email, password }) => {
         if (signInMethods.length > 0) {
             return handleAuthError({
                 message:
-                    'Det er alt registrert en konto på denne e-postadressen. Prøv å logg inn.'
+                    'Det er alt registrert en profil på denne e-postadressen. Prøv å logg inn.'
             });
         }
     } catch (e) {

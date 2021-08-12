@@ -309,7 +309,7 @@ view env model =
                         , viewInfoPointWithIcon Icon.travelCardOutlined
                             "Mista t:kortet? Sletting, bestilling og registrering av t:kort gjør du enkelt selv."
                         , viewInfoPointWithIcon Icon.cloudOutlined
-                            "Billetten ligger trygt forvart på din AtB-profil – uavhengig av hva som skjer med t:kortet ditt."
+                            "Billetten ligger trygt forvart på din profil – uavhengig av hva som skjer med t:kortet ditt."
                         ]
                     , B.init "Jeg forstår - neste"
                         |> B.setIcon (Just Icon.rightArrow)
@@ -396,7 +396,7 @@ viewPhoneLogin model =
         , Ui.Section.viewPaddedItem
             [ H.div []
                 [ H.p []
-                    [ H.text "Logg inn eller opprett en ny AtB-profil med engangskode på telefonen din."
+                    [ H.text "Logg inn eller opprett en ny profil med engangskode på telefonen din."
                     , SR.view " Brukere av skjermleser anbefales innlogging med e-post."
                     ]
                 ]
@@ -421,7 +421,7 @@ viewEmailLogin model =
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem
             [ H.p []
-                [ H.text "Logg inn på din AtB-profil med e-post og passord eller "
+                [ H.text "Logg inn på din profil med e-post og passord eller "
                 , H.a [ Route.href <| Route.Login PhonePath, A.title "Logg på med telefon og engangskode" ] [ H.text "bruk engangskode fra telefonen" ]
                 , H.text "."
                 ]
