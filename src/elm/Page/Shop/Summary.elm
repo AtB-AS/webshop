@@ -126,18 +126,37 @@ update msg env model shared =
                 PageUpdater.init { model | paymentType = paymentType }
 
 
-view : Shared -> Model -> Html Msg
-view shared model =
+view : Shared -> Bool -> Model -> Html Msg
+view shared isCarnet model =
     let
         summary =
             makeSummary model.query model.offers shared
     in
         H.div []
-            [ Section.init
-                |> Section.setMarginBottom True
-                |> Section.viewWithOptions
-                    [ Ui.Message.info "I en overgangsperiode kan du oppleve at kortlesere på metrobussholdeplass og i regionbuss avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved billettkontroll vil avlesing av t:kort fungere!"
+            [ if isCarnet then
+                Section.view
+                    [ Ui.Message.messageWithOptions
+                        { borderTop = True
+                        , borderBottom = True
+                        , marginTop = False
+                        , marginBottom = True
+                        }
+                        (Ui.Message.Warning <|
+                            H.div []
+                                [ H.text "I en overgangsperiode er klippekort kun for deg som reiser langs "
+                                , H.strong [] [ H.text "metrobusslinjer sone A" ]
+                                , H.text " og kan starte reisen din ved en kortleser på holdeplass. Les mer her: "
+                                , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "https://www.atb.no/vi-oppgraderer/" ]
+                                ]
+                        )
                     ]
+
+              else
+                Section.init
+                    |> Section.setMarginBottom True
+                    |> Section.viewWithOptions
+                        [ Ui.Message.info "I en overgangsperiode kan du oppleve at kortlesere på metrobussholdeplass og i regionbuss avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved billettkontroll vil avlesing av t:kort fungere!"
+                        ]
             , H.div [ A.class "page page--threeColumns" ]
                 [ viewTicketSection summary
                 , viewPriceSection summary

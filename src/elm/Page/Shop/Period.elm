@@ -540,7 +540,7 @@ view _ _ shared model _ =
                         |> PH.setTitle (Just "Oppsummering")
                         |> PH.setBackButton ( "Tilbake", CloseSummary )
                         |> PH.view
-                    , SummaryPage.view shared summaryModel
+                    , SummaryPage.view shared False summaryModel
                         |> H.map SummarySubMsg
                     ]
 
