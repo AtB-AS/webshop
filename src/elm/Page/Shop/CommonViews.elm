@@ -130,8 +130,8 @@ viewSummary shared model disableButtons onToSummaryClick maybeInfo =
                 ]
 
 
-viewZones : CommonModel a -> String -> List TariffZone -> (String -> msg) -> (String -> msg) -> Html msg
-viewZones model defaultZone zones onFromZoneSelected onToZoneSelected =
+viewZones : CommonModel a -> String -> List TariffZone -> (String -> msg) -> (String -> msg) -> Bool -> Html msg
+viewZones model defaultZone zones onFromZoneSelected onToZoneSelected disabled =
     let
         sortedZones =
             List.sortWith
@@ -154,10 +154,12 @@ viewZones model defaultZone zones onFromZoneSelected onToZoneSelected =
                     [ Select.init "travelFromZone"
                         |> Select.setTitle (Just "Avreisesone")
                         |> Select.setOnInput (Just onFromZoneSelected)
+                        |> Select.setDisabled disabled
                         |> Select.view (List.map (viewZone selectedFromZone) sortedZones)
                     , Select.init "travelToZone"
                         |> Select.setTitle (Just "Ankomstsone")
                         |> Select.setOnInput (Just onToZoneSelected)
+                        |> Select.setDisabled disabled
                         |> Select.view (List.map (viewZone selectedToZone) sortedZones)
                     ]
                 ]

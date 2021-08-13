@@ -601,7 +601,7 @@ view _ _ shared model _ =
                                 }
                                 (viewStart model)
                             , Section.viewWithIcon Icon.map
-                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
+                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone False ]
                             ]
                         , Common.viewSummary shared
                             model

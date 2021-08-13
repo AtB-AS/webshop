@@ -21,6 +21,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Group
+import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as Section
 import Util.Status exposing (Status(..))
@@ -67,8 +68,8 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { product = Nothing
-      , fromZone = Nothing
-      , toZone = Nothing
+      , fromZone = Just "ATB:TariffZone:1" -- hardcoded
+      , toZone = Just "ATB:TariffZone:1" -- hardcoded
       , users = [ ( UserTypeAdult, 1 ) ]
       , offers = NotLoaded
       , reservation = NotLoaded
@@ -353,7 +354,13 @@ view _ _ shared model _ =
                                 }
                                 [ Common.viewUserProfiles defaultProduct model SetUser shared ]
                             , Section.viewWithIcon Icon.map
-                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
+                                [ Common.viewZones model
+                                    defaultZone
+                                    (List.filter (.id >> (==) "ATB:TariffZone:1") shared.tariffZones)
+                                    SetFromZone
+                                    SetToZone
+                                    True
+                                ]
                             ]
                         , H.div []
                             [ Common.viewSummary shared model disableButtons GoToSummary Nothing
