@@ -315,6 +315,22 @@ view _ _ shared model _ =
                         |> PH.setBackButton ( "Avbryt", CloseShop )
                         |> PH.setBackIcon Icon.cross
                         |> PH.view
+                    , Section.view
+                        [ Message.messageWithOptions
+                            { borderTop = True
+                            , borderBottom = True
+                            , marginTop = False
+                            , marginBottom = True
+                            }
+                            (Message.Warning <|
+                                H.div []
+                                    [ H.text "I en overgangsperiode er klippekort kun for deg som reiser langs "
+                                    , H.strong [] [ H.text "metrobusslinjer sone A" ]
+                                    , H.text " og kan starte reisen din ved en kortleser på holdeplass. Les mer her: "
+                                    , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "https://www.atb.no/vi-oppgraderer/" ]
+                                    ]
+                            )
+                        ]
                     , H.div [ A.class "page" ]
                         [ Section.view
                             [ Ui.Group.view
