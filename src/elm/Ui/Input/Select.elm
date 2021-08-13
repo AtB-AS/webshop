@@ -2,6 +2,7 @@ module Ui.Input.Select exposing
     ( init
     , setAttributes
     , setBordered
+    , setDisabled
     , setError
     , setId
     , setOnInput
@@ -13,10 +14,9 @@ module Ui.Input.Select exposing
 import Fragment.Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Attributes.Extra
+import Html.Attributes.Extra as AttrExtra
 import Html.Events as E
 import Html.Extra
-import Ui.Button exposing (ButtonMode(..))
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
@@ -28,6 +28,7 @@ type alias Select msg =
     , onInput : Maybe (String -> msg)
     , attributes : List (H.Attribute msg)
     , bordered : Bool
+    , disabled : Bool
     }
 
 
@@ -40,6 +41,7 @@ init id =
     , onInput = Nothing
     , attributes = []
     , bordered = False
+    , disabled = False
     }
 
 
@@ -78,13 +80,19 @@ setBordered bordered opts =
     { opts | bordered = bordered }
 
 
+setDisabled : Bool -> Select msg -> Select msg
+setDisabled disabled opts =
+    { opts | disabled = disabled }
+
+
 view : List (Html msg) -> Select msg -> Html msg
-view children { id, title, error, onInput, required, attributes, bordered } =
+view children { id, title, error, onInput, required, attributes, bordered, disabled } =
     let
         classList =
             [ ( "ui-input-text", True )
             , ( "ui-input-text--error", error /= Nothing )
             , ( "ui-input-text--bordered", bordered )
+            , ( "ui-input-text--disabled", disabled )
             ]
 
         errorId =
@@ -93,16 +101,26 @@ view children { id, title, error, onInput, required, attributes, bordered } =
         H.label [ A.for id, A.classList classList ]
             [ Html.Extra.viewMaybe
                 (\t ->
-                    H.span [ A.class "ui-input-text__label" ] [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
+                    H.span [ A.class "ui-input-text__label" ]
+                        [ Text.textContainer H.span (Just Text.SecondaryColor) <|
+                            Text.Tertiary [ H.text t ]
+                        ]
                 )
                 title
             , H.select
                 ([ A.id id
                  , A.required required
+                 , A.disabled disabled
                  , A.class "ui-input-text__input"
-                 , Html.Attributes.Extra.attributeMaybe (\action -> E.onInput action) onInput
-                 , Html.Attributes.Extra.attributeMaybe (\_ -> A.attribute "aria-describedby" errorId) error
-                 , Html.Attributes.Extra.attributeMaybe (\_ -> A.attribute "aria-invalid" "true") error
+                 , AttrExtra.attributeMaybe (\action -> E.onInput action)
+                    (if disabled then
+                        Nothing
+
+                     else
+                        onInput
+                    )
+                 , AttrExtra.attributeMaybe (\_ -> A.attribute "aria-describedby" errorId) error
+                 , AttrExtra.attributeMaybe (\_ -> A.attribute "aria-invalid" "true") error
                  ]
                     ++ attributes
                 )
