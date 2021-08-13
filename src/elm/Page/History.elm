@@ -299,6 +299,9 @@ viewOrder shared model order =
 
         spellableOrderIdText =
             "Ordre-ID: " ++ SR.makeSpellable order.orderId
+
+        orderIdView =
+            SR.readAndView spellableOrderIdText orderIdText
     in
         Ui.Expandable.view
             { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
@@ -310,18 +313,25 @@ viewOrder shared model order =
             [ Ui.Section.viewPaddedItem
                 [ H.p [] [ H.text "Kjøpsinformasjon" ]
                 , H.div [ A.class "metadata-list" ]
-                    (if isRefunded then
-                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                        , H.div [] <| SR.readAndView spellableOrderIdText orderIdText
-                        , H.div [] [ H.text <| "Refundert" ]
-                        ]
+                    (case order.state of
+                        FareContractStateRefunded ->
+                            [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                            , H.div [] [ H.text orderIdView ]
+                            , H.div [] [ H.text "Refundert" ]
+                            ]
 
-                     else
-                        [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                        , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
-                        , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
-                        , H.div [] <| SR.readAndView spellableOrderIdText orderIdText
-                        ]
+                        FareContractStateCancelled ->
+                            [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                            , H.div [] [ H.text orderIdView ]
+                            , H.div [] [ H.text "Kansellert" ]
+                            ]
+
+                        _ ->
+                            [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                            , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
+                            , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
+                            , H.div [] [ H.text orderIdView ]
+                            ]
                     )
                 ]
             , Ui.Section.viewPaddedItem
