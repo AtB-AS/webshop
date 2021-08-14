@@ -79,12 +79,29 @@ app.ports.bodyClass.subscribe(function (className) {
     document.body.className = className;
 });
 
+// Check if we are running on the next release
+const isNext = location.hostname.indexOf('production--next-') !== -1;
+
+function getRemoteConfigString(key) {
+    // If we're on next, then try to fetch a next remote config property.
+    // Otherwise fall back to the default.
+    if (isNext) {
+        const value = remoteConfig.getValue(key + '_next');
+
+        if (value.getSource() !== 'static') {
+            return value.asString();
+        }
+    }
+
+    return remoteConfig.getString(key);
+}
+
 function fetchRemoteConfigData(port, key, prop) {
     if (!port) {
         return;
     }
 
-    const value = remoteConfig.getString(key);
+    const value = getRemoteConfigString(key);
 
     if (typeof value !== 'string' || value.length < 1) {
         return;
