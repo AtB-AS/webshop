@@ -64,7 +64,8 @@ travelCardValidator field toValue =
 phoneValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
 phoneValidator field toValue =
     Validate.firstError
-        [ Validate.ifFalse (\model -> String.startsWith "+" (toValue model)) ( field, "Telefonnummeret må inkludere landskode" )
+        [ Validate.ifBlank toValue ( field, "Telefonnummeret kan ikke være tomt." )
+        , Validate.ifFalse (\model -> String.startsWith "+" (toValue model)) ( field, "Telefonnummeret må inkludere landskode" )
         , Validate.ifNotInt (toValue >> String.replace "+" "") (\_ -> ( field, "Telefonnummeret kan kun bestå av siffer (med eventuell landskode)." ))
         ]
 
