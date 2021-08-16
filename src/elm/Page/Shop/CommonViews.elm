@@ -100,8 +100,7 @@ viewSummary shared model disableButtons onToSummaryClick maybeInfo =
                                 "Total:"
                                 [ H.p
                                     [ A.class "shop__summaryPrice"
-                                    , A.attribute "aria-live" "assertive"
-                                    , Attr.role "alert"
+                                    , A.attribute "aria-live" "polite"
                                     ]
                                     [ summary
                                         |> Maybe.map .totalPrice
