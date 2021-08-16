@@ -397,7 +397,7 @@ viewPhoneLogin model =
             [ H.div []
                 [ H.p []
                     [ H.text "Logg inn eller opprett en ny profil med engangskode på telefonen din."
-                    , SR.view " Brukere av skjermleser anbefales innlogging med e-post."
+                    , SR.onlyRead "Brukere av skjermleser anbefales innlogging med e-post."
                     ]
                 ]
             ]

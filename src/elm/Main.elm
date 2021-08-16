@@ -615,7 +615,7 @@ viewValidityWarning model =
                     , A.class "validityWarning__button"
                     , A.title "Fjern melding"
                     ]
-                    [ Icon.cross, Ui.ScreenReaderText.view "Fjern melding" ]
+                    [ Icon.cross, Ui.ScreenReaderText.onlyRead "Fjern melding" ]
                 ]
             ]
 

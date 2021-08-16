@@ -6,6 +6,7 @@ import Html.Attributes as A
 import Html.Attributes.Extra as Attr
 import Html.Events as E
 import Html.Extra
+import Html.Keyed as Keyed
 import Ui.Heading
 import Ui.TextContainer
 
@@ -50,33 +51,37 @@ view { open, onOpenClick, icon, id, title } children =
             id ++ "region"
     in
         Ui.TextContainer.primary
-            [ H.section
+            [ Keyed.node "section"
                 [ A.classList classList ]
-                [ H.h3 [ A.class "ui-expandable__header" ]
-                    [ H.button
-                        [ A.class "ui-expandable__headerButton"
-                        , A.attribute "aria-expanded" (boolAsString open)
-                        , A.attribute "aria-controls" regionId
-                        , A.id id
-                        , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
+                [ ( id ++ "header"
+                  , H.h3 [ A.class "ui-expandable__header" ]
+                        [ H.button
+                            [ A.class "ui-expandable__headerButton"
+                            , A.attribute "aria-expanded" (boolAsString open)
+                            , A.attribute "aria-controls" regionId
+                            , A.id id
+                            , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
+                            ]
+                            [ viewMaybe icon
+                            , H.span [ A.class "ui-expandable__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
+                            , H.span [ A.class "ui-expandable__headerButton__expandText" ] [ H.text expandText ]
+                            , chevronIcon
+                            ]
                         ]
-                        [ viewMaybe icon
-                        , H.span [ A.class "ui-expandable__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
-                        , H.span [ A.class "ui-expandable__headerButton__expandText" ] [ H.text expandText ]
-                        , chevronIcon
+                        |> viewItem
+                  )
+                , ( regionId ++ boolAsString open
+                  , H.div
+                        [ A.classList classListContent
+                        , A.attribute "aria-labelledby" id
+                        , Attr.role "region"
+                        , A.id regionId
+                        , Attr.attributeIf (not open) (A.attribute "inert" "true")
                         ]
-                    ]
-                    |> viewItem
-                , H.div
-                    [ A.classList classListContent
-                    , A.attribute "aria-labelledby" id
-                    , Attr.role "region"
-                    , A.id regionId
-                    , Attr.attributeIf (not open) (A.attribute "inert" "true")
-                    ]
-                    (children
-                        |> List.map viewItem
-                    )
+                        (children
+                            |> List.map viewItem
+                        )
+                  )
                 ]
             ]
 
