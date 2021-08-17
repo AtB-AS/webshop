@@ -316,13 +316,13 @@ viewOrder shared model order =
                     (case order.state of
                         FareContractStateRefunded ->
                             [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                            , H.div [] [ H.text orderIdView ]
+                            , H.div [] orderIdView
                             , H.div [] [ H.text "Refundert" ]
                             ]
 
                         FareContractStateCancelled ->
                             [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
-                            , H.div [] [ H.text orderIdView ]
+                            , H.div [] orderIdView
                             , H.div [] [ H.text "Kansellert" ]
                             ]
 
@@ -330,7 +330,7 @@ viewOrder shared model order =
                             [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
                             , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
                             , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
-                            , H.div [] [ H.text orderIdView ]
+                            , H.div [] orderIdView
                             ]
                     )
                 ]
