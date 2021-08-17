@@ -553,6 +553,10 @@ function handleAuthError(error) {
     }
 }
 
+function setCustomAuthError(message) {
+    app.ports.authError.send(message)
+}
+
 app.ports.loginPhone.subscribe((phone) => {
     if (!phone) {
         return;
@@ -611,20 +615,18 @@ app.ports.registerEmail.subscribe(async ({ email, password }) => {
             .fetchSignInMethodsForEmail(email);
 
         if (signInMethods.length > 0) {
-            return handleAuthError({
-                message:
-                    'Det er alt registrert en profil på denne e-postadressen. Prøv å logg inn.'
-            });
+            return setCustomAuthError(
+                'Det er alt registrert en profil på denne e-postadressen. Prøv å logg inn.'
+            );
         }
     } catch (e) {
         // Can just ignore if we don't find anything.
     }
 
     if (!checkEmailData.available) {
-        return handleAuthError({
-            message:
-                'Denne e-postadressen er registrert i systemet fra før. Kan det være du har logget inn med telefonnummer?'
-        });
+        return setCustomAuthError(
+            'Denne e-postadressen er registrert i systemet fra før. Kan det være du har logget inn med telefonnummer?'
+        );
     }
 
     firebase
