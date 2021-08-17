@@ -914,6 +914,12 @@ a.ui-button--link,
         margin-right: var(--spacings-medium);
     }
 }
+.ui-input-text--disabled {
+    cursor: not-allowed;
+}
+.ui-input-text--disabled > * {
+    opacity: 0.2;
+}
 .ui-input-text--bordered {
     border-color: var(--border-primary);
 }

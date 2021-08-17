@@ -540,7 +540,7 @@ view _ _ shared model _ =
                         |> PH.setTitle (Just "Oppsummering")
                         |> PH.setBackButton ( "Tilbake", CloseSummary )
                         |> PH.view
-                    , SummaryPage.view shared summaryModel
+                    , SummaryPage.view shared False summaryModel
                         |> H.map SummarySubMsg
                     ]
 
@@ -601,7 +601,7 @@ view _ _ shared model _ =
                                 }
                                 (viewStart model)
                             , Section.viewWithIcon Icon.map
-                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone ]
+                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone False ]
                             ]
                         , Common.viewSummary shared
                             model
