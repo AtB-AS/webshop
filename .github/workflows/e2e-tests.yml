@@ -1,12 +1,13 @@
 name: E2E-tests of webshop
 
 on:
-  # schedule:
+  schedule:
+    - cron:  '0 5 * * *'
   #  - cron:  '0 5,10,21 * * *'
   workflow_dispatch:
     inputs:
       videoRecording:
-        description: 'Record video of the tests'
+        description: 'Record video of the tests if any failures'
         required: true
         default: 'false'
       ticketPurchase:
@@ -52,7 +53,7 @@ jobs:
         #  CYPRESS_baseUrl: api.dev.local
         with:
           #config: video=${{ env.INPUT_VIDEO }}
-          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
           working-directory: e2e-tests
 
       - name: Create HTML report
@@ -79,7 +80,7 @@ jobs:
           retention-days: 3
           
       - name: Upload video recording
-        if: contains(env.INPUT_VIDEO, 'true')
+        if: failure() && contains(env.INPUT_VIDEO, 'true')
         uses: actions/upload-artifact@v2
         with:
           name: video-recording

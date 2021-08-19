@@ -28,7 +28,7 @@ describe('ticket history', () => {
         const traveller = 'Voksen';
         const zone = 'Sone A, Sone B1, Sone C1';
         const header = '09.07.2021 - 7-dagersbillett';
-        const timeOfPurchase = '09.07.2021 - 12:12';
+        const timeOfPurchase = getTimeOfPurchase()
         const price = '840,00';
         const paymentMethod = 'Vipps';
 
@@ -55,4 +55,14 @@ describe('ticket history', () => {
             history.ticketIsCollapsed($ticket, true);
         });
     });
+
+    //Different timezone on the host running GH Actions
+    function getTimeOfPurchase(){
+        if (Cypress.env('runOnGitHub')){
+            return '09.07.2021 - 10:12'
+        }
+        else {
+            return '09.07.2021 - 12:12'
+        }
+    }
 });

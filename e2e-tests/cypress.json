@@ -23,6 +23,8 @@
     "futureTicketStartMonth": "09",
     "futureTicketStartYear": "2021",
     "travelCardNo": "3445454533634685",
-    "travelCardAsDisplayed": "45 3363468"
+    "travelCardAsDisplayed": "45 3363468",
+
+    "runOnGitHub": false
   }
 }
