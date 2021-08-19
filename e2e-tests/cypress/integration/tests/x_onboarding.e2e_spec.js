@@ -112,6 +112,7 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
             cy.intercept('POST', '**/webshop/v1/travelcard').as(
                 'travelcardReq'
             );
+            cy.intercept('POST', '**/v1/token**').as('refreshToken');
 
             cy.visit('');
 
@@ -210,6 +211,8 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
             onboardingStep3.skipTravelCard();
 
             //Verify
+            cy.wait("@refreshToken").wait(500)
+            cy.reload()
             verify.verifyHeader('h2', 'Mine billetter');
             mytickets
                 .accountInfo()

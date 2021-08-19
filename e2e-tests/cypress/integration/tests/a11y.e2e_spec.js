@@ -3,7 +3,7 @@ import { menu, verify } from '../pageobjects/common.pageobject.js';
 import { mytickets } from '../pageobjects/mytickets.pageobject.js';
 import { myprofile } from '../pageobjects/myprofile.pageobject.js';
 import { history } from '../pageobjects/history.pageobject.js';
-import { newTicket, travelTime } from '../pageobjects/buyticket.pageobject.js';
+import { newTicket, options, products, traveller, travelTime } from '../pageobjects/buyticket.pageobject.js';
 
 /**
  * Accessibility checks using axe (https://github.com/dequelabs/axe-core)
@@ -114,29 +114,6 @@ describe('a11y check webshop my profile', () => {
         });
     });
 
-    it('my profile - change travel card', () => {
-        // Init
-        myprofile.travelCardOperation('remove');
-
-        menu.myProfile().click();
-        verify.verifyHeader('h2', 'Min profil');
-
-        //Check on hover
-        myprofile.addTravelCard().trigger('mouseover');
-        cy.injectAxe().then(() => {
-            cy.a11yCheck(null, null);
-        });
-
-        //Check on editing mode
-        myprofile.addTravelCard().click();
-        //TODO https://github.com/AtB-AS/webshop/issues/249
-        cy.a11yCheck(null, {
-            rules: {
-                'color-contrast': { enabled: false }
-            }
-        });
-    });
-
     it('my profile - change consent', () => {
         cy.intercept('POST', '**/webshop/v1/consent').as('consent');
 
@@ -208,12 +185,10 @@ describe('a11y check webshop buy ticket', () => {
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
-        newTicket.ticketCategoryDetails().then(($categoryDetails) => {
-            if (!$categoryDetails.hasClass('ui-group__content--open')) {
-                newTicket.ticketCategory().click();
-            }
-            newTicket.ticketProduct('30-dagersbillett').should('be.visible');
-        });
+        products.showOptions()
+        newTicket.productsSection().then($product => {
+            options.areVisible($product, true)
+        })
 
         cy.a11yCheck(null, null);
     });
@@ -222,12 +197,10 @@ describe('a11y check webshop buy ticket', () => {
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
-        newTicket.travellerDetails().then(($travellerDetails) => {
-            if (!$travellerDetails.hasClass('ui-group__content--open')) {
-                newTicket.travellers().click();
-            }
-            newTicket.traveller('Adult').should('be.visible');
-        });
+        traveller.showOptions()
+        newTicket.travellerSection().then($traveller => {
+            options.areVisible($traveller, true)
+        })
 
         cy.a11yCheck(null, null);
     });
@@ -237,16 +210,14 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
         //Check travel now
-        newTicket.travelTimeDetails().then(($travelTimeDetails) => {
-            if (!$travelTimeDetails.hasClass('ui-group__content--open')) {
-                newTicket.travelTime().click();
-            }
-            travelTime.now().should('be.visible');
-        });
+        travelTime.showOptions()
+        newTicket.travelTimeSection().then($traveller => {
+            options.areVisible($traveller, true)
+        })
         cy.a11yCheck(null, null);
 
         //Check travel in future
-        travelTime.inFuture().check({ force: true });
+        travelTime.inFuture().click();
         travelTime.date().should('be.visible');
         cy.a11yCheck(null, null);
 
@@ -259,10 +230,49 @@ describe('a11y check webshop buy ticket', () => {
         cy.a11yCheck(null, null);
     });
 
+    //Existing future ticket is starting at 12:00
+    it('period ticket - overlapping tickets warning', () => {
+        cy.intercept("**/ticket/v1/search/zones").as("zones")
+
+        const validFrom = Cypress.env('futureTicketStartYear') + "-" + Cypress.env('futureTicketStartMonth') + "-" + Cypress.env('futureTicketStartDay')
+
+        menu.buyPeriodTicket().click();
+        verify.verifyHeader('h2', 'Kjøp ny periodebillett');
+
+        //Change date to Cypress.env.futureTicketStartX
+        travelTime.showOptions()
+        travelTime.inFuture().click()
+        cy.wait("@zones")
+
+        travelTime.date().type(validFrom)
+        travelTime.time().type("23:00")
+
+        newTicket.warning()
+            .should("contain", "Du har allerede en billett i dette tidsrommet")
+
+        cy.a11yCheck(null, null);
+    })
+
+    it('period ticket - time validity error', () => {
+        cy.intercept("**/ticket/v1/search/zones").as("zones")
+
+        menu.buyPeriodTicket().click();
+        verify.verifyHeader('h2', 'Kjøp ny periodebillett');
+
+        travelTime.showOptions()
+        travelTime.inFuture().click()
+        cy.wait("@zones")
+
+        //Back in time
+        travelTime.time().type("00:00")
+        travelTime.validityError()
+            .should("contain", "Starttidspunkt kan ikke være før nåværende tid og dato")
+
+        cy.a11yCheck(null, null);
+    })
+
     it('period ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
-
-        myprofile.travelCardOperation('add');
 
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
@@ -272,8 +282,6 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Oppsummering');
 
         cy.a11yCheck(null, null);
-
-        myprofile.travelCardOperation('remove');
     });
 
     it('carnet ticket', () => {
@@ -287,20 +295,16 @@ describe('a11y check webshop buy ticket', () => {
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
 
-        newTicket.travellerDetails().then(($travellerDetails) => {
-            if (!$travellerDetails.hasClass('ui-group__content--open')) {
-                newTicket.travellers().click();
-            }
-            newTicket.traveller('Adult').should('be.visible');
-        });
+        traveller.showOptions()
+        newTicket.travellerSection().then($traveller => {
+            options.areVisible($traveller, true)
+        })
 
         cy.a11yCheck(null, null);
     });
 
     it('carnet ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
-
-        myprofile.travelCardOperation('add');
 
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
@@ -310,7 +314,5 @@ describe('a11y check webshop buy ticket', () => {
         verify.verifyHeader('h2', 'Oppsummering');
 
         cy.a11yCheck(null, null);
-
-        myprofile.travelCardOperation('remove');
     });
 });

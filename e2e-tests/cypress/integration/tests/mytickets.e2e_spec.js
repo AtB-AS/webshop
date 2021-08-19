@@ -2,6 +2,10 @@ import { menu, verify } from '../pageobjects/common.pageobject';
 import { mytickets } from '../pageobjects/mytickets.pageobject';
 import { myprofile } from '../pageobjects/myprofile.pageobject';
 
+/*
+ TravelCard for default user is 3445454533634693
+ */
+
 describe('account information', () => {
     beforeEach(function () {
         cy.visitMainAsAuthorized();
@@ -37,28 +41,6 @@ describe('account information', () => {
         mytickets.accountInfo().should('contain', phoneNumberFormatted);
     });
 
-    it('should be able to add travel card', () => {
-        const travelCardNo = '3445454533634636';
-        const travelCardAsDisplayed = '45 3363463';
-
-        cy.intercept('POST', '**/webshop/v1/travelcard').as('addTravelcard');
-
-        //Remove if exist
-        myprofile.travelCardOperation('remove');
-        menu.startPage().click();
-        mytickets.travelCard().should('not.exist');
-
-        //Add
-        mytickets.addTravelCard().click();
-        myprofile.travelCardInput().type(travelCardNo);
-        myprofile.saveValue();
-        cy.wait('@addTravelcard');
-        menu.startPage().click();
-
-        //Verify
-        mytickets.travelCard().should('contain', travelCardAsDisplayed);
-    });
-
     function randomNumbers(number) {
         let rand = '';
         for (let i = 0; i < number; i++) {
@@ -89,10 +71,10 @@ describe('ticket details', () => {
         cy.visitMainAsAuthorized();
     });
 
-    //** NOTE! Only valid until 31.08.2021 **
+    //** NOTE! Only valid until pre-set date **
     it('future ticket should be waiting and correct', () => {
         const order_id = 'HUCVIBHX';
-        const validFrom = '01.09.2021 - 12:00';
+        const validFrom = Cypress.env('futureTicketStartDay') + "." + Cypress.env('futureTicketStartMonth') + "." + Cypress.env('futureTicketStartYear') + " - 12:00"
         const header = 'Gyldig fra ' + validFrom;
         const type = '7-dagersbillett';
         const zones = 'Reise i 3 soner (Sone A til C1)';
@@ -129,6 +111,8 @@ describe('ticket details', () => {
                 .and('contain', payment)
                 .and('contain', 'Ordre-ID')
                 .and('contain', order_id);
+            mytickets.ticketReceipt($ticket)
+                .should("be.enabled")
         });
 
         //Hide details

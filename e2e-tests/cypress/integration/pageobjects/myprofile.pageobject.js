@@ -51,13 +51,17 @@ export const myprofile = {
         cy.wait('@profile');
     },
     addTravelCard: () => cy.get('button').contains('Legg til t:kort'),
+    removeTravelCard: () => {
+        cy.get('button').contains('Fjern t:kort').click()
+        cy.get('button.ui-editSection__fieldset__saveButton').contains('Fjern t:kort').click()
+    },
     travelCardInput: () => cy.get('input#tkort'),
 
     consent: () => cy.get('input#consent1186'),
 
     //remove or add
     travelCardOperation: (operation) => {
-        const travelCardNo = '3445454533634636';
+        const travelCardNo = Cypress.env('travelCardNo')
 
         cy.intercept('POST', '**/webshop/v1/travelcard').as('addTravelcard');
         cy.intercept('DELETE', '**/webshop/v1/travelcard').as(

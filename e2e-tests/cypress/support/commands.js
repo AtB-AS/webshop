@@ -133,6 +133,12 @@ Cypress.Commands.add(
         cy.get('h1.pageHeader__logo').click({force:true});
         cy.get('h2.ui-pageHeader__title').contains('Mine billetter');
         cy.get('h2.ui-pageHeader__title').should('contain', 'Mine billetter');
+        // Remove validity message to avoid covering elements
+        cy.get('body').then($body => {
+            if ($body.has("div.validityWarning").length){
+                cy.wrap($body).find('div.validityWarning').find('button').click()
+            }
+        })
     }
 );
 

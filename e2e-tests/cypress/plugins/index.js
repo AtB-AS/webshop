@@ -41,6 +41,7 @@ module.exports = async (on, config) => {
             return emailAccount.pass;
         },
         getLastEmail() {
+            //console.log("*** " + emailAccount.getLastEmail())
             return emailAccount.getLastEmail();
         }
     });
