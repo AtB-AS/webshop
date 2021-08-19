@@ -1,6 +1,7 @@
 export const menu = {
     openBurgerMenu: () => {
-        cy.get('button#burgermenu').click();
+        //TODO https://github.com/AtB-AS/webshop/issues/335
+        cy.get('button#burgermenu').click({force: true});
         cy.get('button#burgermenu').should(
             'have.class',
             'ui-hamburgerButton--open'
