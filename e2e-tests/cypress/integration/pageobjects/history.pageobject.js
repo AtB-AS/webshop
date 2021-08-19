@@ -7,7 +7,7 @@ export const history = {
         cy.get('.main').find('.ui-expandable__headerButton__title'),
     ticket: (order_id) =>
         cy
-            .get("button[id='ATB:FareContract:" + order_id + "'")
+            .get("button[id='ATB:FareContract:" + order_id + "']")
             .parents('section')
             .scrollIntoView(),
     ticketHeader: (ticket) =>
