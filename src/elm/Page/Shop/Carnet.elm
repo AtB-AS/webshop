@@ -315,6 +315,11 @@ view _ _ shared model _ =
                         |> PH.setBackButton ( "Avbryt", CloseShop )
                         |> PH.setBackIcon Icon.cross
                         |> PH.view
+                    , Section.init
+                        |> Section.setMarginBottom True
+                        |> Section.viewWithOptions
+                            [ Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
+                            ]
                     , Section.view
                         [ Message.messageWithOptions
                             { borderTop = True
@@ -324,10 +329,10 @@ view _ _ shared model _ =
                             }
                             (Message.Warning <|
                                 H.div []
-                                    [ H.text "I en overgangsperiode er klippekort kun for deg som reiser langs "
-                                    , H.strong [] [ H.text "metrobusslinjer sone A" ]
-                                    , H.text " og kan starte reisen din ved en kortleser på holdeplass. Les mer her: "
-                                    , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "https://www.atb.no/vi-oppgraderer/" ]
+                                    [ H.text "I en periode er klippekort kun for deg som kan lese av t:kort på en kortleser når du reiser til, fra eller via en metrostasjon i "
+                                    , H.strong [] [ H.text "sone A" ]
+                                    , H.text ". Les mer på "
+                                    , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "atb.no/vi-oppgraderer" ]
                                     ]
                             )
                         ]

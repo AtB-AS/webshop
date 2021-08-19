@@ -133,7 +133,12 @@ view shared isCarnet model =
             makeSummary model.query model.offers shared
     in
         H.div []
-            [ if isCarnet then
+            [ Section.init
+                |> Section.setMarginBottom True
+                |> Section.viewWithOptions
+                    [ Ui.Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
+                    ]
+            , if isCarnet then
                 Section.view
                     [ Ui.Message.messageWithOptions
                         { borderTop = True
@@ -143,20 +148,16 @@ view shared isCarnet model =
                         }
                         (Ui.Message.Warning <|
                             H.div []
-                                [ H.text "I en overgangsperiode er klippekort kun for deg som reiser langs "
-                                , H.strong [] [ H.text "metrobusslinjer sone A" ]
-                                , H.text " og kan starte reisen din ved en kortleser på holdeplass. Les mer her: "
-                                , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "https://www.atb.no/vi-oppgraderer/" ]
+                                [ H.text "I en periode er klippekort kun for deg som kan lese av t:kort på en kortleser når du reiser til, fra eller via en metrostasjon i "
+                                , H.strong [] [ H.text "sone A" ]
+                                , H.text ". Les mer på "
+                                , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "atb.no/vi-oppgraderer" ]
                                 ]
                         )
                     ]
 
               else
-                Section.init
-                    |> Section.setMarginBottom True
-                    |> Section.viewWithOptions
-                        [ Ui.Message.info "I en overgangsperiode kan du oppleve at kortlesere på metrobussholdeplass og i regionbuss avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved billettkontroll vil avlesing av t:kort fungere!"
-                        ]
+                H.text ""
             , H.div [ A.class "page page--threeColumns" ]
                 [ viewTicketSection summary
                 , viewPriceSection summary
