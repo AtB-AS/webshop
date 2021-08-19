@@ -74,7 +74,6 @@ describe('ticket details', () => {
     //** NOTE! Only valid until pre-set date **
     it('future ticket should be waiting and correct', () => {
         const order_id = 'HUCVIBHX';
-        //const validFrom = Cypress.env('futureTicketStartDay') + "." + Cypress.env('futureTicketStartMonth') + "." + Cypress.env('futureTicketStartYear') + " - 12:00"
         const validFrom = getValidFrom()
         const header = 'Gyldig fra ' + validFrom;
         const type = '7-dagersbillett';
@@ -202,6 +201,7 @@ describe('ticket details', () => {
         });
     }
 
+    //Different timezone on the host running GH Actions
     function getValidFrom(){
         if (Cypress.env('runOnGitHub')){
             return Cypress.env('futureTicketStartDay') + "." + Cypress.env('futureTicketStartMonth') + "." + Cypress.env('futureTicketStartYear') + " - 10:00"

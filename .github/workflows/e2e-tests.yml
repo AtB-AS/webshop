@@ -1,7 +1,8 @@
 name: E2E-tests of webshop
 
 on:
-  # schedule:
+  schedule:
+    - cron:  '0 5 * * *'
   #  - cron:  '0 5,10,21 * * *'
   workflow_dispatch:
     inputs:
@@ -52,7 +53,7 @@ jobs:
         #  CYPRESS_baseUrl: api.dev.local
         with:
           #config: video=${{ env.INPUT_VIDEO }}
-          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --spec cypress/integration/tests/history.e2e_spec.js,cypress/integration/tests/mytickets.e2e_spec.js
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
           working-directory: e2e-tests
 
       - name: Create HTML report
