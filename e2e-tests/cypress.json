@@ -14,8 +14,15 @@
     "a11yTags": ["wcag2a", "wcag2aa"],
     "a11ySkipFailures": false,
     "email": "tor.moseng+test200@gmail.com",
+    "email_noTravelCard": "tor.moseng+test201@gmail.com",
     "password": "qwer1234",
     "withBuyTicket": false,
-    "buyTicketTimeout": 600000
+    "buyTicketTimeout": 600000,
+
+    "futureTicketStartDay": "01",
+    "futureTicketStartMonth": "09",
+    "futureTicketStartYear": "2021",
+    "travelCardNo": "3445454533634685",
+    "travelCardAsDisplayed": "45 3363468"
   }
 }

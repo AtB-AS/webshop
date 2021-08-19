@@ -11,14 +11,16 @@ export const mytickets = {
             .get('.ui-ticketDetails')
             .find('button#' + order_id, { timeout: timeoutValue })
             .should('have.id', order_id),
-    showDetails: (tickets) => cy.wrap(tickets).find('button').click(),
-    hideDetails: (tickets) => cy.wrap(tickets).find('button').click(),
+    showDetails: (tickets) => cy.wrap(tickets).find('button.ui-ticketDetails__headerButton').click(),
+    hideDetails: (tickets) => cy.wrap(tickets).find('button.ui-ticketDetails__headerButton').click(),
     ticketHeader: (ticket) =>
         cy.wrap(ticket).find('.ui-ticketDetails__headerButton__title'),
     ticketSummary: (ticket) =>
         cy.wrap(ticket).find('.ui-ticketDetails__metaDataitem'),
     ticketDetails: (ticket) =>
         cy.wrap(ticket).find('.ui-ticketDetails__content'),
+    ticketReceipt: (ticket) =>
+        cy.wrap(ticket).find('.ui-ticketDetails__content').find("button").contains("Be om kvittering på e-post").parent("button"),
     ticketIconIsWaiting: (ticket) => {
         cy.wrap(ticket)
             .find('.ui-ticketDetails__headerButton__icon')
