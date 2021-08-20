@@ -15,6 +15,8 @@ export const mytickets = {
     hideDetails: (tickets) => cy.wrap(tickets).find('button.ui-ticketDetails__headerButton').click(),
     ticketHeader: (ticket) =>
         cy.wrap(ticket).find('.ui-ticketDetails__headerButton__title'),
+    carnetTicketHeader: (ticket) =>
+        cy.wrap(ticket).find('.ui-ticketDetails__headerButton__title--carnet'),
     ticketSummary: (ticket) =>
         cy.wrap(ticket).find('.ui-ticketDetails__metaDataitem'),
     ticketDetails: (ticket) =>
@@ -24,18 +26,20 @@ export const mytickets = {
     ticketIconIsWaiting: (ticket) => {
         cy.wrap(ticket)
             .find('.ui-ticketDetails__headerButton__icon')
-            .find('path')
-            .each(($path, index, $paths) => {
-                expect($path).to.have.attr('fill', '#007C92');
-            });
+            .find("title")
+            .should("contain", "Venter på billett")
+    },
+    carnetTicketIconIsCorrect: (ticket) => {
+        cy.wrap(ticket)
+            .find('.ui-ticketDetails__headerButton__icon')
+            .find("title")
+            .should("contain", "Billetter")
     },
     ticketIconIsValid: (ticket) => {
         cy.wrap(ticket)
             .find('.ui-ticketDetails__headerButton__icon')
-            .find('path')
-            .each(($path, index, $paths) => {
-                expect($path).to.have.attr('fill', '#A2AD00');
-            });
+            .find("title")
+            .should("contain", "Gyldig billett")
     },
     ticketIsCollapsed: (ticket, isCollapsed) => {
         if (isCollapsed) {

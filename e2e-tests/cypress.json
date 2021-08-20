@@ -19,8 +19,9 @@
     "withBuyTicket": false,
     "buyTicketTimeout": 600000,
 
-    "futureTicketStartDay": "01",
-    "futureTicketStartMonth": "09",
+    "futureTicketOrderId": "HUCVIBHX",
+    "futureTicketStartDay": "1",
+    "futureTicketStartMonth": "9",
     "futureTicketStartYear": "2021",
     "travelCardNo": "3445454533634685",
     "travelCardAsDisplayed": "45 3363468",
