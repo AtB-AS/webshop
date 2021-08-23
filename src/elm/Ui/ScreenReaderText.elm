@@ -21,4 +21,4 @@ readAndView readText viewText =
 
 makeSpellable : String -> String
 makeSpellable text =
-    String.join ", " <| String.split "" text
+    String.join ", " (String.split "" text) ++ ","
