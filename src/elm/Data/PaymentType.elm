@@ -1,8 +1,10 @@
 module Data.PaymentType exposing
     ( PaymentCard(..)
+    , PaymentSelection(..)
     , PaymentType(..)
     , format
     , fromEntur
+    , fromInt
     , fromString
     , toInt
     , toString
@@ -18,6 +20,11 @@ type PaymentCard
 type PaymentType
     = Nets PaymentCard
     | Vipps
+
+
+type PaymentSelection
+    = New PaymentType
+    | Recurring Int
 
 
 {-| Parse payment type ids coming from Entur's API.
@@ -106,3 +113,22 @@ toInt paymentType =
 
         Vipps ->
             2
+
+
+fromInt : Int -> Maybe PaymentType
+fromInt paymentType =
+    case paymentType of
+        3 ->
+            Just <| Nets Visa
+
+        4 ->
+            Just <| Nets MasterCard
+
+        5 ->
+            Just <| Nets AmericanExpress
+
+        2 ->
+            Just Vipps
+
+        _ ->
+            Nothing

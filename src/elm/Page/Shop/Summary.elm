@@ -1,8 +1,8 @@
 module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, init, makeSummary, subscriptions, update, view)
 
-import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentType(..))
+import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
-import Data.Ticket exposing (Offer, Reservation)
+import Data.Ticket exposing (Offer, RecurringPayment, Reservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
@@ -22,17 +22,20 @@ import Time
 import Ui.Button as B exposing (ThemeColor(..))
 import Ui.Input.Radio as Radio
 import Ui.LabelItem as LabelItem
+import Ui.LoadingText
 import Ui.Message
 import Ui.Section as Section
 import Util.Format
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
+import Util.Time exposing (isoStringToMonthAndYear)
 
 
 type Msg
     = BuyOffers
     | ReceiveBuyOffers (Result Http.Error Reservation)
-    | SetPaymentType PaymentType
+    | ReceiveRecurringPayments (Result Http.Error (List RecurringPayment))
+    | SetPaymentSelection PaymentSelection
 
 
 type alias TravellerData =
@@ -66,18 +69,22 @@ type alias OffersQuery =
 type alias Model =
     { offers : List Offer
     , query : OffersQuery
-    , paymentType : PaymentType
+    , paymentSelection : PaymentSelection
     , reservation : Status Reservation
+    , recurringPayments : Status (List RecurringPayment)
     }
 
 
-init : OffersQuery -> List Offer -> Model
-init query offers =
-    { offers = offers
-    , query = query
-    , paymentType = Vipps
-    , reservation = NotLoaded
-    }
+init : Environment -> OffersQuery -> List Offer -> ( Model, Cmd Msg )
+init env query offers =
+    ( { offers = offers
+      , query = query
+      , paymentSelection = New Vipps
+      , reservation = NotLoaded
+      , recurringPayments = Loading Nothing
+      }
+    , getRecurringPayments env
+    )
 
 
 update : Msg -> Environment -> Model -> Shared -> PageUpdater Model Msg
@@ -103,16 +110,13 @@ update msg env model shared =
                 in
                     PageUpdater.fromPair
                         ( { model | reservation = Loading Nothing }
-                        , buyOffers env phone model.paymentType offerCounts
+                        , buyOffers env phone model.paymentSelection offerCounts
                         )
 
             ReceiveBuyOffers result ->
                 case result of
                     Ok reservation ->
-                        PageUpdater.fromPair
-                            ( { model | reservation = Loaded reservation }
-                            , MiscService.navigateTo reservation.url
-                            )
+                        PageUpdater.fromPair ( model, MiscService.navigateTo reservation.url )
 
                     Err _ ->
                         let
@@ -122,8 +126,21 @@ update msg env model shared =
                             PageUpdater.init { model | reservation = Failed errorMessage }
                                 |> addGlobalNotification (Ui.Message.Error <| H.text errorMessage)
 
-            SetPaymentType paymentType ->
-                PageUpdater.init { model | paymentType = paymentType }
+            SetPaymentSelection paymentSelection ->
+                PageUpdater.init { model | paymentSelection = paymentSelection }
+
+            ReceiveRecurringPayments result ->
+                case result of
+                    Ok recurringPayments ->
+                        PageUpdater.init
+                            { model | recurringPayments = Loaded recurringPayments }
+
+                    Err _ ->
+                        let
+                            errorMessage =
+                                "Fikk ikke hentet lagrede betalingskort."
+                        in
+                            PageUpdater.init { model | recurringPayments = Failed errorMessage }
 
 
 view : Shared -> Bool -> Model -> Html Msg
@@ -293,23 +310,10 @@ viewPaymentSection model shared =
 
                 _ ->
                     False
-
-        paymentTypes =
-            [ Vipps
-            , Nets Visa
-            , Nets MasterCard
-            , Nets AmericanExpress
-            ]
     in
         Section.view
             [ Section.viewHeader "Betaling"
-            , paymentTypes
-                |> List.filter
-                    (\paymentType ->
-                        List.member paymentType shared.paymentTypes
-                    )
-                |> List.map (paymentTypeRadio model)
-                |> Radio.viewLabelGroup "Betalingsmetode"
+            , paymentRadioGroup model shared
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
             , B.init "Gå til betaling"
@@ -320,21 +324,88 @@ viewPaymentSection model shared =
             ]
 
 
+paymentRadioGroup : Model -> Shared -> Html Msg
+paymentRadioGroup model shared =
+    case model.recurringPayments of
+        Loading _ ->
+            Section.viewPaddedItem [ Ui.LoadingText.view "1rem" "5rem" ]
+
+        Loaded recurringPayments ->
+            H.div []
+                [ recurringPaymentsRadioGroup model recurringPayments
+                , paymentTypesRadioGroup model shared
+                ]
+
+        _ ->
+            paymentTypesRadioGroup model shared
+
+
+paymentTypesRadioGroup : Model -> Shared -> Html Msg
+paymentTypesRadioGroup model shared =
+    let
+        paymentTypes =
+            [ Vipps
+            , Nets Visa
+            , Nets MasterCard
+            , Nets AmericanExpress
+            ]
+    in
+        paymentTypes
+            |> List.filter
+                (\paymentType ->
+                    List.member paymentType shared.paymentTypes
+                )
+            |> List.map (paymentTypeRadio model)
+            |> Radio.viewLabelGroup "Betalingsmetode"
+
+
 paymentTypeRadio : Model -> PaymentType -> Html Msg
 paymentTypeRadio model paymentType =
     Radio.init (PaymentType.toString paymentType)
         |> Radio.setTitle (PaymentType.format paymentType)
         |> Radio.setName "paymentType"
-        |> Radio.setChecked (model.paymentType == paymentType)
-        |> Radio.setOnCheck (Just <| \_ -> SetPaymentType paymentType)
+        |> Radio.setChecked (model.paymentSelection == New paymentType)
+        |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| New paymentType)
         |> Radio.view
+
+
+recurringPaymentsRadioGroup : Model -> List RecurringPayment -> Html Msg
+recurringPaymentsRadioGroup model recurringPayments =
+    recurringPayments
+        |> List.map (recurringPaymentRadio model)
+        |> Radio.viewLabelGroup "Lagrede kort"
+
+
+recurringPaymentRadio : Model -> RecurringPayment -> Html Msg
+recurringPaymentRadio model recurringPayment =
+    let
+        id =
+            recurringPayment.id
+
+        title =
+            PaymentType.format recurringPayment.paymentType
+                ++ " som slutter på "
+                ++ recurringPayment.maskedPan
+
+        expireString =
+            recurringPayment.expiresAt
+                |> isoStringToMonthAndYear model.query.timeZone
+                |> Maybe.map (String.append "Utløpsdato ")
+    in
+        Radio.init (String.fromInt id)
+            |> Radio.setTitle title
+            |> Radio.setSubtitle expireString
+            |> Radio.setName "paymentType"
+            |> Radio.setChecked (model.paymentSelection == Recurring id)
+            |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| Recurring id)
+            |> Radio.view
 
 
 maybeVippsNotice : Model -> Shared -> Html Msg
 maybeVippsNotice model shared =
     let
         isVipps =
-            model.paymentType == Vipps
+            model.paymentSelection == New Vipps
 
         phone =
             shared.profile
@@ -485,9 +556,16 @@ vatAmount price shared =
 -- IO
 
 
-buyOffers : Environment -> Maybe String -> PaymentType -> List ( String, Int ) -> Cmd Msg
-buyOffers env phone paymentType offerCounts =
+buyOffers : Environment -> Maybe String -> PaymentSelection -> List ( String, Int ) -> Cmd Msg
+buyOffers env phone paymentSelection offerCounts =
     offerCounts
-        |> TicketService.reserve env phone paymentType
+        |> TicketService.reserve env phone paymentSelection
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
+
+
+getRecurringPayments : Environment -> Cmd Msg
+getRecurringPayments env =
+    TicketService.getRecurringPayments env
+        |> Http.toTask
+        |> Task.attempt ReceiveRecurringPayments

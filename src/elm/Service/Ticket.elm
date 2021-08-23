@@ -1,13 +1,14 @@
 module Service.Ticket exposing
     ( getPaymentStatus
+    , getRecurringPayments
     , receipt
     , reserve
     , search
     )
 
-import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentType(..))
+import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (UserType(..))
-import Data.Ticket exposing (Offer, PaymentStatus, Price, Reservation)
+import Data.Ticket exposing (Offer, PaymentStatus, Price, RecurringPayment, Reservation)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -44,8 +45,8 @@ search env travelDate product travellers zones =
 
 {-| Reserve offers.
 -}
-reserve : Environment -> Maybe String -> PaymentType -> List ( String, Int ) -> Http.Request Reservation
-reserve env phoneNumber paymentType offers =
+reserve : Environment -> Maybe String -> PaymentSelection -> List ( String, Int ) -> Http.Request Reservation
+reserve env phoneNumber paymentSelection offers =
     let
         url =
             Url.Builder.crossOrigin env.ticketUrl
@@ -54,7 +55,7 @@ reserve env phoneNumber paymentType offers =
 
         body =
             [ ( "offers", Encode.list encodeOffer offers )
-            , ( "payment_type", encodePaymentType paymentType )
+            , encodePaymentSelection paymentSelection
             , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
             ]
                 ++ (case phoneNumber of
@@ -100,6 +101,17 @@ getPaymentStatus env paymentId =
                 []
     in
         HttpUtil.get env url (Http.expectJson paymentStatusDecoder)
+
+
+getRecurringPayments : Environment -> Http.Request (List RecurringPayment)
+getRecurringPayments env =
+    let
+        url =
+            Url.Builder.crossOrigin env.ticketUrl
+                [ "ticket", "v2", "recurring-payments" ]
+                []
+    in
+        HttpUtil.get env url (Http.expectJson (Decode.list recurringPaymentDecoder))
 
 
 
@@ -253,3 +265,37 @@ reservationDecoder =
 encodePaymentType : PaymentType -> Value
 encodePaymentType =
     PaymentType.toInt >> Encode.int
+
+
+decodePaymentType : Decoder PaymentType
+decodePaymentType =
+    Decode.int
+        |> Decode.map PaymentType.fromInt
+        |> Decode.andThen
+            (\maybePaymentType ->
+                case maybePaymentType of
+                    Just paymentType ->
+                        Decode.succeed paymentType
+
+                    Nothing ->
+                        Decode.fail "Invalid payment type"
+            )
+
+
+encodePaymentSelection : PaymentSelection -> ( String, Value )
+encodePaymentSelection paymentSelection =
+    case paymentSelection of
+        New paymentType ->
+            ( "payment_type", encodePaymentType paymentType )
+
+        Recurring id ->
+            ( "recurring_payment_id", Encode.int id )
+
+
+recurringPaymentDecoder : Decoder RecurringPayment
+recurringPaymentDecoder =
+    Decode.succeed RecurringPayment
+        |> DecodeP.required "id" Decode.int
+        |> DecodeP.required "payment_type" decodePaymentType
+        |> DecodeP.required "masked_pan" Decode.string
+        |> DecodeP.required "expires_at" Decode.string

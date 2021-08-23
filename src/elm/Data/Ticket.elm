@@ -2,11 +2,13 @@ module Data.Ticket exposing
     ( Offer
     , PaymentStatus
     , Price
+    , RecurringPayment
     , Reservation
     , ReservationStatus(..)
     , Ticket
     )
 
+import Data.PaymentType exposing (PaymentType)
 import Data.RefData exposing (UserType)
 
 
@@ -55,4 +57,12 @@ type alias PaymentStatus =
     { orderId : String
     , status : String
     , paymentType : String
+    }
+
+
+type alias RecurringPayment =
+    { id : Int
+    , paymentType : PaymentType
+    , maskedPan : String
+    , expiresAt : String
     }
