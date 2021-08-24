@@ -20,6 +20,7 @@ jobs:
               env:
                   WEBSHOP_BASE_URL: ${{ secrets.BASE_URL_STAGING }}
                   WEBSHOP_FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_STAGING }}
+                  INTERCOM_ENABLED: ${{ secrets.INTERCOM_ENABLED }}
             - uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: '${{ secrets.GITHUB_TOKEN }}'
