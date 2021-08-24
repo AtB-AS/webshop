@@ -33,6 +33,7 @@ describe('missing travelcard scenarios', () => {
                 'color-contrast': { enabled: false }
             }
         });
+        myprofile.cancel()
     });
 
     it('period ticket - summary should be disabled for non existing travel card', () => {
@@ -53,7 +54,8 @@ describe('missing travelcard scenarios', () => {
         newTicket.goToSummaryButton().should("have.class", "ui-button--disabled")
     })
 
-    it('account information - should be able to add travel card', () => {
+    //TODO Disabled due to problems when changing travelcards (each travelcard is represented as a GUID that is not checked, i.e. multiple travelcards will exist on the accound)
+    xit('account information - should be able to add travel card', () => {
         const travelCardNo = Cypress.env('travelCardNo')
         const travelCardAsDisplayed = Cypress.env('travelCardAsDisplayed')
 
