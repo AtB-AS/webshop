@@ -23,7 +23,7 @@ type PaymentType
 
 
 type PaymentSelection
-    = New PaymentType
+    = NonRecurring PaymentType
     | Recurring Int
 
 

@@ -28,7 +28,7 @@ import Ui.Section as Section
 import Util.Format
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
-import Util.Time exposing (isoStringToMonthAndYear)
+import Util.Time as TimeUtil
 
 
 type Msg
@@ -79,7 +79,7 @@ init : Environment -> OffersQuery -> List Offer -> ( Model, Cmd Msg )
 init env query offers =
     ( { offers = offers
       , query = query
-      , paymentSelection = New Vipps
+      , paymentSelection = NonRecurring Vipps
       , reservation = NotLoaded
       , recurringPayments = Loading Nothing
       }
@@ -131,9 +131,22 @@ update msg env model shared =
 
             ReceiveRecurringPayments result ->
                 case result of
-                    Ok recurringPayments ->
+                    Ok [] ->
                         PageUpdater.init
-                            { model | recurringPayments = Loaded recurringPayments }
+                            { model | recurringPayments = Loaded [] }
+
+                    Ok (head :: tail) ->
+                        PageUpdater.init
+                            { model
+                                | paymentSelection =
+                                    case model.recurringPayments of
+                                        Loading _ ->
+                                            Recurring head.id
+
+                                        _ ->
+                                            model.paymentSelection
+                                , recurringPayments = Loaded (head :: tail)
+                            }
 
                     Err _ ->
                         let
@@ -364,8 +377,8 @@ paymentTypeRadio model paymentType =
     Radio.init (PaymentType.toString paymentType)
         |> Radio.setTitle (PaymentType.format paymentType)
         |> Radio.setName "paymentType"
-        |> Radio.setChecked (model.paymentSelection == New paymentType)
-        |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| New paymentType)
+        |> Radio.setChecked (model.paymentSelection == NonRecurring paymentType)
+        |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| NonRecurring paymentType)
         |> Radio.view
 
 
@@ -389,7 +402,7 @@ recurringPaymentRadio model recurringPayment =
 
         expireString =
             recurringPayment.expiresAt
-                |> isoStringToMonthAndYear model.query.timeZone
+                |> TimeUtil.isoStringToMonthAndYear model.query.timeZone
                 |> Maybe.map (String.append "Utløpsdato ")
     in
         Radio.init (String.fromInt id)
@@ -405,7 +418,7 @@ maybeVippsNotice : Model -> Shared -> Html Msg
 maybeVippsNotice model shared =
     let
         isVipps =
-            model.paymentSelection == New Vipps
+            model.paymentSelection == NonRecurring Vipps
 
         phone =
             shared.profile

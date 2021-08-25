@@ -285,7 +285,7 @@ decodePaymentType =
 encodePaymentSelection : PaymentSelection -> ( String, Value )
 encodePaymentSelection paymentSelection =
     case paymentSelection of
-        New paymentType ->
+        NonRecurring paymentType ->
             ( "payment_type", encodePaymentType paymentType )
 
         Recurring id ->
