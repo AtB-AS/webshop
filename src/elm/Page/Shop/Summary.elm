@@ -135,17 +135,18 @@ update msg env model shared =
                         PageUpdater.init
                             { model | recurringPayments = Loaded [] }
 
-                    Ok (head :: tail) ->
+                    Ok (firstRecurringPayment :: restOfRecurringPayments) ->
                         PageUpdater.init
                             { model
                                 | paymentSelection =
                                     case model.recurringPayments of
                                         Loading _ ->
-                                            Recurring head.id
+                                            Recurring firstRecurringPayment.id
 
                                         _ ->
                                             model.paymentSelection
-                                , recurringPayments = Loaded (head :: tail)
+                                , recurringPayments =
+                                    Loaded (firstRecurringPayment :: restOfRecurringPayments)
                             }
 
                     Err _ ->
