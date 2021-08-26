@@ -724,7 +724,8 @@ if (intercomEnabled) {
     // Intercom integration
     const baseSettings = {
         'AtB-Install-Id': installId,
-        'AtB-Build-Number': elmFlags.commit
+        'AtB-Build-Number': elmFlags.commit,
+        'hide_default_launcher': false,
     };
 
     firebase.auth().onAuthStateChanged((user) => {
