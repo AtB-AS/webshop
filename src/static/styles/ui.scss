@@ -634,6 +634,19 @@
 .ui-input-radio__subtitle {
     display: block;
 }
+.ui-input-radio__icon {
+    padding-left: var(--spacings-medium);
+
+    svg,
+    path {
+        fill: currentColor;
+    }
+
+    svg, img {
+        width: var(--icon-size-normal);
+        height: var(--icon-size-normal);
+    }
+}
 
 .ui-input-radioGroup {
     border: 0;
@@ -837,8 +850,9 @@ a.ui-button--link,
         fill: currentColor;
     }
 
-    svg {
+    svg, img {
         width: var(--ws-icon-size-xLarge);
+        height: var(--ws-icon-size-xLarge);
     }
 }
 .ui-editSection__editButton {

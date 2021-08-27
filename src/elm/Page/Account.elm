@@ -2,7 +2,9 @@ module Page.Account exposing (EditSection(..), Model, Msg(..), init, setEditSect
 
 import Base exposing (AppInfo)
 import Browser.Dom as Dom
+import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentType(..))
 import Data.RefData exposing (Consent)
+import Data.Ticket exposing (RecurringPayment)
 import Data.Webshop exposing (GivenConsent)
 import Dict exposing (Dict)
 import Environment exposing (Environment)
@@ -18,22 +20,28 @@ import PageUpdater exposing (PageUpdater)
 import Route exposing (Route)
 import Service.FirebaseAuth as FirebaseAuth
 import Service.Misc as MiscService exposing (Profile, SignInMethod, SignInProvider(..))
+import Service.Ticket as TicketService
 import Service.Webshop as WebshopService
 import Shared exposing (Shared)
 import Task
+import Time
 import Ui.Button as B
 import Ui.InlineButtonLink
 import Ui.Input.Checkbox as Checkbox
 import Ui.Input.EditSection as EditSection
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as Text
+import Ui.LoadingText
 import Ui.Message as Message
 import Ui.Section
+import Ui.TextContainer as Text
 import Ui.TravelCardText
 import Url.Builder as Url
 import Util.Maybe as MaybeUtil
 import Util.PhoneNumber
+import Util.Status exposing (Status(..))
 import Util.Task as TaskUtil
+import Util.Time as TimeUtil
 import Util.TravelCard
 import Util.Validation as Validation exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
@@ -44,6 +52,7 @@ type EditSection
     | NameSection
     | EmailSection
     | PhoneSection
+    | RecurringPaymentSection Int
 
 
 type FieldName
@@ -54,6 +63,7 @@ type FieldName
     | LastName
     | NameFields
     | Consent
+    | RecurringPayment Int
 
 
 type Msg
@@ -85,6 +95,11 @@ type Msg
     | ReceiveUpdateConsent Int (Result Http.Error GivenConsent)
     | FetchConsents
     | ReceiveConsents (Result Http.Error (List GivenConsent))
+    | GetRecurringPayments
+    | ReceiveRecurringPayments (Result Http.Error (List RecurringPayment))
+    | EndRecurringPayment RecurringPayment
+    | ReceiveEndRecurringPayment RecurringPayment (Result Http.Error ())
+    | UpdateZone Time.Zone
 
 
 type alias Model =
@@ -100,6 +115,8 @@ type alias Model =
     , editSection : Maybe EditSection
     , loadingEditSection : Maybe EditSection
     , validationErrors : ValidationErrors FieldName
+    , recurringPayments : Status (List RecurringPayment)
+    , timeZone : Time.Zone
     }
 
 
@@ -117,8 +134,10 @@ init =
       , editSection = Nothing
       , loadingEditSection = Nothing
       , validationErrors = []
+      , recurringPayments = NotLoaded
+      , timeZone = Time.utc
       }
-    , Cmd.none
+    , Task.perform UpdateZone Time.here
     )
 
 
@@ -127,6 +146,7 @@ update msg env model =
     case msg of
         OnEnterPage ->
             PageUpdater.fromPair ( model, TaskUtil.doTask FetchConsents )
+                |> PageUpdater.addCmd (TaskUtil.doTask GetRecurringPayments)
                 |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Min profil")
                 |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
@@ -414,6 +434,66 @@ update msg env model =
                             |> addValidationError Consent "Fikk ikke til å lagre samtykke."
                             |> PageUpdater.init
 
+        GetRecurringPayments ->
+            PageUpdater.fromPair ( model, getRecurringPayments env )
+
+        ReceiveRecurringPayments result ->
+            case result of
+                Ok recurringPayments ->
+                    PageUpdater.init
+                        { model | recurringPayments = Loaded recurringPayments }
+
+                Err _ ->
+                    -- TODO: There is an issue with this call being made two times when a user
+                    -- refreshes and thus we can't handle this properly currently. A refactor of
+                    -- the way we handle user data and tokens will fix this.
+                    let
+                        errorMessage =
+                            "Fikk ikke hentet lagrede betalingskort."
+                    in
+                        PageUpdater.init { model | recurringPayments = Failed errorMessage }
+
+        EndRecurringPayment recurringPayment ->
+            PageUpdater.fromPair
+                ( { model
+                    | loadingEditSection = Just <| RecurringPaymentSection recurringPayment.id
+                    , validationErrors = Validation.remove (RecurringPayment recurringPayment.id) model.validationErrors
+                  }
+                , endRecurringPayment env recurringPayment
+                )
+
+        ReceiveEndRecurringPayment recurringPayment result ->
+            let
+                id =
+                    recurringPayment.id
+
+                notificationText =
+                    "Betalingskort " ++ recurringPaymentTitle recurringPayment ++ " ble fjernet."
+
+                newModel =
+                    { model | loadingEditSection = Nothing }
+            in
+                case ( result, model.recurringPayments ) of
+                    ( Ok _, Loaded recurringPayments ) ->
+                        { newModel
+                            | editSection = Nothing
+                            , recurringPayments = Loaded (List.filter (.id >> (/=) id) recurringPayments)
+                        }
+                            |> PageUpdater.init
+                            |> PageUpdater.addGlobalAction
+                                (Message.valid notificationText
+                                    |> (\s -> Notification.setContent s Notification.init)
+                                    |> GA.ShowNotification
+                                )
+
+                    ( _, _ ) ->
+                        newModel
+                            |> addValidationError (RecurringPayment id) "Fikk ikke til å fjerne betalingskortet."
+                            |> PageUpdater.init
+
+        UpdateZone zone ->
+            PageUpdater.init { model | timeZone = zone }
+
 
 addValidationError : FieldName -> String -> Model -> Model
 addValidationError field error model =
@@ -508,6 +588,7 @@ viewMain model shared =
                 Just profile ->
                     [ viewProfile model profile
                     , viewSignIn model profile
+                    , viewRecurringPayments model
                     , viewTravelCard model profile
                     , viewPrivacy model shared
                     ]
@@ -893,6 +974,80 @@ viewConsent model consent =
             )
 
 
+viewRecurringPayments : Model -> Html Msg
+viewRecurringPayments model =
+    Ui.Section.viewGroup "Lagrede betalingsmåter" <|
+        case model.recurringPayments of
+            Loaded [] ->
+                [ Ui.Section.viewPaddedItem [ H.text "Ingen lagrede betalingsmåter" ] ]
+
+            Loaded recurringPayments ->
+                List.map (viewRecurringPayment model) recurringPayments
+
+            Failed message ->
+                [ Ui.Section.viewPaddedItem [ H.text message ] ]
+
+            _ ->
+                [ Ui.Section.viewPaddedItem [ Ui.LoadingText.view "1rem" "5rem" ] ]
+
+
+viewRecurringPayment : Model -> RecurringPayment -> Html Msg
+viewRecurringPayment model recurringPayment =
+    let
+        id =
+            recurringPayment.id
+
+        expireString =
+            recurringPayment.expiresAt
+                |> TimeUtil.isoStringToMonthAndYear model.timeZone
+                |> Maybe.map (String.append "Utløpsdato ")
+                |> Maybe.withDefault ""
+
+        onRemove =
+            Just <| EndRecurringPayment recurringPayment
+
+        onCancel =
+            Just <| SetEditSection Nothing Nothing
+
+        loading =
+            model.loadingEditSection == Just (RecurringPaymentSection id)
+    in
+        EditSection.init "Administrer betalingsmåter"
+            |> EditSection.setEditButtonType ( "Fjern", Icon.delete )
+            |> EditSection.setIcon (Just <| iconForPaymentType recurringPayment.paymentType)
+            |> EditSection.setOnEdit
+                (Just <|
+                    SetEditSection
+                        (Just (RecurringPaymentSection id))
+                        Nothing
+                )
+            |> EditSection.setInEditMode (fieldInEditMode model.editSection (RecurringPaymentSection id))
+            |> EditSection.setButtonGroup
+                (Just <|
+                    EditSection.destructiveGroup
+                        { message = "Er du sikker på at du vil fjerne dette kortet?"
+                        , onCancel = onCancel
+                        , onDestroy = onRemove
+                        , loading = loading
+                        }
+                )
+            |> EditSection.editSection
+                (\_ ->
+                    [ Ui.Section.viewLabelItem "Bankkort"
+                        [ H.div []
+                            [ H.p [] [ H.text <| recurringPaymentTitle recurringPayment ]
+                            , H.div [ A.class "pageAccount__recurringPayment__expiry" ]
+                                [ Text.textContainer H.span (Just Text.SecondaryColor) (Text.Secondary [ H.text expireString ])
+                                ]
+                            ]
+                        ]
+                    , model.validationErrors
+                        |> Validation.select (RecurringPayment id)
+                        |> Html.Extra.viewMaybe Message.error
+                    ]
+                )
+
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     MiscService.onProfileChange ProfileChange
@@ -900,6 +1055,24 @@ subscriptions _ =
 
 
 -- INTERNAL
+
+
+iconForPaymentType : PaymentType -> Html Msg
+iconForPaymentType paymentType =
+    case paymentType of
+        Nets Visa ->
+            H.img [ A.src "images/paymentcard-visa.svg" ] []
+
+        Nets MasterCard ->
+            H.img [ A.src "images/paymentcard-mastercard.svg" ] []
+
+        _ ->
+            Icon.creditcard
+
+
+recurringPaymentTitle : RecurringPayment -> String
+recurringPaymentTitle recurringPayment =
+    PaymentType.format recurringPayment.paymentType ++ ", **** " ++ recurringPayment.maskedPan
 
 
 {-| Field is valid if it is neither an empty string or an underscore.
@@ -977,3 +1150,17 @@ fetchConsents env =
     WebshopService.getConsents env
         |> Http.toTask
         |> Task.attempt ReceiveConsents
+
+
+getRecurringPayments : Environment -> Cmd Msg
+getRecurringPayments env =
+    TicketService.getRecurringPayments env
+        |> Http.toTask
+        |> Task.attempt ReceiveRecurringPayments
+
+
+endRecurringPayment : Environment -> RecurringPayment -> Cmd Msg
+endRecurringPayment env recurringPayment =
+    TicketService.endRecurringPayment env recurringPayment.id
+        |> Http.toTask
+        |> Task.attempt (ReceiveEndRecurringPayment recurringPayment)
