@@ -20,6 +20,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Button as B exposing (ThemeColor(..))
+import Ui.Input.Checkbox as Checkbox
 import Ui.Input.Radio as Radio
 import Ui.LabelItem as LabelItem
 import Ui.LoadingText
@@ -36,6 +37,7 @@ type Msg
     | ReceiveBuyOffers (Result Http.Error Reservation)
     | ReceiveRecurringPayments (Result Http.Error (List RecurringPayment))
     | SetPaymentSelection PaymentSelection
+    | SetStorePayment Bool
 
 
 type alias TravellerData =
@@ -70,6 +72,7 @@ type alias Model =
     { offers : List Offer
     , query : OffersQuery
     , paymentSelection : PaymentSelection
+    , storePayment : Bool
     , reservation : Status Reservation
     , recurringPayments : Status (List RecurringPayment)
     }
@@ -80,6 +83,7 @@ init env query offers =
     ( { offers = offers
       , query = query
       , paymentSelection = NonRecurring Vipps
+      , storePayment = False
       , reservation = NotLoaded
       , recurringPayments = Loading Nothing
       }
@@ -110,7 +114,7 @@ update msg env model shared =
                 in
                     PageUpdater.fromPair
                         ( { model | reservation = Loading Nothing }
-                        , buyOffers env phone model.paymentSelection offerCounts
+                        , buyOffers env phone model.paymentSelection model.storePayment offerCounts
                         )
 
             ReceiveBuyOffers result ->
@@ -128,6 +132,9 @@ update msg env model shared =
 
             SetPaymentSelection paymentSelection ->
                 PageUpdater.init { model | paymentSelection = paymentSelection }
+
+            SetStorePayment storePayment ->
+                PageUpdater.init { model | storePayment = storePayment }
 
             ReceiveRecurringPayments result ->
                 case result of
@@ -328,6 +335,7 @@ viewPaymentSection model shared =
         Section.view
             [ Section.viewHeader "Betaling"
             , paymentRadioGroup model shared
+            , maybeStorePaymentCheckbox model
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
             , B.init "Gå til betaling"
@@ -381,6 +389,23 @@ paymentTypeRadio model paymentType =
         |> Radio.setChecked (model.paymentSelection == NonRecurring paymentType)
         |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| NonRecurring paymentType)
         |> Radio.view
+
+
+maybeStorePaymentCheckbox : Model -> Html Msg
+maybeStorePaymentCheckbox model =
+    case model.paymentSelection of
+        NonRecurring (Nets _) ->
+            Checkbox.init "storePayment"
+                |> Checkbox.setTitle "Lagre bankkort"
+                |> Checkbox.setName "storePayment"
+                |> Checkbox.setChecked model.storePayment
+                |> Checkbox.setOnCheck (Just <| \_ -> SetStorePayment True)
+                |> Checkbox.view
+                |> List.singleton
+                |> Section.viewLabelItem "Lagre bankkortet for fremtidige betalinger?"
+
+        _ ->
+            Html.Extra.nothing
 
 
 recurringPaymentsRadioGroup : Model -> List RecurringPayment -> Html Msg
@@ -570,10 +595,10 @@ vatAmount price shared =
 -- IO
 
 
-buyOffers : Environment -> Maybe String -> PaymentSelection -> List ( String, Int ) -> Cmd Msg
-buyOffers env phone paymentSelection offerCounts =
+buyOffers : Environment -> Maybe String -> PaymentSelection -> Bool -> List ( String, Int ) -> Cmd Msg
+buyOffers env phone paymentSelection storePayment offerCounts =
     offerCounts
-        |> TicketService.reserve env phone paymentSelection
+        |> TicketService.reserve env phone paymentSelection storePayment
         |> Http.toTask
         |> Task.attempt ReceiveBuyOffers
 

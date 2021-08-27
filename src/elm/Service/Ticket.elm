@@ -45,8 +45,8 @@ search env travelDate product travellers zones =
 
 {-| Reserve offers.
 -}
-reserve : Environment -> Maybe String -> PaymentSelection -> List ( String, Int ) -> Http.Request Reservation
-reserve env phoneNumber paymentSelection offers =
+reserve : Environment -> Maybe String -> PaymentSelection -> Bool -> List ( String, Int ) -> Http.Request Reservation
+reserve env phoneNumber paymentSelection storePayment offers =
     let
         url =
             Url.Builder.crossOrigin env.ticketUrl
@@ -56,6 +56,7 @@ reserve env phoneNumber paymentSelection offers =
         body =
             [ ( "offers", Encode.list encodeOffer offers )
             , encodePaymentSelection paymentSelection
+            , ( "store_payment", encodeStorePayment paymentSelection storePayment )
             , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
             ]
                 ++ (case phoneNumber of
@@ -299,3 +300,13 @@ recurringPaymentDecoder =
         |> DecodeP.required "payment_type" decodePaymentType
         |> DecodeP.required "masked_pan" Decode.string
         |> DecodeP.required "expires_at" Decode.string
+
+
+encodeStorePayment : PaymentSelection -> Bool -> Value
+encodeStorePayment paymentSelection storePayment =
+    case paymentSelection of
+        NonRecurring (Nets _) ->
+            Encode.bool storePayment
+
+        _ ->
+            Encode.bool False
