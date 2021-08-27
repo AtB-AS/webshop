@@ -214,20 +214,23 @@ update msg env model shared =
         GoToSummary ->
             case model.offers of
                 Loaded offers ->
-                    PageUpdater.init
-                        { model
-                            | summary =
-                                Just <|
-                                    SummaryPage.init
-                                        { productId = Maybe.withDefault "" model.product
-                                        , fromZoneId = Maybe.withDefault "" model.fromZone
-                                        , toZoneId = Maybe.withDefault "" model.toZone
-                                        , travelDate = model.travelDateTime
-                                        , travelDateEnd = model.travelDateTimeEnd
-                                        , timeZone = model.timeZone
-                                        }
-                                        offers
-                        }
+                    let
+                        ( summaryModel, summaryMsg ) =
+                            SummaryPage.init
+                                env
+                                { productId = Maybe.withDefault "" model.product
+                                , fromZoneId = Maybe.withDefault "" model.fromZone
+                                , toZoneId = Maybe.withDefault "" model.toZone
+                                , travelDate = model.travelDateTime
+                                , travelDateEnd = model.travelDateTimeEnd
+                                , timeZone = model.timeZone
+                                }
+                                offers
+                    in
+                        PageUpdater.fromPair
+                            ( { model | summary = Just summaryModel }
+                            , Cmd.map SummarySubMsg summaryMsg
+                            )
 
                 _ ->
                     PageUpdater.init model
