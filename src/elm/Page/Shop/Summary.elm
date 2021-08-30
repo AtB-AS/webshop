@@ -437,7 +437,7 @@ recurringPaymentRadio model recurringPayment =
             |> Radio.setTitle title
             |> Radio.setSubtitle expireString
             |> Radio.setName "paymentType"
-            |> Radio.setIcon (Just <| iconForPaymentType recurringPayment.paymentType)
+            |> Radio.setIcon (Just <| PaymentType.toIcon recurringPayment.paymentType)
             |> Radio.setChecked (model.paymentSelection == Recurring id)
             |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| Recurring id)
             |> Radio.view
@@ -592,19 +592,6 @@ offerToPrice offer =
 vatAmount : Float -> Shared -> Float
 vatAmount price shared =
     (toFloat shared.remoteConfig.vat_percent / 100) * price
-
-
-iconForPaymentType : PaymentType -> Html Msg
-iconForPaymentType paymentType =
-    case paymentType of
-        Nets Visa ->
-            H.img [ A.src "images/paymentcard-visa.svg" ] []
-
-        Nets MasterCard ->
-            H.img [ A.src "images/paymentcard-mastercard.svg" ] []
-
-        _ ->
-            Icon.creditcard
 
 
 

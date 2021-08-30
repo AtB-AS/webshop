@@ -1014,7 +1014,7 @@ viewRecurringPayment model recurringPayment =
     in
         EditSection.init "Administrer betalingsmåter"
             |> EditSection.setEditButtonType ( "Fjern", Icon.delete )
-            |> EditSection.setIcon (Just <| iconForPaymentType recurringPayment.paymentType)
+            |> EditSection.setIcon (Just <| PaymentType.toIcon recurringPayment.paymentType)
             |> EditSection.setOnEdit
                 (Just <|
                     SetEditSection
@@ -1055,19 +1055,6 @@ subscriptions _ =
 
 
 -- INTERNAL
-
-
-iconForPaymentType : PaymentType -> Html Msg
-iconForPaymentType paymentType =
-    case paymentType of
-        Nets Visa ->
-            H.img [ A.src "images/paymentcard-visa.svg" ] []
-
-        Nets MasterCard ->
-            H.img [ A.src "images/paymentcard-mastercard.svg" ] []
-
-        _ ->
-            Icon.creditcard
 
 
 recurringPaymentTitle : RecurringPayment -> String
