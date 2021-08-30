@@ -410,9 +410,13 @@ maybeStorePaymentCheckbox model =
 
 recurringPaymentsRadioGroup : Model -> List RecurringPayment -> Html Msg
 recurringPaymentsRadioGroup model recurringPayments =
-    recurringPayments
-        |> List.map (recurringPaymentRadio model)
-        |> Radio.viewLabelGroup "Lagrede kort"
+    if List.isEmpty recurringPayments then
+        Html.Extra.nothing
+
+    else
+        recurringPayments
+            |> List.map (recurringPaymentRadio model)
+            |> Radio.viewLabelGroup "Lagrede kort"
 
 
 recurringPaymentRadio : Model -> RecurringPayment -> Html Msg
@@ -422,9 +426,7 @@ recurringPaymentRadio model recurringPayment =
             recurringPayment.id
 
         title =
-            PaymentType.format recurringPayment.paymentType
-                ++ " som slutter på "
-                ++ recurringPayment.maskedPan
+            PaymentType.format recurringPayment.paymentType ++ ", **** " ++ recurringPayment.maskedPan
 
         expireString =
             recurringPayment.expiresAt
@@ -435,6 +437,7 @@ recurringPaymentRadio model recurringPayment =
             |> Radio.setTitle title
             |> Radio.setSubtitle expireString
             |> Radio.setName "paymentType"
+            |> Radio.setIcon (Just <| PaymentType.toIcon recurringPayment.paymentType)
             |> Radio.setChecked (model.paymentSelection == Recurring id)
             |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| Recurring id)
             |> Radio.view

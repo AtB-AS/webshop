@@ -3,6 +3,7 @@ module Ui.Input.Radio exposing
     , init
     , setAttributes
     , setChecked
+    , setIcon
     , setId
     , setName
     , setOnCheck
@@ -17,7 +18,6 @@ import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
-import Ui.Button exposing (ButtonMode(..))
 import Ui.Group
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
@@ -27,6 +27,7 @@ type alias Radio msg =
     , name : String
     , title : String
     , subtitle : Maybe String
+    , icon : Maybe (Html msg)
     , checked : Bool
     , onCheck : Maybe (Bool -> msg)
     , attributes : List (H.Attribute msg)
@@ -39,6 +40,7 @@ init id =
     , name = ""
     , title = ""
     , subtitle = Nothing
+    , icon = Nothing
     , checked = False
     , onCheck = Nothing
     , attributes = []
@@ -63,6 +65,11 @@ setTitle title opts =
 setSubtitle : Maybe String -> Radio msg -> Radio msg
 setSubtitle subtitle opts =
     { opts | subtitle = subtitle }
+
+
+setIcon : Maybe (Html msg) -> Radio msg -> Radio msg
+setIcon icon opts =
+    { opts | icon = icon }
 
 
 setChecked : Bool -> Radio msg -> Radio msg
@@ -101,7 +108,7 @@ viewLabelGroup title children =
 
 
 view : Radio msg -> Html msg
-view { id, name, title, onCheck, checked, subtitle, attributes } =
+view { id, name, title, icon, onCheck, checked, subtitle, attributes } =
     H.div []
         [ H.input
             ([ A.type_ "radio"
@@ -127,6 +134,12 @@ view { id, name, title, onCheck, checked, subtitle, attributes } =
                     )
                     subtitle
                 ]
+            , Html.Extra.viewMaybe
+                (\t ->
+                    H.span [ A.class "ui-input-radio__icon" ]
+                        [ t ]
+                )
+                icon
             ]
         ]
 

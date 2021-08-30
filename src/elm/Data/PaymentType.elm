@@ -6,9 +6,14 @@ module Data.PaymentType exposing
     , fromEntur
     , fromInt
     , fromString
+    , toIcon
     , toInt
     , toString
     )
+
+import Fragment.Icon as Icon
+import Html exposing (Html)
+import Html.Attributes as A
 
 
 type PaymentCard
@@ -97,6 +102,19 @@ format paymentType =
 
         Vipps ->
             "Vipps"
+
+
+toIcon : PaymentType -> Html msg
+toIcon paymentType =
+    case paymentType of
+        Nets Visa ->
+            Icon.visa
+
+        Nets MasterCard ->
+            Html.img [ A.src "images/paymentcard-mastercard.svg" ] []
+
+        _ ->
+            Icon.creditcard
 
 
 toInt : PaymentType -> Int

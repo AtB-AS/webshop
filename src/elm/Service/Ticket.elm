@@ -1,5 +1,6 @@
 module Service.Ticket exposing
-    ( getPaymentStatus
+    ( endRecurringPayment
+    , getPaymentStatus
     , getRecurringPayments
     , receipt
     , reserve
@@ -113,6 +114,17 @@ getRecurringPayments env =
                 []
     in
         HttpUtil.get env url (Http.expectJson (Decode.list recurringPaymentDecoder))
+
+
+endRecurringPayment : Environment -> Int -> Http.Request ()
+endRecurringPayment env id =
+    let
+        url =
+            Url.Builder.crossOrigin env.ticketUrl
+                [ "ticket", "v2", "recurring-payments", String.fromInt id ]
+                []
+    in
+        HttpUtil.delete env url Http.emptyBody (Http.expectStringResponse (\_ -> Ok ()))
 
 
 
