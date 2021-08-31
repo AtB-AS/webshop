@@ -871,6 +871,7 @@ viewTravelCard model profile =
                         Just <|
                             EditSection.destructiveGroup
                                 { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                                , confirmLabel = "Fjern t:kort"
                                 , onCancel = onCancel
                                 , onDestroy = onRemove
                                 , loading = loading
@@ -1026,6 +1027,7 @@ viewRecurringPayment model recurringPayment =
                 (Just <|
                     EditSection.destructiveGroup
                         { message = "Er du sikker på at du vil fjerne dette kortet?"
+                        , confirmLabel = "Fjern"
                         , onCancel = onCancel
                         , onDestroy = onRemove
                         , loading = loading

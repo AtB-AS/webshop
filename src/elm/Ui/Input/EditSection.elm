@@ -170,6 +170,7 @@ cancelConfirmGroup { onCancel, loading } =
 
 type alias DestructiveGroup msg =
     { message : String
+    , confirmLabel : String
     , onCancel : Maybe msg
     , onDestroy : Maybe msg
     , loading : Bool
@@ -179,6 +180,7 @@ type alias DestructiveGroup msg =
 initDestructiveGroup : DestructiveGroup msg
 initDestructiveGroup =
     { message = ""
+    , confirmLabel = ""
     , onCancel = Nothing
     , onDestroy = Nothing
     , loading = False
@@ -188,6 +190,11 @@ initDestructiveGroup =
 setDGMessage : String -> DestructiveGroup msg -> DestructiveGroup msg
 setDGMessage message opts =
     { opts | message = message }
+
+
+setDGConfirmLabel : String -> DestructiveGroup msg -> DestructiveGroup msg
+setDGConfirmLabel confirmLabel opts =
+    { opts | confirmLabel = confirmLabel }
 
 
 setDGOnCancel : Maybe msg -> DestructiveGroup msg -> DestructiveGroup msg
@@ -206,7 +213,7 @@ setDGLoading loading opts =
 
 
 destructiveGroup : DestructiveGroup msg -> List (Html msg)
-destructiveGroup { message, onCancel, onDestroy, loading } =
+destructiveGroup { message, confirmLabel, onCancel, onDestroy, loading } =
     [ H.div [ A.class "ui-editSection__fieldset__buttonGroup__deleteText", A.attribute "role" "alert" ]
         [ H.text message ]
     , B.init
@@ -215,7 +222,7 @@ destructiveGroup { message, onCancel, onDestroy, loading } =
         |> B.setOnClick onCancel
         |> B.setDisabled loading
         |> B.tertiaryCompact
-    , B.init "Fjern t:kort"
+    , B.init confirmLabel
         |> B.setIcon (Just Fragment.Icon.checkmark)
         |> B.setOnClick onDestroy
         |> B.setLoading loading
