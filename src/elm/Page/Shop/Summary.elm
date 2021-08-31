@@ -324,7 +324,7 @@ viewPriceSection summary =
 viewPaymentSection : Model -> Shared -> Html Msg
 viewPaymentSection model shared =
     let
-        disableButtons =
+        isLoading =
             case model.reservation of
                 Loading _ ->
                     True
@@ -339,7 +339,8 @@ viewPaymentSection model shared =
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
             , B.init "Gå til betaling"
-                |> B.setDisabled disableButtons
+                |> B.setDisabled isLoading
+                |> B.setLoading isLoading
                 |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
                 |> B.setOnClick (Just BuyOffers)
                 |> B.primary Primary_2
