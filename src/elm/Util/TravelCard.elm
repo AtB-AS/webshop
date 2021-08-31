@@ -1,4 +1,4 @@
-module Util.TravelCard exposing (format, formatAnonymized, formatSignificant, serverErrorToString)
+module Util.TravelCard exposing (format, formatSignificant, serverErrorToString)
 
 import Http exposing (Error(..))
 import Util.Func
@@ -16,11 +16,6 @@ import Util.NumberFormater as NF
 format : String -> String
 format =
     NF.formatString [ NF.Digits 4, NF.Space, NF.Digits 4, NF.Space, NF.Digits 8 ]
-
-
-formatAnonymized : String -> String
-formatAnonymized =
-    NF.formatString [ NF.Str "XXXX", NF.Space, NF.Str "XX", NF.Digits 2, NF.Space, NF.Digits 7, NF.Str "X" ]
 
 
 formatSignificant : String -> String
