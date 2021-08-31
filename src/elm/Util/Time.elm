@@ -1,4 +1,4 @@
-module Util.Time exposing (addHours, isoStringToFullHumanized, isoStringToMonthAndYear, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
+module Util.Time exposing (addHours, isoStringToCardExpirationMonth, isoStringToFullHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
 
 import DateFormat
 import Iso8601
@@ -95,14 +95,17 @@ toFullHumanized zone date_ =
     toFormat zone date_ "dd.MM.yyyy - HH:mm"
 
 
-isoStringToMonthAndYear : Time.Zone -> String -> Maybe String
-isoStringToMonthAndYear zone dateString =
+{-| Convert a ISO-formatted datetime string to a card expiration month.
+A ISO string of 2021-10-01T00:00:00Z should be represented as 09/21.
+-}
+isoStringToCardExpirationMonth : Time.Zone -> String -> Maybe String
+isoStringToCardExpirationMonth zone dateString =
     case Iso8601.toTime dateString of
         Err _ ->
             Nothing
 
         Ok timePosix ->
-            Just <| toFormat zone timePosix "MM/yy"
+            Just <| toFormat zone (addHours -24 timePosix) "MM/yy"
 
 
 toHoursAndMinutes : Time.Zone -> Time.Posix -> String

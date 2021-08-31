@@ -431,7 +431,7 @@ recurringPaymentRadio model recurringPayment =
 
         expireString =
             recurringPayment.expiresAt
-                |> TimeUtil.isoStringToMonthAndYear model.query.timeZone
+                |> TimeUtil.isoStringToCardExpirationMonth model.query.timeZone
                 |> Maybe.map (String.append "Utløpsdato ")
     in
         Radio.init (String.fromInt id)

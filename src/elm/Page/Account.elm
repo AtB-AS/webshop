@@ -1000,7 +1000,7 @@ viewRecurringPayment model recurringPayment =
 
         expireString =
             recurringPayment.expiresAt
-                |> TimeUtil.isoStringToMonthAndYear model.timeZone
+                |> TimeUtil.isoStringToCardExpirationMonth model.timeZone
                 |> Maybe.map (String.append "Utløpsdato ")
                 |> Maybe.withDefault ""
 
