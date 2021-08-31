@@ -22,6 +22,7 @@ module Fragment.Icon exposing
     , leftCaret
     , logout
     , map
+    , mastercard
     , phone
     , phoneLarge
     , profileLarge
@@ -46,6 +47,7 @@ module Fragment.Icon exposing
     , viewLargeMonochrome
     , viewMonochrome
     , vipps
+    , visa
     , warning
     , warningColor
     , wrapper
@@ -294,6 +296,16 @@ creditcard =
             ]
             []
         ]
+
+
+visa : Html msg
+visa =
+    H.img [ A.src "images/paymentcard-visa.svg" ] []
+
+
+mastercard : Html msg
+mastercard =
+    H.img [ A.src "images/paymentcard-mastercard.svg" ] []
 
 
 {-| Vipps icon - should be embedded in a box with a background color of #FF5B24.

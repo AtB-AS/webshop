@@ -108,10 +108,10 @@ toIcon : PaymentType -> Html msg
 toIcon paymentType =
     case paymentType of
         Nets Visa ->
-            Html.img [ A.src "images/paymentcard-visa.svg" ] []
+            Icon.visa
 
         Nets MasterCard ->
-            Html.img [ A.src "images/paymentcard-mastercard.svg" ] []
+            Icon.mastercard
 
         _ ->
             Icon.creditcard
