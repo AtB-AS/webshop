@@ -3,7 +3,7 @@ import { mytickets } from '../pageobjects/mytickets.pageobject';
 import { myprofile } from '../pageobjects/myprofile.pageobject';
 
 /*
- TravelCard for default user is 3445454533634693
+ TravelCard for default user is 344545453363471*
  */
 
 describe('account information', () => {
@@ -40,6 +40,10 @@ describe('account information', () => {
         //Verify
         mytickets.accountInfo().should('contain', phoneNumberFormatted);
     });
+
+    it('registered travel card should be visible', () => {
+        mytickets.travelCard().should("contain", "45 3363471")
+    })
 
     function randomNumbers(number) {
         let rand = '';
@@ -130,8 +134,8 @@ describe('ticket details', () => {
     //** NOTE! Only valid until pre-set date **
     it('future period ticket should be waiting and correct', () => {
         const order_id = Cypress.env("futureTicketOrderId");
-        const validFrom = getValidTime(12, 0)
-        const validTo = getValidTime(12, 0, 7)
+        const validFrom = getValidTime(13, 0)
+        const validTo = getValidTime(13, 0, 7)
         const header = 'Gyldig fra ' + validFrom;
         const type = '7-dagersbillett';
         const zones = 'Reise i 3 soner (Sone A til C1)';
@@ -275,7 +279,7 @@ describe('ticket details', () => {
         myDate.setMinutes(minutes)
 
         let dd = myDate.getDate();
-        let mm = myDate.getMonth() + 1;
+        let mm = myDate.getMonth();
         let yyyy = myDate.getFullYear();
         let HH = myDate.getHours()
         let MM = myDate.getMinutes()

@@ -8,7 +8,10 @@ import { myprofile } from '../pageobjects/myprofile.pageobject';
 
 describe('my profile', () => {
 
-    let currentConsent = false
+    const emailConsentId = 1186
+    const notificationConsentId = 1197
+    let currentEmailConsent = false
+    let currentNotificationConsent = false
 
     beforeEach(function () {
         cy.intercept("GET", "**/webshop/v1/consent").as("consent")
@@ -20,7 +23,10 @@ describe('my profile', () => {
         //Get current consent status
         cy.wait("@consent").then(req => {
             expect(req.response.statusCode).to.eq(200);
-            currentConsent = req.response.body[0].choice
+            const emailConsent = getConsent(req.response.body, emailConsentId)
+            currentEmailConsent = emailConsent.choice
+            const notificationConsent = getConsent(req.response.body, notificationConsentId)
+            currentNotificationConsent = notificationConsent.choice
         })
     });
 
@@ -110,6 +116,23 @@ describe('my profile', () => {
             .and("contain", Cypress.env("email"))
     })
 
+    it('should list stored payment cards', () => {
+        myprofile.storedPayment("Visa").should("contain", "Visa, **** 0004")
+        myprofile.storedPaymentIcon("Visa").should("have.attr", "src", "images/paymentcard-visa.svg")
+        myprofile.storedPaymentExpiry("Visa").should("contain", "Utløpsdato 08/24")
+
+        myprofile.storedPayment("MasterCard").should("contain", "MasterCard, **** 0000")
+        myprofile.storedPaymentIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
+        myprofile.storedPaymentExpiry("MasterCard").should("contain", "Utløpsdato 07/24")
+    })
+
+    it('should get a warning when removing a stored payment card', () => {
+        myprofile.removeStoredPayment("Visa").click()
+        myprofile.storedPaymentRemovalWarning()
+            .should("contain", "Er du sikker på at du vil fjerne dette kortet?")
+        myprofile.cancel()
+    })
+
     it('should get a warning when removing the travel card', () => {
         myprofile.travelCard()
             .should("contain", "45 3363471")
@@ -123,21 +146,21 @@ describe('my profile', () => {
             .should("contain", "45 3363471")
     })
 
-    it('should be able to change consents', () => {
+    it('should be able to change email consent', () => {
         cy.intercept("POST", "**/webshop/v1/consent").as("postConsent")
 
         //Change consent
         cy.window().then($win => {
             //Current consent is TRUE --> change to FALSE
-            if (currentConsent){
-                myprofile.consent().uncheck()
+            if (currentEmailConsent){
+                myprofile.emailConsent().uncheck()
                 cy.wait("@postConsent").then($req => {
                     const choice = $req.response.body.choice
                     const email = $req.response.body.email
 
                     expect($req.response.statusCode).to.eq(201);
-                    currentConsent = choice
-                    expect(currentConsent).to.eq(false)
+                    currentEmailConsent = choice
+                    expect(currentEmailConsent).to.eq(false)
                     expect(email).to.be.empty
                 })
 
@@ -148,20 +171,21 @@ describe('my profile', () => {
                 verify.verifyHeader('h2', 'Min profil')
                 cy.wait("@consent").then($req => {
                     expect($req.response.statusCode).to.eq(200);
-                    expect($req.response.body[0].choice).to.eq(false)
-                    expect($req.response.body[0].email).to.be.empty
+                    const consent = getConsent($req.response.body, emailConsentId)
+                    expect(consent.choice).to.eq(false)
+                    expect(consent.email).to.be.empty
                 })
             }
             //Current consent is FALSE --> change to TRUE
             else {
-                myprofile.consent().check()
+                myprofile.emailConsent().check()
                 cy.wait("@postConsent").then($req => {
                     const choice = $req.response.body.choice
                     const email = $req.response.body.email
 
                     expect($req.response.statusCode).to.eq(201);
-                    currentConsent = choice
-                    expect(currentConsent).to.eq(true)
+                    currentEmailConsent = choice
+                    expect(currentEmailConsent).to.eq(true)
                     expect(email).to.eq(Cypress.env("email"))
                 })
 
@@ -172,8 +196,67 @@ describe('my profile', () => {
                 verify.verifyHeader('h2', 'Min profil')
                 cy.wait("@consent").then($req => {
                     expect($req.response.statusCode).to.eq(200);
-                    expect($req.response.body[0].choice).to.eq(true)
-                    expect($req.response.body[0].email).to.eq(Cypress.env("email"))
+                    const consent = getConsent($req.response.body, emailConsentId)
+                    expect(consent.choice).to.eq(true)
+                    expect(consent.email).to.eq(Cypress.env("email"))
+                })
+            }
+        })
+    })
+
+    it('should be able to change notification consent', () => {
+        cy.intercept("POST", "**/webshop/v1/consent").as("postConsent")
+
+        //Change consent
+        cy.window().then($win => {
+            //Current consent is TRUE --> change to FALSE
+            if (currentNotificationConsent){
+                myprofile.notificationConsent().uncheck()
+                cy.wait("@postConsent").then($req => {
+                    const choice = $req.response.body.choice
+                    const email = $req.response.body.email
+
+                    expect($req.response.statusCode).to.eq(201);
+                    currentNotificationConsent = choice
+                    expect(currentNotificationConsent).to.eq(false)
+                    expect(email).to.be.empty
+                })
+
+                //Verify
+                menu.goToStartPage()
+                verify.verifyHeader('h2', 'Mine billetter')
+                menu.myProfile().click();
+                verify.verifyHeader('h2', 'Min profil')
+                cy.wait("@consent").then($req => {
+                    expect($req.response.statusCode).to.eq(200);
+                    const consent = getConsent($req.response.body, notificationConsentId)
+                    expect(consent.choice).to.eq(false)
+                    expect(consent.email).to.be.empty
+                })
+            }
+            //Current consent is FALSE --> change to TRUE
+            else {
+                myprofile.notificationConsent().check()
+                cy.wait("@postConsent").then($req => {
+                    const choice = $req.response.body.choice
+                    const email = $req.response.body.email
+
+                    expect($req.response.statusCode).to.eq(201);
+                    currentNotificationConsent = choice
+                    expect(currentNotificationConsent).to.eq(true)
+                    expect(email).to.eq(Cypress.env("email"))
+                })
+
+                //Verify
+                menu.goToStartPage()
+                verify.verifyHeader('h2', 'Mine billetter')
+                menu.myProfile().click();
+                verify.verifyHeader('h2', 'Min profil')
+                cy.wait("@consent").then($req => {
+                    expect($req.response.statusCode).to.eq(200);
+                    const consent = getConsent($req.response.body, notificationConsentId)
+                    expect(consent.choice).to.eq(true)
+                    expect(consent.email).to.eq(Cypress.env("email"))
                 })
             }
         })
@@ -184,6 +267,20 @@ describe('my profile', () => {
             .should("contain", "Les vår personvernerklæring")
             .and("have.attr", "href", "https://beta.atb.no/private-policy")
     })
+
+    //Get the correct consent from a list of consents
+    function getConsent(body, consentId) {
+        for (let i = 0; i < body.length; i++){
+            if (body[i].consentId === consentId){
+                console.log("Consent " + consentId)
+                return body[i]
+            }
+            else {
+                console.log("NOT consent " + consentId)
+            }
+        }
+        return null
+    }
 
     function randomNumbers(number) {
         let rand = '';

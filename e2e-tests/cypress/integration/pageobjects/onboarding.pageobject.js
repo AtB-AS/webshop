@@ -1,5 +1,5 @@
 export const onboarding = {
-    stepTitle: () => cy.get('h2.ui-progressHeader__title'),
+    stepTitle: () => cy.get('#progress-header'),
     back: () =>
         cy
             .get('.ui-progressHeader')
@@ -37,8 +37,10 @@ export const onboardingStep1 = {
 };
 
 export const onboardingStep2 = {
-    consentLabel: () => cy.get('label[for=consent1186]'),
-    consent: () => cy.get('input#consent1186'),
+    emailConsentLabel: () => cy.get('label[for=consent1186]'),
+    emailConsent: () => cy.get('input#consent1186'),
+    notificationConsentLabel: () => cy.get('label[for=consent1197]'),
+    notificationConsent: () => cy.get('input#consent1197'),
     saveConsents: () =>
         cy
             .get('.ui-section')

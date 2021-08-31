@@ -67,6 +67,54 @@ describe('carnet ticket purchase', () => {
         verify.verifyHeader('h2', 'Oppsummering');
     })
 
+    it('should include all payment options', () => {
+        newTicket.goToSummary()
+        verify.verifyHeader('h2', 'Oppsummering');
+
+        summary.paymentOption("vipps").click()
+        summary.paymentOptionLabel("vipps").should("contain", "Vipps")
+
+        summary.paymentOption("visa").click()
+        summary.paymentOptionLabel("visa").should("contain", "Visa")
+
+        summary.paymentOption("mastercard").click()
+        summary.paymentOptionLabel("mastercard").should("contain", "MasterCard")
+    })
+
+    it('stored payment cards should be available as payment method', () => {
+        newTicket.goToSummary()
+        verify.verifyHeader('h2', 'Oppsummering');
+
+        summary.storedPaymentOption("Visa").click()
+        summary.storedPaymentOptionLabel("Visa").should("contain", "Visa, **** 0004")
+        summary.storedPaymentOptionExpiry("Visa").should("contain", "Utløpsdato 08/24")
+        summary.storedPaymentOptionIcon("Visa").should("have.attr", "src", "images/paymentcard-visa.svg")
+
+        summary.storedPaymentOption("MasterCard").click()
+        summary.storedPaymentOptionLabel("MasterCard").should("contain", "MasterCard, **** 0000")
+        summary.storedPaymentOptionExpiry("MasterCard").should("contain", "Utløpsdato 07/24")
+        summary.storedPaymentOptionIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
+    })
+
+    it('new card should be able to save', () => {
+        newTicket.goToSummary()
+        verify.verifyHeader('h2', 'Oppsummering');
+
+        //stored payment is default checked
+        summary.paymentOption("vipps").should("not.be.checked")
+        summary.paymentOption("vipps").click()
+        summary.storePayment().should("not.exist")
+        summary.storePaymentLabel().should("not.exist")
+
+        summary.paymentOption("visa").click()
+        summary.storePaymentConfirm().should("be.visible").and("not.be.checked")
+        summary.storePaymentLabel().should("be.visible").and("contain", "Lagre bankkort")
+
+        summary.paymentOption("visa").click()
+        summary.storePaymentConfirm().should("be.visible").and("not.be.checked")
+        summary.storePaymentLabel().should("be.visible").and("contain", "Lagre bankkort")
+    })
+
     it('leaving the summary should remember changed ticket parameters', () => {
         const trav = 'Barn'
 

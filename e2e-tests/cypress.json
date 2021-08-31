@@ -2,6 +2,7 @@
   "baseUrl": "https://atb-webshop-staging.web.app",
   "integrationFolder": "cypress/integration/tests",
   "watchForFileChanges": false,
+  "defaultCommandTimeout": 10000,
 
   "chromeWebSecurity": false,
 
@@ -19,9 +20,9 @@
     "withBuyTicket": false,
     "buyTicketTimeout": 600000,
 
-    "futureTicketOrderId": "HUCVIBHX",
-    "futureTicketStartDay": "1",
-    "futureTicketStartMonth": "9",
+    "futureTicketOrderId": "9JLYH39J",
+    "futureTicketStartDay": "20",
+    "futureTicketStartMonth": "11",
     "futureTicketStartYear": "2021",
     "travelCardNo": "3445454533634685",
     "travelCardAsDisplayed": "45 3363468",
