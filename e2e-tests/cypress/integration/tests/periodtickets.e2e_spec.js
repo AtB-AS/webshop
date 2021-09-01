@@ -89,7 +89,7 @@ describe('period ticket purchase', () => {
 
         summary.storedPaymentOption("MasterCard").click()
         summary.storedPaymentOptionLabel("MasterCard").should("contain", "MasterCard, **** 0000")
-        summary.storedPaymentOptionExpiry("MasterCard").should("contain", "Utløpsdato 07/24")
+        summary.storedPaymentOptionExpiry("MasterCard").should("contain", "Utløpsdato 06/24")
         summary.storedPaymentOptionIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
     })
 

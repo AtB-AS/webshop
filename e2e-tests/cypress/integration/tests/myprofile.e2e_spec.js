@@ -123,7 +123,7 @@ describe('my profile', () => {
 
         myprofile.storedPayment("MasterCard").should("contain", "MasterCard, **** 0000")
         myprofile.storedPaymentIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
-        myprofile.storedPaymentExpiry("MasterCard").should("contain", "Utløpsdato 07/24")
+        myprofile.storedPaymentExpiry("MasterCard").should("contain", "Utløpsdato 06/24")
     })
 
     it('should get a warning when removing a stored payment card', () => {
