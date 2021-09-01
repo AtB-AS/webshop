@@ -115,10 +115,12 @@ describe('a11y check webshop my profile', () => {
         verify.verifyHeader('h2', 'Min profil');
         myprofile.editPhoneNumber();
 
-        //TODO https://github.com/AtB-AS/webshop/issues/249
         cy.a11yCheck(null, {
             rules: {
-                'color-contrast': { enabled: false }
+                //TODO https://github.com/AtB-AS/webshop/issues/249
+                'color-contrast': { enabled: false },
+                //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+                'image-alt': { enabled: false }
             }
         });
     });
