@@ -136,7 +136,7 @@ Cypress.Commands.add(
         // Remove validity message to avoid covering elements
         cy.get('body').then($body => {
             if ($body.has("div.validityWarning").length){
-                cy.wrap($body).find('div.validityWarning').find('button').click()
+                cy.wrap($body).find('div.validityWarning').find('button').click({force: true})
             }
         })
     }

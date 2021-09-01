@@ -95,10 +95,19 @@ describe('a11y check webshop my profile', () => {
     });
 
     it('my profile', () => {
+        cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
+
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
+        cy.wait('@recurringPayments');
 
-        cy.a11yCheck(null, null);
+        //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+        //cy.a11yCheck(null, null);
+        cy.a11yCheck(null, {
+            rules: {
+                'image-alt': { enabled: false }
+            }
+        });
     });
 
     it('my profile - change phone number', () => {
@@ -106,10 +115,12 @@ describe('a11y check webshop my profile', () => {
         verify.verifyHeader('h2', 'Min profil');
         myprofile.editPhoneNumber();
 
-        //TODO https://github.com/AtB-AS/webshop/issues/249
         cy.a11yCheck(null, {
             rules: {
-                'color-contrast': { enabled: false }
+                //TODO https://github.com/AtB-AS/webshop/issues/249
+                'color-contrast': { enabled: false },
+                //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+                'image-alt': { enabled: false }
             }
         });
     });
@@ -120,16 +131,23 @@ describe('a11y check webshop my profile', () => {
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
 
-        myprofile.consent().check();
-        cy.wait('@consent');
-        cy.injectAxe().then(() => {
-            cy.a11yCheck(null, null);
+        myprofile.emailConsent().check();
+        //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+        //cy.a11yCheck(null, null);
+        cy.a11yCheck(null, {
+            rules: {
+                'image-alt': { enabled: false }
+            }
         });
 
-        myprofile.consent().uncheck();
+        myprofile.emailConsent().uncheck();
         cy.wait('@consent');
-        cy.injectAxe().then(() => {
-            cy.a11yCheck(null, null);
+        //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+        //cy.a11yCheck(null, null);
+        cy.a11yCheck(null, {
+            rules: {
+                'image-alt': { enabled: false }
+            }
         });
     });
 });
@@ -230,11 +248,11 @@ describe('a11y check webshop buy ticket', () => {
         cy.a11yCheck(null, null);
     });
 
-    //Existing future ticket is starting at 12:00
+    //Existing future ticket is starting at mid day
     it('period ticket - overlapping tickets warning', () => {
         cy.intercept("**/ticket/v1/search/zones").as("zones")
 
-        const validFrom = getDateAsDisplayed()
+        const validFrom = Cypress.env('futureTicketStartDateEN')
 
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
@@ -273,6 +291,7 @@ describe('a11y check webshop buy ticket', () => {
 
     it('period ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
+        cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
 
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
@@ -280,8 +299,15 @@ describe('a11y check webshop buy ticket', () => {
 
         newTicket.goToSummary();
         verify.verifyHeader('h2', 'Oppsummering');
+        cy.wait('@recurringPayments');
 
-        cy.a11yCheck(null, null);
+        //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+        //cy.a11yCheck(null, null);
+        cy.a11yCheck(null, {
+            rules: {
+                'image-alt': { enabled: false }
+            }
+        });
     });
 
     it('carnet ticket', () => {
@@ -305,6 +331,7 @@ describe('a11y check webshop buy ticket', () => {
 
     it('carnet ticket - summary', () => {
         cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
+        cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
 
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
@@ -312,24 +339,15 @@ describe('a11y check webshop buy ticket', () => {
 
         newTicket.goToSummary();
         verify.verifyHeader('h2', 'Oppsummering');
+        cy.wait('@recurringPayments');
 
-        cy.a11yCheck(null, null);
+        //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
+        //cy.a11yCheck(null, null);
+        cy.a11yCheck(null, {
+            rules: {
+                'image-alt': { enabled: false }
+            }
+        });
     });
 
-    function getDateAsDisplayed(){
-        let myDate = new Date();
-        myDate.setFullYear(Cypress.env('futureTicketStartYear'))
-        myDate.setMonth(Cypress.env('futureTicketStartMonth') - 1)
-        myDate.setDate(Cypress.env('futureTicketStartDay'))
-
-        let dd = myDate.getDate();
-        let mm = myDate.getMonth() + 1;
-        let yyyy = myDate.getFullYear();
-
-        //Padding
-        if(dd < 10){ dd = '0' + dd }
-        if(mm < 10){ mm = '0' + mm }
-
-        return yyyy + '-' + mm + '-' + dd
-    }
 });

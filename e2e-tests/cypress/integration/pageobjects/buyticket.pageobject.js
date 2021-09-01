@@ -9,6 +9,7 @@ export const newTicket = {
     arrivalZoneSection: () => cy.get("label[for='travelToZone']"),
 
     goToSummary: () => {
+        cy.wait(200);
         cy.get(".shop__summaryPrice").contains("00");
         cy.get('button').contains('Gå til oppsummering').click();
     },
@@ -23,7 +24,17 @@ export const newTicket = {
 export const summary = {
     back: () => cy.get("button.ui-pageHeader__back").click(),
     ticketDetails: detail => cy.get("h2.ui-section__headerTitle").contains("Om billetten").parents(".ui-section").find(".ui-labelItem__label").contains(detail).parents(".ui-labelItem"),
-    price: () => cy.get(".shop__summaryPrice")
+    price: () => cy.get(".shop__summaryPrice"),
+
+    storePayment: () => cy.get("input#storePayment"),
+    storePaymentConfirm: () => cy.get("label[for='storePayment']").find(".ui-input-checkbox__box"),
+    storePaymentLabel: () => cy.get("label[for='storePayment']"),
+    paymentOption: type => cy.get("label[for='" + type + "']").find(".ui-input-radio__box"),
+    paymentOptionLabel: type => cy.get("label[for='" + type + "']").find(".ui-input-radio__title"),
+    storedPaymentOption: type => cy.get("input[name='paymentType']").siblings("label.ui-input-radio").contains(type).parents(".ui-group__item").find((".ui-input-radio__box")),
+    storedPaymentOptionLabel: type => cy.get("input[name='paymentType']").siblings("label.ui-input-radio").contains(type).parents(".ui-group__item").find(".ui-input-radio__title"),
+    storedPaymentOptionExpiry: type => cy.get("input[name='paymentType']").siblings("label.ui-input-radio").contains(type).parents(".ui-group__item").find(".ui-input-radio__subtitle"),
+    storedPaymentOptionIcon: type => cy.get("input[name='paymentType']").siblings("label.ui-input-radio").contains(type).parents(".ui-group__item").find("img"),
 }
 
 export const options = {

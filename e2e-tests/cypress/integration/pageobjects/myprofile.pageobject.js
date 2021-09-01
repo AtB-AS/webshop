@@ -24,6 +24,11 @@ export const myprofile = {
             .get('h2.ui-section__headerTitle')
             .contains('Innloggingsmetode')
             .parents('.ui-section__item'),
+    storedPayments: () =>
+        cy
+            .get('h2.ui-section__headerTitle')
+            .contains('Lagrede betalingsmåter')
+            .parents('.ui-section__item'),
     policyStatement: () =>
         cy
             .get('h2.ui-section__headerTitle')
@@ -69,7 +74,7 @@ export const myprofile = {
     },
     phoneError: () => cy.get("#phone-error"),
     travelCard: () => cy.get(".ui-travelCardText"),
-    addTravelCard: () => cy.get('button').contains('Legg til t:kort'),
+    addTravelCard: () => cy.get('button').contains('Legg til t:kort').scrollIntoView(),
     removeTravelCardButton: () => cy.get('button').contains('Fjern t:kort'),
     removeTravelCard: () => {
         cy.get('button').contains('Fjern t:kort').click()
@@ -80,10 +85,42 @@ export const myprofile = {
             .contains('Billettbærere')
             .parents('.ui-section__item')
             .find(".ui-editSection__fieldset__buttonGroup__deleteText"),
+    travelCardError: () => cy.get("#tkort-error"),
     travelCardInput: () => cy.get('input#tkort'),
 
-    consent: () => cy.get('input#consent1186'),
-    consentLabel: () => cy.get("label[for='consent1186']"),
+    emailConsent: () => cy.get('input#consent1186'),
+    emailConsentLabel: () => cy.get("label[for='consent1186']"),
+    notificationConsent: () => cy.get('input#consent1197'),
+    notificationConsentLabel: () => cy.get("label[for='consent1197']"),
+
+    storedPayment: type => cy.get('h2.ui-section__headerTitle')
+        .contains('Lagrede betalingsmåter')
+        .parents('.ui-section__item')
+        .find('form.ui-editSection')
+        .contains(type),
+    storedPaymentIcon: type => cy.get('h2.ui-section__headerTitle')
+        .contains('Lagrede betalingsmåter')
+        .parents('.ui-section__item')
+        .find('form.ui-editSection')
+        .contains(type)
+        .parents('form.ui-editSection')
+        .find(".ui-editSection__icon")
+        .find("img"),
+    storedPaymentExpiry: type => cy.get('h2.ui-section__headerTitle')
+        .contains('Lagrede betalingsmåter')
+        .parents('.ui-section__item')
+        .find('form.ui-editSection')
+        .contains(type)
+        .parents('form.ui-editSection')
+        .find(".pageAccount__recurringPayment__expiry"),
+    removeStoredPayment: type => cy.get('h2.ui-section__headerTitle')
+        .contains('Lagrede betalingsmåter')
+        .parents('.ui-section__item')
+        .find('form.ui-editSection')
+        .contains(type)
+        .parents('form.ui-editSection')
+        .find("button.ui-editSection__editButton"),
+    storedPaymentRemovalWarning: () => cy.get(".ui-editSection__fieldset__buttonGroup__deleteText"),
 
     //remove or add (currently not used)
     travelCardOperation: (operation) => {

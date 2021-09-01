@@ -3,7 +3,7 @@ import { mytickets } from '../pageobjects/mytickets.pageobject';
 import { myprofile } from '../pageobjects/myprofile.pageobject';
 
 /*
- TravelCard for default user is 3445454533634693
+ TravelCard for default user is 344545453363471*
  */
 
 describe('account information', () => {
@@ -41,6 +41,10 @@ describe('account information', () => {
         mytickets.accountInfo().should('contain', phoneNumberFormatted);
     });
 
+    it('registered travel card should be visible', () => {
+        mytickets.travelCard().should("contain", "45 3363471")
+    })
+
     function randomNumbers(number) {
         let rand = '';
         for (let i = 0; i < number; i++) {
@@ -73,8 +77,8 @@ describe('ticket details', () => {
 
     it('carnet ticket should be correct', () => {
         const order_id = 'R72EMYQA';
-        const validFrom = '20.08.2021 - ' + getValidCarnetHours(11) + ':50'
-        const validTo = '21.08.2022 - ' + getValidCarnetHours(11) + ':50'
+        const validFrom = '20.08.2021 - ' + getValidHours(11) + ':50'
+        const validTo = '21.08.2022 - ' + getValidHours(11) + ':50'
         const header1 = '10 klipp igjen'
         const header2 = 'Ingen aktive klipp'
         const type = 'Klippekort (10 billetter)';
@@ -130,8 +134,8 @@ describe('ticket details', () => {
     //** NOTE! Only valid until pre-set date **
     it('future period ticket should be waiting and correct', () => {
         const order_id = Cypress.env("futureTicketOrderId");
-        const validFrom = getValidTime(12, 0)
-        const validTo = getValidTime(12, 0, 7)
+        const validFrom = Cypress.env("futureTicketStartDateNO").toString() + " - " + getValidHours(13) + ":00"
+        const validTo = Cypress.env("futureTicketEndDateNO").toString() + " - " + getValidHours(13) + ":00"
         const header = 'Gyldig fra ' + validFrom;
         const type = '7-dagersbillett';
         const zones = 'Reise i 3 soner (Sone A til C1)';
@@ -259,6 +263,19 @@ describe('ticket details', () => {
         });
     }
 
+    //Different timezone on the host running GH Actions
+    function getValidHours(hours){
+        if (Cypress.env('runOnGitHub')){
+            let hh = hours - 2
+            if (hh < 10){ hh = '0' + hh}
+            return hh
+        }
+        else {
+            return hours
+        }
+    }
+
+    /*
     function getValidTime(hours, minutes, increaseDays = 0, ){
         let myDate = new Date();
         let days = Number.parseInt(Cypress.env('futureTicketStartDay')) + increaseDays
@@ -275,7 +292,7 @@ describe('ticket details', () => {
         myDate.setMinutes(minutes)
 
         let dd = myDate.getDate();
-        let mm = myDate.getMonth() + 1;
+        let mm = myDate.getMonth();
         let yyyy = myDate.getFullYear();
         let HH = myDate.getHours()
         let MM = myDate.getMinutes()
@@ -288,16 +305,6 @@ describe('ticket details', () => {
 
         return dd + '.' + mm + '.' + yyyy + " - " + HH + ":" + MM
     }
+     */
 
-    //Different timezone on the host running GH Actions
-    function getValidCarnetHours(hours){
-        if (Cypress.env('runOnGitHub')){
-            let hh = hours - 2
-            if (hh < 10){ hh = '0' + hh}
-            return hh
-        }
-        else {
-            return hours
-        }
-    }
 });

@@ -105,6 +105,7 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
             const phoneNumber = '12345678';
             const phoneNumberFormatted = '+47 12 34 56 78';
             const travelCardError = '1234567891234567';
+            const travelCardError2 = '1616006091234567';
             //const travelCard = '1616006912504173'
 
             cy.intercept('POST', '**/webshop/v1/register').as('registerReq');
@@ -116,18 +117,39 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
 
             cy.visit('');
 
-            //Check maneuvering forward
+            //Check maneuvering forward - including a11y
             onboarding.stepTitle().should('contain', step1);
+            //TODO https://github.com/AtB-AS/webshop/issues/367
+            //cy.a11yCheck(null, null);
+            cy.a11yCheck(null, {
+                rules: {
+                    'aria-progressbar-name': { enabled: false }
+                }
+            });
             onboarding.back().should('not.exist');
             onboarding.skip().should('exist').and('contain', 'Hopp over');
 
             onboarding.skip().click();
             onboarding.stepTitle().should('contain', step2);
+            //TODO https://github.com/AtB-AS/webshop/issues/367
+            //cy.a11yCheck(null, null);
+            cy.a11yCheck(null, {
+                rules: {
+                    'aria-progressbar-name': { enabled: false }
+                }
+            });
             onboarding.back().should('contain', 'Tilbake');
             onboarding.skip().should('contain', 'Hopp over');
 
             onboarding.skip().click();
             onboarding.stepTitle().should('contain', step3);
+            //TODO https://github.com/AtB-AS/webshop/issues/367
+            //cy.a11yCheck(null, null);
+            cy.a11yCheck(null, {
+                rules: {
+                    'aria-progressbar-name': { enabled: false }
+                }
+            });
             onboarding.back().should('contain', 'Tilbake');
             onboarding.skip().should('contain', 'Hopp over');
 
@@ -164,10 +186,15 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
             //Step 2
             onboarding.stepTitle().should('contain', step2);
             onboardingStep2
-                .consentLabel()
+                .emailConsentLabel()
                 .should('contain', 'AtB kan kontakte meg på e-post');
-            onboardingStep2.consent().should('not.be.checked');
-            onboardingStep2.consent().check();
+            onboardingStep2.emailConsent().should('not.be.checked');
+            onboardingStep2.emailConsent().check();
+            onboardingStep2
+                .notificationConsentLabel()
+                .should('contain', 'AtB kan varsle meg om billetter');
+            onboardingStep2.notificationConsent().should('not.be.checked');
+            onboardingStep2.notificationConsent().check();
             onboardingStep2.saveConsents();
             cy.wait('@consentReq').then((req) => {
                 expect(req.response.statusCode).to.eq(201);
@@ -176,8 +203,10 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
             });
             //Re-thinking the consent
             onboarding.back().click();
-            onboardingStep2.consent().should('be.checked');
-            onboardingStep2.consent().uncheck();
+            onboardingStep2.emailConsent().should('be.checked');
+            onboardingStep2.emailConsent().uncheck();
+            onboardingStep2.notificationConsent().should('be.checked');
+            onboardingStep2.notificationConsent().uncheck();
             onboardingStep2.saveConsents();
             cy.wait('@consentReq').then((req) => {
                 expect(req.response.statusCode).to.eq(201);
@@ -193,6 +222,12 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
                 .and('have.value', '');
             //Wrong travel card
             onboardingStep3.setTravelCard(travelCardError);
+            onboardingStep3.addTravelCard();
+            onboardingStep3.travelCardError(true);
+            onboardingStep3
+                .travelCardErrorMsg()
+                .should('contain', 'må starte på 1616 0060');
+            onboardingStep3.setTravelCard('{selectall}{del}' + travelCardError2);
             onboardingStep3.addTravelCard();
             cy.wait('@travelcardReq').then((req) => {
                 expect(req.response.statusCode).to.eq(400);
@@ -225,7 +260,7 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
             myprofile.lastName().should('contain', lastname);
             myprofile.phoneNumber().should('contain', phoneNumber);
             myprofile.logInMethod().should('contain', userEmail);
-            myprofile.consent().should('not.be.checked');
+            myprofile.emailConsent().should('not.be.checked');
         });
 
         it('should be able to log in', () => {
