@@ -290,9 +290,9 @@ describe('period ticket purchase', () => {
         })
     })
 
-    //Existing future ticket is starting at 12:00
+    //Existing future ticket is starting at mid-day
     it('should show warning for overlapping tickets', () => {
-        const validFrom = getDateAsDisplayed()
+        const validFrom = Cypress.env('futureTicketStartDateEN')
 
         //Change date to Cypress.env.futureTicketStartX
         travelTime.showOptions()
@@ -331,23 +331,6 @@ describe('period ticket purchase', () => {
             .should("contain", "Starttidspunkt kan ikke være mer enn 90 dager fram i tid")
     })
 })
-
-function getDateAsDisplayed(){
-    let myDate = new Date();
-    myDate.setFullYear(Cypress.env('futureTicketStartYear'))
-    myDate.setMonth(Cypress.env('futureTicketStartMonth') - 1)
-    myDate.setDate(Cypress.env('futureTicketStartDay'))
-
-    let dd = myDate.getDate();
-    let mm = myDate.getMonth();
-    let yyyy = myDate.getFullYear();
-
-    //Padding
-    if(dd < 10){ dd = '0' + dd }
-    if(mm < 10){ mm = '0' + mm }
-
-    return yyyy + '-' + mm + '-' + dd
-}
 
 function getFutureDate(incrDays){
     let myDate = new Date();

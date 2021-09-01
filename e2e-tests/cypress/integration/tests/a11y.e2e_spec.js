@@ -248,11 +248,11 @@ describe('a11y check webshop buy ticket', () => {
         cy.a11yCheck(null, null);
     });
 
-    //Existing future ticket is starting at 12:00
+    //Existing future ticket is starting at mid day
     it('period ticket - overlapping tickets warning', () => {
         cy.intercept("**/ticket/v1/search/zones").as("zones")
 
-        const validFrom = getDateAsDisplayed()
+        const validFrom = Cypress.env('futureTicketStartDateEN')
 
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
@@ -350,20 +350,4 @@ describe('a11y check webshop buy ticket', () => {
         });
     });
 
-    function getDateAsDisplayed(){
-        let myDate = new Date();
-        myDate.setFullYear(Cypress.env('futureTicketStartYear'))
-        myDate.setMonth(Cypress.env('futureTicketStartMonth') - 1)
-        myDate.setDate(Cypress.env('futureTicketStartDay'))
-
-        let dd = myDate.getDate();
-        let mm = myDate.getMonth();
-        let yyyy = myDate.getFullYear();
-
-        //Padding
-        if(dd < 10){ dd = '0' + dd }
-        if(mm < 10){ mm = '0' + mm }
-
-        return yyyy + '-' + mm + '-' + dd
-    }
 });

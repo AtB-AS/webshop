@@ -21,9 +21,10 @@
     "buyTicketTimeout": 600000,
 
     "futureTicketOrderId": "9JLYH39J",
-    "futureTicketStartDay": "20",
-    "futureTicketStartMonth": "11",
-    "futureTicketStartYear": "2021",
+    "futureTicketStartDateEN": "2021-11-20",
+    "futureTicketStartDateNO": "20.11.2021",
+    "futureTicketEndDateEN": "2021-11-27",
+    "futureTicketEndDateNO": "27.11.2021",
     "travelCardNo": "3445454533634685",
     "travelCardAsDisplayed": "45 3363468",
 

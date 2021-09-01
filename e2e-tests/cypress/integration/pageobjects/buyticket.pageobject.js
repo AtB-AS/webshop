@@ -9,6 +9,7 @@ export const newTicket = {
     arrivalZoneSection: () => cy.get("label[for='travelToZone']"),
 
     goToSummary: () => {
+        cy.wait(200);
         cy.get(".shop__summaryPrice").contains("00");
         cy.get('button').contains('Gå til oppsummering').click();
     },
