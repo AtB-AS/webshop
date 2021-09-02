@@ -38,7 +38,7 @@ type Msg
     | ReceiveBuyOffers (Result Http.Error Reservation)
     | ReceiveRecurringPayments (Result Http.Error (List RecurringPayment))
     | SetPaymentSelection PaymentSelection
-    | SetStorePayment Bool
+    | ToggleStorePayment Bool
 
 
 type alias TravellerData =
@@ -134,7 +134,7 @@ update msg env model shared =
             SetPaymentSelection paymentSelection ->
                 PageUpdater.init { model | paymentSelection = paymentSelection }
 
-            SetStorePayment storePayment ->
+            ToggleStorePayment storePayment ->
                 PageUpdater.init { model | storePayment = storePayment }
 
             ReceiveRecurringPayments result ->
@@ -401,7 +401,7 @@ maybeStorePaymentCheckbox model =
                 |> Checkbox.setTitle "Lagre bankkort"
                 |> Checkbox.setName "storePayment"
                 |> Checkbox.setChecked model.storePayment
-                |> Checkbox.setOnCheck (Just <| \_ -> SetStorePayment True)
+                |> Checkbox.setOnCheck (Just ToggleStorePayment)
                 |> Checkbox.view
                 |> List.singleton
                 |> Section.viewLabelItem "Lagre bankkortet for fremtidige betalinger?"
