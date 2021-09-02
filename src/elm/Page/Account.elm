@@ -1014,7 +1014,7 @@ viewRecurringPayment model recurringPayment =
             model.loadingEditSection == Just (RecurringPaymentSection id)
     in
         EditSection.init "Administrer betalingsmåter"
-            |> EditSection.setEditButtonType ( "Fjern", Icon.delete )
+            |> EditSection.setEditButtonType ( "Fjern kort", Icon.delete )
             |> EditSection.setIcon (Just <| PaymentType.toIcon recurringPayment.paymentType)
             |> EditSection.setOnEdit
                 (Just <|
@@ -1027,7 +1027,7 @@ viewRecurringPayment model recurringPayment =
                 (Just <|
                     EditSection.destructiveGroup
                         { message = "Er du sikker på at du vil fjerne dette kortet?"
-                        , confirmLabel = "Fjern"
+                        , confirmLabel = "Fjern kort"
                         , onCancel = onCancel
                         , onDestroy = onRemove
                         , loading = loading
