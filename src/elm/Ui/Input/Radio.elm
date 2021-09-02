@@ -137,7 +137,13 @@ view { id, name, title, icon, onCheck, checked, subtitle, ariaLabel, attributes 
                     ++ attributes
                 )
                 []
-            , H.label [ A.for id, A.class "ui-input-radio", A.attribute "aria-labelledby" labelId, A.attribute "role" "radio" ]
+            , H.label
+                [ A.for id
+                , A.class "ui-input-radio"
+                , A.attribute "aria-labelledby" labelId
+                , A.attribute "role" "radio"
+                , A.attribute "aria-checked" (boolToString checked)
+                ]
                 [ H.div [ A.class "ui-input-radio__content", A.attribute "aria-hidden" "true" ]
                     [ SR.onlyReadWithId (Maybe.withDefault title ariaLabel) labelId
                     , H.span [ A.class "ui-input-radio__box" ] []
@@ -161,3 +167,12 @@ view { id, name, title, icon, onCheck, checked, subtitle, ariaLabel, attributes 
                     ]
                 ]
             ]
+
+
+boolToString : Bool -> String
+boolToString bool =
+    if bool then
+        "true"
+
+    else
+        "false"
