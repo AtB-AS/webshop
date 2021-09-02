@@ -45,10 +45,10 @@ type Msg
     | ReceiveOffers (Result Http.Error (List Offer))
     | ReceiveFareContracts (Result Decode.Error (List FareContract))
     | CloseShop
-    | SetProduct String Bool
+    | SetProduct String
     | SetFromZone String
     | SetToZone String
-    | SetUser UserType Bool
+    | SetUser UserType
     | ShowView MainView
     | SetTime String
     | SetDate String
@@ -139,7 +139,7 @@ update msg env model shared =
         OnLeavePage ->
             PageUpdater.init { model | summary = Nothing }
 
-        SetProduct product _ ->
+        SetProduct product ->
             PageUpdater.fromPair
                 ( { model | product = Just product, users = maybeResetUsers shared product model.users }
                 , TaskUtil.doTask FetchOffers
@@ -165,7 +165,7 @@ update msg env model shared =
                     , TaskUtil.doTask FetchOffers
                     )
 
-        SetUser userType _ ->
+        SetUser userType ->
             PageUpdater.fromPair
                 ( { model | users = [ ( userType, 1 ) ] }
                 , TaskUtil.doTask FetchOffers
@@ -635,13 +635,13 @@ viewStart model =
                 |> Radio.setTitle "Kjøpstidspunkt"
                 |> Radio.setName "traveltime"
                 |> Radio.setChecked (not isFutureSelected)
-                |> Radio.setOnCheck (Just <| \_ -> SetTravelDateTime TravelNow)
+                |> Radio.setOnCheck (Just <| SetTravelDateTime TravelNow)
                 |> Radio.view
             , Radio.init "travel-future"
                 |> Radio.setTitle "Velg dato og tid"
                 |> Radio.setName "traveltime"
                 |> Radio.setChecked isFutureSelected
-                |> Radio.setOnCheck (Just <| \_ -> SetTravelDateTime <| TravelFuture Nothing)
+                |> Radio.setOnCheck (Just <| SetTravelDateTime <| TravelFuture Nothing)
                 |> Radio.view
             ]
         , Html.Extra.viewIf isFutureSelected <|

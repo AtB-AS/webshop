@@ -23,7 +23,7 @@ import Util.Maybe
 import Util.Status exposing (Status(..))
 
 
-viewUserProfiles : String -> CommonModel a -> (UserType -> Bool -> msg) -> Shared -> Html msg
+viewUserProfiles : String -> CommonModel a -> (UserType -> msg) -> Shared -> Html msg
 viewUserProfiles defaultProduct model onUserSelect shared =
     let
         product =
@@ -36,7 +36,7 @@ viewUserProfiles defaultProduct model onUserSelect shared =
             |> Radio.viewGroup "Reisende"
 
 
-viewUserProfile : CommonModel a -> (UserType -> Bool -> msg) -> UserProfile -> Html msg
+viewUserProfile : CommonModel a -> (UserType -> msg) -> UserProfile -> Html msg
 viewUserProfile model onUserSelect userProfile =
     let
         isCurrent =

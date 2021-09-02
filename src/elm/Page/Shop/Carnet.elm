@@ -37,7 +37,7 @@ type Msg
     | CloseShop
     | SetFromZone String
     | SetToZone String
-    | SetUser UserType Bool
+    | SetUser UserType
     | ShowView MainView
     | UpdateZone Time.Zone
     | CloseSummary
@@ -117,7 +117,7 @@ update msg env model shared =
                 , TaskUtil.doTask FetchOffers
                 )
 
-        SetUser userType _ ->
+        SetUser userType ->
             PageUpdater.fromPair
                 ( { model | users = [ ( userType, 1 ) ] }
                 , TaskUtil.doTask FetchOffers
