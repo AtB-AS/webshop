@@ -18,11 +18,19 @@ on:
         description: 'Define branch to test'     
         required: true
         default: 'master'
+      virtualEnv:
+        description: 'Which VE to run on'
+        required: true
+        default: 'ubuntu-latest'
+      browser:
+        description: 'In which browser to run the tests'
+        required: true
+        default: 'chrome'
 
 jobs:
   e2e-test:
     name: E2E-test
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.inputs.virtualEnv }}
 
     steps:
       - name: Set variables
@@ -30,10 +38,12 @@ jobs:
           DEFAULT_VIDEO: 'false'
           DEFAULT_TICKET_PURCHASE: 'false'
           DEFAULT_BRANCH: 'master'
+          DEFAULT_BROWSER: 'chrome'
         run: |
           echo "INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}" >> $GITHUB_ENV
           echo "INPUT_TICKET_PURCHASE=${{ github.event.inputs.ticketPurchase || env.DEFAULT_TICKET_PURCHASE }}" >> $GITHUB_ENV
           echo "INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
+          echo "INPUT_BROWSER=${{ github.event.inputs.browser || env.DEFAULT_BROWSER }}" >> $GITHUB_ENV
       
       - name: Checkout
         uses: actions/checkout@v2
@@ -53,9 +63,10 @@ jobs:
         #  CYPRESS_baseUrl: api.dev.local
         with:
           #config: video=${{ env.INPUT_VIDEO }}
-          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
+          #command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --spec cypress/integration/tests/history.e2e_spec.js
           working-directory: e2e-tests
-          browser: chrome
+          browser: ${{ env.INPUT_BROWSER }}
 
       - name: Create HTML report
         if: always()
