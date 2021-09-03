@@ -22,7 +22,7 @@ on:
 jobs:
   e2e-test:
     name: E2E-test
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Set variables
@@ -55,7 +55,7 @@ jobs:
           #config: video=${{ env.INPUT_VIDEO }}
           command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
           working-directory: e2e-tests
-          browser: chrome
+          browser: edge
 
       - name: Create HTML report
         if: always()

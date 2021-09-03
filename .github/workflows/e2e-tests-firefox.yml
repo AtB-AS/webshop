@@ -2,7 +2,7 @@ name: E2E-tests Chrome
 
 on:
   schedule:
-    - cron:  '0 5 * * *'
+    - cron:  '15 5 * * *'
   #  - cron:  '0 5,10,21 * * *'
   workflow_dispatch:
     inputs:
@@ -23,6 +23,9 @@ jobs:
   e2e-test:
     name: E2E-test
     runs-on: ubuntu-latest
+    #container:
+    #  image: cypress/browsers:node14.17.0-chrome91-ff89
+    #  options: --user 1001
 
     steps:
       - name: Set variables
@@ -55,7 +58,7 @@ jobs:
           #config: video=${{ env.INPUT_VIDEO }}
           command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
           working-directory: e2e-tests
-          browser: chrome
+          browser: firefox
 
       - name: Create HTML report
         if: always()
