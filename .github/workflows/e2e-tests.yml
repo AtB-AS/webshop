@@ -31,6 +31,9 @@ jobs:
   e2e-test:
     name: E2E-test
     runs-on: ${{ github.event.inputs.virtualEnv }}
+    container:
+      image: cypress/browsers:node14.17.0-chrome91-ff89
+      options: --user 1001
 
     steps:
       - name: Set variables
