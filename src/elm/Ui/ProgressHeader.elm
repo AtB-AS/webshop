@@ -14,6 +14,7 @@ import Html.Attributes as A
 import Html.Extra
 import Html.Keyed as Keyed
 import Ui.Button as B
+import Ui.ScreenReaderText as SR
 import Ui.TextContainer
 
 
@@ -85,12 +86,8 @@ viewProgress title step totalSteps =
         stepTitle =
             "Steg " ++ String.fromInt step ++ " av " ++ String.fromInt totalSteps ++ ": " ++ title
     in
-        H.div
-            [ A.attribute "role" "progressbar"
-            , A.attribute "aria-valuemin" "1"
-            , A.attribute "aria-valuemax" <| String.fromInt totalSteps
-            , A.attribute "aria-valuenow" <| String.fromInt step
-            , A.attribute "aria-valuetext" stepTitle
+        H.figure
+            [ A.attribute "aria-label" stepTitle
             , A.class "ui-progressHeader__dots"
             ]
             (totalSteps
