@@ -1,4 +1,4 @@
-module Ui.ScreenReaderText exposing (makeSpellable, onlyRead, onlyView, readAndView)
+module Ui.ScreenReaderText exposing (makeSpellable, onlyRead, onlyReadWithId, onlyView, readAndView)
 
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -7,6 +7,11 @@ import Html.Attributes as A
 onlyRead : String -> Html msg
 onlyRead text =
     H.span [ A.class "ui-srOnly" ] [ H.text text ]
+
+
+onlyReadWithId : String -> String -> Html msg
+onlyReadWithId text id =
+    H.span [ A.id id, A.class "ui-srOnly" ] [ H.text text ]
 
 
 onlyView : String -> Html msg

@@ -27,6 +27,7 @@ import Ui.LoadingText
 import Ui.Message
 import Ui.Section as Section
 import Util.Format
+import Util.Maybe as MaybeUtil
 import Util.PhoneNumber
 import Util.Status exposing (Status(..))
 import Util.Time as TimeUtil
@@ -388,7 +389,7 @@ paymentTypeRadio model paymentType =
         |> Radio.setTitle (PaymentType.format paymentType)
         |> Radio.setName "paymentType"
         |> Radio.setChecked (model.paymentSelection == NonRecurring paymentType)
-        |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| NonRecurring paymentType)
+        |> Radio.setOnCheck (Just <| SetPaymentSelection <| NonRecurring paymentType)
         |> Radio.view
 
 
@@ -429,18 +430,26 @@ recurringPaymentRadio model recurringPayment =
         title =
             PaymentType.format recurringPayment.paymentType ++ ", **** " ++ recurringPayment.maskedPan
 
+        expirationMonth =
+            TimeUtil.isoStringToCardExpirationMonth model.query.timeZone recurringPayment.expiresAt
+
         expireString =
-            recurringPayment.expiresAt
-                |> TimeUtil.isoStringToCardExpirationMonth model.query.timeZone
-                |> Maybe.map (String.append "Utløpsdato ")
+            Maybe.map (String.append "Utløpsdato ") expirationMonth
+
+        ariaLabel =
+            PaymentType.format recurringPayment.paymentType
+                ++ " som slutter på "
+                ++ recurringPayment.maskedPan
+                ++ MaybeUtil.mapWithDefault (\exp -> " som utløper " ++ exp) "" expirationMonth
     in
         Radio.init (String.fromInt id)
             |> Radio.setTitle title
             |> Radio.setSubtitle expireString
+            |> Radio.setAriaLabel (Just ariaLabel)
             |> Radio.setName "paymentType"
             |> Radio.setIcon (Just <| PaymentType.toIcon recurringPayment.paymentType)
             |> Radio.setChecked (model.paymentSelection == Recurring id)
-            |> Radio.setOnCheck (Just <| \_ -> SetPaymentSelection <| Recurring id)
+            |> Radio.setOnCheck (Just <| SetPaymentSelection <| Recurring id)
             |> Radio.view
 
 

@@ -592,6 +592,10 @@
     background: var(--colors-background_3-backgroundColor);
     color: var(--colors-background_3-color);
 }
+.ui-input-radio__content {
+    display: flex;
+    width: 100%;
+}
 .ui-input-radio__input {
     clip: rect(0 0 0 0);
     clip-path: inset(100%);

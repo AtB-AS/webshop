@@ -1,6 +1,7 @@
 module Ui.Input.Radio exposing
     ( Radio
     , init
+    , setAriaLabel
     , setAttributes
     , setChecked
     , setIcon
@@ -16,9 +17,11 @@ module Ui.Input.Radio exposing
 
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
+import Html.Attributes.Extra as Attr
 import Html.Events as E
 import Html.Extra
 import Ui.Group
+import Ui.ScreenReaderText as SR
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
 
 
@@ -27,9 +30,10 @@ type alias Radio msg =
     , name : String
     , title : String
     , subtitle : Maybe String
+    , ariaLabel : Maybe String
     , icon : Maybe (Html msg)
     , checked : Bool
-    , onCheck : Maybe (Bool -> msg)
+    , onCheck : Maybe msg
     , attributes : List (H.Attribute msg)
     }
 
@@ -40,6 +44,7 @@ init id =
     , name = ""
     , title = ""
     , subtitle = Nothing
+    , ariaLabel = Nothing
     , icon = Nothing
     , checked = False
     , onCheck = Nothing
@@ -67,6 +72,11 @@ setSubtitle subtitle opts =
     { opts | subtitle = subtitle }
 
 
+setAriaLabel : Maybe String -> Radio msg -> Radio msg
+setAriaLabel ariaLabel opts =
+    { opts | ariaLabel = ariaLabel }
+
+
 setIcon : Maybe (Html msg) -> Radio msg -> Radio msg
 setIcon icon opts =
     { opts | icon = icon }
@@ -77,7 +87,7 @@ setChecked checked opts =
     { opts | checked = checked }
 
 
-setOnCheck : Maybe (Bool -> msg) -> Radio msg -> Radio msg
+setOnCheck : Maybe msg -> Radio msg -> Radio msg
 setOnCheck onCheck opts =
     { opts | onCheck = onCheck }
 
@@ -108,47 +118,61 @@ viewLabelGroup title children =
 
 
 view : Radio msg -> Html msg
-view { id, name, title, icon, onCheck, checked, subtitle, attributes } =
-    H.div []
-        [ H.input
-            ([ A.type_ "radio"
-             , A.id id
-             , A.name name
-             , A.class "ui-input-radio__input"
-             , maybeOnCheck onCheck
-             , A.checked checked
-             ]
-                ++ attributes
-            )
-            []
-        , H.label [ A.for id, A.class "ui-input-radio" ]
-            [ H.span [ A.class "ui-input-radio__box" ] []
-            , H.span [ A.class "ui-input-radio__title" ]
-                [ H.span [] [ H.text title ]
-                , Html.Extra.viewMaybe
-                    (\t ->
-                        H.span
-                            [ A.class "ui-input-radio__subtitle"
-                            ]
-                            [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
-                    )
-                    subtitle
-                ]
-            , Html.Extra.viewMaybe
-                (\t ->
-                    H.span [ A.class "ui-input-radio__icon" ]
-                        [ t ]
+view { id, name, title, icon, onCheck, checked, subtitle, ariaLabel, attributes } =
+    let
+        labelId =
+            id ++ "-label"
+    in
+        H.div []
+            [ H.input
+                ([ A.type_ "radio"
+                 , A.id id
+                 , A.name name
+                 , A.class "ui-input-radio__input"
+                 , Attr.attributeMaybe (always >> E.onCheck) onCheck
+                 , A.checked checked
+                 , A.attribute "aria-labelledby" labelId
+                 , A.attribute "aria-hidden" "true"
+                 ]
+                    ++ attributes
                 )
-                icon
+                []
+            , H.label
+                [ A.for id
+                , A.class "ui-input-radio"
+                , A.attribute "aria-labelledby" labelId
+                , A.attribute "role" "radio"
+                , A.attribute "aria-checked" (boolToString checked)
+                ]
+                [ H.div [ A.class "ui-input-radio__content", A.attribute "aria-hidden" "true" ]
+                    [ SR.onlyReadWithId (Maybe.withDefault title ariaLabel) labelId
+                    , H.span [ A.class "ui-input-radio__box" ] []
+                    , H.span [ A.class "ui-input-radio__title" ]
+                        [ H.span [] [ H.text title ]
+                        , Html.Extra.viewMaybe
+                            (\t ->
+                                H.span
+                                    [ A.class "ui-input-radio__subtitle"
+                                    ]
+                                    [ Text.textContainer H.span (Just Text.SecondaryColor) <| Text.Tertiary [ H.text t ] ]
+                            )
+                            subtitle
+                        ]
+                    , Html.Extra.viewMaybe
+                        (\t ->
+                            H.span [ A.class "ui-input-radio__icon" ]
+                                [ t ]
+                        )
+                        icon
+                    ]
+                ]
             ]
-        ]
 
 
-maybeOnCheck : Maybe (Bool -> msg) -> Attribute msg
-maybeOnCheck maybeAction =
-    case maybeAction of
-        Just action ->
-            E.onCheck action
+boolToString : Bool -> String
+boolToString bool =
+    if bool then
+        "true"
 
-        Nothing ->
-            A.classList []
+    else
+        "false"

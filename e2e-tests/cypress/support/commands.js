@@ -71,6 +71,13 @@ Cypress.Commands.add('a11yCheck', (context, inOptions) => {
     if (inOptions !== null && inOptions.rules !== null) {
         options.rules = inOptions.rules;
     }
+    else {
+        options.rules = {}
+    }
+
+    //Added due to custom styling on radio buttons, which in reality gives two radio buttons per user choice
+    //https://github.com/AtB-AS/webshop/pull/374
+    options.rules["aria-hidden-focus"] = { enabled: false }
 
     return cy.injectAxe().then(() => {
         cy.checkA11y(
