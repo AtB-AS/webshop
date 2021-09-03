@@ -64,9 +64,8 @@ jobs:
         with:
           #config: video=${{ env.INPUT_VIDEO }}
           #command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
-          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --spec cypress/integration/tests/history.e2e_spec.js
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --browser ${{ env.INPUT_BROWSER }} --spec cypress/integration/tests/history.e2e_spec.js
           working-directory: e2e-tests
-          browser: ${{ env.INPUT_BROWSER }}
 
       - name: Create HTML report
         if: always()
