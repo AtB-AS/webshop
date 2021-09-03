@@ -43,10 +43,10 @@ jobs:
           DEFAULT_BRANCH: 'master'
           DEFAULT_BROWSER: 'chrome'
         run: |
-          echo "INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}" >> $GITHUB_ENV
-          echo "INPUT_TICKET_PURCHASE=${{ github.event.inputs.ticketPurchase || env.DEFAULT_TICKET_PURCHASE }}" >> $GITHUB_ENV
-          echo "INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
-          echo "INPUT_BROWSER=${{ github.event.inputs.browser || env.DEFAULT_BROWSER }}" >> $GITHUB_ENV
+          echo ("INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}") >> $env:GITHUB_ENV
+          echo ("INPUT_TICKET_PURCHASE=${{ github.event.inputs.ticketPurchase || env.DEFAULT_TICKET_PURCHASE }}") >> $env:GITHUB_ENV
+          echo ("INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}") >> $env:GITHUB_ENV
+          echo ("INPUT_BROWSER=${{ github.event.inputs.browser || env.DEFAULT_BROWSER }}") >> $env:GITHUB_ENV
       
       - name: Checkout
         uses: actions/checkout@v2
