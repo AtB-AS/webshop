@@ -16,8 +16,9 @@ module Ui.Message exposing
     )
 
 import Fragment.Icon as Icon
-import Html as H exposing (Html)
+import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
+import Html.Attributes.Extra as Attr
 
 
 type UserStatus msg
@@ -66,17 +67,17 @@ statusToIcon status =
             Icon.info
 
 
-statusToRole : UserStatus msg -> String
-statusToRole status =
+statusToAttribute : UserStatus msg -> Maybe (Attribute msg)
+statusToAttribute status =
     case status of
         Warning _ ->
-            "alert"
+            Just <| A.attribute "aria-live" "polite"
 
         Error _ ->
-            "alert"
+            Just <| A.attribute "role" "alert"
 
         _ ->
-            ""
+            Nothing
 
 
 stringOfStatus : UserStatus msg -> Html msg
@@ -128,7 +129,7 @@ messageWithOptions options statusType =
             [ icon
             , H.div
                 [ A.class "ui-message__content"
-                , A.attribute "role" (statusToRole statusType)
+                , Attr.attributeMaybe identity (statusToAttribute statusType)
                 ]
                 [ text ]
             ]
