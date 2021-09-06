@@ -401,7 +401,7 @@ maybeStorePaymentCheckbox model =
                 |> Checkbox.setTitle "Lagre bankkort"
                 |> Checkbox.setName "storePayment"
                 |> Checkbox.setChecked model.storePayment
-                |> Checkbox.setOnCheck (Just <| \_ -> SetStorePayment True)
+                |> Checkbox.setOnCheck (Just SetStorePayment)
                 |> Checkbox.view
                 |> List.singleton
                 |> Section.viewLabelItem "Lagre bankkortet for fremtidige betalinger?"
