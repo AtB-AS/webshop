@@ -21,8 +21,6 @@ type alias Environment =
     { distributionEnv : DistributionEnvironment
     , localUrl : String
     , baseUrl : String
-    , ticketUrl : String
-    , refDataUrl : String
     , language : Language
     , installId : String
     , showValidityWarning : Bool

@@ -27,11 +27,7 @@ XMLHttpRequest.prototype.open = function (...args) {
     const [, url] = args;
     var res = originalOpen.apply(this, args);
 
-    if (
-        [elmFlags.baseUrl, elmFlags.ticketUrl, elmFlags.refDataUrlurl].some(
-            (remoteUrl) => url.includes(remoteUrl)
-        )
-    ) {
+    if (url.includes(elmFlags.baseUrl)) {
         this.setRequestHeader('Atb-Request-Id', uuidv4());
     }
     return res;

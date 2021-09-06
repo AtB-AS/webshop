@@ -1,8 +1,5 @@
 port module Service.RefData exposing
-    ( getFareProducts
-    , getTariffZones
-    , getUserProfiles
-    , onConsents
+    ( onConsents
     , onFareProducts
     , onPaymentTypes
     , onTariffZones
@@ -11,32 +8,8 @@ port module Service.RefData exposing
 
 import Data.PaymentType as PaymentType exposing (PaymentType)
 import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, LangString(..), ProductType(..), TariffZone, UserProfile, UserType(..))
-import Environment exposing (Environment)
-import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
-import Util.Http as HttpUtil
-
-
-{-| Get list of tariff zones.
--}
-getTariffZones : Environment -> Http.Request (List TariffZone)
-getTariffZones env =
-    HttpUtil.get env (env.refDataUrl ++ "/reference-data/v1/ATB/tariff-zones") (Http.expectJson (Decode.list tariffZoneDecoder))
-
-
-{-| Get list of fare products.
--}
-getFareProducts : Environment -> Http.Request (List FareProduct)
-getFareProducts env =
-    HttpUtil.get env (env.refDataUrl ++ "/reference-data/v1/ATB/preassigned-fare-products") (Http.expectJson (Decode.list fareProductDecoder))
-
-
-{-| Get list of user profiles.
--}
-getUserProfiles : Environment -> Http.Request (List UserProfile)
-getUserProfiles env =
-    HttpUtil.get env (env.refDataUrl ++ "/reference-data/v1/ATB/user-profiles") (Http.expectJson (Decode.list userProfileDecoder))
 
 
 
