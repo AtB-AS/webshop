@@ -49,7 +49,6 @@ const outputPath = path.join(__dirname, 'dist');
 // Options:
 //
 // --baseUrl=<url>     Set the base URL for service calls, etc.
-// --ticketUrl=<url>   Set the base URL for ticket service calls.
 // --production        Set the target environment to production.
 // --development       Set the target environment to development.
 // --languageSwitcher  Set if the languageSwitcher will be shown.

@@ -26,7 +26,7 @@ search : Environment -> Maybe String -> String -> List ( UserType, Int ) -> List
 search env travelDate product travellers zones =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl [ "ticket", "v1", "search", "zones" ] []
+            Url.Builder.crossOrigin env.baseUrl [ "ticket", "v1", "search", "zones" ] []
 
         body =
             [ ( "products", Encode.list Encode.string [ product ] )
@@ -50,7 +50,7 @@ reserve : Environment -> Maybe String -> PaymentSelection -> Bool -> List ( Stri
 reserve env phoneNumber paymentSelection storePayment offers =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl
+            Url.Builder.crossOrigin env.baseUrl
                 [ "ticket", "v2", "reserve" ]
                 []
 
@@ -80,7 +80,7 @@ receipt : Environment -> String -> String -> Http.Request ()
 receipt env emailAddress orderId =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl
+            Url.Builder.crossOrigin env.baseUrl
                 [ "ticket", "v1", "receipt" ]
                 []
 
@@ -98,7 +98,7 @@ getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
 getPaymentStatus env paymentId =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl
+            Url.Builder.crossOrigin env.baseUrl
                 [ "ticket", "v1", "payments", String.fromInt paymentId ]
                 []
     in
@@ -109,7 +109,7 @@ getRecurringPayments : Environment -> Http.Request (List RecurringPayment)
 getRecurringPayments env =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl
+            Url.Builder.crossOrigin env.baseUrl
                 [ "ticket", "v2", "recurring-payments" ]
                 []
     in
@@ -120,7 +120,7 @@ endRecurringPayment : Environment -> Int -> Http.Request ()
 endRecurringPayment env id =
     let
         url =
-            Url.Builder.crossOrigin env.ticketUrl
+            Url.Builder.crossOrigin env.baseUrl
                 [ "ticket", "v2", "recurring-payments", String.fromInt id ]
                 []
     in

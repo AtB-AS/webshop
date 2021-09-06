@@ -94,8 +94,6 @@ type alias Flags =
     { isDevelopment : Bool
     , localUrl : String
     , baseUrl : String
-    , ticketUrl : String
-    , refDataUrl : String
     , version : String
     , commit : String
     , installId : String
@@ -104,16 +102,69 @@ type alias Flags =
     }
 
 
-main : Program Flags Model Msg
+main : Program Decode.Value (Result Decode.Error Model) Msg
 main =
     Browser.application
-        { init = init
-        , update = update
-        , view = view
-        , subscriptions = subs
+        { init = resultInit
+        , update = resultUpdate
+        , view = resultView
+        , subscriptions = resultSubs
         , onUrlRequest = UrlRequested
         , onUrlChange = UrlChanged
         }
+
+
+flagsDecoder =
+    Decode.succeed Flags
+        |> DecodeP.required "isDevelopment" Decode.bool
+        |> DecodeP.required "localUrl" Decode.string
+        |> DecodeP.required "baseUrl" Decode.string
+        |> DecodeP.required "version" Decode.string
+        |> DecodeP.required "commit" Decode.string
+        |> DecodeP.required "installId" Decode.string
+        |> DecodeP.required "loggedIn" Decode.bool
+        |> DecodeP.required "showValidityWarning" Decode.bool
+
+
+resultInit : Decode.Value -> Url -> Nav.Key -> ( Result Decode.Error Model, Cmd Msg )
+resultInit rawFlags url navKey =
+    case Decode.decodeValue flagsDecoder rawFlags of
+        Ok flags ->
+            init flags url navKey
+                |> Tuple.mapFirst Ok
+
+        Err error ->
+            ( Err error, Cmd.none )
+
+
+resultUpdate : Msg -> Result Decode.Error Model -> ( Result Decode.Error Model, Cmd Msg )
+resultUpdate msg modelResult =
+    case modelResult of
+        Ok model ->
+            update msg model |> Tuple.mapFirst Ok
+
+        Err error ->
+            ( Err error, Cmd.none )
+
+
+resultView : Result Decode.Error Model -> Browser.Document Msg
+resultView modelResult =
+    case modelResult of
+        Ok model ->
+            view model
+
+        Err error ->
+            Browser.Document "Flags are invalid" [ H.text <| Decode.errorToString error ]
+
+
+resultSubs : Result Decode.Error Model -> Sub Msg
+resultSubs modelResult =
+    case modelResult of
+        Ok model ->
+            subs model
+
+        Err _ ->
+            Sub.none
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -220,8 +271,6 @@ init flags url navKey =
             { distributionEnv = distributionEnv
             , localUrl = flags.localUrl
             , baseUrl = flags.baseUrl
-            , ticketUrl = flags.ticketUrl
-            , refDataUrl = flags.refDataUrl
             , language = English
             , installId = flags.installId
             , showValidityWarning = flags.showValidityWarning
