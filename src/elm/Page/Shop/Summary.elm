@@ -398,13 +398,13 @@ maybeStorePaymentCheckbox model =
     case model.paymentSelection of
         NonRecurring (Nets _) ->
             Checkbox.init "storePayment"
-                |> Checkbox.setTitle "Lagre bankkort"
+                |> Checkbox.setTitle "Lagre betalingskort"
                 |> Checkbox.setName "storePayment"
                 |> Checkbox.setChecked model.storePayment
                 |> Checkbox.setOnCheck (Just SetStorePayment)
                 |> Checkbox.view
                 |> List.singleton
-                |> Section.viewLabelItem "Lagre bankkortet for fremtidige betalinger?"
+                |> Section.viewLabelItem "Vil du lagre kortet for fremtidige betalinger?"
 
         _ ->
             Html.Extra.nothing
@@ -418,7 +418,7 @@ recurringPaymentsRadioGroup model recurringPayments =
     else
         recurringPayments
             |> List.map (recurringPaymentRadio model)
-            |> Radio.viewLabelGroup "Lagrede kort"
+            |> Radio.viewLabelGroup "Mine lagrede betalingskort"
 
 
 recurringPaymentRadio : Model -> RecurringPayment -> Html Msg
