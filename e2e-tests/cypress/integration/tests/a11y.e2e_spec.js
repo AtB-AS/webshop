@@ -117,7 +117,7 @@ describe('a11y check webshop my profile', () => {
 
         cy.a11yCheck(null, {
             rules: {
-                //TODO https://github.com/AtB-AS/webshop/issues/249
+                //Color-contrast error is checked out in https://github.com/AtB-AS/webshop/issues/249
                 'color-contrast': { enabled: false },
                 //TODO https://github.com/AtB-AS/webshop/issues/344#issuecomment-909217210
                 'image-alt': { enabled: false }

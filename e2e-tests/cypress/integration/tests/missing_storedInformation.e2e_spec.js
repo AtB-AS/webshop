@@ -28,7 +28,7 @@ describe('missing stored information scenarios', () => {
 
         //Check on editing mode
         myprofile.addTravelCard().click();
-        //TODO https://github.com/AtB-AS/webshop/issues/249
+        //Color-contrast error is checked out in https://github.com/AtB-AS/webshop/issues/249
         cy.a11yCheck(null, {
             rules: {
                 'color-contrast': { enabled: false }
@@ -62,7 +62,7 @@ describe('missing stored information scenarios', () => {
         cy.wait("@recurringPayments")
         verify.verifyHeader('h2', 'Min profil');
 
-        myprofile.storedPayments().should("contain", "Ingen lagrede betalingsmåter")
+        myprofile.storedPayments().should("contain", "Ingen lagrede betalingskort")
     })
 
     it('my profile - should get error messages for wrong travel card', () => {

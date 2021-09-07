@@ -25,6 +25,8 @@ export const summary = {
     back: () => cy.get("button.ui-pageHeader__back").click(),
     ticketDetails: detail => cy.get("h2.ui-section__headerTitle").contains("Om billetten").parents(".ui-section").find(".ui-labelItem__label").contains(detail).parents(".ui-labelItem"),
     price: () => cy.get(".shop__summaryPrice"),
+    payButton: () => cy.get('button').contains('etal'),
+    pay: () => cy.get('button').contains('Betal nå').click(),
 
     storePayment: () => cy.get("input#storePayment"),
     storePaymentConfirm: () => cy.get("label[for='storePayment']").find(".ui-input-checkbox__box"),

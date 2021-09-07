@@ -1,6 +1,7 @@
 import { menu, verify } from '../pageobjects/common.pageobject';
 import { mytickets } from '../pageobjects/mytickets.pageobject';
 import { myprofile } from '../pageobjects/myprofile.pageobject';
+import { newTicket, products, summary } from '../pageobjects/buyticket.pageobject';
 
 /*
  TravelCard for default user is 344545453363471*
@@ -260,6 +261,142 @@ describe('ticket details', () => {
                     });
                 }
             });
+        });
+    }
+
+    //Buy a ticket is configured in 'cypress.json'
+    //TODO DISABLED! After buying, the user gets routed to the onboarding
+    if (Cypress.env('withBuyTicket')) {
+        xit('should buy a ticket and verify on my tickets', () => {
+            let orderId = 'ERROR';
+            const timeoutValue = Cypress.env('buyTicketTimeout'); //default: 10 min
+            const waitForValidTicket = 60000; //1 min
+            const headerWaiting = 'Gyldig om'
+            const headerValid = 'dager igjen';
+            const type = '7-dagersbillett';
+            const zones = 'Reise i 1 sone (Sone A)';
+            const traveller = '1 Voksen';
+            const payment = 'Visa';
+
+            cy.intercept("**/ticket/v1/search/zones").as("zones")
+            cy.intercept("**/ticket/v2/recurring-payments").as("recurringPayments")
+            cy.intercept("POST", "**/ticket/v2/reserve").as("reserve")
+            cy.intercept("**/ticket/v1/payments/**").as("payments")
+            cy.intercept(
+                'GET',
+                '**/google.firestore.v1.Firestore/Listen/channel**'
+            ).as('firestoreUpdate');
+            cy.intercept(
+                'POST',
+                '**/identitytoolkit/v3/relyingparty/getAccountInfo**'
+            ).as('accountInfo');
+            cy.intercept('POST', '**/v1/token**').as('refreshToken');
+
+            //Buy ticket
+            menu.buyPeriodTicket().click();
+            cy.wait("@zones")
+            products.set("7-dagersbillett")
+            cy.wait("@zones")
+
+            //Verify
+            newTicket.price().should("contain", "280,00")
+
+            //Pay
+            newTicket.goToSummary()
+            cy.wait("@recurringPayments")
+            summary.storedPaymentOption("Visa").click()
+            summary.pay()
+
+            //Wait for ticket
+            cy.wait("@reserve")
+            cy.wait("@payments").then($req => {
+                expect($req.response.statusCode).to.eq(200);
+                orderId = $req.response.body.order_id
+                expect(orderId).to.not.eq("ERROR");
+            })
+            cy.wait(['@accountInfo', '@refreshToken', '@firestoreUpdate'])
+
+            /*
+            NB! HERE THE USER GETS ROUTED TO THE ON-BOARDING
+            cy.clearCookies()
+            cy.clearLocalStorage()
+            cy.reload()
+            cy.visit('')
+            menu.logOut()
+            //cy.visitMainAsAuthorized();
+            */
+
+            //Get ticket and verify
+            verify.verifyHeader('h2', 'Mine billetter'); //TODO kanskje gå frem og tilbake?
+
+            //Verify waiting ticket
+            mytickets.tickets().then($tickets => {
+                mytickets.waitForTicket(orderId, timeoutValue);
+
+                mytickets.ticket(orderId).then(($ticket) => {
+                    mytickets.ticketIconIsWaiting($ticket)
+                    mytickets
+                        .ticketHeader($ticket)
+                        .should('contain', headerWaiting);
+                    mytickets
+                        .ticketSummary($ticket)
+                        .should('contain', type)
+                        .and('contain', zones)
+                        .and('contain', traveller);
+                    mytickets.ticketIsCollapsed($ticket, true);
+                    mytickets
+                        .ticketDetails($ticket)
+                        .should('not.be.visible');
+                });
+            })
+
+            //Wait until valid
+            cy.wait(waitForValidTicket)
+
+            //Verify valid ticket
+            mytickets.tickets().then($tickets => {
+                mytickets.ticket(orderId).then(($ticket) => {
+                    mytickets.ticketIconIsValid($ticket);
+                    mytickets
+                        .ticketHeader($ticket)
+                        .should('contain', headerValid);
+                    mytickets
+                        .ticketSummary($ticket)
+                        .should('contain', type)
+                        .and('contain', zones)
+                        .and('contain', traveller);
+                    mytickets.ticketIsCollapsed($ticket, true);
+                    mytickets
+                        .ticketDetails($ticket)
+                        .should('not.be.visible');
+                });
+
+                //Verify details
+                mytickets.ticket(orderId).then(($ticket) => {
+                    mytickets.showDetails($ticket);
+                    mytickets.ticketIsCollapsed($ticket, false);
+                    mytickets
+                        .ticketDetails($ticket)
+                        .should('be.visible')
+                        .and('contain', 'Gyldig fra')
+                        .and('contain', 'Gyldig til')
+                        .and('contain', 'Kjøpstidspunkt')
+                        .and('contain', 'Betalt med')
+                        .and('contain', payment)
+                        .and('contain', 'Ordre-ID')
+                        .and('contain', orderId);
+                });
+
+                //Hide details
+                mytickets.ticket(orderId).then(($ticket) => {
+                    mytickets.hideDetails($ticket);
+                    mytickets.ticketIsCollapsed($ticket, true);
+                    mytickets
+                        .ticketDetails($ticket)
+                        .should('not.be.visible');
+                });
+            });
+
         });
     }
 

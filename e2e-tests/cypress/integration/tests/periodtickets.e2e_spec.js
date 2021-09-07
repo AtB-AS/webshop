@@ -82,15 +82,22 @@ describe('period ticket purchase', () => {
         newTicket.goToSummary()
         verify.verifyHeader('h2', 'Oppsummering');
 
+        //Pre
+        summary.paymentOption("vipps").click()
+        summary.payButton().should('contain', 'Gå til betaling')
+
+        //Verify
         summary.storedPaymentOption("Visa").click()
         summary.storedPaymentOptionLabel("Visa").should("contain", "Visa, **** 0004")
         summary.storedPaymentOptionExpiry("Visa").should("contain", "Utløpsdato 08/24")
         summary.storedPaymentOptionIcon("Visa").should("have.attr", "src", "images/paymentcard-visa.svg")
+        summary.payButton().should('contain', 'Betal nå')
 
         summary.storedPaymentOption("MasterCard").click()
         summary.storedPaymentOptionLabel("MasterCard").should("contain", "MasterCard, **** 0000")
         summary.storedPaymentOptionExpiry("MasterCard").should("contain", "Utløpsdato 06/24")
         summary.storedPaymentOptionIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
+        summary.payButton().should('contain', 'Betal nå')
     })
 
     it('new card should be able to save', () => {
@@ -105,11 +112,11 @@ describe('period ticket purchase', () => {
 
         summary.paymentOption("visa").click()
         summary.storePaymentConfirm().should("be.visible").and("not.be.checked")
-        summary.storePaymentLabel().should("be.visible").and("contain", "Lagre bankkort")
+        summary.storePaymentLabel().should("be.visible").and("contain", "Lagre betalingskort")
 
         summary.paymentOption("visa").click()
         summary.storePaymentConfirm().should("be.visible").and("not.be.checked")
-        summary.storePaymentLabel().should("be.visible").and("contain", "Lagre bankkort")
+        summary.storePaymentLabel().should("be.visible").and("contain", "Lagre betalingskort")
     })
 
     it('summary should show default ticket parameters', () => {
