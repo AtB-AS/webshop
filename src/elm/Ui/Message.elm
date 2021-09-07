@@ -73,6 +73,9 @@ statusToAttribute status =
         Warning _ ->
             Just <| A.attribute "aria-live" "polite"
 
+        Valid _ ->
+            Just <| A.attribute "aria-live" "polite"
+
         Error _ ->
             Just <| A.attribute "role" "alert"
 
