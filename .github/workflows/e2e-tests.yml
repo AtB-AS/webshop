@@ -60,7 +60,7 @@ jobs:
 
       # https://github.com/marketplace/actions/cypress-io
       - name: Run all Cypress tests
-        if: contains(env.INPUT_TEST, 'runAllTests')
+        if: env.INPUT_TEST == 'runAllTests'
         uses: cypress-io/github-action@v2
         #env:
         #  CYPRESS_baseUrl: api.dev.local
@@ -70,7 +70,7 @@ jobs:
           working-directory: e2e-tests
 
       - name: Run single Cypress test
-        if: !contains(env.INPUT_TEST, 'runAllTests')
+        if: env.INPUT_TEST != 'runAllTests'
         uses: cypress-io/github-action@v2
         with:
           command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --browser ${{ env.INPUT_BROWSER }} --spec cypress/integration/tests/${{ env.INPUT_TEST }}.e2e_spec.js
