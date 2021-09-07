@@ -332,6 +332,14 @@ viewPaymentSection model shared =
 
                 _ ->
                     False
+
+        buttonText =
+            case model.paymentSelection of
+                Recurring _ ->
+                    "Betal nå"
+
+                NonRecurring _ ->
+                    "Gå til betaling"
     in
         Section.view
             [ Section.viewHeader "Betaling"
@@ -339,7 +347,7 @@ viewPaymentSection model shared =
             , maybeStorePaymentCheckbox model
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
-            , B.init "Gå til betaling"
+            , B.init buttonText
                 |> B.setDisabled isLoading
                 |> B.setLoading isLoading
                 |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
