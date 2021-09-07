@@ -11,7 +11,7 @@ import {
 
 // Visiting another domain necessitates setting 'chromeWebSecurity=false' in 'cypress.json
 // ==> 'Only for chrome family of browsers
-if (Cypress.isBrowser({ family: 'chromium' })) {
+if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
     //Fail all tests if one fails
     //describe('Email confirmation', { failFast: { enabled: true } }, () => {
     describe('onboarding', () => {
