@@ -977,10 +977,10 @@ viewConsent model consent =
 
 viewRecurringPayments : Model -> Html Msg
 viewRecurringPayments model =
-    Ui.Section.viewGroup "Lagrede betalingsmåter" <|
+    Ui.Section.viewGroup "Lagrede betalingskort" <|
         case model.recurringPayments of
             Loaded [] ->
-                [ Ui.Section.viewPaddedItem [ H.text "Ingen lagrede betalingsmåter" ] ]
+                [ Ui.Section.viewPaddedItem [ H.text "Ingen lagrede betalingskort" ] ]
 
             Loaded recurringPayments ->
                 List.map (viewRecurringPayment model) recurringPayments
@@ -1013,7 +1013,7 @@ viewRecurringPayment model recurringPayment =
         loading =
             model.loadingEditSection == Just (RecurringPaymentSection id)
     in
-        EditSection.init "Administrer betalingsmåter"
+        EditSection.init "Administrer betalingskort"
             |> EditSection.setEditButtonType ( "Fjern kort", Icon.delete )
             |> EditSection.setIcon (Just <| PaymentType.toIcon recurringPayment.paymentType)
             |> EditSection.setOnEdit
