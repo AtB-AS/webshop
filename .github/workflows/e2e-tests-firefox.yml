@@ -1,11 +1,14 @@
-name: E2E-tests Chrome
+name: E2E-tests Ubuntu Firefox
 
 on:
   schedule:
-    - cron:  '15 5 * * *'
-  #  - cron:  '0 5,10,21 * * *'
+    - cron:  '30 5 * * *'
   workflow_dispatch:
     inputs:
+      testsToRun:
+        description: 'Run all or only a specific test (*.e2e_spec.js)'
+        required: true
+        default: 'runAllTests'
       videoRecording:
         description: 'Record video of the tests if any failures'
         required: true
@@ -23,9 +26,9 @@ jobs:
   e2e-test:
     name: E2E-test
     runs-on: ubuntu-latest
-    #container:
-    #  image: cypress/browsers:node14.17.0-chrome91-ff89
-    #  options: --user 1001
+    container:
+      image: cypress/browsers:node14.17.0-chrome91-ff89
+      options: --user 1001
 
     steps:
       - name: Set variables
@@ -33,10 +36,12 @@ jobs:
           DEFAULT_VIDEO: 'false'
           DEFAULT_TICKET_PURCHASE: 'false'
           DEFAULT_BRANCH: 'master'
+          DEFAULT_TEST: 'runAllTests'
         run: |
           echo "INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}" >> $GITHUB_ENV
           echo "INPUT_TICKET_PURCHASE=${{ github.event.inputs.ticketPurchase || env.DEFAULT_TICKET_PURCHASE }}" >> $GITHUB_ENV
           echo "INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
+          echo "INPUT_TEST=${{ github.event.inputs.testsToRun || env.DEFAULT_TEST }}" >> $GITHUB_ENV
       
       - name: Checkout
         uses: actions/checkout@v2
@@ -50,15 +55,22 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       # https://github.com/marketplace/actions/cypress-io
-      - name: Run Cypress tests
+      - name: Run all Cypress tests
+        if: env.INPUT_TEST == 'runAllTests'
         uses: cypress-io/github-action@v2
         #env:
         #  CYPRESS_baseUrl: api.dev.local
         with:
           #config: video=${{ env.INPUT_VIDEO }}
-          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }}
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --browser firefox
           working-directory: e2e-tests
-          browser: firefox
+
+      - name: Run single Cypress test
+        if: env.INPUT_TEST != 'runAllTests'
+        uses: cypress-io/github-action@v2
+        with:
+          command: yarn cypress:run:report --config video=${{ env.INPUT_VIDEO }} --env runOnGitHub=true,withBuyTicket=${{ env.INPUT_TICKET_PURCHASE }} --browser firefox --spec cypress/integration/tests/${{ env.INPUT_TEST }}.e2e_spec.js
+          working-directory: e2e-tests
 
       - name: Create HTML report
         if: always()
