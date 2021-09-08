@@ -122,12 +122,6 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
                     , H.div [ A.class "ui-editSection__container" ]
                         [ iconElement
                         , H.div [ A.class "ui-editSection__content" ] (children True)
-                        , B.init editText
-                            |> B.setIcon (Just editIcon)
-                            |> B.setOnClick onEdit
-                            |> B.setDisabled True
-                            |> B.setAttributes [ A.class "ui-editSection__editButton ui-editSection__editButton--hidden", A.tabindex -1 ]
-                            |> B.tertiaryCompact
                         ]
                     , H.div [ A.class "ui-editSection__fieldset__buttonGroup" ] <|
                         Maybe.withDefault [] buttonGroup
