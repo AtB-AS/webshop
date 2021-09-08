@@ -11,7 +11,7 @@ import {
 
 // Visiting another domain necessitates setting 'chromeWebSecurity=false' in 'cypress.json
 // ==> 'Only for chrome family of browsers
-if (Cypress.isBrowser({ family: 'chromium' })) {
+if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
     //Fail all tests if one fails
     //describe('Email confirmation', { failFast: { enabled: true } }, () => {
     describe('onboarding', () => {
@@ -119,37 +119,19 @@ if (Cypress.isBrowser({ family: 'chromium' })) {
 
             //Check maneuvering forward - including a11y
             onboarding.stepTitle().should('contain', step1);
-            //TODO https://github.com/AtB-AS/webshop/issues/367
-            //cy.a11yCheck(null, null);
-            cy.a11yCheck(null, {
-                rules: {
-                    'aria-progressbar-name': { enabled: false }
-                }
-            });
+            cy.a11yCheck(null, null);
             onboarding.back().should('not.exist');
             onboarding.skip().should('exist').and('contain', 'Hopp over');
 
             onboarding.skip().click();
             onboarding.stepTitle().should('contain', step2);
-            //TODO https://github.com/AtB-AS/webshop/issues/367
-            //cy.a11yCheck(null, null);
-            cy.a11yCheck(null, {
-                rules: {
-                    'aria-progressbar-name': { enabled: false }
-                }
-            });
+            cy.a11yCheck(null, null);
             onboarding.back().should('contain', 'Tilbake');
             onboarding.skip().should('contain', 'Hopp over');
 
             onboarding.skip().click();
             onboarding.stepTitle().should('contain', step3);
-            //TODO https://github.com/AtB-AS/webshop/issues/367
-            //cy.a11yCheck(null, null);
-            cy.a11yCheck(null, {
-                rules: {
-                    'aria-progressbar-name': { enabled: false }
-                }
-            });
+            cy.a11yCheck(null, null);
             onboarding.back().should('contain', 'Tilbake');
             onboarding.skip().should('contain', 'Hopp over');
 

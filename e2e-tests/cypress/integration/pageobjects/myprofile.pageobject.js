@@ -27,7 +27,7 @@ export const myprofile = {
     storedPayments: () =>
         cy
             .get('h2.ui-section__headerTitle')
-            .contains('Lagrede betalingsmåter')
+            .contains('Lagrede betalingskort')
             .parents('.ui-section__item'),
     policyStatement: () =>
         cy
@@ -41,7 +41,8 @@ export const myprofile = {
             .get('button.ui-editSection__fieldset__saveButton')
             .contains('Lagre')
             .parents("button")
-            .click(),
+            .click()
+            .wait(200),
     cancel: () => cy.get('button').contains('Avbryt').parents("button").click(),
     editProfileName: () =>
         cy.get('button').contains('Endre navn').click(),
@@ -63,6 +64,8 @@ export const myprofile = {
     typePhoneNumber: phoneNumber => cy.get('input#phone').type('{selectall}{del}' + phoneNumber),
     setPhoneNumber: (phoneNumber) => {
         cy.intercept('PATCH', '**/webshop/v1/profile').as('profile');
+        cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
+        cy.intercept("GET", "**/webshop/v1/consent").as("consent")
 
         cy.get('button').contains('telefonnummer').click();
         cy.get('input#phone').type('{selectall}{del}' + phoneNumber);
@@ -70,7 +73,15 @@ export const myprofile = {
             .contains('Lagre')
             .parents("button")
             .click();
-        cy.wait('@profile');
+
+        //The loading sometimes takes time
+        cy.get('button.ui-editSection__fieldset__saveButton').then($button => {
+            if($button.attr('aria-label').includes('Laster')){
+                cy.wait(2000)
+            }
+        })
+
+        cy.wait(['@profile','@recurringPayments','@consent']);
     },
     phoneError: () => cy.get("#phone-error"),
     travelCard: () => cy.get(".ui-travelCardText"),
@@ -94,12 +105,12 @@ export const myprofile = {
     notificationConsentLabel: () => cy.get("label[for='consent1197']"),
 
     storedPayment: type => cy.get('h2.ui-section__headerTitle')
-        .contains('Lagrede betalingsmåter')
+        .contains('Lagrede betalingskort')
         .parents('.ui-section__item')
         .find('form.ui-editSection')
         .contains(type),
     storedPaymentIcon: type => cy.get('h2.ui-section__headerTitle')
-        .contains('Lagrede betalingsmåter')
+        .contains('Lagrede betalingskort')
         .parents('.ui-section__item')
         .find('form.ui-editSection')
         .contains(type)
@@ -107,14 +118,14 @@ export const myprofile = {
         .find(".ui-editSection__icon")
         .find("img"),
     storedPaymentExpiry: type => cy.get('h2.ui-section__headerTitle')
-        .contains('Lagrede betalingsmåter')
+        .contains('Lagrede betalingskort')
         .parents('.ui-section__item')
         .find('form.ui-editSection')
         .contains(type)
         .parents('form.ui-editSection')
         .find(".pageAccount__recurringPayment__expiry"),
     removeStoredPayment: type => cy.get('h2.ui-section__headerTitle')
-        .contains('Lagrede betalingsmåter')
+        .contains('Lagrede betalingskort')
         .parents('.ui-section__item')
         .find('form.ui-editSection')
         .contains(type)

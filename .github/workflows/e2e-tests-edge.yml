@@ -1,15 +1,14 @@
-name: E2E-tests Ubuntu Chrome
+name: E2E-tests Windows
 
 on:
   schedule:
-    - cron:  '0 5 * * *'
-  #  - cron:  '0 5,10,21 * * *'
+    - cron:  '0 6 * * *'
   workflow_dispatch:
     inputs:
       browser:
-        description: 'In which browser to run the tests (chrome, electron)'
+        description: 'In which browser to run the tests (edge, chrome, firefox)'
         required: true
-        default: 'chrome'
+        default: 'edge'
       testsToRun:
         description: 'Run all or only a specific test (*.e2e_spec.js)'
         required: true
@@ -19,18 +18,18 @@ on:
         required: true
         default: 'false'
       ticketPurchase:
-        description: 'Include ticket purchase'     
+        description: 'Include ticket purchase'
         required: true
         default: 'false'
       branch:
-        description: 'Define branch to test'     
+        description: 'Define branch to test'
         required: true
         default: 'master'
 
 jobs:
   e2e-test:
     name: E2E-test
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Set variables
@@ -41,12 +40,12 @@ jobs:
           DEFAULT_BROWSER: 'chrome'
           DEFAULT_TEST: 'runAllTests'
         run: |
-          echo "INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}" >> $GITHUB_ENV
-          echo "INPUT_TICKET_PURCHASE=${{ github.event.inputs.ticketPurchase || env.DEFAULT_TICKET_PURCHASE }}" >> $GITHUB_ENV
-          echo "INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
-          echo "INPUT_BROWSER=${{ github.event.inputs.browser || env.DEFAULT_BROWSER }}" >> $GITHUB_ENV
-          echo "INPUT_TEST=${{ github.event.inputs.testsToRun || env.DEFAULT_TEST }}" >> $GITHUB_ENV
-      
+          echo ("INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}") >> $env:GITHUB_ENV
+          echo ("INPUT_TICKET_PURCHASE=${{ github.event.inputs.ticketPurchase || env.DEFAULT_TICKET_PURCHASE }}") >> $env:GITHUB_ENV
+          echo ("INPUT_BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}") >> $env:GITHUB_ENV
+          echo ("INPUT_BROWSER=${{ github.event.inputs.browser || env.DEFAULT_BROWSER }}") >> $env:GITHUB_ENV
+          echo ("INPUT_TEST=${{ github.event.inputs.testsToRun || env.DEFAULT_TEST }})" >> $env:GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -90,7 +89,7 @@ jobs:
             ./e2e-tests/cypress/results/assets
             ./e2e-tests/cypress/results/cypressTestReport.html
           retention-days: 3
-          
+
       - name: Upload test report json
         if: always()
         uses: actions/upload-artifact@v2
@@ -98,7 +97,7 @@ jobs:
           name: test-results-json
           path: ./e2e-tests/cypress/results/cypressTestReport.json
           retention-days: 3
-          
+
       - name: Upload video recording
         if: failure() && contains(env.INPUT_VIDEO, 'true')
         uses: actions/upload-artifact@v2
