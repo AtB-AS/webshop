@@ -17,11 +17,10 @@ notifications messages =
             H.div
                 [ A.class "ui-notifications" ]
                 (messages
-                    |> List.map .content
                     |> List.map
-                        (\e ->
+                        (\msg ->
                             Ui.Section.init
                                 |> Ui.Section.setMarginBottom True
-                                |> Ui.Section.viewWithOptions [ e ]
+                                |> Ui.Section.viewWithOptions [ msg.content ]
                         )
                 )
