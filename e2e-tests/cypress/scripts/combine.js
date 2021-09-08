@@ -49,6 +49,12 @@ function combineMochaAwesomeReports() {
     const parsedData = JSON.parse(rawdata);
     if (idx === 0) { startTime = parsedData.stats.start; }
     if (idx === (reports.length - 1)) { endTime = parsedData.stats.end; }
+
+    //In case no tests in given report (e.g. all tests are skipped du to check on browser)
+    if (parsedData.results.toString() === 'false'){
+      return
+    }
+
     //** compute failures since mochawesome gives wrong numbers **
     let failuresNo = 0
     for (let i = 0; i < parsedData.results[0].suites.length; i++){
@@ -111,6 +117,11 @@ function writeReport(obj, uuid, reportName) {
     //PREV: Gave 'null' stats.passPercent = Math.round((stats.passes / (stats.testsRegistered - stats.pending)) * 1000) / 10;
     stats.passPercent = Math.round((stats.passes / (stats.passes + stats.failures)) * 1000) / 10;
     stats.pendingPercent = Math.round((stats.pending / stats.testsRegistered) * 1000) /10;
+    //In case no tests (e.g. all tests are skipped du to check on browser)
+    if (stats.testsRegistered === 0){
+      stats.passPercent = 100; //100 to get a green bar in the report instead of a red bar
+      stats.pendingPercent = 0;
+    }
     //** Do not know what 'skipped' is here, since 'xit()' in Cypress becomes 'pending'
     stats.skipped = obj.totalSkipped;
     stats.hasSkipped = obj.totalSkipped > 0;
