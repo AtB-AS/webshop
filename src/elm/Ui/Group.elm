@@ -9,6 +9,7 @@ import Html.Extra
 import Ui.LabelItem
 import Ui.ScreenReaderText as SR
 import Ui.TextContainer
+import Util.Maybe as MaybeUtil
 
 
 type alias Group msg =
@@ -51,7 +52,10 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
                 Icon.upArrow
 
         ariaLabel =
-            title ++ ", " ++ Maybe.withDefault "" value ++ ", " ++ editText
+            title
+                ++ MaybeUtil.mapWithDefault ((++) ", ") "" value
+                ++ ", "
+                ++ editText
 
         regionId =
             id ++ "region"
