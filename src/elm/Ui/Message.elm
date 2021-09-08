@@ -79,7 +79,7 @@ statusToAttribute status =
         Error _ ->
             Just <| A.attribute "role" "alert"
 
-        _ ->
+        Info _ ->
             Nothing
 
 
