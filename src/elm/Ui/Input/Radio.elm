@@ -23,6 +23,7 @@ import Html.Extra
 import Ui.Group
 import Ui.ScreenReaderText as SR
 import Ui.TextContainer as Text exposing (TextColor(..), TextContainer(..))
+import Util.Maybe as MaybeUtil
 
 
 type alias Radio msg =
@@ -101,7 +102,9 @@ viewGroup : String -> List (Html msg) -> Html msg
 viewGroup hiddenTitle children =
     H.fieldset [ A.class "ui-input-radioGroup" ]
         (H.legend
-            [ A.class "ui-input-radioGroup__legend ui-input-radioGroup__legend--hidden" ]
+            [ A.class "ui-input-radioGroup__legend ui-input-radioGroup__legend--hidden"
+            , A.attribute "aria-hidden" "true"
+            ]
             [ H.text hiddenTitle ]
             :: List.map Ui.Group.viewItem children
         )
@@ -122,6 +125,9 @@ view { id, name, title, icon, onCheck, checked, subtitle, ariaLabel, attributes 
     let
         labelId =
             id ++ "-label"
+
+        defaultAriaLabel =
+            title ++ MaybeUtil.mapWithDefault ((++) ", ") "" subtitle
     in
         H.div []
             [ H.input
@@ -145,7 +151,7 @@ view { id, name, title, icon, onCheck, checked, subtitle, ariaLabel, attributes 
                 , A.attribute "aria-checked" (boolToString checked)
                 ]
                 [ H.div [ A.class "ui-input-radio__content", A.attribute "aria-hidden" "true" ]
-                    [ SR.onlyReadWithId (Maybe.withDefault title ariaLabel) labelId
+                    [ SR.onlyReadWithId (Maybe.withDefault defaultAriaLabel ariaLabel) labelId
                     , H.span [ A.class "ui-input-radio__box" ] []
                     , H.span [ A.class "ui-input-radio__title" ]
                         [ H.span [] [ H.text title ]
