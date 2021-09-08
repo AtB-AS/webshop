@@ -254,21 +254,26 @@ update msg env model =
                     Err errors ->
                         PageUpdater.init { model | validationErrors = errors }
 
-        ReceiveUpdateProfile field result ->
+        ReceiveUpdateProfile fields result ->
             case result of
                 Ok () ->
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
                             , editSection = Nothing
-                            , validationErrors = Validation.removeAll field model.validationErrors
+                            , validationErrors = Validation.removeAll fields model.validationErrors
                         }
+                        |> PageUpdater.addGlobalAction
+                            (Notification.init
+                                |> Notification.setContent (Message.valid "Profilen din ble oppdatert.")
+                                |> GA.ShowNotification
+                            )
 
                 Err error ->
                     PageUpdater.init
                         { model
                             | loadingEditSection = Nothing
-                            , validationErrors = Validation.add field (Util.TravelCard.serverErrorToString WebshopService.travelCardErrorDecoder error) model.validationErrors
+                            , validationErrors = Validation.add fields (Util.TravelCard.serverErrorToString WebshopService.travelCardErrorDecoder error) model.validationErrors
                         }
 
         ProfileChange (Just profile) ->
