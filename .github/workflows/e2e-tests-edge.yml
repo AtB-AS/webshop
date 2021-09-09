@@ -37,7 +37,7 @@ jobs:
           DEFAULT_VIDEO: 'false'
           DEFAULT_TICKET_PURCHASE: 'false'
           DEFAULT_BRANCH: 'master'
-          DEFAULT_BROWSER: 'chrome'
+          DEFAULT_BROWSER: 'edge'
           DEFAULT_TEST: 'runAllTests'
         run: |
           echo ("INPUT_VIDEO=${{ github.event.inputs.videoRecording || env.DEFAULT_VIDEO }}") >> $env:GITHUB_ENV
