@@ -8,7 +8,7 @@ view : String -> List (Html msg) -> Html msg
 view accessibilityName children =
     H.fieldset [ A.class "ui-accessibleFieldset" ]
         [ H.legend
-            [ A.class "ui-accessibleFieldset__legend" ]
+            [ A.class "ui-accessibleFieldset__legend", A.attribute "aria-hidden" "true" ]
             [ H.text accessibilityName ]
         , H.div [ A.class "ui-accessibleFieldset__container" ]
             children

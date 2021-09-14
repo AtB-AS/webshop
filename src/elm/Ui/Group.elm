@@ -5,9 +5,11 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra as Attr
 import Html.Events as E
+import Html.Extra
 import Ui.LabelItem
-import Ui.Section
+import Ui.ScreenReaderText as SR
 import Ui.TextContainer
+import Util.Maybe as MaybeUtil
 
 
 type alias Group msg =
@@ -25,11 +27,6 @@ type alias Group msg =
 view : Group msg -> List (Html msg) -> Html msg
 view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } children =
     let
-        classList =
-            [ ( "ui-group", True )
-            , ( "ui-group--open", open )
-            ]
-
         classListContent =
             [ ( "ui-group__content", True )
             , ( "ui-group__content--open", open )
@@ -39,56 +36,61 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
             Icon.viewMonochrome Icon.edit
 
         editText =
-            if not open then
-                H.span [ A.class "ui-group__headerButton__editText" ]
-                    [ H.span [ A.class "ui-group__headerButton__editText__text" ] [ H.text <| "Endre " ++ editTextSuffix ]
+            "Endre " ++ editTextSuffix
+
+        editTextComponent =
+            if readonly then
+                Html.Extra.nothing
+
+            else if not open then
+                H.span [ A.class "ui-group__headerButton__content__editText" ]
+                    [ H.span [ A.class "ui-group__headerButton__content__editText__text" ] [ H.text editText ]
                     , editIcon
                     ]
 
             else
                 Icon.upArrow
 
+        ariaLabel =
+            title
+                ++ MaybeUtil.mapWithDefault ((++) ", ") "" value
+                ++ ", "
+                ++ editText
+
         regionId =
             id ++ "region"
     in
         Ui.TextContainer.primary
-            [ if readonly then
-                Ui.Section.viewWithIcon (Icon.viewLargeMonochrome icon)
-                    [ Ui.Section.viewLabelItem title
-                        [ H.text <| Maybe.withDefault "" value
+            [ H.section
+                [ A.class "ui-group" ]
+                [ H.div [ A.class "ui-group__icon" ] [ Icon.viewLargeMonochrome icon ]
+                , H.div [ A.class "ui-group__innerContainer" ]
+                    [ H.button
+                        [ A.class "ui-group__headerButton"
+                        , A.disabled readonly
+                        , A.attribute "aria-expanded" (boolAsString open)
+                        , A.attribute "aria-controls" regionId
+                        , A.id id
+                        , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                         ]
-                    ]
-
-              else
-                H.section
-                    [ A.classList classList ]
-                    [ H.div [ A.class "ui-group__icon" ] [ Icon.viewLargeMonochrome icon ]
-                    , H.div [ A.class "ui-group__innerContainer" ]
-                        [ H.h3 [ A.class "ui-group__header" ]
-                            [ H.button
-                                [ A.class "ui-group__headerButton"
-                                , A.disabled readonly
-                                , A.attribute "aria-expanded" (boolAsString open)
-                                , A.attribute "aria-controls" regionId
-                                , A.id id
-                                , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
-                                ]
-                                [ Ui.LabelItem.viewInline title [ H.text <| Maybe.withDefault "" value ]
-                                , editText
-                                ]
+                        [ SR.onlyRead ariaLabel
+                        , H.div [ A.class "ui-group__headerButton__content", A.attribute "aria-hidden" "true" ]
+                            [ Ui.LabelItem.viewInline title [ H.text <| Maybe.withDefault "" value ]
+                            , editTextComponent
                             ]
-                        , H.div
-                            [ A.classList classListContent
-                            , A.attribute "aria-labelledby" id
-                            , Attr.role "region"
-                            , A.id regionId
-                            , Attr.attributeIf (not open) (A.attribute "inert" "true")
-                            ]
-                            (children
-                                |> List.map viewItem
-                            )
                         ]
+                    , H.div
+                        [ A.classList classListContent
+                        , A.attribute "aria-labelledby" id
+                        , Attr.role "region"
+                        , A.id regionId
+                        , Attr.attributeIf (not open) (A.attribute "inert" "true")
+                        ]
+                        (children
+                            |> List.map viewItem
+                        )
                     ]
+                ]
             ]
 
 
