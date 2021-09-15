@@ -17,6 +17,7 @@ import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode exposing (Value)
 import Url.Builder
 import Util.Http as HttpUtil
+import Util.Maybe as MaybeUtil
 import Util.PhoneNumber
 
 
@@ -54,22 +55,16 @@ reserve env phoneNumber paymentSelection storePayment offers =
                 [ "ticket", "v2", "reserve" ]
                 []
 
+        vippsPhoneNumber =
+            Util.PhoneNumber.forVipps phoneNumber
+
         body =
             [ ( "offers", Encode.list encodeOffer offers )
             , encodePaymentSelection paymentSelection
             , ( "store_payment", encodeStorePayment paymentSelection storePayment )
             , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
             ]
-                ++ (case phoneNumber of
-                        Just "" ->
-                            []
-
-                        Just phone ->
-                            [ ( "phone_number", Encode.string <| Util.PhoneNumber.withoutCountryCode phone ) ]
-
-                        Nothing ->
-                            []
-                   )
+                ++ MaybeUtil.mapWithDefault (\p -> [ ( "phone_number", Encode.string p ) ]) [] vippsPhoneNumber
     in
         HttpUtil.post env url (Http.jsonBody <| Encode.object body) (Http.expectJson reservationDecoder)
 

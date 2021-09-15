@@ -1,4 +1,4 @@
-module Util.Maybe exposing (flatMap, join, mapWithDefault)
+module Util.Maybe exposing (filter, flatMap, join, mapWithDefault)
 
 {-| Utils for operating on Maybes, adding more combinators
 to treat them as functors.
@@ -27,3 +27,16 @@ mapWithDefault f default maybe =
     maybe
         |> Maybe.map f
         |> Maybe.withDefault default
+
+
+filter : (a -> Bool) -> Maybe a -> Maybe a
+filter f maybe =
+    Maybe.andThen
+        (\m ->
+            if f m then
+                maybe
+
+            else
+                Nothing
+        )
+        maybe
