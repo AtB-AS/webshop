@@ -1,17 +1,17 @@
-module Util.PhoneNumber exposing (format, isDefaultCountryCode, withDefaultCountryCode, withoutCountryCode)
+module Util.PhoneNumber exposing (forVipps, format, isDefaultCountryCode, withDefaultCountryCode)
 
+import Util.Maybe as MaybeUtil
 import Util.NumberFormater as NF
 
 
-withoutCountryCode : String -> String
-withoutCountryCode phone =
-    if String.startsWith "+" phone then
-        -- NOTE: This isn't ideal permanently. If supporting multiple country codes, we should
-        -- check for complete list as some are 3 digits.
-        String.dropLeft 3 phone
-
-    else
-        phone
+{-| Format the phone number to be prefilled with Vipps. Vipps supports
+Norwegian phone numbers without country code.
+-}
+forVipps : Maybe String -> Maybe String
+forVipps phone =
+    phone
+        |> MaybeUtil.filter isDefaultCountryCode
+        |> Maybe.map (String.dropLeft 3)
 
 
 withDefaultCountryCode : String -> String
@@ -59,3 +59,18 @@ format phone =
                 , NF.Digits 2
                 ]
                 actualPhone
+
+
+
+-- INTERNAL
+
+
+withoutCountryCode : String -> String
+withoutCountryCode phone =
+    if String.startsWith "+" phone then
+        -- NOTE: This isn't ideal permanently. If supporting multiple country codes, we should
+        -- check for complete list as some are 3 digits.
+        String.dropLeft 3 phone
+
+    else
+        phone
