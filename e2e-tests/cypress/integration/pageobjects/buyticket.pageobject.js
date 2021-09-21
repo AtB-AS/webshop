@@ -43,12 +43,12 @@ export const options = {
     value: elem => cy.wrap(elem).find(".ui-labelItem"),
     areVisible: (elem, bool) => {
         if (bool){
-            cy.wrap(elem).should("have.class", "ui-group--open")
-            cy.wrap(elem).find(".ui-group__headerButton__editText__text").should("not.exist")
+            cy.wrap(elem).find(".ui-group__content").should("have.class", "ui-group__content--open")
+            cy.wrap(elem).find(".ui-group__headerButton__content__editText__text").should("not.exist")
         }
         else {
-            cy.wrap(elem).should("not.have.class", "ui-group--open")
-            cy.wrap(elem).find(".ui-group__headerButton__editText__text").should("contain", "Endre")
+            cy.wrap(elem).find(".ui-group__content").should("not.have.class", "ui-group__content--open")
+            cy.wrap(elem).find(".ui-group__headerButton__content__editText__text").should("contain", "Endre")
         }
     }
 };

@@ -71,12 +71,10 @@ describe('my profile', () => {
 
         const phoneNumber = "9" + randomNumbers(7);
         const foreignPhoneNumber = '+1233444335354'
-        let currPhoneNumber = ''
+        let currPhoneNumber = '12345678'
 
         //Pre
-        myprofile.phoneNumber().then($no => {
-            currPhoneNumber = $no.text()
-        })
+        myprofile.setPhoneNumber(currPhoneNumber)
 
         //Cancel
         myprofile.editPhoneNumber()
@@ -84,9 +82,7 @@ describe('my profile', () => {
         myprofile.cancel()
 
         //Verify
-        myprofile.phoneNumber().then($no => {
-            expect($no.text()).to.eq(currPhoneNumber)
-        })
+        myprofile.phoneNumber().should("contain", currPhoneNumber)
 
         //Empty
         myprofile.setPhoneNumber('')
@@ -94,7 +90,7 @@ describe('my profile', () => {
 
         //Error
         myprofile.editPhoneNumber()
-        myprofile.typePhoneNumber('11')
+        myprofile.typePhoneNumber('+47')
         myprofile.saveValue()
         cy.wait('@profile');
         //TODO Error msg: https://github.com/AtB-AS/webshop/issues/290
