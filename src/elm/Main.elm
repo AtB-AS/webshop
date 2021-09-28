@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Base exposing (AppInfo)
+import Base exposing (AppInfo, OrgId(..))
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
@@ -90,6 +90,13 @@ type alias Model =
     }
 
 
+type alias OrganizationConfiguration =
+    { orgId : OrgId
+    , logoUrl : String
+    , siteTitle : String
+    }
+
+
 type alias Flags =
     { isDevelopment : Bool
     , localUrl : String
@@ -99,6 +106,7 @@ type alias Flags =
     , installId : String
     , loggedIn : Bool
     , showValidityWarning : Bool
+    , orgConf : OrganizationConfiguration
     }
 
 
@@ -114,6 +122,7 @@ main =
         }
 
 
+flagsDecoder : Decoder Flags
 flagsDecoder =
     Decode.succeed Flags
         |> DecodeP.required "isDevelopment" Decode.bool
@@ -124,6 +133,33 @@ flagsDecoder =
         |> DecodeP.required "installId" Decode.string
         |> DecodeP.required "loggedIn" Decode.bool
         |> DecodeP.required "showValidityWarning" Decode.bool
+        |> DecodeP.required "orgConf" orgConfDecoder
+
+
+orgConfDecoder : Decoder OrganizationConfiguration
+orgConfDecoder =
+    Decode.succeed OrganizationConfiguration
+        |> DecodeP.required "orgId" orgIdDecoder
+        |> DecodeP.required "logoUrl" Decode.string
+        |> DecodeP.required "siteTitle" Decode.string
+
+
+orgIdFromString : String -> OrgId
+orgIdFromString provider =
+    case provider of
+        "atb" ->
+            AtB
+
+        "nfk" ->
+            NFK
+
+        _ ->
+            AtB
+
+
+orgIdDecoder : Decoder OrgId
+orgIdDecoder =
+    Decode.andThen (orgIdFromString >> Decode.succeed) Decode.string
 
 
 resultInit : Decode.Value -> Url -> Nav.Key -> ( Result Decode.Error Model, Cmd Msg )
@@ -281,9 +317,11 @@ init flags url navKey =
             }
 
         appInfo =
-            { title = "AtB Nettbutikk"
+            { title = flags.orgConf.siteTitle
             , version = flags.version
             , commit = flags.commit
+            , logoUrl = flags.orgConf.logoUrl
+            , orgId = flags.orgConf.orgId
             }
 
         ( overviewModel, overviewCmd ) =
@@ -352,7 +390,7 @@ update msg model =
                             model.appInfo
 
                         newAppInfo =
-                            { appInfo | title = Util.PageTitle.pageTitle title }
+                            { appInfo | title = Util.PageTitle.pageTitle model.appInfo.title title }
                     in
                         ( { model | appInfo = newAppInfo }, Cmd.none )
 
@@ -714,7 +752,10 @@ header model contentClass =
             [ H.div [ A.class "pageHeader__content" ]
                 [ H.div [ A.class "pageHeader__inner" ]
                     [ H.h1 [ A.class "pageHeader__logo" ]
-                        [ H.a [ Route.href Route.Home ] [ Icon.atb, H.text "AtB Nettbutikk" ]
+                        [ H.a [ Route.href Route.Home ]
+                            [ H.img [ A.src model.appInfo.logoUrl ] []
+                            , H.text model.appInfo.title
+                            ]
                         ]
                     , if showHeader then
                         H.div [ A.class "pageHeader__toggleButton" ] [ Ui.HamburgerButton.view "burgermenu" "menubox" model.openMenu (ToggleMenu <| not model.openMenu) ]

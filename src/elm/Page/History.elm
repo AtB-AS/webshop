@@ -291,9 +291,6 @@ viewOrder shared model order =
                 Nothing ->
                     True
 
-        isRefunded =
-            order.state == FareContractStateRefunded
-
         orderIdText =
             "Ordre-ID: " ++ order.orderId
 

@@ -14,7 +14,6 @@ import Html.Attributes as A
 import Html.Extra
 import Html.Keyed as Keyed
 import Ui.Button as B
-import Ui.ScreenReaderText as SR
 import Ui.TextContainer
 
 

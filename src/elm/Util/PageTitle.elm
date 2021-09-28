@@ -4,10 +4,10 @@ import Maybe
 import Util.Func
 
 
-pageTitle : Maybe String -> String
-pageTitle subTitle =
+pageTitle : String -> Maybe String -> String
+pageTitle siteTitle subTitle =
     (subTitle
         |> Maybe.map (Util.Func.flip (++) " - ")
         |> Maybe.withDefault ""
     )
-        ++ "AtB Nettbutikk"
+        ++ siteTitle

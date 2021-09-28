@@ -186,11 +186,6 @@ setDGMessage message opts =
     { opts | message = message }
 
 
-setDGConfirmLabel : String -> DestructiveGroup msg -> DestructiveGroup msg
-setDGConfirmLabel confirmLabel opts =
-    { opts | confirmLabel = confirmLabel }
-
-
 setDGOnCancel : Maybe msg -> DestructiveGroup msg -> DestructiveGroup msg
 setDGOnCancel onCancel opts =
     { opts | onCancel = onCancel }

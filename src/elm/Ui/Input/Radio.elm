@@ -15,7 +15,7 @@ module Ui.Input.Radio exposing
     , viewLabelGroup
     )
 
-import Html as H exposing (Attribute, Html)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Attributes.Extra as Attr
 import Html.Events as E

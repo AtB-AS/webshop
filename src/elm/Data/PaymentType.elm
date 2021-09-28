@@ -13,7 +13,6 @@ module Data.PaymentType exposing
 
 import Fragment.Icon as Icon
 import Html exposing (Html)
-import Html.Attributes as A
 
 
 type PaymentCard

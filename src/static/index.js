@@ -10,6 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Elm } from '../elm/Main';
 import './navigation';
 
+const appConfig = require(`/orgs/${elmFlags.orgId}.json`);
+
 const MAX_RETRY_ATTEMPTS = 3;
 
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
@@ -65,7 +67,8 @@ const app = Elm.Main.init({
             loggedIn: localStorage['loggedIn'] === 'loggedIn',
             showValidityWarning:
                 localStorage.getItem('hideValidityWarning') != 'yes',
-            localUrl: window.location.origin
+            localUrl: window.location.origin,
+            orgConf: appConfig
         },
         elmFlags
     )
@@ -148,7 +151,11 @@ remoteConfig
             'tariff_zones'
         );
         fetchRemoteConfigData(app.ports.remoteConfigConsents, 'consents');
-        fetchRemoteConfigData(app.ports.remoteConfigPaymentTypes, 'payment_types', 'web');
+        fetchRemoteConfigData(
+            app.ports.remoteConfigPaymentTypes,
+            'payment_types',
+            'web'
+        );
         sendRemoteConfigVatPercent();
     })
     .catch((err) => {
@@ -458,9 +465,10 @@ if (app.ports.convertTime) {
                 dt !== null &&
                 typeof dt !== 'undefined'
             ) {
-                app.ports.convertedTime.send(
-                    [dt.toISOString().replace(/\.[0-9]*/, ''), dt.valueOf()]
-                );
+                app.ports.convertedTime.send([
+                    dt.toISOString().replace(/\.[0-9]*/, ''),
+                    dt.valueOf()
+                ]);
             }
         } catch {}
     });
@@ -501,7 +509,9 @@ function handleAuthError(error) {
 
     switch (error.code) {
         case 'auth/invalid-phone-number':
-            app.ports.authError.send('Ugyldig telefonnummer. Sjekk at telefonnummeret består av 8 siffer.');
+            app.ports.authError.send(
+                'Ugyldig telefonnummer. Sjekk at telefonnummeret består av 8 siffer.'
+            );
             break;
         case 'auth/too-many-requests':
             app.ports.authError.send(
@@ -545,12 +555,14 @@ function handleAuthError(error) {
             );
             break;
         default:
-            app.ports.authError.send('En ukjent feil oppstod. Vent litt og prøv på nytt.');
+            app.ports.authError.send(
+                'En ukjent feil oppstod. Vent litt og prøv på nytt.'
+            );
     }
 }
 
 function setCustomAuthError(message) {
-    app.ports.authError.send(message)
+    app.ports.authError.send(message);
 }
 
 app.ports.loginPhone.subscribe((phone) => {
@@ -721,7 +733,7 @@ if (intercomEnabled) {
     const baseSettings = {
         'AtB-Install-Id': installId,
         'AtB-Build-Number': elmFlags.commit,
-        'hide_default_launcher': false,
+        hide_default_launcher: false
     };
 
     firebase.auth().onAuthStateChanged((user) => {

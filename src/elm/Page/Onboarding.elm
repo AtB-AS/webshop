@@ -349,7 +349,7 @@ getError error =
                     |> Decode.andThen
                         (\upstreamError ->
                             case
-                                Decode.decodeString (Decode.field "shortNorwegian" Decode.string) upstreamError
+                                Decode.decodeString (Decode.field "longNorwegian" Decode.string) upstreamError
                             of
                                 Err _ ->
                                     Decode.fail "Invalid error"
