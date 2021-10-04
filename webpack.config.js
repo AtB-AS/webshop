@@ -213,14 +213,15 @@ function getFirebaseConfig(config) {
 }
 
 function getOrgIdConfig(config) {
+    const orgId = process.env.WEBSHOP_ORG_ID || config.orgId;
     const validOrgIdStrings = validOrgIds.join(', ');
-    if (!validOrgIds.includes(config.orgId)) {
+    if (!validOrgIds.includes(orgId)) {
         throw Error(
             `Missing valid "orgId". Valid org ids: ${validOrgIdStrings}`
         );
     }
 
-    return config['orgId'];
+    return orgId;
 }
 
 // Get languageSwitcher from command line or config file
