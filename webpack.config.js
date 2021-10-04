@@ -340,11 +340,11 @@ const commonConfig = {
                     }
                 },
                 {
-                    from: 'src/static/favicon.ico',
+                    from: `src/static/favicon-${orgId}.ico`,
                     to: 'favicon.ico'
                 },
                 {
-                    from: 'src/static/icon.svg',
+                    from: `src/static/icon-${orgId}.svg`,
                     to: 'icon.svg'
                 },
                 {
