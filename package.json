@@ -15,7 +15,7 @@
     },
     "devDependencies": {
         "@atb-as/elm-format": "^1.0.0",
-        "@atb-as/theme": "3.2.0",
+        "@atb-as/theme": "^5.0.0-alpha.0",
         "@babel/core": "^7.14.6",
         "@babel/preset-env": "^7.14.7",
         "@webpack-cli/serve": "^1.5.1",
