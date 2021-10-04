@@ -7,7 +7,8 @@ type OrgId
 
 
 type alias AppInfo =
-    { title : String
+    { pageName : String
+    , siteTitle : String
     , version : String
     , commit : String
     , logoUrl : String
