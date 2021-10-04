@@ -338,6 +338,7 @@ const commonConfig = {
                 baseUrl: getBaseUrl(localConfig, 'baseUrl'),
                 ticketUrl: getBaseUrl(localConfig, 'ticketUrl'),
                 refDataUrl: getBaseUrl(localConfig, 'refDataUrl'),
+                orgId: getBaseUrl(localConfig, 'orgId'),
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
                 commit: gitCommitHash()

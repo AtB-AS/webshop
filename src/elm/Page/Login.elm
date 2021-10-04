@@ -1,5 +1,6 @@
 module Page.Login exposing (Model, Msg(..), init, subscriptions, update, view)
 
+import Base exposing (AppInfo, OrgId(..))
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Environment exposing (Environment)
