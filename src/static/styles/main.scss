@@ -148,14 +148,10 @@ p + p {
     padding: var(--spacings-medium);
     padding-left: 0;
 
-    svg {
+    img {
         display: block;
         height: 1.25rem;
         margin-right: var(--spacings-medium);
-    }
-    svg,
-    path {
-        fill: currentColor;
     }
 }
 .pageHeader__nav {
