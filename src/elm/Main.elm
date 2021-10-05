@@ -4,6 +4,7 @@ import Base exposing (AppInfo, OrgId(..))
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
+import Data.Organization as OrgModule
 import Environment exposing (DistributionEnvironment(..), Environment, Language(..))
 import Error exposing (Error)
 import Fragment.Icon as Icon
@@ -99,7 +100,7 @@ type alias Flags =
     , installId : String
     , loggedIn : Bool
     , showValidityWarning : Bool
-    , orgConf : OrganizationConfiguration
+    , orgConf : OrgModule.OrganizationConfiguration
     }
 
 
@@ -126,39 +127,7 @@ flagsDecoder =
         |> DecodeP.required "installId" Decode.string
         |> DecodeP.required "loggedIn" Decode.bool
         |> DecodeP.required "showValidityWarning" Decode.bool
-        |> DecodeP.required "orgConf" orgConfDecoder
-
-
-type alias OrganizationConfiguration =
-    { orgId : OrgId
-    , logoUrl : String
-    , siteTitle : String
-    , loginIllustrationUrl : String
-    }
-
-
-orgConfDecoder : Decoder OrganizationConfiguration
-orgConfDecoder =
-    Decode.succeed OrganizationConfiguration
-        |> DecodeP.required "orgId" orgIdDecoder
-        |> DecodeP.required "logoUrl" Decode.string
-        |> DecodeP.required "siteTitle" Decode.string
-        |> DecodeP.required "loginIllustrationUrl" Decode.string
-
-
-orgIdFromString : String -> OrgId
-orgIdFromString provider =
-    case provider of
-        "nfk" ->
-            NFK
-
-        _ ->
-            AtB
-
-
-orgIdDecoder : Decoder OrgId
-orgIdDecoder =
-    Decode.andThen (orgIdFromString >> Decode.succeed) Decode.string
+        |> DecodeP.required "orgConf" OrgModule.orgConfDecoder
 
 
 resultInit : Decode.Value -> Url -> Nav.Key -> ( Result Decode.Error Model, Cmd Msg )
