@@ -291,7 +291,6 @@ init flags url navKey =
             , commit = flags.commit
             , logoUrl = flags.orgConf.logoUrl
             , orgId = flags.orgConf.orgId
-            , loginIllustrationUrl = flags.orgConf.loginIllustrationUrl
             }
 
         ( overviewModel, overviewCmd ) =
