@@ -9,7 +9,6 @@ type alias OrganizationConfiguration =
     { orgId : OrgId
     , logoUrl : String
     , siteTitle : String
-    , loginIllustrationUrl : String
     }
 
 
@@ -19,7 +18,6 @@ orgConfDecoder =
         |> DecodeP.required "orgId" orgIdDecoder
         |> DecodeP.required "logoUrl" Decode.string
         |> DecodeP.required "siteTitle" Decode.string
-        |> DecodeP.required "loginIllustrationUrl" Decode.string
 
 
 orgIdFromString : String -> OrgId
