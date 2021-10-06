@@ -24,6 +24,7 @@ jobs:
                   WEBSHOP_FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_PRODUCTION }}
                   GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
                   INTERCOM_ENABLED: ${{ secrets.INTERCOM_ENABLED }}
+                  WEBSHOP_ORG_ID: atb
             - uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: '${{ secrets.GITHUB_TOKEN }}'
