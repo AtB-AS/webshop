@@ -173,8 +173,8 @@ viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
         isCurrentlyActive =
             fareContract.validFrom <= now
 
-        firstCarnet =
-            getFirstCarnetType fareContract
+        carnetsList =
+            getCarnetTravelRights fareContract
 
         classListButtonTitle =
             [ ( "ui-ticketDetails__headerButton__title", True )
@@ -188,26 +188,29 @@ viewTicketButtonTextAndIcon { fareContract, currentTime, timeZone } =
             else
                 Icon.ticketLargeWaiting
     in
-        case firstCarnet of
-            Just carnet ->
-                viewCarnetHeader carnet classListButtonTitle currentTime timeZone
-
-            _ ->
+        case carnetsList of
+            [] ->
                 [ H.span [ A.class "ui-ticketDetails__headerButton__icon" ]
                     [ icon ]
                 , H.span [ A.classList classListButtonTitle ]
                     [ viewValidity fareContract.validFrom fareContract.validTo currentTime timeZone ]
                 ]
 
+            carnets ->
+                viewCarnetHeader carnets classListButtonTitle currentTime timeZone
 
-viewCarnetHeader : TravelRightCarnet -> List ( String, Bool ) -> Time.Posix -> Time.Zone -> List (Html msg)
-viewCarnetHeader carnetType classListButtonTitle now timeZone =
+
+viewCarnetHeader : List TravelRightCarnet -> List ( String, Bool ) -> Time.Posix -> Time.Zone -> List (Html msg)
+viewCarnetHeader carnets classListButtonTitle now timeZone =
     let
         numberUsed =
-            carnetType.maximumNumberOfAccesses - carnetType.numberOfUsedAccesses
+            carnets
+                |> List.map (\c -> c.maximumNumberOfAccesses - c.numberOfUsedAccesses)
+                |> List.foldl (+) 0
 
         validAccesses =
-            carnetType.usedAccesses
+            carnets
+                |> List.concatMap .usedAccesses
                 |> List.filter (.endDateTime >> .timestamp >> Util.FareContract.isValid now)
 
         firstValidAccess =
@@ -446,8 +449,8 @@ groupTravelRights travelRights =
         |> Dict.values
 
 
-getFirstCarnetType : FareContract -> Maybe TravelRightCarnet
-getFirstCarnetType fareContract =
+getCarnetTravelRights : FareContract -> List TravelRightCarnet
+getCarnetTravelRights fareContract =
     fareContract.travelRights
         |> List.filterMap
             (\travelRight ->
@@ -458,7 +461,6 @@ getFirstCarnetType fareContract =
                     _ ->
                         Nothing
             )
-        |> List.head
 
 
 onlyTravelRightEssentials : List TravelRight -> List EssentialTravelRight
