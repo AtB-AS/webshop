@@ -2,7 +2,7 @@ import { menu, verify } from '../pageobjects/common.pageobject';
 import { myprofile } from '../pageobjects/myprofile.pageobject';
 
 /*
- TravelCard for default user is 3445454533634719
+ TravelCard for default user is 1616006933634710
 
  */
 
@@ -131,7 +131,7 @@ describe('my profile', () => {
 
     it('should get a warning when removing the travel card', () => {
         myprofile.travelCard()
-            .should("contain", "45 3363471")
+            .should("contain", "69 3363471")
 
         myprofile.removeTravelCardButton().click()
         myprofile.removeTravelCardWarning()
@@ -139,7 +139,7 @@ describe('my profile', () => {
         myprofile.cancel()
 
         myprofile.travelCard()
-            .should("contain", "45 3363471")
+            .should("contain", "69 3363471")
     })
 
     it('should be able to change email consent', () => {

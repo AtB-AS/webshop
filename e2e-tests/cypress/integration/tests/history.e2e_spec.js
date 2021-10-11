@@ -56,6 +56,60 @@ describe('ticket history', () => {
         });
     });
 
+    it('should show multiple products on one order correctly', () => {
+        const order_id = '4YYKR8RD';
+        const ticketType = '10 billetter';
+        const traveller = 'Voksen';
+        const zone = 'Sone A';
+        const header = '08.10.2021 - 10 billetter, 3 reisende';
+        const price = '??'; //Når betalt med rekvisisjon
+        //TODO https://github.com/AtB-AS/webshop/issues/357
+        const paymentMethod = 'Ukjent';
+
+        history.ticket(order_id).then(($ticket) => {
+            history.ticketHeader($ticket).should('contain', header);
+            history.ticketIsCollapsed($ticket, true);
+            history.showDetails($ticket);
+            history.ticketIsCollapsed($ticket, false);
+
+            history
+                .paymentInfo($ticket)
+                //.should('contain', timeOfPurchase)
+                .and('contain', price)
+                .and('contain', paymentMethod)
+                .and('contain', order_id);
+            history
+                .ticketInfoMultipleLabel($ticket, 0)
+                .should('contain', 'Billett 1 / 3')
+            history
+                .ticketInfoMultiple($ticket, 0)
+                .should('contain', ticketType)
+                .and('contain', traveller)
+                .and('contain', zone);
+            history
+                .ticketInfoMultipleLabel($ticket, 1)
+                .should('contain', 'Billett 2 / 3')
+            history
+                .ticketInfoMultiple($ticket, 1)
+                .should('contain', ticketType)
+                .and('contain', traveller)
+                .and('contain', zone);
+            history
+                .ticketInfoMultipleLabel($ticket, 2)
+                .should('contain', 'Billett 3 / 3')
+            history
+                .ticketInfoMultiple($ticket, 2)
+                .should('contain', ticketType)
+                .and('contain', traveller)
+                .and('contain', zone);
+
+            history.sendReceipt($ticket).should('be.enabled');
+
+            history.hideDetails($ticket);
+            history.ticketIsCollapsed($ticket, true);
+        });
+    });
+
     //Different timezone on the host running GH Actions
     function getTimeOfPurchase(){
         if (Cypress.env('runOnGitHub')){
