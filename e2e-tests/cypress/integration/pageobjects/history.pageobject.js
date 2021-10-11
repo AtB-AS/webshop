@@ -31,6 +31,10 @@ export const history = {
         cy.wrap(ticket).find('button.ui-expandable__headerButton').click(),
     paymentInfo: (ticket) => cy.wrap(ticket).find('.metadata-list'),
     ticketInfo: (ticket) => cy.wrap(ticket).find('.ticket-list'),
+    ticketInfoMultiple: (ticket, ticketIndex) =>
+        cy.wrap(ticket).find('.ticket-list').eq(ticketIndex),
+    ticketInfoMultipleLabel: (ticket, ticketIndex) =>
+        cy.wrap(ticket).find('.ticket-list').eq(ticketIndex).siblings('label'),
     sendReceipt: (ticket) =>
         cy
             .wrap(ticket)

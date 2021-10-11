@@ -4,7 +4,7 @@ import { myprofile } from '../pageobjects/myprofile.pageobject';
 import { newTicket, products, summary } from '../pageobjects/buyticket.pageobject';
 
 /*
- TravelCard for default user is 344545453363471*
+ TravelCard for default user is 1616006933634710
  */
 
 describe('account information', () => {
@@ -43,7 +43,7 @@ describe('account information', () => {
     });
 
     it('registered travel card should be visible', () => {
-        mytickets.travelCard().should("contain", "45 3363471")
+        mytickets.travelCard().should("contain", "69 3363471")
     })
 
     function randomNumbers(number) {
@@ -100,6 +100,56 @@ describe('ticket details', () => {
                 .should('contain', type)
                 .and('contain', zones)
                 .and('contain', traveller);
+            mytickets.ticketIsCollapsed($ticket, true);
+            mytickets.ticketDetails($ticket).should('not.be.visible');
+        });
+
+        //Verify details
+        mytickets.ticket(order_id).then(($ticket) => {
+            mytickets.showDetails($ticket);
+            mytickets.ticketIsCollapsed($ticket, false);
+            mytickets
+                .ticketDetails($ticket)
+                .should('be.visible')
+                .and('contain', 'Gyldig fra')
+                .and('contain', validFrom)
+                .and('contain', 'Gyldig til')
+                .and('contain', validTo)
+                .and('contain', 'Kjøpstidspunkt')
+                .and('contain', 'Betalt med')
+                .and('contain', payment)
+                .and('contain', 'Ordre-ID')
+                .and('contain', order_id);
+            mytickets.ticketReceipt($ticket)
+                .should("be.enabled")
+        });
+    });
+
+    // 3 x produkt: 3 x Klippekort (10 billetter) = 3 voksen
+    it('should show multiple products on one order correctly', () => {
+        const order_id = '4YYKR8RD';
+        const validFrom = '08.10.2021 - ' + getValidHours(14) + ':16'
+        const validTo = '09.10.2022 - ' + getValidHours(14) + ':16'
+        const header1 = '30 klipp igjen'
+        const header2 = 'Ingen aktive klipp'
+        const type = 'Klippekort (10 billetter)';
+        const zones = 'Reise i 1 sone (Sone A)';
+        const travellers = '3 Voksen';
+        const payment = 'Ukjent';
+
+        verify.verifyHeader('h2', 'Mine billetter');
+
+        //Verify overview
+        mytickets.ticket(order_id).then(($ticket) => {
+            mytickets.carnetTicketIconIsCorrect($ticket);
+            mytickets.carnetTicketHeader($ticket)
+                .should('contain', header1)
+                .and('contain', header2)
+            mytickets
+                .ticketSummary($ticket)
+                .should('contain', type)
+                .and('contain', zones)
+                .and('contain', travellers);
             mytickets.ticketIsCollapsed($ticket, true);
             mytickets.ticketDetails($ticket).should('not.be.visible');
         });
