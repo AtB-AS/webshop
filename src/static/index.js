@@ -116,17 +116,24 @@ function fetchRemoteConfigData(port, key, prop) {
     }
 }
 
-function sendRemoteConfigVatPercent(port) {
+function fetchRemoteConfigNumber(port, key) {
     if (!port) {
         return;
     }
 
-    const value = remoteConfig.getNumber('vat_percent');
-    if (value == null) {
+    const value = getRemoteConfigString(key);
+
+    if (typeof value !== 'string' || value.length < 1) {
         return;
     }
 
-    app.ports.remoteConfigVatPercent.send(value);
+    const num = parseFloat(value);
+
+    if (isNaN(num)) {
+        return;
+    }
+
+    port.send(num);
 }
 
 // NOTE: Only change this for testing.
@@ -149,7 +156,7 @@ remoteConfig
         );
         fetchRemoteConfigData(app.ports.remoteConfigConsents, 'consents');
         fetchRemoteConfigData(app.ports.remoteConfigPaymentTypes, 'payment_types', 'web');
-        sendRemoteConfigVatPercent();
+        fetchRemoteConfigNumber(app.ports.remoteConfigVatPercent, 'vat_percent');
     })
     .catch((err) => {
         // ...
