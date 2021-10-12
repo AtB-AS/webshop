@@ -165,8 +165,8 @@ update msg env model shared =
                             PageUpdater.init { model | recurringPayments = Failed errorMessage }
 
 
-view : Shared -> Bool -> Model -> Html Msg
-view shared isCarnet model =
+view : Shared -> Model -> Html Msg
+view shared model =
     let
         summary =
             makeSummary model.query model.offers shared
@@ -177,26 +177,6 @@ view shared isCarnet model =
                 |> Section.viewWithOptions
                     [ Ui.Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
                     ]
-            , if isCarnet then
-                Section.view
-                    [ Ui.Message.messageWithOptions
-                        { borderTop = True
-                        , borderBottom = True
-                        , marginTop = False
-                        , marginBottom = True
-                        }
-                        (Ui.Message.Warning <|
-                            H.div []
-                                [ H.text "I en periode er klippekort kun for deg som kan lese av t:kort på en kortleser når du reiser til, fra eller via en metrostasjon i "
-                                , H.strong [] [ H.text "sone A" ]
-                                , H.text ". Les mer på "
-                                , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "atb.no/vi-oppgraderer" ]
-                                ]
-                        )
-                    ]
-
-              else
-                H.text ""
             , H.div [ A.class "page page--threeColumns" ]
                 [ viewTicketSection summary
                 , viewPriceSection summary

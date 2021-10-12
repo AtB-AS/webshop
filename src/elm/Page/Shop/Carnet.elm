@@ -307,7 +307,7 @@ view _ _ shared model _ =
                         |> PH.setTitle (Just "Oppsummering")
                         |> PH.setBackButton ( "Tilbake", CloseSummary )
                         |> PH.view
-                    , SummaryPage.view shared True summaryModel
+                    , SummaryPage.view shared summaryModel
                         |> H.map SummarySubMsg
                     ]
 
@@ -323,22 +323,6 @@ view _ _ shared model _ =
                         |> Section.viewWithOptions
                             [ Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
                             ]
-                    , Section.view
-                        [ Message.messageWithOptions
-                            { borderTop = True
-                            , borderBottom = True
-                            , marginTop = False
-                            , marginBottom = True
-                            }
-                            (Message.Warning <|
-                                H.div []
-                                    [ H.text "I en periode er klippekort kun for deg som kan lese av t:kort på en kortleser når du reiser til, fra eller via en metrostasjon i "
-                                    , H.strong [] [ H.text "sone A" ]
-                                    , H.text ". Les mer på "
-                                    , H.a [ A.href "https://www.atb.no/vi-oppgraderer/" ] [ H.text "atb.no/vi-oppgraderer" ]
-                                    ]
-                            )
-                        ]
                     , H.div [ A.class "page" ]
                         [ Section.view
                             [ Ui.Group.view
@@ -378,13 +362,7 @@ view _ _ shared model _ =
                                 }
                                 [ Common.viewUserProfiles defaultProduct model SetUser shared ]
                             , Section.viewWithIcon Icon.map
-                                [ Common.viewZones model
-                                    defaultZone
-                                    (List.filter (.id >> (==) "ATB:TariffZone:1") shared.tariffZones)
-                                    SetFromZone
-                                    SetToZone
-                                    True
-                                ]
+                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone False ]
                             ]
                         , H.div []
                             [ Common.viewSummary shared model disableButtons GoToSummary Nothing
