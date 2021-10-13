@@ -87,7 +87,7 @@ button {
 .app {
     flex: 1;
     position: relative;
-    background: url('../images/background-illustration.svg') no-repeat center
+    background: url('../../org/images/background-illustration.svg') no-repeat center
         top;
     background-size: 100%;
 }
@@ -543,7 +543,7 @@ table {
 .onboarding__travelCard__input {
     padding-left: calc(2rem + var(--spacings-xLarge));
 
-    background: url('../images/travelcard-help-icons.svg') left center no-repeat;
+    background: url('../../org/images/travelcard-help-icons.svg') left center no-repeat;
     margin-bottom: calc(2 * var(--spacings-xLarge));
 }
 

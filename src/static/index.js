@@ -1,4 +1,4 @@
-require('./styles/main.scss');
+require('./common/styles/main.scss');
 
 import firebase from 'firebase/app';
 import 'firebase/firebase-auth';

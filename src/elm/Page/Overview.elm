@@ -383,7 +383,7 @@ viewMain shared model =
             [ case ( emptyResults, model.error ) of
                 ( True, Nothing ) ->
                     H.div [ A.class "pageOverview__empty" ]
-                        [ H.img [ A.src "/images/empty-illustration.svg", A.alt "" ] []
+                        [ H.img [ A.src "/org/images/empty-illustration.svg", A.alt "" ] []
                         , H.text "Ingen billetter er tilknyttet din profil."
                         ]
 

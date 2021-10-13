@@ -294,7 +294,7 @@ const commonConfig = {
         extensions: ['.js', '.elm', '.scss'],
         alias: {
             '@atb/theme/theme.css': `@atb-as/theme/lib/themes/${orgId}-theme/theme.css`,
-            '@atb/theme/typography.css': '@atb-as/theme/lib/typography.css'
+            '@atb/theme/typography.css': '@atb-as/theme/lib/typography.css',
         }
     },
     module: {
@@ -341,16 +341,16 @@ const commonConfig = {
                     }
                 },
                 {
-                    from: `src/static/favicon-${orgId}.ico`,
+                    from: `src/static/favicon.ico`,
                     to: 'favicon.ico'
                 },
                 {
-                    from: `src/static/icon-${orgId}.svg`,
+                    from: `src/static/icon.svg`,
                     to: 'icon.svg'
                 },
                 {
-                    from: 'src/static/images',
-                    to: 'images'
+                    from: `src/static/org/images`,
+                    to: 'org/images'
                 }
             ]
         }),
