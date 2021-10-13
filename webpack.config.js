@@ -24,6 +24,11 @@ const fs = require('fs');
 const entryPath = path.join(__dirname, 'src/static/index.js');
 const outputPath = path.join(__dirname, 'dist');
 
+const orgPaths = path.join(__dirname, 'orgs');
+const validOrgIds = fs
+    .readdirSync(orgPaths)
+    .map((file) => path.basename(file, '.json'));
+
 // Webpack setup
 // -------------
 //
@@ -207,6 +212,18 @@ function getFirebaseConfig(config) {
     );
 }
 
+function getOrgIdConfig(config) {
+    const orgId = process.env.WEBSHOP_ORG_ID || config.orgId;
+    const validOrgIdStrings = validOrgIds.join(', ');
+    if (!validOrgIds.includes(orgId)) {
+        throw Error(
+            `Missing valid "orgId". Valid org ids: ${validOrgIdStrings}`
+        );
+    }
+
+    return orgId;
+}
+
 // Get languageSwitcher from command line or config file
 function getLanguageSwitcher(config) {
     return getOption(
@@ -257,6 +274,7 @@ const isProduction = TARGET_ENV === production || TARGET_ENV === debug;
 const isDevelopment = TARGET_ENV === development;
 const languageSwitcher = getLanguageSwitcher(localConfig);
 const enableDebug = TARGET_ENV === development || TARGET_ENV === debug;
+const orgId = getOrgIdConfig(localConfig);
 
 // Common Webpack config.  Everything here will be used in both the
 // development and production environments.
@@ -273,7 +291,11 @@ const commonConfig = {
     },
     resolve: {
         modules: [path.join(__dirname, 'src'), 'node_modules'],
-        extensions: ['.js', '.elm', '.scss']
+        extensions: ['.js', '.elm', '.scss'],
+        alias: {
+            '@atb/theme/theme.css': `@atb-as/theme/lib/themes/${orgId}-theme/theme.css`,
+            '@atb/theme/typography.css': '@atb-as/theme/lib/typography.css'
+        }
     },
     module: {
         noParse: /\.elm$/
@@ -319,11 +341,11 @@ const commonConfig = {
                     }
                 },
                 {
-                    from: 'src/static/favicon.ico',
+                    from: `src/static/favicon-${orgId}.ico`,
                     to: 'favicon.ico'
                 },
                 {
-                    from: 'src/static/icon.svg',
+                    from: `src/static/icon-${orgId}.svg`,
                     to: 'icon.svg'
                 },
                 {
@@ -338,6 +360,7 @@ const commonConfig = {
                 baseUrl: getBaseUrl(localConfig, 'baseUrl'),
                 ticketUrl: getBaseUrl(localConfig, 'ticketUrl'),
                 refDataUrl: getBaseUrl(localConfig, 'refDataUrl'),
+                orgId: orgId,
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
                 commit: gitCommitHash()

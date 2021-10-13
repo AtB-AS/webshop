@@ -1,5 +1,5 @@
-@import '~@atb-as/theme/lib/theme.css';
-@import '~@atb-as/theme/lib/typography.css';
+@import '@atb/theme/theme.css';
+@import '@atb/theme/typography.css';
 
 // Extra settings in addition to shared theme.
 :root {
@@ -91,6 +91,7 @@ button {
         top;
     background-size: 100%;
 }
+
 .content {
     position: relative;
     margin: auto;
@@ -120,7 +121,7 @@ p + p {
 }
 
 .pageHeader {
-    background-color: var(--colors-background_gray-backgroundColor);
+    background-color: var(--colors-background_accent-backgroundColor);
 }
 .pageHeader__content {
     width: 100%;
@@ -131,7 +132,7 @@ p + p {
 }
 .pageHeader__inner {
     display: flex;
-    background-color: var(--colors-background_gray-backgroundColor);
+    background-color: var(--colors-background_accent-backgroundColor);
     position: relative;
     z-index: 250;
 }
@@ -147,14 +148,10 @@ p + p {
     padding: var(--spacings-medium);
     padding-left: 0;
 
-    svg {
+    img {
         display: block;
         height: 1.25rem;
         margin-right: var(--spacings-medium);
-    }
-    svg,
-    path {
-        fill: currentColor;
     }
 }
 .pageHeader__nav {
@@ -243,7 +240,7 @@ p + p {
     .pageHeader__nav nav {
         position: relative;
         z-index: 150;
-        background-color: var(--colors-background_gray-backgroundColor);
+        background-color: var(--colors-background_accent-backgroundColor);
     }
 
     .pageHeader__nav ul {

@@ -578,7 +578,8 @@
 
     border: var(--border-width-medium) solid transparent;
     // Remove border from padding.
-    padding: (calc(var(--spacings-medium) - var(--border-width-medium))) (calc(var(--spacings-xLarge) - var(--border-width-medium)));
+    padding: (calc(var(--spacings-medium) - var(--border-width-medium)))
+        (calc(var(--spacings-xLarge) - var(--border-width-medium)));
 }
 .ui-input-radio:hover {
     background: var(--colors-background_2-backgroundColor);
@@ -642,7 +643,8 @@
         fill: currentColor;
     }
 
-    svg, img {
+    svg,
+    img {
         width: var(--icon-size-normal);
         height: var(--icon-size-normal);
     }
@@ -850,7 +852,8 @@ a.ui-button--link,
         fill: currentColor;
     }
 
-    svg, img {
+    svg,
+    img {
         width: var(--ws-icon-size-xLarge);
         height: var(--ws-icon-size-xLarge);
     }
@@ -1249,7 +1252,7 @@ a.ui-button--link,
     background: transparent;
     border: 0;
     cursor: pointer;
-    color: var(--colors-background_gray-color);
+    color: var(--colors-background_accent-color);
 
     font-size: var(--baseTypo-body__primary-fontSize, 1rem);
     line-height: var(--baseTypo-body__primary-lineHeight, 1.25rem);
@@ -1266,7 +1269,7 @@ a.ui-button--link,
     display: block;
     position: absolute;
     height: 0.25rem;
-    background: var(--colors-background_gray-color);
+    background: var(--colors-background_accent-color);
     border-radius: 0.25rem;
     opacity: 1;
     left: var(--spacings-medium);

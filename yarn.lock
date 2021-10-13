@@ -9,10 +9,10 @@
   dependencies:
     binwrap "^0.2.3"
 
-"@atb-as/theme@3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@atb-as/theme/-/theme-3.2.0.tgz#1c0443676907b578e158ed957f2b92e5ab111b66"
-  integrity sha512-cc15ZzI/ol7F8le4xBqjaJsW+Fi3jr4IhY1wpl9xi1J//ry4c1zcF0ZZMBsOu1LeXdhz9a8gCGtV9JdwkgGUTA==
+"@atb-as/theme@^5.0.0-alpha.0":
+  version "5.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@atb-as/theme/-/theme-5.0.0-alpha.0.tgz#ff831c2847ccddc96e706910f8a4cd4418a08eb4"
+  integrity sha512-8AGCTgvHzK8FRArV/QcezNBKZu5f7ghKt3xQ8zG7X4oJk7/P8khQ+U/m2l9tobhz5tCKV50ihS3RYaVnoZEibQ==
   dependencies:
     hex-to-rgba "^2.0.1"
     ts-deepmerge "^1.0.7"

@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Elm } from '../elm/Main';
 import './navigation';
 
+const appConfig = require(`/orgs/${elmFlags.orgId}.json`)
 const MAX_RETRY_ATTEMPTS = 3;
 
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
@@ -65,7 +66,8 @@ const app = Elm.Main.init({
             loggedIn: localStorage['loggedIn'] === 'loggedIn',
             showValidityWarning:
                 localStorage.getItem('hideValidityWarning') != 'yes',
-            localUrl: window.location.origin
+            localUrl: window.location.origin,
+            orgConf: appConfig
         },
         elmFlags
     )
