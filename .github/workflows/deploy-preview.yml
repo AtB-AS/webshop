@@ -15,7 +15,6 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: '12'
-            - run: yarn setup staging atb
             - run: yarn install
             - run: yarn build
               env:
