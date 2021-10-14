@@ -24,8 +24,6 @@ else
 
     echo "Copying $APP_ENVIRONMENT favicon.ico for $APP_ORG to static folder"
     cp $ASSETS_FOLDER/favicon.ico $DESTINATION_FOLDER
-    echo "Copying $APP_ENVIRONMENT icon.svg for $APP_ORG to static folder"
-    cp $ASSETS_FOLDER/icon.svg $DESTINATION_FOLDER
     echo "Copying $APP_ENVIRONMENT assets for $APP_ORG to static folder"
     cp -r $ASSETS_FOLDER/org $DESTINATION_FOLDER/
 fi

@@ -345,10 +345,6 @@ const commonConfig = {
                     to: 'favicon.ico'
                 },
                 {
-                    from: `src/static/icon.svg`,
-                    to: 'icon.svg'
-                },
-                {
                     from: `src/static/org/images`,
                     to: 'org/images'
                 }

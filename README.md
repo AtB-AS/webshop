@@ -106,6 +106,8 @@ This means that all text throughout the app has to be manually changed to match 
 Currently, this has been handled for NFK by creating a separate branch in this Git repository, but a fork should also be possible. 
 In a later release, text is planned to be handled by the same functionality that handles languages.
 
+For development, `webpack.local.config.js` should export `orgId: "atb" | "nfk",` to set siteTitle and the options provided in the `orgs/<organization>.json` file.
+
 Assets such as icons, logos, and illustrations are copied into the static folder of the application when the application in build time. 
 For development assets can be copied manually by running `yarn setup <environment> <organization>` in the terminal. An example is `yarn setup dev atb`. 
 For production the build script in `package.json` should be updated to include the correct environment and organization.
@@ -124,17 +126,17 @@ webshop/
    ├─ nfk.json
    ├─ assets/
       ├─ atb/
-         ├─ icon.svg
          ├─ favicon.ico
              ├─ org/
                  ├─ images/
-                    ├─ org-specific-asset.svg
+                    ├─ icon.svg (needs to be present)
+                    ├─ other-org-specific-asset.svg
       ├─ nfk/
-         ├─ icon.svg
          ├─ favicon.ico
              ├─ org/
                  ├─ images/
-                    ├─ org-specific-asset.svg
+                    ├─ icon.svg (needs to be present)
+                    ├─ other-org-specific-asset.svg
 ```
 
 ## License

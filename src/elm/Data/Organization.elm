@@ -7,7 +7,6 @@ import Json.Decode.Pipeline as DecodeP
 
 type alias OrganizationConfiguration =
     { orgId : OrgId
-    , logoUrl : String
     , siteTitle : String
     }
 
@@ -16,7 +15,6 @@ orgConfDecoder : Decoder OrganizationConfiguration
 orgConfDecoder =
     Decode.succeed OrganizationConfiguration
         |> DecodeP.required "orgId" orgIdDecoder
-        |> DecodeP.required "logoUrl" Decode.string
         |> DecodeP.required "siteTitle" Decode.string
 
 
