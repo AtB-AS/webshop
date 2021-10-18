@@ -432,7 +432,7 @@ view env shared model appInfo =
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader model False "Legg til t:kort"
+                |> wrapHeader model False "Legg til reisekort"
 
         AppAdvert ->
             viewAppAdvert env model
@@ -592,11 +592,11 @@ viewTravelCard _ model =
     if model.travelCardSaved then
         [ H.div [ A.class "onboarding__travelCard" ]
             [ Section.view
-                [ Message.info "Du har alt lagt til et t:kort."
+                [ Message.info "Du har alt lagt til et reisekort."
                 , Section.viewPaddedItem
                     [ H.div [ A.class "onboarding__travelCard__input" ]
                         [ Section.viewPaddedItem
-                            [ Ui.LabelItem.view "t:kortnummer (16-siffer)"
+                            [ Ui.LabelItem.view "Reisekortnummer (16-siffer)"
                                 [ H.text (Util.TravelCard.format model.travelCard)
                                 ]
                             ]
@@ -604,7 +604,7 @@ viewTravelCard _ model =
                     , Ui.ImgThemed.view
                         [ A.src "/assets/colors/images/travelcard-help-illustration.svg"
                         , A.class "onboarding__travelCard__illustration"
-                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        , A.alt "Ditt reisekortnummer finner du på baksiden av reisekortet ditt."
                         ]
                         []
                     ]
@@ -623,14 +623,14 @@ viewTravelCard _ model =
         [ H.div []
             [ Section.init
                 |> Section.setMarginBottom True
-                |> Section.viewWithOptions [ Message.warning "Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser." ]
+                |> Section.viewWithOptions [ Message.warning "Ved å registrere et reisekort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser." ]
             , H.div [ A.class "onboarding__travelCard" ]
                 [ Section.view
                     [ Section.viewPaddedItem
                         [ H.div [ A.class "onboarding__travelCard__input" ]
                             [ MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
-                                |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
-                                |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                |> MaskedInput.setTitle (Just "Reisekortnummer (16-siffer)")
+                                |> MaskedInput.setPlaceholder "Skriv inn reisekortnummer"
                                 |> MaskedInput.setPattern "#### #### ########"
                                 |> MaskedInput.setBordered True
                                 |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
@@ -642,12 +642,12 @@ viewTravelCard _ model =
                         , H.img
                             [ A.src "/assets/colors/images/travelcard-help-illustration.svg"
                             , A.class "onboarding__travelCard__illustration"
-                            , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                            , A.alt "Reisekortnummer finner du i øverst til høyre på reisekortet ditt."
                             ]
                             []
                         ]
                     , Section.viewHorizontalGroup
-                        [ Button.init "Legg til t:kort"
+                        [ Button.init "Legg til reisekort"
                             |> Button.setIcon (Just Icon.checkmark)
                             |> Button.setOnClick (Just RegisterTravelCard)
                             |> Button.primaryDefault

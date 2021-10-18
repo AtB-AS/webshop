@@ -1,6 +1,6 @@
 module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view)
 
-import Base exposing (AppInfo)
+import Base exposing (AppInfo, OrgId(..))
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
@@ -291,8 +291,8 @@ viewAccountInfo env shared _ =
                     |> Maybe.map .id
                     |> Html.Extra.viewMaybe
                         (\id ->
-                            S.viewLabelItem "T:kort"
-                                [ H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
+                            S.viewLabelItem "Reisekort"
+                                [ H.p [ A.class "accountInfo__item", A.title "Reisekortnummer" ]
                                     [ Icon.travelCard
                                     , Ui.TravelCardText.view id
                                     ]
@@ -316,7 +316,7 @@ viewAccountInfo env shared _ =
                         Html.Extra.nothing
 
                     _ ->
-                        B.init "Legg til t:kort "
+                        B.init "Legg til reisekort "
                             |> B.setDisabled False
                             |> B.setIcon (Just Icon.travelCard)
                             |> B.setOnClick (Just OpenEditTravelCard)

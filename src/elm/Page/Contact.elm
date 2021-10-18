@@ -41,7 +41,7 @@ update msg _ model =
     case msg of
         OnEnterPage ->
             PageUpdater.fromPair ( model, Tuple.second init )
-                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Kontakt AtB")
+                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Kontakt Reis Nordland")
                 |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
         ProfileChange profile ->
@@ -62,7 +62,7 @@ viewCustomerSupport appInfo _ =
     H.div []
         [ S.view
             [ S.viewPaddedItem
-                [ Ui.Heading.component "Kontakt AtB" Nothing
+                [ Ui.Heading.component "Kontakt Reis Nordland" Nothing
                 , viewIconSplit (Icon.viewLarge Icon.contact) "For spørsmål om billetter, rutetider eller du trenger hjelp til å komme i dialog med oss."
                 ]
             , B.init "Kontakt oss (åpner nytt vindu)"

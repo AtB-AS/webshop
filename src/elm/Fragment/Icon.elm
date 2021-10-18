@@ -724,7 +724,7 @@ fastTime =
 
 travelCardOutlined : Html msg
 travelCardOutlined =
-    Ui.ImgThemed.viewMono [ A.src "/assets/mono/ticketing/travelcard-outlined.svg", A.alt "T:kort" ] []
+    Ui.ImgThemed.viewMono [ A.src "/assets/mono/ticketing/travelcard-outlined.svg", A.alt "Reisekort" ] []
 
 
 cloudOutlined : Html msg

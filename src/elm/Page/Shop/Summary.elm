@@ -1,4 +1,4 @@
-module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, cardReadWarning, init, makeSummary, subscriptions, update, view)
+module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, cardReadWarning, cardReadWarningPeriod, init, makeSummary, subscriptions, update, view)
 
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
@@ -198,7 +198,7 @@ makeSummary query offers shared =
             totalPrice offers
     in
         { -- @TODO At some point when expanding to different modes, this should be updated.
-          travelMode = "Buss / trikk"
+          travelMode = "Buss"
         , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
@@ -620,5 +620,14 @@ cardReadWarning =
     Section.init
         |> Section.setMarginBottom True
         |> Section.viewWithOptions
-            [ Ui.Message.warning "Når du skal lese av t:kortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Ombord holder du t:kortet inntil kortleser frem til sjåføren bekrefter at du har billett. På metrostasjon venter du på lydsignal og bilde som viser at billett er OK."
+            [ Ui.Message.warning "Når du skal lese av reisekortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Ombord holder du reisekortet inntil kortleser frem til sjåføren bekrefter at du har billett."
+            ]
+
+
+cardReadWarningPeriod : Html msg
+cardReadWarningPeriod =
+    Section.init
+        |> Section.setMarginBottom True
+        |> Section.viewWithOptions
+            [ Ui.Message.warning "Periodebillett kan kjøpes og aktiveres i nettbutikken, enten på kjøpstidspunktet eller fram i tid. Du trenger ikke å aktivere periodebilletten ombord i fartøyene, da dette må gjennomføres i nettbutikken. Du kan bli bedt av sjåfør eller kontrollør om å holde reisekortet inntil en kortleser. Dette er for å vise og validere periodeproduktets gyldighet."
             ]

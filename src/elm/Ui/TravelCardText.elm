@@ -7,7 +7,7 @@ import Util.TravelCard
 
 view : Int -> Html msg
 view id =
-    H.span [ A.class "ui-travelCardText", A.attribute "role" "complementary", A.attribute "aria-label" <| "Gjeldende t:kort tall: " ++ String.fromInt id ]
+    H.span [ A.class "ui-travelCardText", A.attribute "role" "complementary", A.attribute "aria-label" <| "Gjeldende reisekort tall: " ++ String.fromInt id ]
         [ H.span [ A.class "ui-travelCardText__faded", A.attribute "aria-hidden" "true", A.attribute "role" "none" ] [ H.text "**** **" ]
         , H.text <| Util.TravelCard.formatSignificant <| String.fromInt id
         , H.span [ A.class "ui-travelCardText__faded", A.attribute "aria-hidden" "true", A.attribute "role" "none" ] [ H.text "*" ]
