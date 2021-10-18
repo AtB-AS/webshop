@@ -198,7 +198,7 @@ makeSummary query offers shared =
             totalPrice offers
     in
         { -- @TODO At some point when expanding to different modes, this should be updated.
-          travelMode = "Buss / trikk"
+          travelMode = "Buss"
         , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
@@ -612,5 +612,5 @@ cardReadWarning =
     Section.init
         |> Section.setMarginBottom True
         |> Section.viewWithOptions
-            [ Ui.Message.warning "Når du skal lese av t:kortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Ombord holder du t:kortet inntil kortleser frem til sjåføren bekrefter at du har billett. På metrostasjon venter du på lydsignal og bilde som viser at billett er OK."
+            [ Ui.Message.warning "Når du skal lese av reisekortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Ombord holder du reisekortet inntil kortleser frem til sjåføren bekrefter at du har billett."
             ]

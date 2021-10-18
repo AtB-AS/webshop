@@ -119,7 +119,7 @@ viewSummary shared model disableButtons onToSummaryClick maybeInfo =
                                     |> Maybe.withDefault (Ui.LoadingText.view "1rem" "3rem")
                                 ]
                             ]
-                , Html.Extra.viewIf noTravelCard (Message.info "Legg til et t:kort før kjøp av billett")
+                , Html.Extra.viewIf noTravelCard (Message.info "Legg til et reisekort før kjøp av billett")
                 , Html.Extra.viewMaybe identity maybeInfo
                 , B.init "Gå til oppsummering"
                     |> B.setDisabled (disableButtons || noTravelCard)

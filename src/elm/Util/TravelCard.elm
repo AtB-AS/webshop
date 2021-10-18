@@ -32,7 +32,7 @@ serverErrorToString encode error =
                     "Det skjedde en feil med tjenesten. Prøv igjen senere."
 
                 409 ->
-                    "Dette t:kortet eksisterer ikke eller er allerede registrert."
+                    "Dette reisekortet eksisterer ikke eller er allerede registrert."
 
                 400 ->
                     case encode body of
@@ -56,13 +56,13 @@ translateErrorString error =
             Util.Func.flip String.contains error
     in
         if check "id length" then
-            "t:kortnummeret må bestå av 16 siffer"
+            "Reisekortnummeret må bestå av 16 siffer"
 
         else if check "be numeric" then
-            "t:kortnummeret kan kun bestå av tall"
+            "Reisekortnummeret kan kun bestå av tall"
 
         else if check "incorrect" then
-            "Det kan se ut som du har tastet inn feil t:kortnummer, se over og kontroller at alt stemmer."
+            "Det kan se ut som du har tastet inn feil reisekortnummer, se over og kontroller at alt stemmer."
 
         else
-            "Fikk ikke lagret t:kortnummeret ditt. Ta kontakt med kundeservice om problemet vedvarer."
+            "Fikk ikke lagret reisekortnummeret ditt. Ta kontakt med kundeservice om problemet vedvarer."

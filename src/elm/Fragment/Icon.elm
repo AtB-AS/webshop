@@ -1,5 +1,6 @@
 module Fragment.Icon exposing
     ( atb
+    , atbTravelCard
     , bus
     , change
     , chat
@@ -241,6 +242,19 @@ delete =
             [ SA.fillRule "evenodd"
             , SA.clipRule "evenodd"
             , SA.d "M5 1C5 0.447715 5.44772 0 6 0H10C10.5523 0 11 0.447715 11 1V3H16V5H14.5V17C14.5 17.5523 14.0523 18 13.5 18H2.5C1.94772 18 1.5 17.5523 1.5 17V5H0V3H5V1ZM7 3H9V2H7V3ZM3.5 5V16H12.5V5H3.5Z"
+            , SA.fill "black"
+            ]
+            []
+        ]
+
+
+atbTravelCard : Html msg
+atbTravelCard =
+    S.svg [ SA.width "20", SA.height "20", SA.viewBox "0 0 20 20", SA.fill "none" ]
+        [ S.path
+            [ SA.fillRule "evenodd"
+            , SA.clipRule "evenodd"
+            , SA.d "M4 3L16 3.00001C17.6569 3.00001 19 4.34316 19 6.00001V14C19 15.6569 17.6569 17 16 17H4C2.34315 17 1 15.6569 1 14V6C1 4.34315 2.34315 3 4 3ZM10.3281 12.5469C10.1758 12.5781 9.88672 12.6055 9.58203 12.6055C8.35547 12.6055 7.8711 12.25 7.8711 11.3828V9.3711H7.21094V8.21485H7.8711V7.25001H9.47266V8.21485H10.3281V9.3711H9.47266V11.0274C9.47266 11.3047 9.63281 11.4492 9.96875 11.4492C10.1406 11.4492 10.2344 11.4414 10.3281 11.4297V12.5469ZM13.0013 9.28126C13.0013 9.77345 12.6575 10.1289 12.1341 10.1289C11.6106 10.1289 11.2669 9.77345 11.2669 9.28126C11.2669 8.78907 11.6106 8.4336 12.1341 8.4336C12.6575 8.4336 13.0013 8.78907 13.0013 9.28126ZM13.0013 11.9141C13.0013 12.4063 12.6575 12.7617 12.1341 12.7617C11.6106 12.7617 11.2669 12.4063 11.2669 11.9141C11.2669 11.4219 11.6106 11.0664 12.1341 11.0664C12.6575 11.0664 13.0013 11.4219 13.0013 11.9141Z"
             , SA.fill "black"
             ]
             []
@@ -728,7 +742,7 @@ fastTime =
 
 travelCardOutlined : Html msg
 travelCardOutlined =
-    Ui.ImgThemed.view [ A.src "/assets/icons/travelcard-outlined.svg", A.alt "T:kort" ] []
+    Ui.ImgThemed.view [ A.src "/assets/icons/travelcard-outlined.svg", A.alt "Reisekort" ] []
 
 
 cloudOutlined : Html msg

@@ -1,5 +1,6 @@
 module Page.Login exposing (Model, Msg(..), init, subscriptions, update, view)
 
+import Base exposing (AppInfo, OrgId(..))
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Environment exposing (Environment)
@@ -294,23 +295,33 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> Html Msg
-view env model =
+pickOutlinedTravelCardIcon : OrgId -> Html Msg
+pickOutlinedTravelCardIcon orgId =
+    case orgId of
+        AtB ->
+            Icon.travelCardOutlined
+
+        _ ->
+            Icon.ticket
+
+
+view : Environment -> Model -> AppInfo -> Html Msg
+view env model appInfo =
     if model.showInfoStep then
         H.div [ A.class "page page--narrow" ]
             [ viewIllustration
             , H.div []
                 [ Ui.Section.view
-                    [ Ui.Section.viewHeader "Nettbutikken er del av AtBs nye billettsystem. Her er noen ting du bør vite"
+                    [ Ui.Section.viewHeader "Nettbutikken er del av Reis Nordland sitt nye billettsystem. Her er noen ting du bør vite:"
                     , Ui.Section.viewItem
                         [ viewInfoPointWithIcon Icon.change
                             "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
                         , viewInfoPointWithIcon Icon.fastTime
-                            "Du kan reise straks billetten er betalt – uten å vente på aktivering av t:kort."
-                        , viewInfoPointWithIcon Icon.travelCardOutlined
-                            "Mista t:kortet? Sletting, bestilling og registrering av t:kort gjør du enkelt selv."
+                            "Du kan reise straks billetten er betalt – uten å vente på aktivering av reisekort."
+                        , viewInfoPointWithIcon (pickOutlinedTravelCardIcon appInfo.orgId)
+                            "Mista reisekortet? Sletting, bestilling og registrering av reisekort gjør du enkelt selv."
                         , viewInfoPointWithIcon Icon.cloudOutlined
-                            "Billetten ligger trygt forvart på din profil – uavhengig av hva som skjer med t:kortet ditt."
+                            "Billetten ligger trygt forvart på din profil – uavhengig av hva som skjer med reisekortet ditt."
                         ]
                     , B.init "Jeg forstår - neste"
                         |> B.setIcon (Just Icon.rightArrow)
@@ -318,9 +329,9 @@ view env model =
                         |> B.setOnClick (Just HideInfoStep)
                         |> B.primary B.Primary_2
                     ]
-                , B.init "Les mer om AtBs nye reisetjenester her"
+                , B.init "Les mer om Reis Nordland sine nye reisetjenester her"
                     |> B.setElement H.a
-                    |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
+                    |> B.setAttributes [ A.href "https://www.nfk.no/" ]
                     |> B.link
                 , B.init "For our English speaking travellers"
                     |> B.setElement H.a
@@ -489,7 +500,7 @@ viewWelcomeIllustration : Html Msg
 viewWelcomeIllustration =
     Ui.Section.viewHeaderEl
         [ H.img [ A.src "/assets/icons/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-        , H.text "Velkommen til AtBs nettbutikk"
+        , H.text "Velkommen til Reis Nordland nettbutikk"
         ]
 
 
@@ -513,7 +524,7 @@ viewPhoneInputs model =
         |> T.setRequired True
         |> T.setError (V.select PhoneField model.validationErrors)
         |> T.setTitle (Just "Telefonnummer")
-        |> T.setPlaceholder "Logg inn med telefonnummeret ditt"
+        |> T.setPlaceholder "Legg inn ditt telefonnummer"
         |> T.setAttributes [ E.onFocus OnPhoneInputFocus ]
         |> T.view
     ]
