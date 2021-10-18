@@ -358,7 +358,7 @@ viewActions shared =
             |> B.setAttributes [ Route.href Route.Shop ]
             |> B.setElement H.a
             |> B.primary B.Primary_2
-            |> Html.Extra.viewIf (Shared.hasPeriodTickets shared)
+            |> Html.Extra.viewIf (Shared.hasNonCarnetTickets shared)
         , B.init "Kjøp nytt klippekort"
             |> B.setDisabled False
             |> B.setElement H.a

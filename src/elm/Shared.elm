@@ -1,4 +1,4 @@
-module Shared exposing (Msg, Shared, hasCarnetTickets, hasPeriodTickets, init, subscriptions, update)
+module Shared exposing (Msg, Shared, hasCarnetTickets, hasNonCarnetTickets, hasPeriodTickets, hasSingleTickets, init, subscriptions, update)
 
 import Data.PaymentType exposing (PaymentType)
 import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
@@ -64,7 +64,7 @@ update msg model =
                 Ok value ->
                     { model
                         | fareProducts = value
-                        , availableFareProducts = List.filter (.type_ >> (==) ProductTypePeriod) value
+                        , availableFareProducts = List.filter hasDistributionWeb value
                         , productLimitations = getMappedLimitations value model.userProfiles
                     }
 
@@ -105,28 +105,46 @@ update msg model =
             { model | profile = profile }
 
 
+hasDistributionWeb : FareProduct -> Bool
+hasDistributionWeb =
+    .distributionChannel >> List.member DistributionChannelWeb
+
+
+{-| Check if we have period tickets valid for Web
+-}
+hasNonCarnetTickets : Shared -> Bool
+hasNonCarnetTickets shared =
+    hasProductType ProductTypePeriod shared || hasProductType ProductTypeSingle shared
+
+
 {-| Check if we have period tickets valid for Web
 -}
 hasPeriodTickets : Shared -> Bool
-hasPeriodTickets shared =
-    shared.fareProducts
-        |> List.any
-            (\product ->
-                product.type_
-                    == ProductTypePeriod
-                    && List.member DistributionChannelWeb product.distributionChannel
-            )
+hasPeriodTickets =
+    hasProductType ProductTypePeriod
 
 
 {-| Check if we have carnet tickets valid for Web
 -}
 hasCarnetTickets : Shared -> Bool
-hasCarnetTickets shared =
+hasCarnetTickets =
+    hasProductType ProductTypeCarnet
+
+
+{-| Check if we have single tickets valid for Web
+-}
+hasSingleTickets : Shared -> Bool
+hasSingleTickets =
+    hasProductType ProductTypeSingle
+
+
+hasProductType : ProductType -> Shared -> Bool
+hasProductType type_ shared =
     shared.fareProducts
         |> List.any
             (\product ->
                 product.type_
-                    == ProductTypeCarnet
+                    == type_
                     && List.member DistributionChannelWeb product.distributionChannel
             )
 

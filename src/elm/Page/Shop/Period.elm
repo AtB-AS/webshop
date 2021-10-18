@@ -241,12 +241,8 @@ update msg env model shared =
                             _ ->
                                 Nothing
 
-                    availableProducts =
-                        shared.fareProducts
-                            |> List.filter (.type_ >> (==) ProductTypePeriod)
-
                     ( firstZone, defaultProduct ) =
-                        Utils.defaultDerivedData shared availableProducts
+                        Utils.defaultDerivedData shared shared.availableFareProducts
 
                     dataNotLoadedYet =
                         List.isEmpty shared.availableFareProducts && List.isEmpty shared.tariffZones
@@ -495,12 +491,8 @@ toggleShowMainView model mainView =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     let
-        availableProducts =
-            shared.fareProducts
-                |> List.filter (.type_ >> (==) ProductTypePeriod)
-
         ( defaultZone, defaultProduct ) =
-            Utils.defaultDerivedData shared availableProducts
+            Utils.defaultDerivedData shared shared.availableFareProducts
 
         summary =
             Utils.modelSummary ( defaultZone, defaultProduct ) shared model

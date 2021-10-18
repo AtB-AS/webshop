@@ -261,7 +261,7 @@ view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     let
         availableProducts =
-            shared.fareProducts
+            shared.availableFareProducts
                 |> List.filter (.type_ >> (==) ProductTypeCarnet)
 
         ( defaultZone, defaultProduct ) =
