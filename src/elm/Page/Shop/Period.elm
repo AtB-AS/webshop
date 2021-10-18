@@ -563,7 +563,7 @@ view _ _ shared model _ =
                             [ Ui.Group.view
                                 { title = "Reisetype"
                                 , icon = Icon.bus
-                                , value = Just "Buss og trikk"
+                                , value = Just "Buss"
                                 , open = False
                                 , readonly = True
                                 , onOpenClick = Nothing

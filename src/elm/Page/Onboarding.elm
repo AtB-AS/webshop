@@ -571,11 +571,11 @@ viewTravelCard _ model =
     if model.travelCardSaved then
         [ H.div [ A.class "onboarding__travelCard" ]
             [ Section.view
-                [ Message.info "Du har alt lagt til et t:kort."
+                [ Message.info "Du har alt lagt til et reisekort."
                 , Section.viewPaddedItem
                     [ H.div [ A.class "onboarding__travelCard__input" ]
                         [ Section.viewPaddedItem
-                            [ Ui.LabelItem.view "t:kortnummer (16-siffer)"
+                            [ Ui.LabelItem.view "Reisekortnummer (16-siffer)"
                                 [ H.text (Util.TravelCard.format model.travelCard)
                                 ]
                             ]
@@ -583,7 +583,7 @@ viewTravelCard _ model =
                     , H.img
                         [ A.src "/org/images/travelcard-help-illustration.svg"
                         , A.class "onboarding__travelCard__illustration"
-                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        , A.alt "Ditt reisekortnummer finner du på baksiden av reisekortet ditt."
                         ]
                         []
                     ]
@@ -617,7 +617,7 @@ viewTravelCard _ model =
                     , H.img
                         [ A.src "/org/images/travelcard-help-illustration.svg"
                         , A.class "onboarding__travelCard__illustration"
-                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                        , A.alt "Ditt reisekortnummer finner du på baksiden av reisekortet ditt."
                         ]
                         []
                     ]

@@ -175,7 +175,7 @@ view shared model =
             [ Section.init
                 |> Section.setMarginBottom True
                 |> Section.viewWithOptions
-                    [ Ui.Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
+                    [ Ui.Message.warning "Når du skal lese av reisekortet ditt neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere avviser reisekortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
                     ]
             , H.div [ A.class "page page--threeColumns" ]
                 [ viewTicketSection summary
@@ -202,7 +202,7 @@ makeSummary query offers shared =
             totalPrice offers
     in
         { -- @TODO At some point when expanding to different modes, this should be updated.
-          travelMode = "Buss / trikk"
+          travelMode = "Buss"
         , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData

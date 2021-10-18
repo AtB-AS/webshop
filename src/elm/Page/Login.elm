@@ -300,16 +300,16 @@ view env model =
             [ viewIllustration
             , H.div []
                 [ Ui.Section.view
-                    [ Ui.Section.viewHeader "Nettbutikken er del av AtBs nye billettsystem. Her er noen ting du bør vite"
+                    [ Ui.Section.viewHeader "Nettbutikken er del av Reis Nordland sitt nye billettsystem. Her er noen ting du bør vite:"
                     , Ui.Section.viewItem
                         [ viewInfoPointWithIcon Icon.change
                             "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
                         , viewInfoPointWithIcon Icon.fastTime
-                            "Du kan reise straks billetten er betalt – uten å vente på aktivering av t:kort."
+                            "Du kan reise straks billetten er betalt – uten å vente på aktivering av reisekort."
                         , viewInfoPointWithIcon Icon.travelCardOutlined
-                            "Mista t:kortet? Sletting, bestilling og registrering av t:kort gjør du enkelt selv."
+                            "Mista reisekortet? Sletting, bestilling og registrering av reisekort gjør du enkelt selv."
                         , viewInfoPointWithIcon Icon.cloudOutlined
-                            "Billetten ligger trygt forvart på din profil – uavhengig av hva som skjer med t:kortet ditt."
+                            "Billetten ligger trygt forvart på din profil – uavhengig av hva som skjer med reisekortet ditt."
                         ]
                     , B.init "Jeg forstår - neste"
                         |> B.setIcon (Just Icon.rightArrow)
@@ -317,9 +317,9 @@ view env model =
                         |> B.setOnClick (Just HideInfoStep)
                         |> B.primary B.Primary_2
                     ]
-                , B.init "Les mer om AtBs nye reisetjenester her"
+                , B.init "Les mer om Reis Nordland sine nye reisetjenester her"
                     |> B.setElement H.a
-                    |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
+                    |> B.setAttributes [ A.href "https://www.nfk.no/" ]
                     |> B.link
                 , B.init "For our English speaking travellers"
                     |> B.setElement H.a
@@ -488,7 +488,7 @@ viewWelcomeIllustration : Html Msg
 viewWelcomeIllustration =
     Ui.Section.viewHeaderEl
         [ H.img [ A.src "/org/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
-        , H.text "Velkommen til AtBs nettbutikk"
+        , H.text "Velkommen til Reis Nordland nettbutikk"
         ]
 
 
