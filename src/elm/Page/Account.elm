@@ -893,13 +893,13 @@ viewTravelCard appInfo model profile =
             model.loadingEditSection == Just TravelCardSection
     in
         Ui.Section.viewGroup "Reisebevis"
-            [ EditSection.init "Administrer t:kort"
+            [ EditSection.init "Administrer reisekort"
                 |> EditSection.setEditButtonType
                     (if hasTravelCard then
-                        ( "Fjern t:kort", Icon.delete )
+                        ( "Fjern reisekort", Icon.delete )
 
                      else
-                        ( "Legg til t:kort", Icon.edit )
+                        ( "Legg til reisekort", Icon.edit )
                     )
                 |> EditSection.setIcon (Just Icon.ticketLarge)
                 |> EditSection.setOnSave onSave
@@ -912,14 +912,14 @@ viewTravelCard appInfo model profile =
                      else
                         Just <|
                             Message.Warning <|
-                                H.text "Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser."
+                                H.text "Ved å registrere et reisekort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser."
                     )
                 |> EditSection.setButtonGroup
                     (if hasTravelCard then
                         Just <|
                             EditSection.destructiveGroup
-                                { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
-                                , confirmLabel = "Fjern t:kort"
+                                { message = "Er du sikker på at du ønsker å fjerne dette reisekortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                                , confirmLabel = "Fjern reisekort"
                                 , onCancel = onCancel
                                 , onDestroy = onRemove
                                 , loading = loading
@@ -937,9 +937,9 @@ viewTravelCard appInfo model profile =
                         if inEditMode && not hasTravelCard then
                             EditSection.horizontalGroup
                                 [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
-                                    |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                    |> MaskedInput.setTitle (Just "Reisekortnummer (16-siffer)")
                                     |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
-                                    |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                    |> MaskedInput.setPlaceholder "Skriv inn reisekortnummer"
                                     |> MaskedInput.setPattern "#### #### ########"
                                     |> MaskedInput.setAttributes
                                         [ A.autofocus True
@@ -949,7 +949,7 @@ viewTravelCard appInfo model profile =
                                 ]
 
                         else
-                            [ Ui.Section.viewLabelItem "t:kortnummer"
+                            [ Ui.Section.viewLabelItem "Reisekortnummer"
                                 [ case profile.travelCard of
                                     Just travelCard ->
                                         travelCard
@@ -960,18 +960,13 @@ viewTravelCard appInfo model profile =
                                         H.div [ A.class "pageAccount__noTravelCard" ]
                                             [ Icon.warningColor
                                             , H.p []
-                                                [ H.text "Du har ingen t:kort registrert. "
-                                                , Ui.InlineButtonLink.view
-                                                    [ E.onClick <| SetEditSection (Just TravelCardSection) (Just "tkort")
-                                                    ]
-                                                    [ H.text "Legg til et t:kort" ]
-                                                , H.text ". Har du ikke t:kort kan du "
+                                                [ H.text "Du har ingen reisekort registrert. Om du trenger et nytt fysisk kort kan du "
                                                 , H.a
                                                     [ A.href appInfo.orderTravelCardUrl
                                                     , A.target "_blank"
-                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg (åpner ny side)."
+                                                    , A.title "ta kontakt med oss (åpner ny side)."
                                                     ]
-                                                    [ H.text "bestille her (åpner ny side)" ]
+                                                    [ H.text "ta kontakt med oss" ]
                                                 , H.text "."
                                                 ]
                                             ]

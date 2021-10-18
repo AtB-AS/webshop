@@ -545,13 +545,13 @@ view _ appInfo shared model _ =
                         |> PH.setBackButton ( "Avbryt", CloseShop )
                         |> PH.setBackIcon Icon.cross
                         |> PH.view
-                    , SummaryPage.cardReadWarning
+                    , SummaryPage.cardReadWarningPeriod
                     , H.div [ A.class "page" ]
                         [ Section.view
                             [ Ui.Group.view
                                 { title = "Reisetype"
                                 , icon = Icon.bus
-                                , value = Just "Buss og trikk"
+                                , value = Just "Buss"
                                 , open = False
                                 , readonly = True
                                 , onOpenClick = Nothing

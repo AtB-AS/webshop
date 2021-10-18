@@ -845,7 +845,7 @@ viewPage model =
             Just Route.Contact ->
                 ContactPage.view env model.appInfo shared model.contact model.route
                     |> H.map ContactMsg
-                    |> wrapSubPage "Kontakt AtB"
+                    |> wrapSubPage "Kontakt Reis Nordland"
 
             Just Route.Settings ->
                 AccountPage.view env model.appInfo shared model.account model.route
