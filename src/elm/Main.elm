@@ -290,6 +290,7 @@ init flags url navKey =
             , version = flags.version
             , commit = flags.commit
             , orgId = flags.orgConf.orgId
+            , zoneMapUrl = flags.orgConf.zoneMapUrl
             }
 
         ( overviewModel, overviewCmd ) =
