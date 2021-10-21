@@ -291,6 +291,7 @@ init flags url navKey =
             , commit = flags.commit
             , orgId = flags.orgConf.orgId
             , zoneMapUrl = flags.orgConf.zoneMapUrl
+            , privacyDeclarationUrl = flags.orgConf.privacyDeclarationUrl
             }
 
         ( overviewModel, overviewCmd ) =
@@ -617,7 +618,7 @@ view model =
                         |> H.map VerifyUserMsg
 
                 ( _, _, Just onboarding ) ->
-                    OnboardingPage.view model.environment model.shared onboarding
+                    OnboardingPage.view model.environment model.shared onboarding model.appInfo
                         |> H.map OnboardingMsg
 
                 ( _, _, _ ) ->

@@ -13,4 +13,5 @@ type alias AppInfo =
     , siteTitle : String
     , orgId : OrgId
     , zoneMapUrl : String
+    , privacyDeclarationUrl : String
     }

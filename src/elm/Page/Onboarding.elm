@@ -1,5 +1,6 @@
 module Page.Onboarding exposing (Model, Msg, init, subscriptions, update, view)
 
+import Base exposing (AppInfo)
 import Data.RefData exposing (Consent)
 import Data.Webshop exposing (GivenConsent)
 import Dict
@@ -402,15 +403,15 @@ validatePersonalInfo model =
     V.validate (V.all [ validatorEmail model, validatorPhone model ]) model
 
 
-view : Environment -> Shared -> Model -> Html Msg
-view env shared model =
+view : Environment -> Shared -> Model -> AppInfo -> Html Msg
+view env shared model appInfo =
     case model.step of
         ProfileInfo ->
             viewProfileInfo env model
                 |> wrapHeader model True "Profilinformasjon"
 
         Consents ->
-            viewConsents env shared model
+            viewConsents env shared model appInfo
                 |> wrapHeader model True "Samtykker"
 
         TravelCard ->
@@ -521,12 +522,12 @@ viewProfileInfo _ model =
     ]
 
 
-viewConsents : Environment -> Shared -> Model -> List (Html Msg)
-viewConsents env shared model =
+viewConsents : Environment -> Shared -> Model -> AppInfo -> List (Html Msg)
+viewConsents env shared model appInfo =
     [ Section.view
         [ Section.viewPaddedItem
             [ H.p [] [ H.text "For å forbedre nettbutikken og dele relevant informasjon, ber vi om samtykke til å kontakte deg per e-post. Samtykker kan du endre på når som helst!" ]
-            , H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy", A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
+            , H.p [] [ H.a [ A.href appInfo.privacyDeclarationUrl, A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
         , Section.viewLabelItem "Velg samtykker" (List.filterMap (viewConsent model) shared.consents)
         , if not (Set.isEmpty model.consents) && String.isEmpty model.savedEmail then
