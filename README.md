@@ -116,6 +116,7 @@ To ensure that the correct assets are available they should be moved into the `o
 
 Assets should be placed where the build script expects to find them. 
 A file called `<initials_for_organization>.json` should be placed directly in the `orgs` folder containing basic information such as `"orgId": "atb",` and `"siteTitle": "AtB Nettbutikk"`. 
+URLs for assets such as privacy declarations and zone maps should also be included in this file, see `/orgs/atb.json` for necessary fields.
 
 Below is an example of a file structure containing AtB and NFK.
 
