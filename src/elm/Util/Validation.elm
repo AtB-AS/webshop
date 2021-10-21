@@ -55,10 +55,10 @@ add fields error =
 travelCardValidator : a -> (subject -> String) -> Validate.Validator (FormError a) subject
 travelCardValidator field toValue =
     Validate.firstError
-        [ Validate.ifBlank toValue ( field, "t:kort id kan ikke være tomt." )
-        , ifNotLength 16 toValue ( field, "t:kort id ser ut til å være feil." )
-        , Validate.ifNotInt toValue (\_ -> ( field, "t:kort id må være et tall på 16 siffer." ))
-        , Validate.ifFalse (\model -> String.startsWith "1616006" (toValue model)) ( field, "t:kort id må starte på 1616 0060" )
+        [ Validate.ifBlank toValue ( field, "Reisekortnummeret id kan ikke være tomt." )
+        , ifNotLength 16 toValue ( field, "Reisekortnummeret ser ut til å være feil." )
+        , Validate.ifNotInt toValue (\_ -> ( field, "Reisekortnummeret må være et tall på 16 siffer." ))
+        , Validate.ifFalse (\model -> String.startsWith "1616006" (toValue model)) ( field, "Reisekortnummeret må starte på 1616 0060" )
         ]
 
 

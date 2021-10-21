@@ -553,7 +553,7 @@ viewSidebar model =
             "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
+            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og Reis Nordland sine systemer. Profilen min er tilknyttet telefonnummer: "
                 ++ phoneNumber
             )
                 ++ """
@@ -566,7 +566,7 @@ viewSidebar model =
                 """
 
         deleteLink =
-            "mailto:kundeservice@atb.no"
+            "mailto:sentrumsterminalen@boreal.no"
                 ++ Url.toQuery
                     [ Url.string "body" body
                     , Url.string "subject" subject
@@ -859,13 +859,13 @@ viewTravelCard model profile =
             model.loadingEditSection == Just TravelCardSection
     in
         Ui.Section.viewGroup "Billettbærere"
-            [ EditSection.init "Administrer t:kort"
+            [ EditSection.init "Administrer reisekort"
                 |> EditSection.setEditButtonType
                     (if hasTravelCard then
-                        ( "Fjern t:kort", Icon.delete )
+                        ( "Fjern reisekort", Icon.delete )
 
                      else
-                        ( "Legg til t:kort", Icon.edit )
+                        ( "Legg til reisekort", Icon.edit )
                     )
                 |> EditSection.setIcon (Just Icon.ticketLarge)
                 |> EditSection.setOnSave onSave
@@ -875,8 +875,8 @@ viewTravelCard model profile =
                     (if hasTravelCard then
                         Just <|
                             EditSection.destructiveGroup
-                                { message = "Er du sikker på at du ønsker å fjerne dette t:kortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
-                                , confirmLabel = "Fjern t:kort"
+                                { message = "Er du sikker på at du ønsker å fjerne dette reisekortet? Dette gjør at aktive billetter ikke lengre vil være tilgjengelig via kortet."
+                                , confirmLabel = "Fjern reisekort"
                                 , onCancel = onCancel
                                 , onDestroy = onRemove
                                 , loading = loading
@@ -894,9 +894,9 @@ viewTravelCard model profile =
                         if inEditMode && not hasTravelCard then
                             EditSection.horizontalGroup
                                 [ MaskedInput.init "tkort" InputTravelCard StateTravelCard
-                                    |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                    |> MaskedInput.setTitle (Just "Reisekortnummer (16-siffer)")
                                     |> MaskedInput.setError (Validation.select TravelCard model.validationErrors)
-                                    |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                    |> MaskedInput.setPlaceholder "Skriv inn reisekortnummer"
                                     |> MaskedInput.setPattern "#### #### ########"
                                     |> MaskedInput.setAttributes
                                         [ A.autofocus True
@@ -906,7 +906,7 @@ viewTravelCard model profile =
                                 ]
 
                         else
-                            [ Ui.Section.viewLabelItem "t:kortnummer"
+                            [ Ui.Section.viewLabelItem "Reisekortnummer"
                                 [ case profile.travelCard of
                                     Just travelCard ->
                                         travelCard
@@ -917,18 +917,18 @@ viewTravelCard model profile =
                                         H.div [ A.class "pageAccount__noTravelCard" ]
                                             [ Icon.warningColor
                                             , H.p []
-                                                [ H.text "Du har ingen t:kort registrert. "
+                                                [ H.text "Du har ingen reisekort registrert. "
                                                 , Ui.InlineButtonLink.view
                                                     [ E.onClick <| SetEditSection (Just TravelCardSection) (Just "tkort")
                                                     ]
-                                                    [ H.text "Legg til et t:kort" ]
-                                                , H.text ". Har du ikke t:kort kan du "
+                                                    [ H.text "Legg til et reisekort" ]
+                                                , H.text ". Har du ikke reisekort kjøpes dette på bussen eller ved "
                                                 , H.a
-                                                    [ A.href "https://www.atb.no/bestill-tkort/"
+                                                    [ A.href "https://www.reisnordland.no/kontakt-oss"
                                                     , A.target "_blank"
-                                                    , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg (åpner ny side)."
+                                                    , A.title "Gå til nettside for å finne nærmeste salgskontor (åpner ny side)."
                                                     ]
-                                                    [ H.text "bestille her (åpner ny side)" ]
+                                                    [ H.text "nærmeste salgskontor" ]
                                                 , H.text "."
                                                 ]
                                             ]

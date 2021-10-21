@@ -290,8 +290,8 @@ viewAccountInfo shared _ =
                     |> Maybe.map .id
                     |> Html.Extra.viewMaybe
                         (\id ->
-                            S.viewLabelItem "T:kort"
-                                [ H.p [ A.class "accountInfo__item", A.title "t:kort-nummer" ]
+                            S.viewLabelItem "Reisekort"
+                                [ H.p [ A.class "accountInfo__item", A.title "Reisekortnummer" ]
                                     [ Icon.travelCard
                                     , Ui.TravelCardText.view id
                                     ]
@@ -308,7 +308,7 @@ viewAccountInfo shared _ =
                         Html.Extra.nothing
 
                     _ ->
-                        B.init "Legg til t:kort "
+                        B.init "Legg til reisekort "
                             |> B.setDisabled False
                             |> B.setIcon (Just Icon.travelCard)
                             |> B.setOnClick (Just OpenEditTravelCard)

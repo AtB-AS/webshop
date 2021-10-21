@@ -415,7 +415,7 @@ view env shared model =
 
         TravelCard ->
             viewTravelCard env model
-                |> wrapHeader model False "Legg til t:kort"
+                |> wrapHeader model False "Legg til reisekort"
 
         AppAdvert ->
             viewAppAdvert env model
@@ -622,7 +622,7 @@ viewTravelCard _ model =
                         []
                     ]
                 , Section.viewHorizontalGroup
-                    [ Button.init "Legg til t:kort"
+                    [ Button.init "Legg til reisekort"
                         |> Button.setIcon (Just Icon.checkmark)
                         |> Button.setOnClick (Just RegisterTravelCard)
                         |> Button.primaryDefault

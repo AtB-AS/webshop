@@ -556,7 +556,7 @@ view _ _ shared model _ =
                     , Section.init
                         |> Section.setMarginBottom True
                         |> Section.viewWithOptions
-                            [ Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
+                            [ Message.warning "Når du skal lese av reisekortet ditt neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere avviser reisekortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
                             ]
                     , H.div [ A.class "page" ]
                         [ Section.view
