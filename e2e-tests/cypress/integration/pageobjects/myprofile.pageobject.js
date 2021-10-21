@@ -93,7 +93,7 @@ export const myprofile = {
     },
     removeTravelCardWarning: () =>
         cy.get('h2.ui-section__headerTitle')
-            .contains('Billettbærere')
+            .contains('Reisebevis')
             .parents('.ui-section__item')
             .find(".ui-editSection__fieldset__buttonGroup__deleteText"),
     travelCardError: () => cy.get("#tkort-error"),
@@ -147,7 +147,7 @@ export const myprofile = {
 
         //Add or remove travel card
         cy.get('h2.ui-section__headerTitle')
-            .contains('Billettbærere')
+            .contains('Reisebevis')
             .parents('.ui-section__item')
             .find('.ui-labelItem')
             .then(($elem) => {

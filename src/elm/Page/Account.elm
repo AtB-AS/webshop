@@ -858,7 +858,7 @@ viewTravelCard model profile =
         loading =
             model.loadingEditSection == Just TravelCardSection
     in
-        Ui.Section.viewGroup "Billettbærere"
+        Ui.Section.viewGroup "Reisebevis"
             [ EditSection.init "Administrer t:kort"
                 |> EditSection.setEditButtonType
                     (if hasTravelCard then
