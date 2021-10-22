@@ -1,20 +1,14 @@
-if [ "$#" -ne 2 ]
+if [ "$#" -ne 1 ]
 then
     echo "Argument error!"
-    echo "First argument should be the environment name."
-    echo "Available environment names:
- - dev
- - prodstaging
- - staging
- - store"
-    echo "Second argument should be the app organisation name."
-    echo "Available app variant names:
+    echo "First argument should be the app organisation name."
+    echo "Available app organisation names:
 -atb
 -nfk"
 
     echo "Example:
-./setup.sh dev atb"
+yarn setup atb"
     exit 1
 else
-    sh ./override-environment.sh $1 $2
+    sh ./override-environment.sh $1
 fi
