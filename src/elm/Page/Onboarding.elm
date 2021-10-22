@@ -599,37 +599,44 @@ viewTravelCard _ model =
         ]
 
     else
-        [ H.div [ A.class "onboarding__travelCard" ]
-            [ Section.view
-                [ Section.viewPaddedItem
-                    [ H.div [ A.class "onboarding__travelCard__input" ]
-                        [ MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
-                            |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
-                            |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
-                            |> MaskedInput.setPattern "#### #### ########"
-                            |> MaskedInput.setBordered True
-                            |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
-                            |> MaskedInput.setAttributes
-                                [ A.attribute "inputmode" "numeric"
-                                ]
-                            |> MaskedInput.view model.travelCardState model.travelCard
+        [ H.div []
+            [ H.div [ A.class "ui-message--marginBottom ui-message-borderTop" ]
+                [ Message.warningWithOptions
+                    { borderTop = True, borderBottom = True, marginTop = False, marginBottom = False }
+                    "Ved å reistrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser."
+                ]
+            , H.div [ A.class "onboarding__travelCard" ]
+                [ Section.view
+                    [ Section.viewPaddedItem
+                        [ H.div [ A.class "onboarding__travelCard__input" ]
+                            [ MaskedInput.init "travelCard" InputTravelCard InputStateTravelCard
+                                |> MaskedInput.setTitle (Just "t:kortnummer (16-siffer)")
+                                |> MaskedInput.setPlaceholder "Skriv inn t:kortnummer"
+                                |> MaskedInput.setPattern "#### #### ########"
+                                |> MaskedInput.setBordered True
+                                |> MaskedInput.setError (V.select TravelCardField model.validationErrors)
+                                |> MaskedInput.setAttributes
+                                    [ A.attribute "inputmode" "numeric"
+                                    ]
+                                |> MaskedInput.view model.travelCardState model.travelCard
+                            ]
+                        , H.img
+                            [ A.src "/images/travelcard-help-illustration.svg"
+                            , A.class "onboarding__travelCard__illustration"
+                            , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                            ]
+                            []
                         ]
-                    , H.img
-                        [ A.src "/images/travelcard-help-illustration.svg"
-                        , A.class "onboarding__travelCard__illustration"
-                        , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
+                    , Section.viewHorizontalGroup
+                        [ Button.init "Legg til t:kort"
+                            |> Button.setIcon (Just Icon.checkmark)
+                            |> Button.setOnClick (Just RegisterTravelCard)
+                            |> Button.primaryDefault
+                        , Button.init "Legg til senere"
+                            |> Button.setIcon (Just Icon.rightArrow)
+                            |> Button.setOnClick (Just NextStep)
+                            |> Button.tertiary
                         ]
-                        []
-                    ]
-                , Section.viewHorizontalGroup
-                    [ Button.init "Legg til t:kort"
-                        |> Button.setIcon (Just Icon.checkmark)
-                        |> Button.setOnClick (Just RegisterTravelCard)
-                        |> Button.primaryDefault
-                    , Button.init "Legg til senere"
-                        |> Button.setIcon (Just Icon.rightArrow)
-                        |> Button.setOnClick (Just NextStep)
-                        |> Button.tertiary
                     ]
                 ]
             ]
