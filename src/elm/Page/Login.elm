@@ -356,7 +356,7 @@ view env model =
 viewIllustration : Html msg
 viewIllustration =
     H.img
-        [ A.src "/images/travel-illustration.svg"
+        [ A.src "/org/images/travel-illustration.svg"
         , A.class "pageLogin__illustration"
         , A.alt ""
         , A.attribute "role" "presentation"
@@ -487,7 +487,7 @@ viewEmailReset model =
 viewWelcomeIllustration : Html Msg
 viewWelcomeIllustration =
     Ui.Section.viewHeaderEl
-        [ H.img [ A.src "/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
+        [ H.img [ A.src "/org/images/waving-hand.png", A.alt "", A.attribute "role" "presentation" ] []
         , H.text "Velkommen til AtBs nettbutikk"
         ]
 

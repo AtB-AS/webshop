@@ -12,7 +12,6 @@ type alias AppInfo =
     , pageName : String
     , siteTitle : String
     , orgId : OrgId
-
-    -- Assets should be handled in design-system at a later stage
-    , logoUrl : String
+    , zoneMapUrl : String
+    , privacyDeclarationUrl : String
     }
