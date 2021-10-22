@@ -19,6 +19,7 @@ module Ui.Input.EditSection exposing
     , setInEditMode
     , setOnEdit
     , setOnSave
+    , setWarningText
     )
 
 import Fragment.Icon
@@ -28,6 +29,7 @@ import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
 import Ui.Button as B exposing (ButtonMode(..))
+import Ui.Message
 import Ui.TextContainer exposing (TextColor(..), TextContainer(..))
 
 
@@ -39,6 +41,7 @@ type alias EditSection msg =
     , inEditMode : Bool
     , buttonGroup : Maybe (List (Html msg))
     , icon : Maybe (Html msg)
+    , warningText : Maybe String
     }
 
 
@@ -51,6 +54,7 @@ init accessibilityName =
     , inEditMode = False
     , buttonGroup = Nothing
     , icon = Nothing
+    , warningText = Nothing
     }
 
 
@@ -89,8 +93,13 @@ setIcon icon opts =
     { opts | icon = icon }
 
 
+setWarningText : Maybe String -> EditSection msg -> EditSection msg
+setWarningText warningText opts =
+    { opts | warningText = warningText }
+
+
 editSection : (Bool -> List (Html msg)) -> EditSection msg -> Html msg
-editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon } =
+editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon, warningText } =
     let
         ( editText, editIcon ) =
             editButtonData
@@ -121,7 +130,14 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
                         [ H.text accessibilityName ]
                     , H.div [ A.class "ui-editSection__container" ]
                         [ iconElement
-                        , H.div [ A.class "ui-editSection__content" ] (children True)
+                        , H.div [ A.class "ui-editSection__content" ]
+                            [ H.div [] (children True)
+                            , case warningText of
+                                Just text ->
+                                    H.div [] [ Ui.Message.warning text ]
+                                Nothing ->
+                                    Html.Extra.nothing
+                            ]
                         ]
                     , H.div [ A.class "ui-editSection__fieldset__buttonGroup" ] <|
                         Maybe.withDefault [] buttonGroup
