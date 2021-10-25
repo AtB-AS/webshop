@@ -70,7 +70,7 @@ view : Model -> Html Msg
 view model =
     H.div []
         [ H.div [ A.class "page page--narrow" ]
-            [ H.img [ A.src "/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
+            [ H.img [ A.src "/org/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , H.div []
                 [ Ui.Section.view
                     [ Ui.Section.viewHeader <| "Bekreft " ++ model.email

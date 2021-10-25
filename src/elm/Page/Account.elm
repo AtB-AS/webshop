@@ -536,9 +536,9 @@ focusBox id =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ shared model _ =
+view _ appInfo shared model _ =
     H.div [ A.class "page" ]
-        [ viewMain model shared
+        [ viewMain model shared appInfo
         , H.aside [] [ viewSidebar model ]
         ]
 
@@ -585,8 +585,8 @@ viewSidebar model =
             ]
 
 
-viewMain : Model -> Shared -> Html Msg
-viewMain model shared =
+viewMain : Model -> Shared -> AppInfo -> Html Msg
+viewMain model shared appInfo =
     H.div [ A.class "main" ]
         [ Ui.Section.view
             (case model.profile of
@@ -595,7 +595,7 @@ viewMain model shared =
                     , viewSignIn model profile
                     , viewRecurringPayments model
                     , viewTravelCard model profile
-                    , viewPrivacy model shared
+                    , viewPrivacy model shared appInfo
                     ]
 
                 Nothing ->
@@ -942,8 +942,8 @@ viewTravelCard model profile =
             ]
 
 
-viewPrivacy : Model -> Shared -> Html Msg
-viewPrivacy model shared =
+viewPrivacy : Model -> Shared -> AppInfo -> Html Msg
+viewPrivacy model shared appInfo =
     Ui.Section.viewGroup "Personvern"
         [ Ui.Section.viewWithIcon Icon.checkmarkCircle
             [ Ui.Section.viewLabelItem "Samtykke"
@@ -953,7 +953,7 @@ viewPrivacy model shared =
             |> Validation.select Consent
             |> Html.Extra.viewMaybe Message.error
         , Ui.Section.viewPaddedItem
-            [ H.p [] [ H.a [ A.href "https://beta.atb.no/private-policy" ] [ H.text "Les vår personvernerklæring" ] ]
+            [ H.p [] [ H.a [ A.href appInfo.privacyDeclarationUrl ] [ H.text "Les vår personvernerklæring" ] ]
             ]
         ]
 

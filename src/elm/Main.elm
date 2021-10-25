@@ -289,8 +289,9 @@ init flags url navKey =
             , siteTitle = flags.orgConf.siteTitle
             , version = flags.version
             , commit = flags.commit
-            , logoUrl = flags.orgConf.logoUrl
             , orgId = flags.orgConf.orgId
+            , zoneMapUrl = flags.orgConf.zoneMapUrl
+            , privacyDeclarationUrl = flags.orgConf.privacyDeclarationUrl
             }
 
         ( overviewModel, overviewCmd ) =
@@ -617,7 +618,7 @@ view model =
                         |> H.map VerifyUserMsg
 
                 ( _, _, Just onboarding ) ->
-                    OnboardingPage.view model.environment model.shared onboarding
+                    OnboardingPage.view model.environment model.shared onboarding model.appInfo
                         |> H.map OnboardingMsg
 
                 ( _, _, _ ) ->
@@ -721,7 +722,7 @@ header model contentClass =
             [ H.div [ A.class "pageHeader__content" ]
                 [ H.div [ A.class "pageHeader__inner" ]
                     [ H.h1 [ A.class "pageHeader__logo" ]
-                        [ H.a [ Route.href Route.Home ] [ H.img [ A.src model.appInfo.logoUrl ] [], H.text model.appInfo.pageName ]
+                        [ H.a [ Route.href Route.Home ] [ H.img [ A.src "/org/images/icon.svg" ] [], H.text model.appInfo.pageName ]
                         ]
                     , if showHeader then
                         H.div [ A.class "pageHeader__toggleButton" ] [ Ui.HamburgerButton.view "burgermenu" "menubox" model.openMenu (ToggleMenu <| not model.openMenu) ]

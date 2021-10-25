@@ -300,12 +300,12 @@ creditcard =
 
 visa : Html msg
 visa =
-    H.img [ A.src "images/paymentcard-visa.svg", A.attribute "aria-hidden" "true" ] []
+    H.img [ A.src "common/images/paymentcard-visa.svg", A.attribute "aria-hidden" "true" ] []
 
 
 mastercard : Html msg
 mastercard =
-    H.img [ A.src "images/paymentcard-mastercard.svg", A.attribute "aria-hidden" "true" ] []
+    H.img [ A.src "common/images/paymentcard-mastercard.svg", A.attribute "aria-hidden" "true" ] []
 
 
 {-| Vipps icon - should be embedded in a box with a background color of #FF5B24.
