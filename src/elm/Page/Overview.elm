@@ -1,6 +1,6 @@
 module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view)
 
-import Base exposing (AppInfo)
+import Base exposing (AppInfo, OrgId(..))
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
@@ -244,28 +244,38 @@ update msg env model shared =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ shared model _ =
+view _ appInfo shared model _ =
     H.div []
         [ PH.init
             |> PH.setTitle (Just "Mine billetter")
             |> PH.view
         , H.div [ A.class "page page--overview" ]
-            [ viewSidebar shared model
+            [ viewSidebar shared model appInfo
             , viewMain shared model
             ]
         ]
 
 
-viewSidebar : Shared -> Model -> Html Msg
-viewSidebar shared model =
+viewSidebar : Shared -> Model -> AppInfo -> Html Msg
+viewSidebar shared model appInfo =
     H.aside [ A.class "sidebar" ]
-        [ viewAccountInfo shared model
+        [ viewAccountInfo shared model appInfo
         , viewActions shared
         ]
 
 
-viewAccountInfo : Shared -> Model -> Html Msg
-viewAccountInfo shared _ =
+pickTravelCardIcon : OrgId -> Html Msg
+pickTravelCardIcon orgId =
+    case orgId of
+        AtB ->
+            Icon.atbTravelCard
+
+        _ ->
+            Icon.travelCard
+
+
+viewAccountInfo : Shared -> Model -> AppInfo -> Html Msg
+viewAccountInfo shared _ appInfo =
     let
         name =
             viewNameMaybe shared.profile
@@ -292,7 +302,7 @@ viewAccountInfo shared _ =
                         (\id ->
                             S.viewLabelItem "Reisekort"
                                 [ H.p [ A.class "accountInfo__item", A.title "Reisekortnummer" ]
-                                    [ Icon.travelCard
+                                    [ pickTravelCardIcon appInfo.orgId
                                     , Ui.TravelCardText.view id
                                     ]
                                 ]
