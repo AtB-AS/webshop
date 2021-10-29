@@ -1,5 +1,6 @@
 module Page.Login exposing (Model, Msg(..), init, subscriptions, update, view)
 
+import Base exposing (AppInfo, OrgId(..))
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Environment exposing (Environment)
@@ -293,8 +294,18 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> Html Msg
-view env model =
+pickOutlinedTravelCardIcon : OrgId -> Html Msg
+pickOutlinedTravelCardIcon orgId =
+    case orgId of
+        AtB ->
+            Icon.travelCardOutlined
+
+        _ ->
+            Icon.ticket
+
+
+view : Environment -> Model -> AppInfo -> Html Msg
+view env model appInfo =
     if model.showInfoStep then
         H.div [ A.class "page page--narrow" ]
             [ viewIllustration
@@ -306,7 +317,7 @@ view env model =
                             "Ny nettbutikk har ingen kobling mot den gamle. Bruk opp gyldige billetter der før du går videre."
                         , viewInfoPointWithIcon Icon.fastTime
                             "Du kan reise straks billetten er betalt – uten å vente på aktivering av reisekort."
-                        , viewInfoPointWithIcon Icon.travelCardOutlined
+                        , viewInfoPointWithIcon (pickOutlinedTravelCardIcon appInfo.orgId)
                             "Mista reisekortet? Sletting, bestilling og registrering av reisekort gjør du enkelt selv."
                         , viewInfoPointWithIcon Icon.cloudOutlined
                             "Billetten ligger trygt forvart på din profil – uavhengig av hva som skjer med reisekortet ditt."

@@ -271,7 +271,7 @@ pickTravelCardIcon orgId =
             Icon.atbTravelCard
 
         _ ->
-            Icon.travelCard
+            Icon.ticket
 
 
 viewAccountInfo : Shared -> Model -> AppInfo -> Html Msg
@@ -320,7 +320,7 @@ viewAccountInfo shared _ appInfo =
                     _ ->
                         B.init "Legg til reisekort "
                             |> B.setDisabled False
-                            |> B.setIcon (Just Icon.travelCard)
+                            |> B.setIcon (Just (pickTravelCardIcon appInfo.orgId))
                             |> B.setOnClick (Just OpenEditTravelCard)
                             |> B.tertiary
                 ]
