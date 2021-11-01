@@ -221,8 +221,6 @@ function getOrgIdConfig(config) {
         );
     }
 
-    console.log(config)
-
     return orgId;
 }
 
