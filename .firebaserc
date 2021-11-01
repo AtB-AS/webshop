@@ -16,6 +16,13 @@
           "atb-webshop-staging"
         ]
       }
+    },
+    "nfk-staging": {
+      "hosting": {
+        "webshop": [
+          "nfk-webshop-staging"
+        ]
+      }
     }
   }
 }
