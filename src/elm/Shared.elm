@@ -1,5 +1,6 @@
-module Shared exposing (Msg, Shared, hasCarnetTickets, hasNonCarnetTickets, hasPeriodTickets, hasSingleTickets, init, subscriptions, update)
+module Shared exposing (Msg, Shared, filterAvailableOnProductType, hasCarnetTickets, hasNonCarnetTickets, init, subscriptions, update)
 
+import Data.FareContract exposing (TravelRight(..))
 import Data.PaymentType exposing (PaymentType)
 import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
 import List exposing (product)
@@ -31,6 +32,7 @@ type alias Shared =
     , consents : List Consent
     , paymentTypes : List PaymentType
     , profile : Maybe Profile
+    , availableCarnetProducts : List FareProduct
     }
 
 
@@ -39,6 +41,7 @@ init =
     { tariffZones = []
     , fareProducts = []
     , availableFareProducts = []
+    , availableCarnetProducts = []
     , userProfiles = []
     , productLimitations = []
     , consents = []
@@ -64,7 +67,8 @@ update msg model =
                 Ok value ->
                     { model
                         | fareProducts = value
-                        , availableFareProducts = List.filter hasDistributionWeb value
+                        , availableFareProducts = filterAvailableOnProductType [ ProductTypeSingle, ProductTypePeriod ] value
+                        , availableCarnetProducts = filterAvailableOnProductType [ ProductTypeCarnet ] value
                         , productLimitations = getMappedLimitations value model.userProfiles
                     }
 
@@ -110,43 +114,30 @@ hasDistributionWeb =
     .distributionChannel >> List.member DistributionChannelWeb
 
 
+isAnyProductType : List ProductType -> FareProduct -> Bool
+isAnyProductType types product =
+    List.member product.type_ types
+
+
+filterAvailableOnProductType : List ProductType -> List FareProduct -> List FareProduct
+filterAvailableOnProductType types products =
+    products
+        |> List.filter hasDistributionWeb
+        |> List.filter (isAnyProductType types)
+
+
 {-| Check if we have period tickets valid for Web
 -}
 hasNonCarnetTickets : Shared -> Bool
 hasNonCarnetTickets shared =
-    hasProductType ProductTypePeriod shared || hasProductType ProductTypeSingle shared
-
-
-{-| Check if we have period tickets valid for Web
--}
-hasPeriodTickets : Shared -> Bool
-hasPeriodTickets =
-    hasProductType ProductTypePeriod
+    not <| List.isEmpty shared.availableFareProducts
 
 
 {-| Check if we have carnet tickets valid for Web
 -}
 hasCarnetTickets : Shared -> Bool
-hasCarnetTickets =
-    hasProductType ProductTypeCarnet
-
-
-{-| Check if we have single tickets valid for Web
--}
-hasSingleTickets : Shared -> Bool
-hasSingleTickets =
-    hasProductType ProductTypeSingle
-
-
-hasProductType : ProductType -> Shared -> Bool
-hasProductType type_ shared =
-    shared.fareProducts
-        |> List.any
-            (\product ->
-                product.type_
-                    == type_
-                    && List.member DistributionChannelWeb product.distributionChannel
-            )
+hasCarnetTickets shared =
+    not <| List.isEmpty shared.availableCarnetProducts
 
 
 subscriptions : Sub Msg

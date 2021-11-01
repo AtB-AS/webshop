@@ -5,7 +5,6 @@ import Data.RefData exposing (LangString(..), TariffZone, UserProfile, UserType(
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
 import Html.Attributes as A
-import Html.Attributes.Extra as Attr
 import Html.Extra
 import Page.Shop.Summary as SummaryPage
 import Page.Shop.Utils as Utils exposing (CommonModel)
