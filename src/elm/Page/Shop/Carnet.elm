@@ -68,8 +68,8 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { product = Nothing
-      , fromZone = Just "ATB:TariffZone:1" -- hardcoded
-      , toZone = Just "ATB:TariffZone:1" -- hardcoded
+      , fromZone = Nothing
+      , toZone = Nothing
       , users = [ ( UserTypeAdult, 1 ) ]
       , offers = NotLoaded
       , reservation = NotLoaded
