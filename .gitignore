@@ -12,5 +12,5 @@ yarn-error.log
 .DS_Store
 .firebase
 
-src/static/*
-!src/static/common
+src/static/org
+src/static/favicon.ico
