@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Elm } from '../elm/Main';
 import './navigation';
 
-const appConfig = require(`/orgs/${elmFlags.orgId}.json`)
+const appConfig = require(`/orgs/${elmFlags.orgConf.orgId}.json`)
 const MAX_RETRY_ATTEMPTS = 3;
 
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {
