@@ -141,7 +141,7 @@ update msg env model shared =
                                 Nothing
 
                     availableProducts =
-                        shared.fareProducts
+                        shared.availableCarnetProducts
                             |> List.filter (.type_ >> (==) ProductTypeCarnet)
 
                     ( firstZone, defaultProduct ) =
