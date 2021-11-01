@@ -368,7 +368,7 @@ const commonConfig = {
                 siteTitle: possibleSiteTitles[orgId],
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
-                commit: gitCommitHash(),
+                commit: gitCommitHash()
             }),
             gaTrackingId: JSON.stringify(
                 process.env.GA_TRACKING_ID || localConfig.gaTrackingId
