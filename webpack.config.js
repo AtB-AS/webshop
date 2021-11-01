@@ -363,7 +363,8 @@ const commonConfig = {
                 orgId: orgId,
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
-                commit: gitCommitHash()
+                commit: gitCommitHash(),
+                siteName: "OOS Nettbutikk"
             }),
             gaTrackingId: JSON.stringify(
                 process.env.GA_TRACKING_ID || localConfig.gaTrackingId
