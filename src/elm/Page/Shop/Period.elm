@@ -241,15 +241,11 @@ update msg env model shared =
                             _ ->
                                 Nothing
 
-                    availableProducts =
-                        shared.fareProducts
-                            |> List.filter (.type_ >> (==) ProductTypePeriod)
-
                     ( firstZone, defaultProduct ) =
-                        Utils.defaultDerivedData shared availableProducts
+                        Utils.defaultDerivedData shared shared.availablePeriodProducts
 
                     dataNotLoadedYet =
-                        List.isEmpty shared.availableFareProducts && List.isEmpty shared.tariffZones
+                        List.isEmpty shared.availablePeriodProducts && List.isEmpty shared.tariffZones
 
                     newProduct =
                         Maybe.withDefault defaultProduct model.product
@@ -495,12 +491,8 @@ toggleShowMainView model mainView =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     let
-        availableProducts =
-            shared.fareProducts
-                |> List.filter (.type_ >> (==) ProductTypePeriod)
-
         ( defaultZone, defaultProduct ) =
-            Utils.defaultDerivedData shared availableProducts
+            Utils.defaultDerivedData shared shared.availablePeriodProducts
 
         summary =
             Utils.modelSummary ( defaultZone, defaultProduct ) shared model
@@ -581,7 +573,7 @@ view _ appInfo shared model _ =
                                 , id = "varighet"
                                 , editTextSuffix = "varighet"
                                 }
-                                [ viewProducts model defaultProduct shared.availableFareProducts ]
+                                [ viewProducts model defaultProduct shared.availablePeriodProducts ]
                             , Ui.Group.view
                                 { title = "Reisende"
                                 , icon = Icon.bus

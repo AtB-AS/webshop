@@ -68,8 +68,8 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { product = Nothing
-      , fromZone = Just "ATB:TariffZone:1" -- hardcoded
-      , toZone = Just "ATB:TariffZone:1" -- hardcoded
+      , fromZone = Nothing
+      , toZone = Nothing
       , users = [ ( UserTypeAdult, 1 ) ]
       , offers = NotLoaded
       , reservation = NotLoaded
@@ -140,15 +140,11 @@ update msg env model shared =
                             _ ->
                                 Nothing
 
-                    availableProducts =
-                        shared.fareProducts
-                            |> List.filter (.type_ >> (==) ProductTypeCarnet)
-
                     ( firstZone, defaultProduct ) =
-                        Utils.defaultDerivedData shared availableProducts
+                        Utils.defaultDerivedData shared shared.availableCarnetProducts
 
                     dataNotLoadedYet =
-                        List.isEmpty availableProducts && List.isEmpty shared.tariffZones
+                        List.isEmpty shared.availableCarnetProducts && List.isEmpty shared.tariffZones
 
                     newProduct =
                         Maybe.withDefault defaultProduct model.product
@@ -260,12 +256,8 @@ toggleShowMainView model mainView =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     let
-        availableProducts =
-            shared.fareProducts
-                |> List.filter (.type_ >> (==) ProductTypeCarnet)
-
         ( defaultZone, defaultProduct ) =
-            Utils.defaultDerivedData shared availableProducts
+            Utils.defaultDerivedData shared shared.availableCarnetProducts
 
         summary =
             Utils.modelSummary ( defaultZone, defaultProduct ) shared model

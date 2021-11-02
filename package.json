@@ -7,7 +7,7 @@
     "author": "AtB",
     "scripts": {
         "start": "webpack serve --hot --inline",
-        "build": "rimraf dist && yarn setup atb && webpack --bail",
+        "build": "rimraf dist && yarn setup $WEBSHOP_ORG_ID && webpack --bail",
         "clean": "rimraf dist",
         "reinstall": "rimraf node_modules && yarn",
         "webpack-defaults": "webpack-defaults",

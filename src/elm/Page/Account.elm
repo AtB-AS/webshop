@@ -944,10 +944,12 @@ viewTravelCard model profile =
 viewPrivacy : Model -> Shared -> AppInfo -> Html Msg
 viewPrivacy model shared appInfo =
     Ui.Section.viewGroup "Personvern"
-        [ Ui.Section.viewWithIcon Icon.checkmarkCircle
-            [ Ui.Section.viewLabelItem "Samtykke"
-                (List.filterMap (viewConsent model) shared.consents)
-            ]
+        [ Html.Extra.viewIf (not <| List.isEmpty shared.consents) <|
+            Ui.Section.viewWithIcon
+                Icon.checkmarkCircle
+                [ Ui.Section.viewLabelItem "Samtykke"
+                    (List.filterMap (viewConsent model) shared.consents)
+                ]
         , model.validationErrors
             |> Validation.select Consent
             |> Html.Extra.viewMaybe Message.error

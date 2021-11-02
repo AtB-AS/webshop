@@ -12,5 +12,6 @@ yarn-error.log
 .DS_Store
 .firebase
 
-src/static/*
-!src/static/common
+# Most organization specific static files are copied from the tracked orgs/ folders using 'yarn setup <organization>'
+src/static/org
+src/static/favicon.ico

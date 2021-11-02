@@ -275,6 +275,7 @@ const isDevelopment = TARGET_ENV === development;
 const languageSwitcher = getLanguageSwitcher(localConfig);
 const enableDebug = TARGET_ENV === development || TARGET_ENV === debug;
 const orgId = getOrgIdConfig(localConfig);
+const appConfig = require(`./orgs/${orgId}.json`);
 
 // Common Webpack config.  Everything here will be used in both the
 // development and production environments.
@@ -294,7 +295,7 @@ const commonConfig = {
         extensions: ['.js', '.elm', '.scss'],
         alias: {
             '@atb/theme/theme.css': `@atb-as/theme/lib/themes/${orgId}-theme/theme.css`,
-            '@atb/theme/typography.css': '@atb-as/theme/lib/typography.css',
+            '@atb/theme/typography.css': '@atb-as/theme/lib/typography.css'
         }
     },
     module: {
@@ -358,12 +359,10 @@ const commonConfig = {
             elmFlags: JSON.stringify({
                 isDevelopment: isDevelopment,
                 baseUrl: getBaseUrl(localConfig, 'baseUrl'),
-                ticketUrl: getBaseUrl(localConfig, 'ticketUrl'),
-                refDataUrl: getBaseUrl(localConfig, 'refDataUrl'),
-                orgId: orgId,
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
-                commit: gitCommitHash()
+                commit: gitCommitHash(),
+                orgConf: appConfig
             }),
             gaTrackingId: JSON.stringify(
                 process.env.GA_TRACKING_ID || localConfig.gaTrackingId
