@@ -260,12 +260,8 @@ toggleShowMainView model mainView =
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     let
-        availableProducts =
-            shared.availableFareProducts
-                |> List.filter (.type_ >> (==) ProductTypeCarnet)
-
         ( defaultZone, defaultProduct ) =
-            Utils.defaultDerivedData shared availableProducts
+            Utils.defaultDerivedData shared shared.availableCarnetProducts
 
         summary =
             Utils.modelSummary ( defaultZone, defaultProduct ) shared model
