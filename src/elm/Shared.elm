@@ -1,4 +1,4 @@
-module Shared exposing (Msg, Shared, filterAvailableOnProductType, hasCarnetTickets, hasNonCarnetTickets, init, subscriptions, update)
+module Shared exposing (Msg, Shared, filterAvailableOnProductType, hasCarnetTickets, hasPeriodTickets, init, subscriptions, update)
 
 import Data.FareContract exposing (TravelRight(..))
 import Data.PaymentType exposing (PaymentType)
@@ -25,7 +25,6 @@ type alias Shared =
     , fareProducts : List FareProduct
 
     -- Available for webshop
-    , availableFareProducts : List FareProduct
     , userProfiles : List UserProfile
     , vatPercent : Float
     , productLimitations : List Limitation
@@ -33,6 +32,7 @@ type alias Shared =
     , paymentTypes : List PaymentType
     , profile : Maybe Profile
     , availableCarnetProducts : List FareProduct
+    , availablePeriodProducts : List FareProduct
     }
 
 
@@ -40,7 +40,7 @@ init : Shared
 init =
     { tariffZones = []
     , fareProducts = []
-    , availableFareProducts = []
+    , availablePeriodProducts = []
     , availableCarnetProducts = []
     , userProfiles = []
     , productLimitations = []
@@ -67,7 +67,7 @@ update msg model =
                 Ok value ->
                     { model
                         | fareProducts = value
-                        , availableFareProducts = filterAvailableOnProductType [ ProductTypeSingle, ProductTypePeriod ] value
+                        , availablePeriodProducts = filterAvailableOnProductType [ ProductTypePeriod ] value
                         , availableCarnetProducts = filterAvailableOnProductType [ ProductTypeCarnet ] value
                         , productLimitations = getMappedLimitations value model.userProfiles
                     }
@@ -128,9 +128,9 @@ filterAvailableOnProductType types products =
 
 {-| Check if we have period tickets valid for Web
 -}
-hasNonCarnetTickets : Shared -> Bool
-hasNonCarnetTickets shared =
-    not <| List.isEmpty shared.availableFareProducts
+hasPeriodTickets : Shared -> Bool
+hasPeriodTickets shared =
+    not <| List.isEmpty shared.availablePeriodProducts
 
 
 {-| Check if we have carnet tickets valid for Web

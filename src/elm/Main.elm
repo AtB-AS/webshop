@@ -684,7 +684,7 @@ header : Model -> String -> Html Msg
 header model contentClass =
     let
         links =
-            [ ( "Ny periodebillett", Route.Shop, Shared.hasNonCarnetTickets model.shared )
+            [ ( "Ny periodebillett", Route.Shop, Shared.hasPeriodTickets model.shared )
             , ( "Nytt klippekort", Route.ShopCarnet, Shared.hasCarnetTickets model.shared )
             , ( "Kjøpshistorikk", Route.History, True )
             , ( "Min profil", Route.Settings, True )
