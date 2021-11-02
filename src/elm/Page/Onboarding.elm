@@ -601,11 +601,9 @@ viewTravelCard _ model =
 
     else
         [ H.div []
-            [ H.div [ A.class "ui-message--marginBottom ui-message-borderTop" ]
-                [ Message.warningWithOptions
-                    { borderTop = True, borderBottom = True, marginTop = False, marginBottom = False }
-                    "Ved å reistrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser."
-                ]
+            [ Section.init
+                |> Section.setMarginBottom True
+                |> Section.viewWithOptions [ Message.warning "Ved å reistrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser." ]
             , H.div [ A.class "onboarding__travelCard" ]
                 [ Section.view
                     [ Section.viewPaddedItem
