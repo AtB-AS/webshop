@@ -1,4 +1,6 @@
 {
     "orgId": "atb",
-    "siteTitle": "AtB Nettbutikk"
+    "siteTitle": "AtB Nettbutikk",
+    "zoneMapUrl": "https://atb.no/soner",
+    "privacyDeclarationUrl": "https://beta.atb.no/private-policy"
 }

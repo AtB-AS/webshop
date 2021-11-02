@@ -8,6 +8,8 @@ import Json.Decode.Pipeline as DecodeP
 type alias OrganizationConfiguration =
     { orgId : OrgId
     , siteTitle : String
+    , zoneMapUrl : String
+    , privacyDeclarationUrl : String
     }
 
 
@@ -16,6 +18,8 @@ orgConfDecoder =
     Decode.succeed OrganizationConfiguration
         |> DecodeP.required "orgId" orgIdDecoder
         |> DecodeP.required "siteTitle" Decode.string
+        |> DecodeP.required "zoneMapUrl" Decode.string
+        |> DecodeP.required "privacyDeclarationUrl" Decode.string
 
 
 orgIdFromString : String -> OrgId

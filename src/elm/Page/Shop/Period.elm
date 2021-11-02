@@ -493,7 +493,7 @@ toggleShowMainView model mainView =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ shared model _ =
+view _ appInfo shared model _ =
     let
         availableProducts =
             shared.fareProducts
@@ -608,7 +608,7 @@ view _ _ shared model _ =
                                 }
                                 (viewStart model)
                             , Section.viewWithIcon Icon.map
-                                [ Common.viewZones model defaultZone shared.tariffZones SetFromZone SetToZone False ]
+                                [ Common.viewZones model appInfo defaultZone shared.tariffZones SetFromZone SetToZone False ]
                             ]
                         , Common.viewSummary shared
                             model

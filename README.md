@@ -14,6 +14,14 @@ This will install all dependencies.
 
 ## Development
 
+Before running the dev server, organization specific assets needs to be copied into the static folder:
+
+```sh
+$ yarn setup <organization>
+```
+
+Current organizations supported is `atb` and `nfk`, details can be found in the [organization support](#Organization-support) section.
+
 Once your environment is up and running, start the dev server:
 
 ```sh
@@ -49,7 +57,8 @@ $ yarn build
 ```
 
 You will need to configure base URL and Firebase config (see Configuration
-below).
+below). If building for other organizations than AtB, you will need to replace 
+the `yarn setup atb` for `"build"` in `package.json` into `yarn setup <your-organization>`.
 
 This will create a `dist` folder with everything, including compressed versions
 of all files that are at least 1024 bytes in size. There are two compressed
@@ -110,12 +119,15 @@ In a later release, text is planned to be handled by the same functionality that
 For development, `webpack.local.config.js` should export `orgId: 'atb' | 'nfk',` to set siteTitle and the options provided in the `orgs/<organization>.json` file.
 
 Assets such as icons, logos, and illustrations are copied into the static folder of the application when the application in build time. 
-For development assets can be copied manually by running `yarn setup <environment> <organization>` in the terminal. An example is `yarn setup dev atb`. 
+For development assets can be copied manually by running `yarn setup <organization>` in the terminal. An example is `yarn setup atb`. 
+
 For production the build script in `package.json` should be updated to include the correct environment and organization.
 To ensure that the correct assets are available they should be moved into the `orgs/<organization>` outside `src`.
 
 Assets should be placed where the build script expects to find them. 
 A file called `<initials_for_organization>.json` should be placed directly in the `orgs` folder containing basic information such as `"orgId": "atb",` and `"siteTitle": "AtB Nettbutikk"`. 
+URLs for assets such as privacy declarations and zone maps should also be included in this file, see `/orgs/atb.json` for necessary fields.
+
 
 Below is an example of a file structure containing AtB and NFK.
 

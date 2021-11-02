@@ -589,7 +589,7 @@ offerToPrice offer =
 
 vatAmount : Float -> Shared -> Float
 vatAmount price shared =
-    (toFloat shared.remoteConfig.vat_percent / 100) * price
+    (shared.vatPercent / 100) * price
 
 
 

@@ -1,5 +1,6 @@
 module Page.Shop.CommonViews exposing (viewSummary, viewUserProfiles, viewZones)
 
+import Base exposing (AppInfo)
 import Data.RefData exposing (LangString(..), TariffZone, UserProfile, UserType(..))
 import Fragment.Icon as Icon
 import Html as H exposing (Html)
@@ -129,8 +130,8 @@ viewSummary shared model disableButtons onToSummaryClick maybeInfo =
                 ]
 
 
-viewZones : CommonModel a -> String -> List TariffZone -> (String -> msg) -> (String -> msg) -> Bool -> Html msg
-viewZones model defaultZone zones onFromZoneSelected onToZoneSelected disabled =
+viewZones : CommonModel a -> AppInfo -> String -> List TariffZone -> (String -> msg) -> (String -> msg) -> Bool -> Html msg
+viewZones model appInfo defaultZone zones onFromZoneSelected onToZoneSelected disabled =
     let
         sortedZones =
             List.sortWith
@@ -162,7 +163,7 @@ viewZones model defaultZone zones onFromZoneSelected onToZoneSelected disabled =
                         |> Select.view (List.map (viewZone selectedToZone) sortedZones)
                     ]
                 ]
-            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href "https://atb.no/soner", A.target "_blank" ] [ H.text "Se sonekart og beskrivelser (åpner ny side)" ] ] ]
+            , Section.viewPaddedItem [ H.p [] [ H.a [ A.href appInfo.zoneMapUrl, A.target "_blank" ] [ H.text "Se sonekart og beskrivelser (åpner ny side)" ] ] ]
             ]
 
 

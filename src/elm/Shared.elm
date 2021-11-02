@@ -2,12 +2,11 @@ module Shared exposing (Msg, Shared, hasCarnetTickets, hasPeriodTickets, init, s
 
 import Data.PaymentType exposing (PaymentType)
 import Data.RefData exposing (Consent, DistributionChannel(..), FareProduct, Limitation, ProductType(..), TariffZone, UserProfile, UserType)
-import Data.RemoteConfig exposing (RemoteConfig)
 import List exposing (product)
 import List.Extra
 import Service.Misc as MiscService exposing (Profile)
 import Service.RefData as RefDataService
-import Service.RemoteConfig as RCConfig
+import Service.RemoteConfig as RemoteConfigService
 
 
 type Msg
@@ -16,7 +15,7 @@ type Msg
     | ReceiveUserProfiles (Result () (List UserProfile))
     | ReceiveConsents (Result () (List Consent))
     | ReceivePaymentTypes (Result () (List PaymentType))
-    | ReceiveRemoteConfig (Result () RemoteConfig)
+    | ReceiveVatPercent Float
     | ProfileChange (Maybe Profile)
 
 
@@ -27,7 +26,7 @@ type alias Shared =
     -- Available for webshop
     , availableFareProducts : List FareProduct
     , userProfiles : List UserProfile
-    , remoteConfig : RemoteConfig
+    , vatPercent : Float
     , productLimitations : List Limitation
     , consents : List Consent
     , paymentTypes : List PaymentType
@@ -45,7 +44,7 @@ init =
     , consents = []
     , paymentTypes = []
     , profile = Nothing
-    , remoteConfig = RCConfig.init
+    , vatPercent = 12
     }
 
 
@@ -99,13 +98,8 @@ update msg model =
                 Err _ ->
                     model
 
-        ReceiveRemoteConfig result ->
-            case result of
-                Ok value ->
-                    { model | remoteConfig = value }
-
-                Err _ ->
-                    model
+        ReceiveVatPercent value ->
+            { model | vatPercent = value }
 
         ProfileChange profile ->
             { model | profile = profile }
@@ -145,7 +139,7 @@ subscriptions =
         , RefDataService.onUserProfiles ReceiveUserProfiles
         , RefDataService.onConsents ReceiveConsents
         , RefDataService.onPaymentTypes ReceivePaymentTypes
-        , RCConfig.onRemoteConfig ReceiveRemoteConfig
+        , RemoteConfigService.onVatPercent ReceiveVatPercent
         , MiscService.onProfileChange ProfileChange
         ]
 
