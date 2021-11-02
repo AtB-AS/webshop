@@ -140,15 +140,11 @@ update msg env model shared =
                             _ ->
                                 Nothing
 
-                    availableProducts =
-                        shared.availableCarnetProducts
-                            |> List.filter (.type_ >> (==) ProductTypeCarnet)
-
                     ( firstZone, defaultProduct ) =
-                        Utils.defaultDerivedData shared availableProducts
+                        Utils.defaultDerivedData shared shared.availableCarnetProducts
 
                     dataNotLoadedYet =
-                        List.isEmpty availableProducts && List.isEmpty shared.tariffZones
+                        List.isEmpty shared.availableCarnetProducts && List.isEmpty shared.tariffZones
 
                     newProduct =
                         Maybe.withDefault defaultProduct model.product
