@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="no">
     <head>
-        <title>AtB Nettbutikk</title>
+        <title><%= elmFlags.orgConf.siteTitle %></title>
 
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#eee" />
@@ -10,13 +10,13 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="AtB Nettbutikk" />
+        <meta name="application-name" content=<%= elmFlags.orgConf.siteTitle %> />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
             name="apple-mobile-web-app-status-bar-style"
             content="black-translucent"
         />
-        <meta name="apple-mobile-web-app-title" content="AtB Nettbutikk" />
+        <meta name="apple-mobile-web-app-title" content=<%= elmFlags.orgConf.siteTitle %> />
         <link rel="icon" href="/org/images/icon.svg" />
 
         <link rel="preconnect" href="https://fonts.gstatic.com" />
@@ -78,7 +78,7 @@
         </script>
         <% } %>
     </head>
-    <body <%= elmFlags.orgId %>>
+    <body>
         <noscript>
             <h2>I need to execute some JS to work 😞</h2>
         </noscript>

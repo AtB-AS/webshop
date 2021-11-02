@@ -275,6 +275,7 @@ const isDevelopment = TARGET_ENV === development;
 const languageSwitcher = getLanguageSwitcher(localConfig);
 const enableDebug = TARGET_ENV === development || TARGET_ENV === debug;
 const orgId = getOrgIdConfig(localConfig);
+const appConfig = require(`./orgs/${orgId}.json`)
 
 // Common Webpack config.  Everything here will be used in both the
 // development and production environments.
@@ -360,10 +361,10 @@ const commonConfig = {
                 baseUrl: getBaseUrl(localConfig, 'baseUrl'),
                 ticketUrl: getBaseUrl(localConfig, 'ticketUrl'),
                 refDataUrl: getBaseUrl(localConfig, 'refDataUrl'),
-                orgId: orgId,
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
-                commit: gitCommitHash()
+                commit: gitCommitHash(),
+                orgConf: appConfig
             }),
             gaTrackingId: JSON.stringify(
                 process.env.GA_TRACKING_ID || localConfig.gaTrackingId
