@@ -10,6 +10,7 @@ type alias OrganizationConfiguration =
     , siteTitle : String
     , zoneMapUrl : String
     , privacyDeclarationUrl : String
+    , travelCardValidPrefix : String
     }
 
 
@@ -20,6 +21,7 @@ orgConfDecoder =
         |> DecodeP.required "siteTitle" Decode.string
         |> DecodeP.required "zoneMapUrl" Decode.string
         |> DecodeP.required "privacyDeclarationUrl" Decode.string
+        |> DecodeP.required "travelCardValidPrefix" Decode.string
 
 
 orgIdFromString : String -> OrgId
