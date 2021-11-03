@@ -114,8 +114,8 @@ init token email phone =
     }
 
 
-update : Msg -> Environment -> Shared -> Model -> PageUpdater Model Msg
-update msg env shared model =
+update : Msg -> Environment -> AppInfo -> Shared -> Model -> PageUpdater Model Msg
+update msg env appInfo shared model =
     case msg of
         InputEmail value ->
             PageUpdater.init
@@ -200,7 +200,7 @@ update msg env shared model =
             PageUpdater.init { model | travelCardState = state, validationErrors = V.remove TravelCardField model.validationErrors }
 
         RegisterTravelCard ->
-            case validateTravelCard model of
+            case validateTravelCard appInfo.travelCardValidPrefix model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model | validationErrors = V.remove TravelCardField model.validationErrors }
@@ -366,9 +366,9 @@ getError error =
             Nothing
 
 
-validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
-validateTravelCard =
-    V.validate (V.travelCardValidator TravelCardField .travelCard)
+validateTravelCard : String -> Model -> Result (List (FormError FieldName)) (Valid Model)
+validateTravelCard travelCardPrefix =
+    V.validate (V.travelCardValidator travelCardPrefix TravelCardField .travelCard)
 
 
 validateEmail : Bool -> (Model -> String) -> Model -> Result (List (FormError FieldName)) (Valid Model)

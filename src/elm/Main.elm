@@ -292,6 +292,7 @@ init flags url navKey =
             , orgId = flags.orgConf.orgId
             , zoneMapUrl = flags.orgConf.zoneMapUrl
             , privacyDeclarationUrl = flags.orgConf.privacyDeclarationUrl
+            , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
             }
 
         ( overviewModel, overviewCmd ) =
@@ -460,7 +461,7 @@ update msg model =
                 |> doPageUpdate
 
         AccountMsg subMsg ->
-            AccountPage.update subMsg model.environment model.account
+            AccountPage.update subMsg model.environment model.appInfo model.account
                 |> PageUpdater.map (\newModel -> { model | account = newModel }) AccountMsg
                 |> doPageUpdate
 
@@ -472,7 +473,7 @@ update msg model =
         OnboardingMsg subMsg ->
             case model.onboarding of
                 Just onboarding ->
-                    OnboardingPage.update subMsg model.environment model.shared onboarding
+                    OnboardingPage.update subMsg model.environment model.appInfo model.shared onboarding
                         |> PageUpdater.map (\newModel -> { model | onboarding = Just newModel }) OnboardingMsg
                         |> doPageUpdate
 

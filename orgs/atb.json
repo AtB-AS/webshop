@@ -2,5 +2,6 @@
     "orgId": "atb",
     "siteTitle": "AtB Nettbutikk",
     "zoneMapUrl": "https://atb.no/soner",
-    "privacyDeclarationUrl": "https://beta.atb.no/private-policy"
+    "privacyDeclarationUrl": "https://beta.atb.no/private-policy",
+    "travelCardValidPrefix": "1616006"
 }

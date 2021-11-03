@@ -141,8 +141,8 @@ init =
     )
 
 
-update : Msg -> Environment -> Model -> PageUpdater Model Msg
-update msg env model =
+update : Msg -> Environment -> AppInfo -> Model -> PageUpdater Model Msg
+update msg env appInfo model =
     case msg of
         OnEnterPage ->
             PageUpdater.fromPair ( model, TaskUtil.doTask FetchConsents )
@@ -315,7 +315,7 @@ update msg env model =
                     PageUpdater.init { model | validationErrors = errors }
 
         SaveTravelCard ->
-            case validateTravelCard model of
+            case validateTravelCard appInfo.travelCardValidPrefix model of
                 Ok _ ->
                     PageUpdater.fromPair
                         ( { model
@@ -523,9 +523,9 @@ validatePhone sel model =
         Validation.validate (Validation.phoneValidator PhoneInput sel) model
 
 
-validateTravelCard : Model -> Result (List (FormError FieldName)) (Valid Model)
-validateTravelCard =
-    Validation.validate (Validation.travelCardValidator TravelCard .travelCard)
+validateTravelCard : String -> Model -> Result (List (FormError FieldName)) (Valid Model)
+validateTravelCard travelCardPrefix =
+    Validation.validate (Validation.travelCardValidator travelCardPrefix TravelCard .travelCard)
 
 
 focusBox : Maybe String -> Cmd Msg
