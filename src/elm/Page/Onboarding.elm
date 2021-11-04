@@ -603,7 +603,7 @@ viewTravelCard _ model =
         [ H.div []
             [ Section.init
                 |> Section.setMarginBottom True
-                |> Section.viewWithOptions [ Message.warning "Ved å reistrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser." ]
+                |> Section.viewWithOptions [ Message.warning "Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser." ]
             , H.div [ A.class "onboarding__travelCard" ]
                 [ Section.view
                     [ Section.viewPaddedItem
