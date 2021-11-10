@@ -23,6 +23,13 @@
           "nfk-webshop-staging"
         ]
       }
+    },
+    "nfk-prod": {
+      "hosting": {
+        "webshop": [
+          "nfk-prod"
+        ]
+      }
     }
   }
 }
