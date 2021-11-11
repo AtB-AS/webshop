@@ -17,9 +17,9 @@ module Ui.Input.EditSection exposing
     , setEditButtonType
     , setIcon
     , setInEditMode
+    , setMessage
     , setOnEdit
     , setOnSave
-    , setWarningText
     )
 
 import Fragment.Icon
@@ -29,7 +29,7 @@ import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
 import Ui.Button as B exposing (ButtonMode(..))
-import Ui.Message
+import Ui.Message exposing (UserStatus)
 import Ui.TextContainer exposing (TextColor(..), TextContainer(..))
 
 
@@ -41,7 +41,7 @@ type alias EditSection msg =
     , inEditMode : Bool
     , buttonGroup : Maybe (List (Html msg))
     , icon : Maybe (Html msg)
-    , warningText : Maybe String
+    , message : Maybe (UserStatus msg)
     }
 
 
@@ -54,7 +54,7 @@ init accessibilityName =
     , inEditMode = False
     , buttonGroup = Nothing
     , icon = Nothing
-    , warningText = Nothing
+    , message = Nothing
     }
 
 
@@ -93,13 +93,13 @@ setIcon icon opts =
     { opts | icon = icon }
 
 
-setWarningText : Maybe String -> EditSection msg -> EditSection msg
-setWarningText warningText opts =
-    { opts | warningText = warningText }
+setMessage : Maybe (UserStatus msg) -> EditSection msg -> EditSection msg
+setMessage message opts =
+    { opts | message = message }
 
 
 editSection : (Bool -> List (Html msg)) -> EditSection msg -> Html msg
-editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon, warningText } =
+editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon, message } =
     let
         ( editText, editIcon ) =
             editButtonData
@@ -132,9 +132,10 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
                         [ iconElement
                         , H.div [ A.class "ui-editSection__content" ]
                             [ H.div [] (children True)
-                            , case warningText of
-                                Just text ->
-                                    H.div [] [ Ui.Message.warning text ]
+                            , case message of
+                                Just messageContent ->
+                                    H.div [] [ Ui.Message.message messageContent ]
+
                                 Nothing ->
                                     Html.Extra.nothing
                             ]

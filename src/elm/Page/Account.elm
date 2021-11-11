@@ -871,7 +871,11 @@ viewTravelCard model profile =
                 |> EditSection.setOnSave onSave
                 |> EditSection.setOnEdit (Just <| SetEditSection (Just TravelCardSection) (Just "tkort"))
                 |> EditSection.setInEditMode (fieldInEditMode model.editSection TravelCardSection)
-                |> EditSection.setWarningText (Just "Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser.")
+                |> EditSection.setMessage
+                    (Just <|
+                        Message.Warning <|
+                            H.text "Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser."
+                    )
                 |> EditSection.setButtonGroup
                     (if hasTravelCard then
                         Just <|
