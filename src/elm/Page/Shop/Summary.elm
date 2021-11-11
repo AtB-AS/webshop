@@ -1,4 +1,4 @@
-module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, init, makeSummary, subscriptions, update, view)
+module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, cardReadWarning, init, makeSummary, subscriptions, update, view)
 
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
@@ -172,11 +172,7 @@ view shared model =
             makeSummary model.query model.offers shared
     in
         H.div []
-            [ Section.init
-                |> Section.setMarginBottom True
-                |> Section.viewWithOptions
-                    [ Ui.Message.warning "Når du skal lese av t:kort neste gang må du holde det inntil kortleseren litt lenger enn du er vant til. Vent på lydsignal og bilde som viser at billett er OK. I en periode kan du oppleve at kortlesere på metrostasjon og om bord avviser t:kortet ditt. Ta det med ro – du kan trygt reise. Ved en billettkontroll vil kontrolløren se om du har gyldig billett."
-                    ]
+            [ cardReadWarning
             , H.div [ A.class "page page--threeColumns" ]
                 [ viewTicketSection summary
                 , viewPriceSection summary
@@ -609,3 +605,12 @@ getRecurringPayments env =
     TicketService.getRecurringPayments env
         |> Http.toTask
         |> Task.attempt ReceiveRecurringPayments
+
+
+cardReadWarning : Html msg
+cardReadWarning =
+    Section.init
+        |> Section.setMarginBottom True
+        |> Section.viewWithOptions
+            [ Ui.Message.warning "Når du skal lese av t:kortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Om bord holder du t:kortet inntil kortleser frem til sjåføren bekrefter at du har billett. På metrostasjon venter du på lydsignal og bilde som viser at billett er OK."
+            ]
