@@ -132,12 +132,7 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
                         [ iconElement
                         , H.div [ A.class "ui-editSection__content" ]
                             [ H.div [] (children True)
-                            , case message of
-                                Just messageContent ->
-                                    H.div [] [ Ui.Message.message messageContent ]
-
-                                Nothing ->
-                                    Html.Extra.nothing
+                            , Html.Extra.viewMaybe Ui.Message.message message
                             ]
                         ]
                     , H.div [ A.class "ui-editSection__fieldset__buttonGroup" ] <|
