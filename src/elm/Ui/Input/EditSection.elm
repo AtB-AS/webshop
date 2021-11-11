@@ -17,6 +17,7 @@ module Ui.Input.EditSection exposing
     , setEditButtonType
     , setIcon
     , setInEditMode
+    , setMessage
     , setOnEdit
     , setOnSave
     )
@@ -28,6 +29,7 @@ import Html.Attributes.Extra
 import Html.Events as E
 import Html.Extra
 import Ui.Button as B exposing (ButtonMode(..))
+import Ui.Message exposing (UserStatus)
 import Ui.TextContainer exposing (TextColor(..), TextContainer(..))
 
 
@@ -39,6 +41,7 @@ type alias EditSection msg =
     , inEditMode : Bool
     , buttonGroup : Maybe (List (Html msg))
     , icon : Maybe (Html msg)
+    , message : Maybe (UserStatus msg)
     }
 
 
@@ -51,6 +54,7 @@ init accessibilityName =
     , inEditMode = False
     , buttonGroup = Nothing
     , icon = Nothing
+    , message = Nothing
     }
 
 
@@ -89,8 +93,13 @@ setIcon icon opts =
     { opts | icon = icon }
 
 
+setMessage : Maybe (UserStatus msg) -> EditSection msg -> EditSection msg
+setMessage message opts =
+    { opts | message = message }
+
+
 editSection : (Bool -> List (Html msg)) -> EditSection msg -> Html msg
-editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon } =
+editSection children { accessibilityName, editButtonData, onEdit, inEditMode, buttonGroup, onSave, icon, message } =
     let
         ( editText, editIcon ) =
             editButtonData
@@ -121,7 +130,10 @@ editSection children { accessibilityName, editButtonData, onEdit, inEditMode, bu
                         [ H.text accessibilityName ]
                     , H.div [ A.class "ui-editSection__container" ]
                         [ iconElement
-                        , H.div [ A.class "ui-editSection__content" ] (children True)
+                        , H.div [ A.class "ui-editSection__content" ]
+                            [ H.div [] (children True)
+                            , Html.Extra.viewMaybe Ui.Message.message message
+                            ]
                         ]
                     , H.div [ A.class "ui-editSection__fieldset__buttonGroup" ] <|
                         Maybe.withDefault [] buttonGroup
