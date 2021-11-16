@@ -612,5 +612,5 @@ cardReadWarning =
     Section.init
         |> Section.setMarginBottom True
         |> Section.viewWithOptions
-            [ Ui.Message.warning "Når du skal lese av t:kortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Om bord holder du t:kortet inntil kortleser frem til sjåføren bekrefter at du har billett. På metrostasjon venter du på lydsignal og bilde som viser at billett er OK."
+            [ Ui.Message.warning "Når du skal lese av t:kortet neste gang må du holde det inntil kortleseren lenger enn du er vant til. Ombord holder du t:kortet inntil kortleser frem til sjåføren bekrefter at du har billett. På metrostasjon venter du på lydsignal og bilde som viser at billett er OK."
             ]
