@@ -85,8 +85,9 @@ describe('my profile', () => {
         myprofile.phoneNumber().should("contain", currPhoneNumber)
 
         //Empty
-        myprofile.setPhoneNumber('')
-        myprofile.phoneNumber().should("contain", "ikke utfylt")
+        //TODO Error msg: https://github.com/AtB-AS/webshop-backend/issues/23
+        //myprofile.setPhoneNumber('')
+        //myprofile.phoneNumber().should("contain", "ikke utfylt")
 
         //Error
         myprofile.editPhoneNumber()

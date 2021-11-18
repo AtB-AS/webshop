@@ -64,8 +64,8 @@ export const myprofile = {
     typePhoneNumber: phoneNumber => cy.get('input#phone').type('{selectall}{del}' + phoneNumber),
     setPhoneNumber: (phoneNumber) => {
         cy.intercept('PATCH', '**/webshop/v1/profile').as('profile');
-        cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
-        cy.intercept("GET", "**/webshop/v1/consent").as("consent")
+        //cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
+        //cy.intercept("GET", "**/webshop/v1/consent").as("consent")
 
         cy.get('button').contains('telefonnummer').click();
         cy.get('input#phone').type('{selectall}{del}' + phoneNumber);
@@ -81,7 +81,8 @@ export const myprofile = {
             }
         })
 
-        cy.wait(['@profile','@recurringPayments','@consent']);
+        //cy.wait(['@profile','@recurringPayments','@consent']);
+        cy.wait('@profile');
     },
     phoneError: () => cy.get("#phone-error"),
     travelCard: () => cy.get(".ui-travelCardText"),
