@@ -174,7 +174,7 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             onboardingStep2.emailConsent().check();
             onboardingStep2
                 .notificationConsentLabel()
-                .should('contain', 'AtB kan varsle meg om billetter');
+                .should('contain', 'AtB kan kontakte meg på e-post for påminnelse om utgående billett');
             onboardingStep2.notificationConsent().should('not.be.checked');
             onboardingStep2.notificationConsent().check();
             onboardingStep2.saveConsents();
@@ -208,7 +208,7 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             onboardingStep3.travelCardError(true);
             onboardingStep3
                 .travelCardErrorMsg()
-                .should('contain', 'må starte på 1616 0060');
+                .should('contain', 'må starte på 1616006');
             onboardingStep3.setTravelCard('{selectall}{del}' + travelCardError2);
             onboardingStep3.addTravelCard();
             cy.wait('@travelcardReq').then((req) => {

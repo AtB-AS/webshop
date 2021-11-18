@@ -114,11 +114,11 @@ describe('my profile', () => {
 
     it('should list stored payment cards', () => {
         myprofile.storedPayment("Visa").should("contain", "Visa, **** 0004")
-        myprofile.storedPaymentIcon("Visa").should("have.attr", "src", "images/paymentcard-visa.svg")
+        myprofile.storedPaymentIcon("Visa").should("have.attr", "src", "common/images/paymentcard-visa.svg")
         myprofile.storedPaymentExpiry("Visa").should("contain", "Utløpsdato 08/24")
 
         myprofile.storedPayment("MasterCard").should("contain", "MasterCard, **** 0000")
-        myprofile.storedPaymentIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
+        myprofile.storedPaymentIcon("MasterCard").should("have.attr", "src", "common/images/paymentcard-mastercard.svg")
         myprofile.storedPaymentExpiry("MasterCard").should("contain", "Utløpsdato 06/24")
     })
 

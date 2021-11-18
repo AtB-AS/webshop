@@ -65,6 +65,16 @@ describe('missing stored information scenarios', () => {
         myprofile.storedPayments().should("contain", "Ingen lagrede betalingskort")
     })
 
+    it('my profile - should show info text when adding travel card', () => {
+        menu.myProfile().click();
+        verify.verifyHeader('h2', 'Min profil');
+
+        myprofile.addTravelCard().click()
+        myprofile.addTravelCardInfo()
+            .should('contain', 'Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser')
+
+    })
+
     it('my profile - should get error messages for wrong travel card', () => {
         const travelCardError = "3443354354353454"
         const travelCardError2 = "1616006085855858"
@@ -77,7 +87,7 @@ describe('missing stored information scenarios', () => {
         myprofile.addTravelCard().click()
         myprofile.travelCardInput().type(travelCardError);
         myprofile.saveValue();
-        myprofile.travelCardError().should("contain", "t:kort id må starte på 1616 0060")
+        myprofile.travelCardError().should("contain", "t:kort id må starte på 1616006")
         myprofile.travelCardInput().type("{selectall}{del}");
         myprofile.travelCardInput().type(travelCardError2)
         myprofile.saveValue();

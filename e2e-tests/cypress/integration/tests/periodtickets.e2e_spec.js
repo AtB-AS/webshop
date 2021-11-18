@@ -54,7 +54,7 @@ describe('period ticket purchase', () => {
             .should("contain", "860,00")
             .and("contain", "kr")
         newTicket.mva()
-            .should("contain", "51,60")
+            .should("contain", "103,20")
     })
 
     it('summary should be enabled for existing travel card', () => {
@@ -90,13 +90,13 @@ describe('period ticket purchase', () => {
         summary.storedPaymentOption("Visa").click()
         summary.storedPaymentOptionLabel("Visa").should("contain", "Visa, **** 0004")
         summary.storedPaymentOptionExpiry("Visa").should("contain", "Utløpsdato 08/24")
-        summary.storedPaymentOptionIcon("Visa").should("have.attr", "src", "images/paymentcard-visa.svg")
+        summary.storedPaymentOptionIcon("Visa").should("have.attr", "src", "common/images/paymentcard-visa.svg")
         summary.payButton().should('contain', 'Betal nå')
 
         summary.storedPaymentOption("MasterCard").click()
         summary.storedPaymentOptionLabel("MasterCard").should("contain", "MasterCard, **** 0000")
         summary.storedPaymentOptionExpiry("MasterCard").should("contain", "Utløpsdato 06/24")
-        summary.storedPaymentOptionIcon("MasterCard").should("have.attr", "src", "images/paymentcard-mastercard.svg")
+        summary.storedPaymentOptionIcon("MasterCard").should("have.attr", "src", "common/images/paymentcard-mastercard.svg")
         summary.payButton().should('contain', 'Betal nå')
     })
 

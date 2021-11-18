@@ -86,6 +86,10 @@ export const myprofile = {
     phoneError: () => cy.get("#phone-error"),
     travelCard: () => cy.get(".ui-travelCardText"),
     addTravelCard: () => cy.get('button').contains('Legg til t:kort').scrollIntoView(),
+    addTravelCardInfo: () => cy.get('h2.ui-section__headerTitle')
+        .contains('Reisebevis')
+        .parents('.ui-section__item')
+        .find('.ui-message.ui-message--warning'),
     removeTravelCardButton: () => cy.get('button').contains('Fjern t:kort'),
     removeTravelCard: () => {
         cy.get('button').contains('Fjern t:kort').click()

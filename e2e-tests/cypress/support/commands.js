@@ -78,6 +78,8 @@ Cypress.Commands.add('a11yCheck', (context, inOptions) => {
     //Added due to custom styling on radio buttons, which in reality gives two radio buttons per user choice
     //https://github.com/AtB-AS/webshop/pull/374
     options.rules["aria-hidden-focus"] = { enabled: false }
+    //TODO https://github.com/AtB-AS/webshop/issues/406
+    options.rules["image-alt"] = { enabled: false }
 
     return cy.injectAxe().then(() => {
         cy.checkA11y(
