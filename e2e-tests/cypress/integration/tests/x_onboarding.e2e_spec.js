@@ -118,6 +118,8 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             cy.visit('');
 
             //Check maneuvering forward - including a11y
+            //TODO Skipped due to https://github.com/AtB-AS/webshop/issues/424
+            /*
             onboarding.stepTitle().should('contain', step1);
             cy.a11yCheck(null, null);
             onboarding.back().should('not.exist');
@@ -141,6 +143,7 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
 
             onboarding.back().click();
             onboarding.stepTitle().should('contain', step1);
+             */
 
             //Step 1
             onboardingStep1.setFirstname(firstname);
@@ -198,6 +201,8 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
 
             //Step 3
             onboarding.stepTitle().should('contain', step3);
+            onboardingStep3.travelCardInfo()
+                .should("contain", "Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser")
             onboardingStep3
                 .travelCard()
                 .should('have.attr', 'placeholder', 'Skriv inn t:kortnummer')
