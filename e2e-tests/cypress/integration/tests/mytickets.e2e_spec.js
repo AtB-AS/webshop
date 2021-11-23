@@ -78,8 +78,10 @@ describe('ticket details', () => {
 
     it('carnet ticket should be correct', () => {
         const order_id = 'R72EMYQA';
-        const validFrom = '20.08.2021 - ' + getValidHours(11) + ':50'
-        const validTo = '21.08.2022 - ' + getValidHours(11) + ':50'
+        //TODO https://github.com/AtB-AS/webshop/issues/423
+        //TODO https://mittatb.slack.com/archives/C02EEG7D8EL/p1637239170101100
+        const validFrom = '20.08.2021 - ' + getValidHours(10) + ':50'
+        const validTo = '21.08.2022 - ' + getValidHours(10) + ':50'
         const header1 = '10 klipp igjen'
         const header2 = 'Ingen aktive klipp'
         const type = 'Klippekort (10 billetter)';
@@ -128,8 +130,10 @@ describe('ticket details', () => {
     // 3 x produkt: 3 x Klippekort (10 billetter) = 3 voksen
     it('should show multiple products on one order correctly', () => {
         const order_id = '4YYKR8RD';
-        const validFrom = '08.10.2021 - ' + getValidHours(14) + ':16'
-        const validTo = '09.10.2022 - ' + getValidHours(14) + ':16'
+        //TODO https://github.com/AtB-AS/webshop/issues/423
+        //TODO https://mittatb.slack.com/archives/C02EEG7D8EL/p1637239170101100
+        const validFrom = '08.10.2021 - ' + getValidHours(13) + ':16'
+        const validTo = '09.10.2022 - ' + getValidHours(13) + ':16'
         const header1 = '30 klipp igjen'
         const header2 = 'Ingen aktive klipp'
         const type = 'Klippekort (10 billetter)';
@@ -185,8 +189,10 @@ describe('ticket details', () => {
     //** NOTE! Only valid until pre-set date **
     it('future period ticket should be waiting and correct', () => {
         const order_id = Cypress.env("futureTicketOrderId");
-        const validFrom = Cypress.env("futureTicketStartDateNO").toString() + " - " + getValidHours(13) + ":00"
-        const validTo = Cypress.env("futureTicketEndDateNO").toString() + " - " + getValidHours(13) + ":00"
+        //TODO https://github.com/AtB-AS/webshop/issues/423
+        //TODO https://mittatb.slack.com/archives/C02EEG7D8EL/p1637239170101100
+        const validFrom = Cypress.env("futureTicketStartDateNO").toString() + " - " + getValidHours(12) + ":00"
+        const validTo = Cypress.env("futureTicketEndDateNO").toString() + " - " + getValidHours(12) + ":00"
         const header = 'Gyldig fra ' + validFrom;
         const type = '7-dagersbillett';
         const zones = 'Reise i 3 soner (Sone A til C1)';
@@ -453,7 +459,7 @@ describe('ticket details', () => {
     //Different timezone on the host running GH Actions
     function getValidHours(hours){
         if (Cypress.env('runOnGitHub')){
-            let hh = hours - 2
+            let hh = hours - 1
             if (hh < 10){ hh = '0' + hh}
             return hh
         }

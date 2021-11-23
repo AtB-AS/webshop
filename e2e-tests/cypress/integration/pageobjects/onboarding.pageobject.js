@@ -64,6 +64,7 @@ export const onboardingStep3 = {
             .find('button')
             .contains('Legg til senere')
             .click(),
+    travelCardInfo: () => cy.get(".ui-message.ui-message--warning"),
     travelCardError: (hasError) => {
         if (hasError) {
             cy.get('label[for=travelCard]').should(
