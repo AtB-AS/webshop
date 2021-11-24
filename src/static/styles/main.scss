@@ -87,8 +87,8 @@ button {
 .app {
     flex: 1;
     position: relative;
-    background: url('../../org/images/background-illustration.svg') no-repeat center
-        top;
+    background: url('../assets/images/background-illustration.svg') no-repeat
+        center top;
     background-size: 100%;
 }
 
@@ -486,7 +486,7 @@ p + p {
 }
 
 .pageAccount__recurringPayment__expiry {
-    padding-top: var(--spacings-medium)
+    padding-top: var(--spacings-medium);
 }
 
 // Components
@@ -543,7 +543,8 @@ table {
 .onboarding__travelCard__input {
     padding-left: calc(2rem + var(--spacings-xLarge));
 
-    background: url('../../org/images/travelcard-help-icons.svg') left center no-repeat;
+    background: url('../assets/images/travelcard-help-icons.svg') left center
+        no-repeat;
     margin-bottom: calc(2 * var(--spacings-xLarge));
 }
 

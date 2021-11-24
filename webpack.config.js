@@ -342,16 +342,12 @@ const commonConfig = {
                     }
                 },
                 {
-                    from: `src/static/favicon.ico`,
+                    from: `src/static/assets/favicon.ico`,
                     to: 'favicon.ico'
                 },
                 {
-                    from: `src/static/common/images`,
-                    to: 'common/images'
-                },
-                {
-                    from: `src/static/org/images`,
-                    to: 'org/images'
+                    from: `src/static/assets/`,
+                    to: 'assets/'
                 }
             ]
         }),
