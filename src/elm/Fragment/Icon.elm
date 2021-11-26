@@ -57,7 +57,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Svg as S
 import Svg.Attributes as SA
-import Ui.ImgDark
+import Ui.ImgThemed
 
 
 {-| Wrap the SVG icon in the given square size.
@@ -249,7 +249,7 @@ delete =
 
 travelCard : Html msg
 travelCard =
-    Ui.ImgDark.view [ A.src "/assets/icons/travelcard.svg", A.alt "Reisekort" ] []
+    Ui.ImgThemed.view [ A.src "/assets/icons/travelcard.svg", A.alt "Reisekort" ] []
 
 
 phone : Html msg
@@ -728,7 +728,7 @@ fastTime =
 
 travelCardOutlined : Html msg
 travelCardOutlined =
-    Ui.ImgDark.view [ A.src "/assets/icons/travelcard-outlined.svg", A.alt "T:kort" ] []
+    Ui.ImgThemed.view [ A.src "/assets/icons/travelcard-outlined.svg", A.alt "T:kort" ] []
 
 
 cloudOutlined : Html msg

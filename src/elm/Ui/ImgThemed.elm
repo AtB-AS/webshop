@@ -1,4 +1,4 @@
-module Ui.ImgDark exposing (view)
+module Ui.ImgThemed exposing (view)
 
 import Html as H exposing (Attribute, Html)
 
