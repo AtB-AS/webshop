@@ -16,6 +16,7 @@ import Service.FirebaseAuth as FirebaseAuth exposing (Provider(..))
 import Service.Misc as Misc
 import Task
 import Ui.Button as B
+import Ui.ImgDark
 import Ui.Input.Text as T
 import Ui.Message as Message
 import Ui.PageHeader as PH
@@ -355,7 +356,7 @@ view env model =
 
 viewIllustration : Html msg
 viewIllustration =
-    H.img
+    Ui.ImgDark.view
         [ A.src "/assets/images/travel-illustration.svg"
         , A.class "pageLogin__illustration"
         , A.alt ""

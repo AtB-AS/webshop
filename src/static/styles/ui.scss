@@ -1312,6 +1312,11 @@ a.ui-button--link,
 
 // Dark Icon management
 
+.ui-img-dark {
+    display: block;
+}
 .ui-img-dark > img {
     display: block;
+    max-width: 100%;
+    margin: 0 auto;
 }

@@ -7,6 +7,7 @@ class DarkmodeIcon extends HTMLElement {
         this.img.src = renameFile(this.src, isDarkMode);
         this.img.alt = this.alt;
         for (let attr of this.attributes) {
+            if (attr.name === 'class') continue;
             this.img.setAttribute(attr.name, attr.value);
         }
 

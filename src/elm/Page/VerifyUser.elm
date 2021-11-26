@@ -8,6 +8,7 @@ import Notification
 import PageUpdater exposing (PageUpdater)
 import Service.FirebaseAuth as FirebaseAuth exposing (FirebaseError)
 import Ui.Button as B
+import Ui.ImgDark
 import Ui.Message
 import Ui.Section
 
@@ -70,7 +71,7 @@ view : Model -> Html Msg
 view model =
     H.div []
         [ H.div [ A.class "page page--narrow" ]
-            [ H.img [ A.src "/assets/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
+            [ Ui.ImgDark.view [ A.src "/assets/images/travel-illustration.svg", A.class "pageLogin__illustration", A.alt "", A.attribute "role" "presentation" ] []
             , H.div []
                 [ Ui.Section.view
                     [ Ui.Section.viewHeader <| "Bekreft " ++ model.email
