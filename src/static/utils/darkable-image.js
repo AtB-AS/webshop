@@ -2,18 +2,16 @@ const darkmodeMedia = '(prefers-color-scheme: dark)';
 
 class DarkmodeIcon extends HTMLElement {
     connectedCallback() {
+        const isDarkMode = window.matchMedia(darkmodeMedia).matches;
         this.img = document.createElement('img');
-        this.img.src = this.src;
+        this.img.src = renameFile(this.src, isDarkMode);
         this.img.alt = this.alt;
         for (let attr of this.attributes) {
             this.img.setAttribute(attr.name, attr.value);
         }
 
         this.appendChild(this.img);
-
         this.classList.add('ui-img-dark');
-
-        this.updateImageSource(window.matchMedia(darkmodeMedia));
     }
 
     updateImageSource(isDarkMode) {
@@ -29,7 +27,6 @@ mql.addEventListener('change', updateAllDarkmodeIcons);
 
 function updateAllDarkmodeIcons(e) {
     const elements = Array.from(document.querySelectorAll('atb-img-dark'));
-    console.log(elements);
     elements.forEach(function (img) {
         img.updateImageSource(e.matches);
     });
