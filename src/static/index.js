@@ -10,6 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Elm } from '../elm/Main';
 import './navigation';
 
+import './utils';
+
 const MAX_RETRY_ATTEMPTS = 3;
 
 if (!elmFlags.isDevelopment && 'serviceWorker' in navigator) {

@@ -1309,3 +1309,9 @@ a.ui-button--link,
     top: calc(0.25rem + 3 * var(--distance) + 3px);
     left: calc(var(--spacings-medium) + 1px);
 }
+
+// Dark Icon management
+
+.ui-img-dark > img {
+    display: block;
+}
