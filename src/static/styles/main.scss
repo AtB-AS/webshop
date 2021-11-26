@@ -473,6 +473,7 @@ p + p {
     display: flex;
     align-items: center;
 
+    .ui-img-dark,
     svg {
         margin: var(--spacings-large);
         display: block;
