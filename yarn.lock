@@ -9,6 +9,11 @@
   dependencies:
     binwrap "^0.2.3"
 
+"@atb-as/generate-assets@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-1.0.0.tgz#18c401f309b8634541b7cae67925d6ed8f615f0a"
+  integrity sha512-SxsCNWI3qpm0U+9u+qLcaBSgvW7qwkSTsHaYVVx/ilxLSipIY7viRYfdndC6E77SmJZq2mP2FLWYmEIq9uS55g==
+
 "@atb-as/theme@^5.0.0":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@atb-as/theme/-/theme-5.0.0.tgz#326ee3163d6511ca99a35a0c0e347d7ce2d7f4fe"

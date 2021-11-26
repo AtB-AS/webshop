@@ -16,6 +16,7 @@
     },
     "devDependencies": {
         "@atb-as/elm-format": "^1.0.0",
+        "@atb-as/generate-assets": "^1.0.0",
         "@atb-as/theme": "^5.0.0",
         "@babel/core": "^7.14.6",
         "@babel/preset-env": "^7.14.7",
