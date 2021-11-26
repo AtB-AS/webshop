@@ -37,5 +37,5 @@ function renameFile(filename, isDarkMode) {
     if (!isDarkMode) {
         return filename.replace('-dark.', '.');
     }
-    return filename.replace(/\.(\w{3})$/, '-dark.$1');
+    return filename.replace(/\.(\w{3,4})$/, '-dark.$1');
 }
