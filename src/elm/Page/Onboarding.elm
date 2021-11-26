@@ -20,6 +20,7 @@ import Set exposing (Set)
 import Shared exposing (Shared)
 import Task
 import Ui.Button as Button
+import Ui.ImgDark
 import Ui.Input.Checkbox as Checkbox
 import Ui.Input.MaskedText as MaskedInput
 import Ui.Input.Text as TextInput
@@ -581,7 +582,7 @@ viewTravelCard _ model =
                                 ]
                             ]
                         ]
-                    , H.img
+                    , Ui.ImgDark.view
                         [ A.src "/assets/images/travelcard-help-illustration.svg"
                         , A.class "onboarding__travelCard__illustration"
                         , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."

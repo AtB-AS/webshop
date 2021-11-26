@@ -57,6 +57,7 @@ import Html as H exposing (Html)
 import Html.Attributes as A
 import Svg as S
 import Svg.Attributes as SA
+import Ui.ImgDark
 
 
 {-| Wrap the SVG icon in the given square size.
@@ -248,7 +249,7 @@ delete =
 
 travelCard : Html msg
 travelCard =
-    H.node "atb-img-dark" [ A.src "/assets/icons/travelcard.svg", A.class "dsadsa", A.alt "Reisekort" ] []
+    Ui.ImgDark.view [ A.src "/assets/icons/travelcard.svg", A.alt "Reisekort" ] []
 
 
 phone : Html msg

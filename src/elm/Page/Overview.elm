@@ -23,6 +23,7 @@ import Shared exposing (Shared)
 import Task
 import Time
 import Ui.Button as B
+import Ui.ImgDark
 import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.Section as S
@@ -383,7 +384,7 @@ viewMain shared model =
             [ case ( emptyResults, model.error ) of
                 ( True, Nothing ) ->
                     H.div [ A.class "pageOverview__empty" ]
-                        [ H.img [ A.src "/assets/images/empty-illustration.svg", A.alt "" ] []
+                        [ Ui.ImgDark.view [ A.src "/assets/images/empty-illustration.svg", A.alt "" ] []
                         , H.text "Ingen billetter er tilknyttet din profil."
                         ]
 
