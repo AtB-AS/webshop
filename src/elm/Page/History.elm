@@ -22,12 +22,14 @@ import Service.Misc as MiscService exposing (Profile)
 import Service.Ticket as TicketService
 import Shared exposing (Shared)
 import Task
+import Time
 import Ui.Button as B
 import Ui.Expandable
 import Ui.Message as Message
 import Ui.ScreenReaderText as SR
 import Ui.Section
 import Util.Format as Format
+import Util.Time as TimeUtil
 
 
 type Msg
@@ -39,6 +41,7 @@ type Msg
     | ProfileChange (Maybe Profile)
     | RequestReceipt String
     | ReceiveReceipt String (Result Http.Error ())
+    | UpdateZone Time.Zone
 
 
 type alias Model =
@@ -49,19 +52,23 @@ type alias Model =
     , sendingReceipt : List String
     , profile : Maybe Profile
     , error : Maybe String
+    , timeZone : Time.Zone
     }
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    { from = Nothing
-    , to = Nothing
-    , orders = []
-    , expanded = Nothing
-    , sendingReceipt = []
-    , profile = Nothing
-    , error = Nothing
-    }
+    ( { from = Nothing
+      , to = Nothing
+      , orders = []
+      , expanded = Nothing
+      , sendingReceipt = []
+      , profile = Nothing
+      , error = Nothing
+      , timeZone = Time.utc
+      }
+    , Task.perform UpdateZone Time.here
+    )
 
 
 update : Msg -> Environment -> Model -> PageUpdater Model Msg
@@ -96,7 +103,7 @@ update msg env model =
                         { model
                             | orders =
                                 fareContracts
-                                    |> List.sortBy (.created >> .timestamp)
+                                    |> List.sortBy .created
                                     |> List.reverse
                             , error = Nothing
                         }
@@ -146,6 +153,9 @@ update msg env model =
                             |> (\s -> Notification.setContent s Notification.init)
                             |> GA.ShowNotification
                         )
+
+        UpdateZone zone ->
+            PageUpdater.init { model | timeZone = zone }
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
@@ -304,7 +314,11 @@ viewOrder shared model order =
             SR.readAndView spellableOrderIdText orderIdText
     in
         Ui.Expandable.view
-            { title = Format.date order.created ++ " - " ++ fareProduct ++ travellers
+            { title =
+                TimeUtil.millisToDateHumanized model.timeZone order.created
+                    ++ " - "
+                    ++ fareProduct
+                    ++ travellers
             , id = order.id
             , icon = Nothing
             , open = expanded
@@ -315,19 +329,31 @@ viewOrder shared model order =
                 , H.div [ A.class "metadata-list" ]
                     (case order.state of
                         FareContractStateRefunded ->
-                            [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                            [ H.div []
+                                [ H.text <|
+                                    "Kjøpt "
+                                        ++ TimeUtil.millisToFullHumanized model.timeZone order.created
+                                ]
                             , H.div [] orderIdView
                             , H.div [] [ H.text "Refundert" ]
                             ]
 
                         FareContractStateCancelled ->
-                            [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                            [ H.div []
+                                [ H.text <|
+                                    "Kjøpt "
+                                        ++ TimeUtil.millisToFullHumanized model.timeZone order.created
+                                ]
                             , H.div [] orderIdView
                             , H.div [] [ H.text "Kansellert" ]
                             ]
 
                         _ ->
-                            [ H.div [] [ H.text <| "Kjøpt " ++ Format.dateTime order.created ]
+                            [ H.div []
+                                [ H.text <|
+                                    "Kjøpt "
+                                        ++ TimeUtil.millisToFullHumanized model.timeZone order.created
+                                ]
                             , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
                             , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
                             , H.div [] orderIdView

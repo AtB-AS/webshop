@@ -19,7 +19,7 @@ port module Service.Misc exposing
     , saveProfile
     )
 
-import Data.FareContract exposing (FareContract, FareContractState(..), FareTime, TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
+import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
 import Data.PaymentType as PaymentType
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
@@ -61,7 +61,7 @@ port onboardingRefreshAuth : () -> Cmd msg
 
 type alias TravelCard =
     { id : Int
-    , expires : FareTime
+    , expires : Int
     }
 
 
@@ -110,7 +110,7 @@ travelCardDecoder : Decoder TravelCard
 travelCardDecoder =
     Decode.succeed TravelCard
         |> DecodeP.required "id" Decode.int
-        |> DecodeP.required "expires" timestampDecoder
+        |> DecodeP.required "expires" Decode.int
 
 
 signInMethodDecoder : Decoder SignInMethod
@@ -160,7 +160,7 @@ encodeTravelCard : TravelCard -> Encode.Value
 encodeTravelCard travelCard =
     Encode.object
         [ ( "id", Encode.int travelCard.id )
-        , ( "expires", Encode.int travelCard.expires.timestamp )
+        , ( "expires", Encode.int travelCard.expires )
         ]
 
 
@@ -187,7 +187,7 @@ saveProfile =
 fareContractDecoder : Decoder FareContract
 fareContractDecoder =
     Decode.succeed FareContract
-        |> DecodeP.required "created" timestampDecoder
+        |> DecodeP.required "created" Decode.int
         |> DecodeP.required "version" Decode.string
         |> DecodeP.required "orderId" Decode.string
         |> DecodeP.required "minimumSecurityLevel" Decode.int
@@ -236,24 +236,6 @@ fareContractStateDecoder =
         Decode.int
 
 
-timestampDecoder : Decoder FareTime
-timestampDecoder =
-    Decode.andThen
-        (\timestamp ->
-            Decode.andThen
-                (\parts ->
-                    case parts of
-                        [ year, month, day, hour, minute, second ] ->
-                            Decode.succeed <| FareTime timestamp year month day hour minute second
-
-                        _ ->
-                            Decode.fail "Invalid time parts"
-                )
-                (Decode.field "parts" (Decode.list Decode.int))
-        )
-        (Decode.field "timestamp" Decode.int)
-
-
 travelRightDecoder : Decoder TravelRight
 travelRightDecoder =
     Decode.andThen
@@ -283,8 +265,8 @@ fullTravelRightDecoder =
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "status" Decode.int
         |> DecodeP.required "fareProductRef" Decode.string
-        |> DecodeP.required "startDateTime" timestampDecoder
-        |> DecodeP.required "endDateTime" timestampDecoder
+        |> DecodeP.required "startDateTime" Decode.int
+        |> DecodeP.required "endDateTime" Decode.int
         |> DecodeP.required "usageValidityPeriodRef" Decode.string
         |> DecodeP.required "userProfileRef" Decode.string
         |> DecodeP.required "authorityRef" Decode.string
@@ -297,8 +279,8 @@ carnetTravelRightDecoder =
         |> DecodeP.required "id" Decode.string
         |> DecodeP.required "status" Decode.int
         |> DecodeP.required "fareProductRef" Decode.string
-        |> DecodeP.required "startDateTime" timestampDecoder
-        |> DecodeP.required "endDateTime" timestampDecoder
+        |> DecodeP.required "startDateTime" Decode.int
+        |> DecodeP.required "endDateTime" Decode.int
         |> DecodeP.required "usageValidityPeriodRef" Decode.string
         |> DecodeP.required "userProfileRef" Decode.string
         |> DecodeP.required "authorityRef" Decode.string
@@ -311,5 +293,5 @@ carnetTravelRightDecoder =
 usedAccessDecoder : Decoder UsedAccess
 usedAccessDecoder =
     Decode.succeed UsedAccess
-        |> DecodeP.required "startDateTime" timestampDecoder
-        |> DecodeP.required "endDateTime" timestampDecoder
+        |> DecodeP.required "startDateTime" Decode.int
+        |> DecodeP.required "endDateTime" Decode.int
