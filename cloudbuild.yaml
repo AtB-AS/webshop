@@ -7,5 +7,6 @@ steps:
   - 'WEBSHOP_BASE_URL=$_WEBSHOP_BASE_URL'
   - 'WEBSHOP_FIREBASE_CONFIG=$_WEBSHOP_FIREBASE_CONFIG'
   - 'WEBSHOP_ORG_ID=$_WEBSHOP_ORG_ID'
+  - 'GA_TRACKING_ID=$_GA_TRACKING_ID'
 - name: 'gcr.io/$PROJECT_ID/firebase'
   args: ['deploy', '--project=$PROJECT_ID', '--only=hosting']
