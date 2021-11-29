@@ -17,7 +17,7 @@ This will install all dependencies.
 Before running the dev server, organization specific assets needs to be copied into the static folder:
 
 ```sh
-$ yarn setup <organization>
+$ WEBSHOP_ORG_ID=atb yarn setup
 ```
 
 Current organizations supported is `atb` and `nfk`, details can be found in the [organization support](#Organization-support) section.
@@ -57,7 +57,7 @@ $ yarn build
 ```
 
 You will need to configure base URL and Firebase config (see Configuration
-below). If building for other organizations than AtB, you will need to replace 
+below). If building for other organizations than AtB, you will need to replace
 the `yarn setup atb` for `"build"` in `package.json` into `yarn setup <your-organization>`.
 
 This will create a `dist` folder with everything, including compressed versions
@@ -70,6 +70,7 @@ doesn't compress well, there won't be a compressed version of it.
 There are two ways to configure the environment. For basic configuration, you
 can use environment variables:
 
+-   `WEBSHOP_ORG_ID`: OrgId (either atb or nfk).
 -   `WEBSHOP_BASE_URL`: The base URL to the backend.
 -   `WEBSHOP_FIREBASE_CONFIG`: The Firebase config. The config needs to be valid
     JSON, so remember when copying the config from the Firebase console to change
@@ -97,6 +98,7 @@ module.exports = {
 };
 ```
 
+-   `orgId`: Active organization. Either atb or nfk.
 -   `host`: The hostname or IP address the development server will listen on.
 -   `port`: The port the development server will listen on.
 -   `baseUrl`: The base URL to the backend.
@@ -105,26 +107,24 @@ module.exports = {
 -   `proxy` (optional): This can be set to configure Webpack's proxy system. Only
     relevant when running the development server.
 
-
 ## Organization support
 
 This webshop is currently being customized for usage in the OOS collaboration featuring Entur, AtB, Nordland County Council (NFK / Reis), Møre og Romsdal County Council (FRAM), and Agder Kollektivtrafikk (AKT).
 This means that the app needs a bit of configuration to work in a organization context outside of AtB.
 
-Currently the app does not support dynamic text for each organization. 
+Currently the app does not support dynamic text for each organization.
 This means that all text throughout the app has to be manually changed to match the requirements of an organization.
-Currently, this has been handled for NFK by creating a separate branch in this Git repository, but a fork should also be possible. 
+Currently, this has been handled for NFK by creating a separate branch in this Git repository, but a fork should also be possible.
 In a later release, text is planned to be handled by the same functionality that handles languages.
 
-For development, `webpack.local.config.js` should export `orgId: 'atb' | 'nfk',` to set siteTitle and the options provided in the `orgs/<organization>.json` file.
+For development, `webpack.local.config.js` should export `orgId: 'atb' | 'nfk',` to set siteTitle and the options provided in the `orgs/<organization>.json` file.
 
-Assets such as icons, logos, and illustrations are copied into the static folder of the application when the application in build time. 
-For development assets can be copied manually by running `yarn setup <organization>` in the terminal. An example is `yarn setup atb`. 
-For production the build script in `package.json` should be updated to include the correct environment and organization.
-To ensure that the correct assets are available they should be moved into the `orgs/<organization>` outside `src`.
+Assets such as icons, logos, and illustrations are copied into the static folder of the application when the application in build time.
+For development assets can be copied manually by running `WEBSHOP_ORG_ID=atb yarn setup` in the terminal. This is also triggered on CIs.
 
-Assets should be placed where the build script expects to find them. 
-A file called `<initials_for_organization>.json` should be placed directly in the `orgs` folder containing basic information such as `"orgId": "atb",` and `"siteTitle": "AtB Nettbutikk"`. 
+See [`@atb-as/generate-assets`](https://github.com/AtB-AS/design-system/tree/main/packages/assets) in design system for more details. Assets will be outputted in `./src/static/assets`.
+
+A file called `<initials_for_organization>.json` should be placed directly in the `orgs` folder containing basic information such as `"orgId": "atb",` and `"siteTitle": "AtB Nettbutikk"`.
 URLs for assets such as privacy declarations and zone maps should also be included in this file, see `/orgs/atb.json` for necessary fields.
 
 Below is an example of a file structure containing AtB and NFK.
@@ -135,19 +135,6 @@ webshop/
 ├─ orgs/
    ├─ atb.json
    ├─ nfk.json
-   ├─ assets/
-      ├─ atb/
-         ├─ favicon.ico
-             ├─ org/
-                 ├─ images/
-                    ├─ icon.svg (needs to be present)
-                    ├─ other-org-specific-asset.svg
-      ├─ nfk/
-         ├─ favicon.ico
-             ├─ org/
-                 ├─ images/
-                    ├─ icon.svg (needs to be present)
-                    ├─ other-org-specific-asset.svg
 ```
 
 ## License
