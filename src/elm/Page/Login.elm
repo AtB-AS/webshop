@@ -25,6 +25,7 @@ import Ui.Section
 import Util.PhoneNumber
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
+import Base exposing (AppInfo)
 
 
 type LoginMethod
@@ -294,8 +295,8 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> Html Msg
-view env model =
+view : Environment -> Model -> AppInfo -> Html Msg
+view env model appInfo =
     if model.showInfoStep then
         H.div [ A.class "page page--narrow" ]
             [ viewIllustration
@@ -324,7 +325,7 @@ view env model =
                     |> B.link
                 , B.init "For our English speaking travellers"
                     |> B.setElement H.a
-                    |> B.setAttributes [ A.href "https://www.atb.no/ny-nettbutikk/key-words-and-phrases-article17509-2740.html" ]
+                    |> B.setAttributes [ A.href appInfo.englishTranslationsUrl ]
                     |> B.link
                 ]
             ]
