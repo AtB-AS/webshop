@@ -112,7 +112,7 @@ describe('my profile', () => {
             .and("contain", Cypress.env("email"))
     })
 
-    it.only('should list stored payment cards', () => {
+    it('should list stored payment cards', () => {
         myprofile.storedPayment("Visa").should("contain", "Visa, **** 0004")
         myprofile.storedPaymentIcon("Visa").should("have.attr", "src", "/assets/icons/paymentcard-visa.svg")
         myprofile.storedPaymentExpiry("Visa").should("contain", "Utløpsdato 08/24")

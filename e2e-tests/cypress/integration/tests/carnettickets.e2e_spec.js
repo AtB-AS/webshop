@@ -81,7 +81,7 @@ describe('carnet ticket purchase', () => {
         summary.paymentOptionLabel("mastercard").should("contain", "MasterCard")
     })
 
-    it.only('stored payment cards should be available as payment method', () => {
+    it('stored payment cards should be available as payment method', () => {
         newTicket.goToSummary()
         verify.verifyHeader('h2', 'Oppsummering');
 
