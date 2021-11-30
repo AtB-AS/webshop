@@ -1,5 +1,6 @@
 module Page.Login exposing (Model, Msg(..), init, subscriptions, update, view)
 
+import Base exposing (AppInfo)
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Environment exposing (Environment)
@@ -25,7 +26,6 @@ import Ui.Section
 import Util.PhoneNumber
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
-import Base exposing (AppInfo)
 
 
 type LoginMethod
@@ -323,10 +323,15 @@ view env model appInfo =
                     |> B.setElement H.a
                     |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
                     |> B.link
-                , B.init "For our English speaking travellers"
-                    |> B.setElement H.a
-                    |> B.setAttributes [ A.href appInfo.englishTranslationsUrl ]
-                    |> B.link
+                , case appInfo.englishTranslationsUrl of
+                    Just englishTranslationsUrl ->
+                        B.init "For our English speaking travellers"
+                            |> B.setElement H.a
+                            |> B.setAttributes [ A.href englishTranslationsUrl ]
+                            |> B.link
+
+                    Nothing ->
+                        Html.Extra.nothing
                 ]
             ]
 

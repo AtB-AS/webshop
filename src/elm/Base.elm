@@ -14,6 +14,6 @@ type alias AppInfo =
     , orgId : OrgId
     , zoneMapUrl : String
     , privacyDeclarationUrl : String
-    , englishTranslationsUrl: String
+    , englishTranslationsUrl : Maybe String
     , travelCardValidPrefix : String
     }
