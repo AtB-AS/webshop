@@ -319,10 +319,15 @@ view env model appInfo =
                         |> B.setOnClick (Just HideInfoStep)
                         |> B.primary B.Primary_2
                     ]
-                , B.init "Les mer om AtBs nye reisetjenester her"
-                    |> B.setElement H.a
-                    |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
-                    |> B.link
+                , case appInfo.newTravelServicesUrl of
+                    Just newTravelServicesUrl ->
+                        B.init "Les mer om våre nye reisetjenester her"
+                            |> B.setElement H.a
+                            |> B.setAttributes [ A.href newTravelServicesUrl ]
+                            |> B.link
+
+                    Nothing ->
+                        Html.Extra.nothing
                 , case appInfo.englishTranslationsUrl of
                     Just englishTranslationsUrl ->
                         B.init "For our English speaking travellers"
