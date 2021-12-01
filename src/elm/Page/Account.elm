@@ -963,7 +963,7 @@ viewPrivacy model shared appInfo =
             |> Validation.select Consent
             |> Html.Extra.viewMaybe Message.error
         , Ui.Section.viewPaddedItem
-            [ H.p [] [ H.a [ A.href appInfo.privacyDeclarationUrl ] [ H.text "Les vår personvernerklæring" ] ]
+            [ H.p [] [ H.a [ A.href appInfo.privacyDeclarationUrl, A.target "_blank" ] [ H.text "Les vår personvernerklæring (åpner nytt vindu)" ] ]
             ]
         ]
 
