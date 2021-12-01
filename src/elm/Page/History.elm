@@ -75,7 +75,7 @@ update : Msg -> Environment -> Model -> PageUpdater Model Msg
 update msg env model =
     case msg of
         OnEnterPage ->
-            PageUpdater.init model
+            PageUpdater.fromPair ( model, Tuple.second init )
                 |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Kjøpshistorikk")
                 |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
 
