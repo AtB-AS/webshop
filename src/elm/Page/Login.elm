@@ -332,7 +332,7 @@ view env appInfo model =
                     Just englishTranslationsUrl ->
                         B.init "For our English speaking travellers"
                             |> B.setElement H.a
-                            |> B.setAttributes [ A.href englishTranslationsUrl ]
+                            |> B.setAttributes [ A.href englishTranslationsUrl, A.lang "en" ]
                             |> B.link
 
                     Nothing ->
