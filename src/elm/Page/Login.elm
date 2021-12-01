@@ -1,5 +1,6 @@
 module Page.Login exposing (Model, Msg(..), init, subscriptions, update, view)
 
+import Base exposing (AppInfo)
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Environment exposing (Environment)
@@ -294,8 +295,8 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> Html Msg
-view env model =
+view : Environment -> AppInfo -> Model -> Html Msg
+view env appInfo model =
     if model.showInfoStep then
         H.div [ A.class "page page--narrow" ]
             [ viewIllustration
@@ -318,14 +319,24 @@ view env model =
                         |> B.setOnClick (Just HideInfoStep)
                         |> B.primary B.Primary_2
                     ]
-                , B.init "Les mer om AtBs nye reisetjenester her"
-                    |> B.setElement H.a
-                    |> B.setAttributes [ A.href "https://www.atb.no/vi-oppgraderer/" ]
-                    |> B.link
-                , B.init "For our English speaking travellers"
-                    |> B.setElement H.a
-                    |> B.setAttributes [ A.href "https://www.atb.no/ny-nettbutikk/key-words-and-phrases-article17509-2740.html" ]
-                    |> B.link
+                , case appInfo.newTravelServicesUrl of
+                    Just newTravelServicesUrl ->
+                        B.init "Les mer om våre nye reisetjenester her"
+                            |> B.setElement H.a
+                            |> B.setAttributes [ A.href newTravelServicesUrl ]
+                            |> B.link
+
+                    Nothing ->
+                        Html.Extra.nothing
+                , case appInfo.englishTranslationsUrl of
+                    Just englishTranslationsUrl ->
+                        B.init "For our English speaking travellers"
+                            |> B.setElement H.a
+                            |> B.setAttributes [ A.href englishTranslationsUrl, A.lang "en" ]
+                            |> B.link
+
+                    Nothing ->
+                        Html.Extra.nothing
                 ]
             ]
 

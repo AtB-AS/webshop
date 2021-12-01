@@ -292,6 +292,8 @@ init flags url navKey =
             , orgId = flags.orgConf.orgId
             , zoneMapUrl = flags.orgConf.zoneMapUrl
             , privacyDeclarationUrl = flags.orgConf.privacyDeclarationUrl
+            , englishTranslationsUrl = flags.orgConf.englishTranslationsUrl
+            , newTravelServicesUrl = flags.orgConf.newTravelServicesUrl
             , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
             }
 
@@ -628,7 +630,7 @@ view model =
                             viewPage model
 
                         Nothing ->
-                            LoginPage.view model.environment model.login
+                            LoginPage.view model.environment model.appInfo model.login
                                 |> H.map LoginMsg
             ]
         ]
