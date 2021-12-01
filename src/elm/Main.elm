@@ -723,7 +723,15 @@ header model contentClass =
             [ H.div [ A.class "pageHeader__content" ]
                 [ H.div [ A.class "pageHeader__inner" ]
                     [ H.h1 [ A.class "pageHeader__logo" ]
-                        [ H.a [ Route.href Route.Home ] [ H.img [ A.src "/assets/icons/icon.svg" ] [], H.text model.appInfo.pageName ]
+                        [ H.a [ Route.href Route.Home ]
+                            [ H.img
+                                [ A.src "/assets/icons/icon.svg"
+                                , A.alt ""
+                                , A.attribute "role" "none"
+                                ]
+                                []
+                            , H.text model.appInfo.pageName
+                            ]
                         ]
                     , if showHeader then
                         H.div [ A.class "pageHeader__toggleButton" ] [ Ui.HamburgerButton.view "burgermenu" "menubox" model.openMenu (ToggleMenu <| not model.openMenu) ]
