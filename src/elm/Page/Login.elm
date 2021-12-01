@@ -295,8 +295,8 @@ focusBox id =
         |> Maybe.withDefault Cmd.none
 
 
-view : Environment -> Model -> AppInfo -> Html Msg
-view env model appInfo =
+view : Environment -> AppInfo -> Model -> Html Msg
+view env appInfo model =
     if model.showInfoStep then
         H.div [ A.class "page page--narrow" ]
             [ viewIllustration

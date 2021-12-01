@@ -630,7 +630,7 @@ view model =
                             viewPage model
 
                         Nothing ->
-                            LoginPage.view model.environment model.login model.appInfo
+                            LoginPage.view model.environment model.appInfo model.login
                                 |> H.map LoginMsg
             ]
         ]
