@@ -98,7 +98,7 @@ update msg env model shared =
                         -- Only store tickets that are valid into the future.
                         tickets =
                             fareContracts
-                                |> Util.FareContract.filterValidNow model.currentTime
+                                |> Util.FareContract.filterValidAtTime model.currentTime
                                 |> List.sortBy (.created >> .timestamp)
                                 |> List.reverse
 
@@ -375,7 +375,7 @@ viewMain shared model =
     let
         validTickets =
             model.tickets
-                |> Util.FareContract.filterValidNow model.currentTime
+                |> Util.FareContract.filterValidAtTime model.currentTime
 
         emptyResults =
             List.isEmpty validTickets && List.isEmpty model.reservations

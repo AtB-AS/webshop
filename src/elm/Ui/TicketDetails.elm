@@ -211,7 +211,13 @@ viewCarnetHeader carnets classListButtonTitle now timeZone =
         validAccesses =
             carnets
                 |> List.concatMap .usedAccesses
-                |> List.filter (.endDateTime >> .timestamp >> Util.FareContract.isValid now)
+                |> List.filter
+                    (\usedAccess ->
+                        Util.FareContract.isValid
+                            now
+                            usedAccess.startDateTime.timestamp
+                            usedAccess.endDateTime.timestamp
+                    )
 
         firstValidAccess =
             List.head validAccesses
