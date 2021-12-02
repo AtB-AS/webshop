@@ -336,39 +336,49 @@ function convert_time(firebaseTime) {
 function loadConfiguration() {
     unsubscribeConfigurationSnapshot && unsubscribeConfigurationSnapshot();
     console.log('[debug] fetching configuration');
-    unsubscribeConfigurationSnapshot = db.collection("configuration").onSnapshot(
-        (docs) => {
-            docs.forEach(doc => {
-                if (doc.id === "referenceData") {
-                    const referenceData = doc.data();
+    unsubscribeConfigurationSnapshot = db
+        .collection('configuration')
+        .onSnapshot(
+            (docs) => {
+                docs.forEach((doc) => {
+                    if (doc.id === 'referenceData') {
+                        const referenceData = doc.data();
 
-                    const tariffZones = JSON.parse(referenceData.tariffZones);
-                    app.ports.remoteConfigTariffZones.send(tariffZones);
+                        const tariffZones = JSON.parse(
+                            referenceData.tariffZones
+                        );
+                        app.ports.remoteConfigTariffZones.send(tariffZones);
 
-                    const preassignedFareProducts = JSON.parse(referenceData.preassignedFareProducts_v2);
-                    app.ports.remoteConfigFareProducts.send(preassignedFareProducts);
+                        const preassignedFareProducts = JSON.parse(
+                            referenceData.preassignedFareProducts_v2
+                        );
+                        app.ports.remoteConfigFareProducts.send(
+                            preassignedFareProducts
+                        );
 
-                    const userProfiles = JSON.parse(referenceData.userProfiles);
-                    app.ports.remoteConfigUserProfiles.send(userProfiles);
-                }
+                        const userProfiles = JSON.parse(
+                            referenceData.userProfiles
+                        );
+                        app.ports.remoteConfigUserProfiles.send(userProfiles);
+                    }
 
-                if (doc.id === "other") {
-                    const other = doc.data();
-                    app.ports.remoteConfigVatPercent.send(other.vatPercent);
-                }
+                    if (doc.id === 'other') {
+                        const other = doc.data();
+                        app.ports.remoteConfigVatPercent.send(other.vatPercent);
+                    }
 
-                if (doc.id === "paymentTypes") {
-                    const paymentTypes = doc.data();
-                    app.ports.remoteConfigPaymentTypes.send(paymentTypes.web);
-                }
-            })
-
-
-        },
-        function (e) {
-            console.error('Error when retrieving configuration', e);
-        }
-    );
+                    if (doc.id === 'paymentTypes') {
+                        const paymentTypes = doc.data();
+                        app.ports.remoteConfigPaymentTypes.send(
+                            paymentTypes.web
+                        );
+                    }
+                });
+            },
+            function (e) {
+                console.error('Error when retrieving configuration', e);
+            }
+        );
 }
 
 // TODO: Load tokens?
