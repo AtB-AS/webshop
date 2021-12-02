@@ -11,7 +11,7 @@ type alias OrganizationConfiguration =
     , zoneMapUrl : String
     , privacyDeclarationUrl : String
     , englishTranslationsUrl : Maybe String
-    , newTravelServicesUrl : Maybe String
+    , newWebshopUrl : Maybe String
     , travelCardValidPrefix : String
     }
 
@@ -24,7 +24,7 @@ orgConfDecoder =
         |> DecodeP.required "zoneMapUrl" Decode.string
         |> DecodeP.required "privacyDeclarationUrl" Decode.string
         |> DecodeP.optional "englishTranslationsUrl" (Decode.map Just Decode.string) Nothing
-        |> DecodeP.optional "newTravelServicesUrl" (Decode.map Just Decode.string) Nothing
+        |> DecodeP.optional "newWebshopUrl" (Decode.map Just Decode.string) Nothing
         |> DecodeP.required "travelCardValidPrefix" Decode.string
 
 

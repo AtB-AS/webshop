@@ -319,11 +319,11 @@ view env appInfo model =
                         |> B.setOnClick (Just HideInfoStep)
                         |> B.primary B.Primary_2
                     ]
-                , case appInfo.newTravelServicesUrl of
-                    Just newTravelServicesUrl ->
+                , case appInfo.newWebshopUrl of
+                    Just newWebshopUrl ->
                         B.init "Les mer om våre nye reisetjenester her"
                             |> B.setElement H.a
-                            |> B.setAttributes [ A.href newTravelServicesUrl ]
+                            |> B.setAttributes [ A.href newWebshopUrl ]
                             |> B.link
 
                     Nothing ->
@@ -508,9 +508,9 @@ prerequisitesNotice : AppInfo -> Html msg
 prerequisitesNotice appInfo =
     H.p []
         [ H.text "I en periode har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
-        , case appInfo.newTravelServicesUrl of
-            Just newTravelServicesUrl ->
-                H.a [ A.href newTravelServicesUrl, A.target "_blank", A.title "Les mer på våre nettsider (åpner ny side)" ] [ H.text "Vi oppgraderer (åpner ny side)" ]
+        , case appInfo.newWebshopUrl of
+            Just newWebshopUrl ->
+                H.a [ A.href newWebshopUrl, A.target "_blank", A.title "Les mer på våre nettsider (åpner ny side)" ] [ H.text "Vi oppgraderer (åpner ny side)" ]
 
             Nothing ->
                 Html.Extra.nothing
