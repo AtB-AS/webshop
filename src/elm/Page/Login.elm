@@ -356,7 +356,7 @@ view env appInfo model =
                 [ viewIllustration
                 , case model.step of
                     StepLogin ->
-                        viewLogin model
+                        viewLogin model appInfo
 
                     StepConfirm ->
                         viewConfirm env model
@@ -384,25 +384,25 @@ viewInfoPointWithIcon icon text =
         ]
 
 
-viewLogin : Model -> Html Msg
-viewLogin model =
+viewLogin : Model -> AppInfo -> Html Msg
+viewLogin model appInfo =
     H.form [ E.onSubmit DoLogin, A.novalidate True ] <|
         case model.loginMethod of
             PhoneMethod ->
-                viewPhoneLogin model
+                viewPhoneLogin model appInfo
 
             ResetEmailMethod ->
-                viewEmailReset model
+                viewEmailReset model appInfo
 
             RegisterEmailMethod ->
-                viewEmailRegister model
+                viewEmailRegister model appInfo
 
             EmailMethod ->
-                viewEmailLogin model
+                viewEmailLogin model appInfo
 
 
-viewPhoneLogin : Model -> List (Html Msg)
-viewPhoneLogin model =
+viewPhoneLogin : Model -> AppInfo -> List (Html Msg)
+viewPhoneLogin model appInfo =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem
@@ -417,7 +417,7 @@ viewPhoneLogin model =
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ Route.href <| Route.Login EmailPath ] [ H.text "Jeg vil heller bruke e-post" ] ]
             ]
-        , prerequisitesNotice
+        , prerequisitesNotice appInfo
         , B.init "Send engangskode"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -427,8 +427,8 @@ viewPhoneLogin model =
     ]
 
 
-viewEmailLogin : Model -> List (Html Msg)
-viewEmailLogin model =
+viewEmailLogin : Model -> AppInfo -> List (Html Msg)
+viewEmailLogin model appInfo =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem
@@ -442,7 +442,7 @@ viewEmailLogin model =
         , Ui.Section.viewPaddedItem
             [ H.p [] [ H.a [ Route.href <| Route.Login RegisterEmailPath ] [ H.text "Opprett en ny profil" ] ]
             ]
-        , prerequisitesNotice
+        , prerequisitesNotice appInfo
         , B.init "Logg inn"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -456,13 +456,13 @@ viewEmailLogin model =
     ]
 
 
-viewEmailRegister : Model -> List (Html Msg)
-viewEmailRegister model =
+viewEmailRegister : Model -> AppInfo -> List (Html Msg)
+viewEmailRegister model appInfo =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Opprett ny profil." ] ]
         , Ui.Section.viewItem <| viewEmailInputs "Skriv inn din e-postadresse" "Velg et passord" "new-password" model
-        , prerequisitesNotice
+        , prerequisitesNotice appInfo
         , B.init "Opprett profil"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -476,13 +476,13 @@ viewEmailRegister model =
     ]
 
 
-viewEmailReset : Model -> List (Html Msg)
-viewEmailReset model =
+viewEmailReset : Model -> AppInfo -> List (Html Msg)
+viewEmailReset model appInfo =
     [ Ui.Section.view
         [ viewWelcomeIllustration
         , Ui.Section.viewPaddedItem [ H.p [] [ H.text "Be om å tilbakestille passord på profilen." ] ]
         , Ui.Section.viewItem <| viewResetInputs model
-        , prerequisitesNotice
+        , prerequisitesNotice appInfo
         , B.init "Tilbakestill passord"
             |> B.setIcon (Just Icon.rightArrow)
             |> B.setLoading model.loading
@@ -504,11 +504,16 @@ viewWelcomeIllustration =
         ]
 
 
-prerequisitesNotice : Html msg
-prerequisitesNotice =
+prerequisitesNotice : AppInfo -> Html msg
+prerequisitesNotice appInfo =
     H.p []
         [ H.text "I en periode har nettbutikken enkelte forutsetninger. Gjør deg kjent med disse før du logger inn. "
-        , H.a [ A.href "https://www.atb.no/vi-oppgraderer", A.target "_blank", A.title "Les mer på AtBs nettside (åpner ny side)" ] [ H.text "Vi oppgraderer (åpner ny side)." ]
+        , case appInfo.newTravelServicesUrl of
+            Just newTravelServicesUrl ->
+                H.a [ A.href newTravelServicesUrl, A.target "_blank", A.title "Les mer på våre nettsider (åpner ny side)" ] [ H.text "Vi oppgraderer (åpner ny side)" ]
+
+            Nothing ->
+                Html.Extra.nothing
         ]
         |> Message.Warning
         |> Message.message
