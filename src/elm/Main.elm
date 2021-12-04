@@ -293,7 +293,7 @@ init flags url navKey =
             , zoneMapUrl = flags.orgConf.zoneMapUrl
             , privacyDeclarationUrl = flags.orgConf.privacyDeclarationUrl
             , englishTranslationsUrl = flags.orgConf.englishTranslationsUrl
-            , newTravelServicesUrl = flags.orgConf.newTravelServicesUrl
+            , newWebshopUrl = flags.orgConf.newWebshopUrl
             , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
             }
 
