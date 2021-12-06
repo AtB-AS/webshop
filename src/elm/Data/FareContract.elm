@@ -1,7 +1,6 @@
 module Data.FareContract exposing
     ( FareContract
     , FareContractState(..)
-    , FareTime
     , TravelRight(..)
     , TravelRightBase
     , TravelRightCarnet
@@ -23,8 +22,8 @@ type alias TravelRightFull =
     { id : String
     , status : Int
     , fareProductRef : String
-    , startDateTime : FareTime
-    , endDateTime : FareTime
+    , startDateTime : Int
+    , endDateTime : Int
     , usageValidityPeriodRef : String
     , userProfileRef : String
     , authorityRef : String
@@ -36,8 +35,8 @@ type alias TravelRightCarnet =
     { id : String
     , status : Int
     , fareProductRef : String
-    , startDateTime : FareTime
-    , endDateTime : FareTime
+    , startDateTime : Int
+    , endDateTime : Int
     , usageValidityPeriodRef : String
     , userProfileRef : String
     , authorityRef : String
@@ -49,8 +48,8 @@ type alias TravelRightCarnet =
 
 
 type alias UsedAccess =
-    { startDateTime : FareTime
-    , endDateTime : FareTime
+    { startDateTime : Int
+    , endDateTime : Int
     }
 
 
@@ -60,19 +59,8 @@ type alias TravelRightBase =
     }
 
 
-type alias FareTime =
-    { timestamp : Int
-    , year : Int
-    , month : Int
-    , day : Int
-    , hour : Int
-    , minute : Int
-    , second : Int
-    }
-
-
 type alias FareContract =
-    { created : FareTime
+    { created : Int
     , version : String
     , orderId : String
     , minimumSecurityLevel : Int

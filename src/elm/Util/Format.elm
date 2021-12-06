@@ -1,13 +1,9 @@
 module Util.Format exposing
-    ( date
-    , dateTime
-    , float
+    ( float
     , int
     , padZero
-    , time
     )
 
-import Data.FareContract exposing (FareTime)
 import FormatNumber
 import FormatNumber.Locales
 
@@ -17,37 +13,6 @@ import FormatNumber.Locales
 padZero : Int -> String -> String
 padZero n =
     String.padLeft n '0'
-
-
-{-| Format a FareTime as 12.03.2021
--}
-date : FareTime -> String
-date ft =
-    String.join ""
-        [ padZero 2 <| String.fromInt ft.day
-        , "."
-        , padZero 2 <| String.fromInt ft.month
-        , "."
-        , padZero 4 <| String.fromInt ft.year
-        ]
-
-
-{-| Format a FareTime as 09:41
--}
-time : FareTime -> String
-time ft =
-    String.join ""
-        [ padZero 2 <| String.fromInt ft.hour
-        , ":"
-        , padZero 2 <| String.fromInt ft.minute
-        ]
-
-
-{-| Format a FareTime as 12.03.2021 - 09:41
--}
-dateTime : FareTime -> String
-dateTime ft =
-    date ft ++ " - " ++ time ft
 
 
 {-| Format an integer with thousands separator.

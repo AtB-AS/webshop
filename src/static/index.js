@@ -272,7 +272,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
                             typeof profile.travelcard === 'object' &&
                             profile.travelcard !== null
                         ) {
-                            profile.travelcard.expires = convert_time(
+                            profile.travelcard.expires = to_millis(
                                 profile.travelcard.expires
                             );
                         }
@@ -292,25 +292,10 @@ async function fetchAuthInfo(user, stopOnboarding) {
     }
 }
 
-// Convert a Firebase Time type to something that's easier to work with.
-function convert_time(firebaseTime) {
+// Convert a Firebase Time type to to millis.
+function to_millis(firebaseTime) {
     if (!firebaseTime) return firebaseTime;
-
-    const timestamp = parseInt(firebaseTime.toMillis(), 10);
-    const date = new Date(timestamp);
-    const parts = [];
-
-    parts.push(date.getFullYear());
-    parts.push(date.getMonth() + 1);
-    parts.push(date.getDate());
-    parts.push(date.getHours());
-    parts.push(date.getMinutes());
-    parts.push(date.getSeconds());
-
-    return {
-        timestamp,
-        parts
-    };
+    return parseInt(firebaseTime.toMillis(), 10);
 }
 
 function loadConfiguration() {
@@ -377,19 +362,19 @@ function loadFareContracts(accountId) {
                 const payload = doc.data();
 
                 if (payload) {
-                    // Transform firebase time fields to something we can use
-                    payload.created = convert_time(payload.created);
+                    // Transform firebase time fields to epoch millis
+                    payload.created = to_millis(payload.created);
                     payload.travelRights = payload.travelRights.map((right) => {
-                        right.startDateTime = convert_time(right.startDateTime);
-                        right.endDateTime = convert_time(right.endDateTime);
+                        right.startDateTime = to_millis(right.startDateTime);
+                        right.endDateTime = to_millis(right.endDateTime);
 
                         if (Array.isArray(right.usedAccesses)) {
                             right.usedAccesses = right.usedAccesses.map(
                                 (access) => {
-                                    access.startDateTime = convert_time(
+                                    access.startDateTime = to_millis(
                                         access.startDateTime
                                     );
-                                    access.endDateTime = convert_time(
+                                    access.endDateTime = to_millis(
                                         access.endDateTime
                                     );
                                     return access;
@@ -403,7 +388,7 @@ function loadFareContracts(accountId) {
                             null,
                             payload.travelRights.map((x) => {
                                 if (!x.startDateTime) return 0;
-                                return x.startDateTime.timestamp;
+                                return x.startDateTime;
                             })
                         ) || 0;
                     payload.validTo =
@@ -411,7 +396,7 @@ function loadFareContracts(accountId) {
                             null,
                             payload.travelRights.map((x) => {
                                 if (!x.endDateTime) return 0;
-                                return x.endDateTime.timestamp;
+                                return x.endDateTime;
                             })
                         ) || 0;
 

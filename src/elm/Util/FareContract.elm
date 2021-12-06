@@ -36,7 +36,7 @@ hasValidTravelRight now contract =
                                 carnetType.numberOfUsedAccesses < carnetType.maximumNumberOfAccesses
 
                             hasActiveAccess =
-                                List.any (.endDateTime >> .timestamp >> isValid now) carnetType.usedAccesses
+                                List.any (.endDateTime >> isValid now) carnetType.usedAccesses
                         in
                             hasTicketsLeft || hasActiveAccess
 

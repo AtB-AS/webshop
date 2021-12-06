@@ -419,7 +419,7 @@ update msg env model shared =
                         { model
                             | orders =
                                 fareContracts
-                                    |> List.sortBy (.created >> .timestamp)
+                                    |> List.sortBy .created
                                     |> List.reverse
                         }
 

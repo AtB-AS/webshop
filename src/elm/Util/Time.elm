@@ -1,4 +1,4 @@
-module Util.Time exposing (addHours, isoStringToCardExpirationMonth, isoStringToFullHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
+module Util.Time exposing (addHours, isoStringToCardExpirationMonth, isoStringToFullHumanized, millisToDateHumanized, millisToFullHumanized, toDateHumanized, toFullHumanized, toHoursAndMinutes, toIsoDate, toIsoTime, toMonthNum)
 
 import DateFormat
 import Iso8601
@@ -80,6 +80,16 @@ toMonthNum month =
             12
 
 
+millisToDateHumanized : Time.Zone -> Int -> String
+millisToDateHumanized zone ms =
+    ms |> Time.millisToPosix |> toDateHumanized zone
+
+
+toDateHumanized : Time.Zone -> Time.Posix -> String
+toDateHumanized zone date_ =
+    toFormat zone date_ "dd.MM.yyyy"
+
+
 isoStringToFullHumanized : Time.Zone -> String -> Maybe String
 isoStringToFullHumanized zone dateString =
     case Iso8601.toTime dateString of
@@ -88,6 +98,11 @@ isoStringToFullHumanized zone dateString =
 
         Ok timePosix ->
             Just <| toFullHumanized zone timePosix
+
+
+millisToFullHumanized : Time.Zone -> Int -> String
+millisToFullHumanized zone ms =
+    ms |> Time.millisToPosix |> toFullHumanized zone
 
 
 toFullHumanized : Time.Zone -> Time.Posix -> String
