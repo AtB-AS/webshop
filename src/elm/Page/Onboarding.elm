@@ -283,10 +283,25 @@ update msg env appInfo shared model =
                         PageUpdater.init { model | validationErrors = V.add [ ConsentForm ] errorMessage model.validationErrors }
 
         SkipRegister ->
-            PageUpdater.fromPair
-                ( { model | validationErrors = V.init }
-                , skipRegisterProfile { env | token = model.token } model.phone
-                )
+            let
+                phone =
+                    if model.isReadonlyPhone then
+                        model.phone
+
+                    else
+                        ""
+
+                email =
+                    if model.isReadonlyEmail then
+                        model.email
+
+                    else
+                        ""
+            in
+                PageUpdater.fromPair
+                    ( { model | validationErrors = V.init }
+                    , skipRegisterProfile { env | token = model.token } phone email
+                    )
 
         Finish ->
             PageUpdater.fromPair ( model, MiscService.onboardingDone () )
@@ -737,9 +752,9 @@ saveProfile env firstName lastName phone email =
         |> Task.attempt ReceiveRegisterProfile
 
 
-skipRegisterProfile : Environment -> String -> Cmd Msg
-skipRegisterProfile env phone =
-    WebshopService.save env "_" "_" (Just phone) Nothing
+skipRegisterProfile : Environment -> String -> String -> Cmd Msg
+skipRegisterProfile env phone email =
+    WebshopService.save env "_" "_" (Just phone) (Just email)
         |> Http.toTask
         |> Task.attempt ReceiveRegisterProfile
 

@@ -22,7 +22,6 @@ import Ui.Message as Message
 import Ui.ScreenReaderText as SR
 import Ui.TextContainer
 import Util.FareContract
-import Util.Format
 import Util.Maybe
 import Util.Time as TimeUtil
 
@@ -145,7 +144,10 @@ view shared ticketDetails onReceipt =
                         , viewLabelTime "Gyldig til" fareContract.validTo timeZone
                         ]
                     , H.div [ A.class "ui-ticketDetails__item ui-ticketDetails__item--horizontal ui-ticketDetails__item--statusLine" ]
-                        [ Ui.LabelItem.viewCompact "Kjøpstidspunkt" [ H.text <| Util.Format.dateTime fareContract.created ]
+                        [ Ui.LabelItem.viewCompact "Kjøpstidspunkt"
+                            [ H.text <|
+                                TimeUtil.millisToFullHumanized timeZone fareContract.created
+                            ]
                         , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType fareContract.paymentType ]
                         , Ui.LabelItem.viewCompact "Ordre-ID" <| SR.readAndView spellableOrderId fareContract.orderId
                         ]
@@ -215,8 +217,8 @@ viewCarnetHeader carnets classListButtonTitle now timeZone =
                     (\usedAccess ->
                         Util.FareContract.isValid
                             now
-                            usedAccess.startDateTime.timestamp
-                            usedAccess.endDateTime.timestamp
+                            usedAccess.startDateTime
+                            usedAccess.endDateTime
                     )
 
         firstValidAccess =
@@ -246,7 +248,7 @@ viewCarnetHeader carnets classListButtonTitle now timeZone =
 
                     Just access ->
                         [ H.text <| viewActiveAccessText validAccesses ++ " ("
-                        , viewValidity access.startDateTime.timestamp access.endDateTime.timestamp now timeZone
+                        , viewValidity access.startDateTime access.endDateTime now timeZone
                         , H.text ")"
                         ]
             ]
@@ -411,8 +413,7 @@ viewLabelTime : String -> Int -> Time.Zone -> Html msg
 viewLabelTime title dateTime timeZone =
     Ui.LabelItem.viewCompact title
         [ dateTime
-            |> Time.millisToPosix
-            |> TimeUtil.toFullHumanized timeZone
+            |> TimeUtil.millisToFullHumanized timeZone
             |> H.text
         ]
 
@@ -519,7 +520,7 @@ viewValidity from to posixNow timeZone =
     in
         if from > now + (3 * 60 * 60 * 1000) then
             -- Active in over 3 hours, show absolute time.
-            H.text <| "Gyldig fra " ++ TimeUtil.toFullHumanized timeZone (Time.millisToPosix from)
+            H.text <| "Gyldig fra " ++ TimeUtil.millisToFullHumanized timeZone from
 
         else if from > now then
             -- If active within 3 hours, show relative time

@@ -293,7 +293,7 @@ init flags url navKey =
             , zoneMapUrl = flags.orgConf.zoneMapUrl
             , privacyDeclarationUrl = flags.orgConf.privacyDeclarationUrl
             , englishTranslationsUrl = flags.orgConf.englishTranslationsUrl
-            , newTravelServicesUrl = flags.orgConf.newTravelServicesUrl
+            , newWebshopUrl = flags.orgConf.newWebshopUrl
             , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
             }
 
@@ -323,7 +323,7 @@ init flags url navKey =
                 , overview = overviewModel
                 , shop = Tuple.first ShopPage.init
                 , shopCarnet = Tuple.first ShopCarnetPage.init
-                , history = HistoryPage.init
+                , history = Tuple.first HistoryPage.init
                 , account = accountModel
                 , shared = Shared.init
                 , login = loginModel

@@ -99,7 +99,7 @@ update msg env model shared =
                         tickets =
                             fareContracts
                                 |> Util.FareContract.filterValidAtTime model.currentTime
-                                |> List.sortBy (.created >> .timestamp)
+                                |> List.sortBy .created
                                 |> List.reverse
 
                         orderIds =
