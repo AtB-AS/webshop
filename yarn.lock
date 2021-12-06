@@ -9,15 +9,15 @@
   dependencies:
     binwrap "^0.2.3"
 
-"@atb-as/generate-assets@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-1.0.0.tgz#18c401f309b8634541b7cae67925d6ed8f615f0a"
-  integrity sha512-SxsCNWI3qpm0U+9u+qLcaBSgvW7qwkSTsHaYVVx/ilxLSipIY7viRYfdndC6E77SmJZq2mP2FLWYmEIq9uS55g==
+"@atb-as/generate-assets@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-1.1.0.tgz#607250427f2db7898d27d134174fd4d6c7655962"
+  integrity sha512-xLLwye7KqZxNgzzGtF6yBDGMEKclJzH+kKJKX9OTu3rrbbkKXVUo3o47VjKcHG1E4PzedzjcgpxwgnzNVM+kFQ==
 
-"@atb-as/theme@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@atb-as/theme/-/theme-5.0.0.tgz#326ee3163d6511ca99a35a0c0e347d7ce2d7f4fe"
-  integrity sha512-dhRYSSFW3zgGB426h7ko5VBqswo9kODOUVcLPY17alyxrCU/c9R/3FfCliIZdGtuiNkM5EDpmrnLIvPoTnNIag==
+"@atb-as/theme@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@atb-as/theme/-/theme-5.0.2.tgz#c6b16d5f423aa33c651dc27b9261b658f54bf151"
+  integrity sha512-aS4qegpp8XbT1ro/qbQ9AjOk7AlW3m3taiD+YYk3YeSVlNBM2L1HnUoMfcNvuog98Xg5X+giBUWXYbLSpl1qbQ==
   dependencies:
     hex-to-rgba "^2.0.1"
     ts-deepmerge "^1.0.7"
