@@ -54,6 +54,7 @@ console.log('Atb-Install-Id:', installId);
 firebase.initializeApp(firebaseConfig);
 
 // Closure data for unsubscribing on changes.
+let unsubscribeConfigurationSnapshot = null;
 let unsubscribeFareContractSnapshot = null;
 let unsubscribeFetchUserDataSnapshot = null;
 
@@ -118,54 +119,13 @@ function fetchRemoteConfigData(port, key, prop) {
     }
 }
 
-function fetchRemoteConfigNumber(port, key) {
-    if (!port) {
-        return;
-    }
-
-    const value = getRemoteConfigString(key);
-
-    if (typeof value !== 'string' || value.length < 1) {
-        return;
-    }
-
-    const num = parseFloat(value);
-
-    if (isNaN(num)) {
-        return;
-    }
-
-    port.send(num);
-}
-
 // NOTE: Only change this for testing.
 remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
 //remoteConfig.settings.minimumFetchIntervalMillis = 60000;
 remoteConfig
     .fetchAndActivate()
     .then(() => {
-        fetchRemoteConfigData(
-            app.ports.remoteConfigFareProducts,
-            'preassigned_fare_products_v2'
-        );
-        fetchRemoteConfigData(
-            app.ports.remoteConfigUserProfiles,
-            'user_profiles'
-        );
-        fetchRemoteConfigData(
-            app.ports.remoteConfigTariffZones,
-            'tariff_zones'
-        );
         fetchRemoteConfigData(app.ports.remoteConfigConsents, 'consents');
-        fetchRemoteConfigData(
-            app.ports.remoteConfigPaymentTypes,
-            'payment_types',
-            'web'
-        );
-        fetchRemoteConfigNumber(
-            app.ports.remoteConfigVatPercent,
-            'vat_percent'
-        );
     })
     .catch((err) => {
         // ...
@@ -322,6 +282,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
                             signInMethods: user.providerData
                         });
 
+                        loadConfiguration();
                         loadFareContracts(accountId);
                     }
                 });
@@ -350,6 +311,54 @@ function convert_time(firebaseTime) {
         timestamp,
         parts
     };
+}
+
+function loadConfiguration() {
+    unsubscribeConfigurationSnapshot && unsubscribeConfigurationSnapshot();
+    console.log('[debug] fetching configuration');
+    unsubscribeConfigurationSnapshot = db
+        .collection('configuration')
+        .onSnapshot(
+            (docs) => {
+                docs.forEach((doc) => {
+                    if (doc.id === 'referenceData') {
+                        const referenceData = doc.data();
+
+                        const tariffZones = JSON.parse(
+                            referenceData.tariffZones
+                        );
+                        app.ports.remoteConfigTariffZones.send(tariffZones);
+
+                        const preassignedFareProducts = JSON.parse(
+                            referenceData.preassignedFareProducts_v2
+                        );
+                        app.ports.remoteConfigFareProducts.send(
+                            preassignedFareProducts
+                        );
+
+                        const userProfiles = JSON.parse(
+                            referenceData.userProfiles
+                        );
+                        app.ports.remoteConfigUserProfiles.send(userProfiles);
+                    }
+
+                    if (doc.id === 'other') {
+                        const other = doc.data();
+                        app.ports.remoteConfigVatPercent.send(other.vatPercent);
+                    }
+
+                    if (doc.id === 'paymentTypes') {
+                        const paymentTypes = doc.data();
+                        app.ports.remoteConfigPaymentTypes.send(
+                            paymentTypes.web
+                        );
+                    }
+                });
+            },
+            function (e) {
+                console.error('Error when retrieving configuration', e);
+            }
+        );
 }
 
 // TODO: Load tokens?
