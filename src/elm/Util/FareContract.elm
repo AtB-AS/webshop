@@ -1,20 +1,24 @@
-module Util.FareContract exposing (filterValidNow, hasValidState, isValid)
+module Util.FareContract exposing (filterValidAtTime, hasValidState, isValid)
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Time
 
 
-filterValidNow : Time.Posix -> List FareContract -> List FareContract
-filterValidNow now fareContracts =
+filterValidAtTime : Time.Posix -> List FareContract -> List FareContract
+filterValidAtTime timePosix fareContracts =
     fareContracts
-        |> List.filter (.validTo >> isValid now)
-        |> List.filter (hasValidTravelRight now)
+        |> List.filter (\fc -> isValid timePosix fc.validFrom fc.validTo)
+        |> List.filter (hasValidTravelRight timePosix)
         |> List.filter hasValidState
 
 
-isValid : Time.Posix -> Int -> Bool
-isValid posixNow to =
-    to >= Time.posixToMillis posixNow
+isValid : Time.Posix -> Int -> Int -> Bool
+isValid timePosix from to =
+    let
+        millis =
+            Time.posixToMillis timePosix
+    in
+        from <= millis && to >= millis
 
 
 
@@ -36,7 +40,7 @@ hasValidTravelRight now contract =
                                 carnetType.numberOfUsedAccesses < carnetType.maximumNumberOfAccesses
 
                             hasActiveAccess =
-                                List.any (.endDateTime >> isValid now) carnetType.usedAccesses
+                                List.any (\tr -> isValid now tr.startDateTime tr.endDateTime) carnetType.usedAccesses
                         in
                             hasTicketsLeft || hasActiveAccess
 

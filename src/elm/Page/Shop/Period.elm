@@ -355,7 +355,7 @@ update msg env model shared =
                         Time.posixToMillis now
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && hasValidState order) model.orders
+                        List.length (Util.FareContract.filterValidAtTime (Time.millisToPosix selectedTime) model.orders) > 0
                 in
                     if overlappingOrders then
                         PageUpdater.init
@@ -392,7 +392,7 @@ update msg env model shared =
                         msTime
 
                     overlappingOrders =
-                        List.any (\order -> selectedTime >= order.validFrom && selectedTime < order.validTo && hasValidState order) model.orders
+                        List.length (Util.FareContract.filterValidAtTime (Time.millisToPosix selectedTime) model.orders) > 0
                 in
                     if overlappingOrders then
                         PageUpdater.fromPair
