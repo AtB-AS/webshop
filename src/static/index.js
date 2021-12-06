@@ -119,26 +119,6 @@ function fetchRemoteConfigData(port, key, prop) {
     }
 }
 
-function fetchRemoteConfigNumber(port, key) {
-    if (!port) {
-        return;
-    }
-
-    const value = getRemoteConfigString(key);
-
-    if (typeof value !== 'string' || value.length < 1) {
-        return;
-    }
-
-    const num = parseFloat(value);
-
-    if (isNaN(num)) {
-        return;
-    }
-
-    port.send(num);
-}
-
 // NOTE: Only change this for testing.
 remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
 //remoteConfig.settings.minimumFetchIntervalMillis = 60000;
