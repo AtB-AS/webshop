@@ -98,7 +98,7 @@ update msg env model shared =
                         -- Only store tickets that are valid into the future.
                         tickets =
                             fareContracts
-                                |> Util.FareContract.filterValidAtTime model.currentTime
+                                |> Util.FareContract.filterNotExpiredAtTime model.currentTime
                                 |> List.sortBy .created
                                 |> List.reverse
 

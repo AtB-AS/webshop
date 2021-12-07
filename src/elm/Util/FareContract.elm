@@ -1,4 +1,4 @@
-module Util.FareContract exposing (filterValidAtTime, hasValidState, isValid)
+module Util.FareContract exposing (filterNotExpiredAtTime, filterValidAtTime, hasValidState, isNotExpired, isValid)
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Time
@@ -19,6 +19,23 @@ isValid timePosix from to =
             Time.posixToMillis timePosix
     in
         from <= millis && to >= millis
+
+
+filterNotExpiredAtTime : Time.Posix -> List FareContract -> List FareContract
+filterNotExpiredAtTime timePosix fareContracts =
+    fareContracts
+        |> List.filter (.validTo >> isNotExpired timePosix)
+        |> List.filter (hasValidTravelRight timePosix)
+        |> List.filter hasValidState
+
+
+isNotExpired : Time.Posix -> Int -> Bool
+isNotExpired timePosix to =
+    let
+        millis =
+            Time.posixToMillis timePosix
+    in
+        to >= millis
 
 
 
