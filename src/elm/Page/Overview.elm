@@ -375,7 +375,7 @@ viewMain shared model =
     let
         validTickets =
             model.tickets
-                |> Util.FareContract.filterValidAtTime model.currentTime
+                |> Util.FareContract.filterNotExpiredAtTime model.currentTime
 
         emptyResults =
             List.isEmpty validTickets && List.isEmpty model.reservations
