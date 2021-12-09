@@ -19,6 +19,9 @@ withDefaultCountryCode phone =
     if String.isEmpty phone then
         phone
 
+    else if String.endsWith "+47" phone then
+        ""
+
     else if String.startsWith "+" phone then
         phone
 
