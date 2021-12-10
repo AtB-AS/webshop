@@ -539,12 +539,12 @@ view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     H.div [ A.class "page" ]
         [ viewMain model shared appInfo
-        , H.aside [] [ viewSidebar model ]
+        , H.aside [] [ viewSidebar model appInfo ]
         ]
 
 
-viewSidebar : Model -> Html Msg
-viewSidebar model =
+viewSidebar : Model -> AppInfo -> Html Msg
+viewSidebar model appInfo =
     let
         phoneNumber =
             MaybeUtil.mapWithDefault .phone "<Telefonnummer her>" model.profile
@@ -553,7 +553,7 @@ viewSidebar model =
             "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
+            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og andre tilhørende systemer. Profilen min er tilknyttet telefonnummer: "
                 ++ phoneNumber
             )
                 ++ """
@@ -566,7 +566,8 @@ viewSidebar model =
                 """
 
         deleteLink =
-            "mailto:kundeservice@atb.no"
+            "mailto:"
+                ++ appInfo.supportEmail
                 ++ Url.toQuery
                     [ Url.string "body" body
                     , Url.string "subject" subject
