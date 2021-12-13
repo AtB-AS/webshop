@@ -1,9 +1,9 @@
 require('./styles/main.scss');
 
-import firebase from 'firebase/app';
-import 'firebase/firebase-auth';
-import 'firebase/firebase-firestore';
-import 'firebase/firebase-remote-config';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/remote-config';
 import 'wicg-inert';
 import { v4 as uuidv4 } from 'uuid';
 
