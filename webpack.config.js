@@ -6,14 +6,11 @@ const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const SriPlugin = require('webpack-subresource-integrity');
+const { SubresourceIntegrityPlugin } = require('webpack-subresource-integrity');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const dotenv = require('dotenv');
-
-// Local stuff
-const createHashFunction = require('./hash-func.js');
 
 // Node helpers
 const path = require('path');
@@ -287,7 +284,7 @@ const commonConfig = {
         filename: `static/js/${outputFilename}`,
         crossOriginLoading: 'anonymous',
         publicPath: '/',
-        hashFunction: createHashFunction('sha256', 'base64'),
+        hashFunction: 'xxhash64',
         hashDigestLength: 64
     },
     resolve: {
@@ -311,10 +308,7 @@ const commonConfig = {
         emitOnErrors: false
     },
     plugins: [
-        new SriPlugin({
-            hashFuncNames: ['sha256', 'sha384'],
-            enabled: !isDevelopment
-        }),
+        new SubresourceIntegrityPlugin(),
         new HtmlWebpackPlugin({
             template: 'src/static/index.html',
             inject: true,
@@ -382,9 +376,11 @@ if (isDevelopment) {
             host: localConfig.host,
             port: localConfig.port,
             https: false,
-            disableHostCheck: true,
+            allowedHosts: 'all',
             historyApiFallback: true,
-            contentBase: './src',
+            static: {
+                directory: path.join(__dirname, 'src')
+            },
             proxy: localConfig.proxy || {
                 '/test/*': {
                     target: 'http://localhost:10000',
