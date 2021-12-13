@@ -5,7 +5,8 @@
 
     animation: fadeIn 350ms;
 
-    svg {
+    svg,
+    .ui-img-dark {
         width: var(--icon-size-normal);
         height: var(--icon-size-normal);
         margin-right: var(--spacings-medium);
@@ -137,7 +138,8 @@
 .ui-section__itemWithIcon__icon {
     padding: var(--spacings-xLarge);
 
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
         width: var(--ws-icon-size-xLarge);
     }
@@ -192,7 +194,8 @@
     display: block;
     padding: var(--spacings-xLarge);
 
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
     }
 }
@@ -250,7 +253,8 @@
 .ui-group__headerButton__content__editText {
     display: flex;
 
-    svg {
+    svg,
+    .ui-img-dark {
         margin-left: var(--spacings-medium);
     }
 }
@@ -463,7 +467,8 @@
     color: var(--colors-background_3-color);
 }
 .ui-ticketDetails__headerButton__icon {
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
     }
 }
@@ -492,7 +497,8 @@
 }
 
 .ui-ticketDetails__headerButton__toggleText {
-    svg {
+    svg,
+    .ui-img-dark {
         margin-left: var(--spacings-medium);
     }
 
@@ -565,7 +571,8 @@
 .ui-pageHeader__back {
     order: 1;
 
-    svg {
+    svg,
+    .ui-img-dark {
         margin-right: var(--spacings-medium);
     }
 }
@@ -751,7 +758,8 @@ a.ui-button {
 .ui-button__icon {
     display: block;
 
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
     }
 }
@@ -905,7 +913,8 @@ a.ui-button--link,
 .ui-editSection__horizontalGroup__icon {
     padding: var(--spacings-xLarge);
 
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
     }
 }
@@ -923,7 +932,8 @@ a.ui-button--link,
         fill: currentColor;
     }
 
-    svg {
+    svg,
+    .ui-img-dark {
         margin-right: var(--spacings-medium);
     }
 }
@@ -943,7 +953,8 @@ a.ui-button--link,
     margin-top: var(--spacings-medium);
     display: flex;
 
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
         flex-shrink: 0;
     }
