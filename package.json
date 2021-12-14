@@ -15,7 +15,7 @@
         "setup": "generate-assets $WEBSHOP_ORG_ID ./src/static/assets"
     },
     "devDependencies": {
-        "@atb-as/elm-format": "^1.0.0",
+        "@atb-as/elm-format": "^1.0.1",
         "@atb-as/generate-assets": "^1.1.0",
         "@atb-as/theme": "^5.0.3",
         "@babel/core": "^7.16.5",
