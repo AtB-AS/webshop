@@ -4305,11 +4305,6 @@ find-up@^4.0.0, find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-firebase-app@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.npmjs.org/firebase-app/-/firebase-app-0.0.1.tgz"
-  integrity sha1-xvAZUEvhGIEQJjOCAiFUeTF5jkw=
-
 firebase@^9.6.1:
   version "9.6.1"
   resolved "https://registry.yarnpkg.com/firebase/-/firebase-9.6.1.tgz#08e0fd0799f57a885f895b86a6ed2bc0083412fe"
