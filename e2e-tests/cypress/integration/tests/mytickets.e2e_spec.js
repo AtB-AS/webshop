@@ -78,8 +78,6 @@ describe('ticket details', () => {
 
     it('carnet ticket should be correct', () => {
         const order_id = 'R72EMYQA';
-        //TODO https://github.com/AtB-AS/webshop/issues/423
-        //TODO https://mittatb.slack.com/archives/C02EEG7D8EL/p1637239170101100
         const validFrom = '20.08.2021 - ' + getValidHours(10) + ':50'
         const validTo = '21.08.2022 - ' + getValidHours(10) + ':50'
         const header1 = '10 klipp igjen'
@@ -130,8 +128,6 @@ describe('ticket details', () => {
     // 3 x produkt: 3 x Klippekort (10 billetter) = 3 voksen
     it('should show multiple products on one order correctly', () => {
         const order_id = '4YYKR8RD';
-        //TODO https://github.com/AtB-AS/webshop/issues/423
-        //TODO https://mittatb.slack.com/archives/C02EEG7D8EL/p1637239170101100
         const validFrom = '08.10.2021 - ' + getValidHours(13) + ':16'
         const validTo = '09.10.2022 - ' + getValidHours(13) + ':16'
         const header1 = '30 klipp igjen'
@@ -189,8 +185,6 @@ describe('ticket details', () => {
     //** NOTE! Only valid until pre-set date **
     it('future period ticket should be waiting and correct', () => {
         const order_id = Cypress.env("futureTicketOrderId");
-        //TODO https://github.com/AtB-AS/webshop/issues/423
-        //TODO https://mittatb.slack.com/archives/C02EEG7D8EL/p1637239170101100
         const validFrom = Cypress.env("futureTicketStartDateNO").toString() + " - " + getValidHours(12) + ":00"
         const validTo = Cypress.env("futureTicketEndDateNO").toString() + " - " + getValidHours(12) + ":00"
         const header = 'Gyldig fra ' + validFrom;
@@ -344,7 +338,7 @@ describe('ticket details', () => {
             ).as('firestoreUpdate');
             cy.intercept(
                 'POST',
-                '**/identitytoolkit/v3/relyingparty/getAccountInfo**'
+                'https://identitytoolkit.googleapis.com/v1/accounts:lookup**'
             ).as('accountInfo');
             cy.intercept('POST', '**/v1/token**').as('refreshToken');
 

@@ -106,6 +106,13 @@ Cypress.Commands.add('visitMainAsNotAuthorized', () => {
             },
         })
         */
+
+    //Catch a Console error that is not thrown in 'real'
+    cy.on('uncaught:exception', (err, runnable) => {
+        //expect(err.message).to.include("Cannot read properties of undefined (reading 'replace')")
+        return false
+    })
+
     cy.visit('').wait(2000);
     cy.window().then((win) => {
         //window.localStorage.getItem("loggedIn").length
@@ -129,6 +136,13 @@ Cypress.Commands.add(
         userEmail = Cypress.env('email'),
         userPassword = Cypress.env('password')
     ) => {
+
+        //Catch a Console error that is not thrown in 'real'
+        cy.on('uncaught:exception', (err, runnable) => {
+            //expect(err.message).to.include("Cannot read properties of undefined (reading 'replace')")
+            return false
+        })
+
         cy.visit('').wait(2000);
         cy.window().then((win) => {
             //window.localStorage.getItem("loggedIn").length
@@ -148,6 +162,24 @@ Cypress.Commands.add(
                 cy.wrap($body).find('div.validityWarning').find('button').click({force: true})
             }
         })
+
+        //Check that Firebase information is fetched
+        checkFirebase()
+
+        function checkFirebase(){
+            let FirebaseLoaded = false
+            cy.get('nav').find('a').each(($a, index, $all) => {
+                if($a.text().includes('Ny periodebillett')){
+                    FirebaseLoaded = true
+                }
+            }).then(() =>{
+                if(!FirebaseLoaded){
+                    cy.wait(1000)
+                    checkFirebase()
+                }
+            })
+        }
+
     }
 );
 
@@ -155,11 +187,11 @@ Cypress.Commands.add(
 Cypress.Commands.add('logIn', (userEmail, userPassword) => {
     cy.intercept(
         'POST',
-        '**/identitytoolkit/v3/relyingparty/verifyPassword**'
+        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword**'
     ).as('login');
     cy.intercept(
         'POST',
-        '**/identitytoolkit/v3/relyingparty/getAccountInfo**'
+        'https://identitytoolkit.googleapis.com/v1/accounts:lookup**'
     ).as('accountInfo');
     cy.intercept('POST', '**/v1/token**').as('refreshToken');
 

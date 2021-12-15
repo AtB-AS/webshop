@@ -5,6 +5,7 @@
   "defaultCommandTimeout": 10000,
 
   "chromeWebSecurity": false,
+  "experimentalSourceRewriting": true,
 
   "retries": {
     "runMode": 1,
