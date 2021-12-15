@@ -88,14 +88,9 @@ describe('my profile', () => {
         myprofile.setPhoneNumber('')
         myprofile.phoneNumber().should("contain", "ikke utfylt")
 
-        //Error
-        myprofile.editPhoneNumber()
-        myprofile.typePhoneNumber('+47')
-        myprofile.saveValue()
-        cy.wait('@profile');
-        //TODO Error msg: https://github.com/AtB-AS/webshop/issues/290
-        myprofile.phoneError().should("contain", "feil med tjenesten")
-        myprofile.cancel()
+        //Only national direction number
+        myprofile.setPhoneNumber('+47')
+        myprofile.phoneNumber().should("contain", "ikke utfylt")
 
         //Foreign number
         myprofile.setPhoneNumber(foreignPhoneNumber)
