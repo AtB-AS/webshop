@@ -118,8 +118,6 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             cy.visit('');
 
             //Check maneuvering forward - including a11y
-            //TODO Skipped due to https://github.com/AtB-AS/webshop/issues/424
-            /*
             onboarding.stepTitle().should('contain', step1);
             cy.a11yCheck(null, null);
             onboarding.back().should('not.exist');
@@ -143,7 +141,6 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
 
             onboarding.back().click();
             onboarding.stepTitle().should('contain', step1);
-             */
 
             //Step 1
             onboardingStep1.setFirstname(firstname);

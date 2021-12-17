@@ -194,7 +194,7 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             cy.visitMainAsAuthorized();
         });
 
-        it('period ticket', () => {
+        it.only('period ticket', () => {
             menu.buyPeriodTicket().click();
             verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
