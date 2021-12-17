@@ -146,18 +146,25 @@ update msg env appInfo model =
     case msg of
         OnEnterPage ->
             let
-                focusText =
+                shouldFocusHeader =
                     case model.editSection of
                         Just _ ->
-                            Nothing
+                            False
 
                         Nothing ->
-                            Just "page-header"
+                            True
             in
                 PageUpdater.fromPair ( model, TaskUtil.doTask FetchConsents )
                     |> PageUpdater.addCmd (TaskUtil.doTask GetRecurringPayments)
                     |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Min profil")
-                    |> (PageUpdater.addGlobalAction <| GA.FocusItem focusText)
+                    |> (PageUpdater.addGlobalAction <|
+                            GA.FocusItem <|
+                                if shouldFocusHeader then
+                                    Just "page-header"
+
+                                else
+                                    Nothing
+                       )
 
         ResetState ->
             let
