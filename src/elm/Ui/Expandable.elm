@@ -13,6 +13,7 @@ import Ui.TextContainer
 
 type alias Expandable msg =
     { title : String
+    , titleA11yLabel : Maybe String
     , id : String
     , icon : Maybe (Html msg)
     , open : Bool
@@ -21,7 +22,7 @@ type alias Expandable msg =
 
 
 view : Expandable msg -> List (Html msg) -> Html msg
-view { open, onOpenClick, icon, id, title } children =
+view { open, onOpenClick, icon, id, title, titleA11yLabel } children =
     let
         classList =
             [ ( "ui-expandable", True )
@@ -63,7 +64,7 @@ view { open, onOpenClick, icon, id, title } children =
                             , Attr.attributeMaybe (\action -> E.onClick action) onOpenClick
                             ]
                             [ viewMaybe icon
-                            , H.span [ A.class "ui-expandable__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title ]
+                            , H.span [ A.class "ui-expandable__headerButton__title" ] [ Ui.Heading.componentWithEl H.span title titleA11yLabel ]
                             , H.span [ A.class "ui-expandable__headerButton__expandText" ] [ H.text expandText ]
                             , chevronIcon
                             ]
