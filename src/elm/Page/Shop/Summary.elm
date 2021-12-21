@@ -316,6 +316,14 @@ viewPaymentSection model shared =
 
                 NonRecurring _ ->
                     "Gå til betaling"
+
+        buttonA11yLabel =
+            case model.paymentSelection of
+                Recurring _ ->
+                    "Betal nå med lagret kort"
+
+                NonRecurring paymentType ->
+                    "Gå til betaling med " ++ PaymentType.toString paymentType
     in
         Section.view
             [ Section.viewHeader "Betaling"
@@ -324,10 +332,12 @@ viewPaymentSection model shared =
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
             , B.init buttonText
+                |> B.setElement H.a
                 |> B.setDisabled isLoading
                 |> B.setLoading isLoading
                 |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
                 |> B.setOnClick (Just BuyOffers)
+                |> B.setAttributes [ A.attribute "aria-label" buttonA11yLabel ]
                 |> B.primary Primary_2
             ]
 
