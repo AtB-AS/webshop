@@ -54,8 +54,12 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
         ariaLabel =
             title
                 ++ MaybeUtil.mapWithDefault ((++) ", ") "" value
-                ++ ", "
-                ++ editText
+                ++ (if readonly then
+                        ""
+
+                    else
+                        " er valgt," ++ editText
+                   )
 
         regionId =
             id ++ "region"
