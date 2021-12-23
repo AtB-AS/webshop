@@ -275,15 +275,20 @@ viewActivation ( reservation, status ) =
             ]
 
         icon =
-            activeReservationLoading
+            case status of
+                Captured ->
+                    Icon.checkmark
+
+                NotCaptured ->
+                    activeReservationLoading
 
         captureText =
             case status of
                 Captured ->
-                    "Betaling godkjent. Henter billett..."
+                    "Betaling godkjent. Kjøpet ditt vil straks vises under."
 
                 NotCaptured ->
-                    "Prosesseres... ikke gyldig enda."
+                    "Kjøpet ditt prosesseres... ikke gyldig enda."
 
         spellableOrderId =
             SR.makeSpellable reservation.orderId
