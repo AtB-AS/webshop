@@ -51,8 +51,8 @@ viewUserProfile model onUserSelect userProfile =
             |> Radio.view
 
 
-viewSummary : Shared -> CommonModel a -> Bool -> msg -> Maybe (Html msg) -> Html msg
-viewSummary shared model disableButtons onToSummaryClick maybeInfo =
+viewSummary : Shared -> CommonModel a -> AppInfo -> Bool -> msg -> Maybe (Html msg) -> Html msg
+viewSummary shared model appInfo disableButtons onToSummaryClick maybeInfo =
     let
         error =
             case model.offers of
@@ -83,6 +83,7 @@ viewSummary shared model disableButtons onToSummaryClick maybeInfo =
                             , timeZone = model.timeZone
                             }
                             offers
+                            appInfo
                             shared
 
                 _ ->

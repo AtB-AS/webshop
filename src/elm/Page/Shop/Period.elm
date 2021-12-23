@@ -600,6 +600,7 @@ view _ appInfo shared model _ =
                             ]
                         , Common.viewSummary shared
                             model
+                            appInfo
                             disableButtons
                             GoToSummary
                             (Maybe.map Message.warning model.overlapMessage)

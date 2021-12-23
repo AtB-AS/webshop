@@ -1,5 +1,6 @@
 module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, cardReadWarning, init, makeSummary, subscriptions, update, view)
 
+import Base exposing (AppInfo)
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
 import Data.Ticket exposing (Offer, RecurringPayment, Reservation)
@@ -165,11 +166,11 @@ update msg env model shared =
                             PageUpdater.init { model | recurringPayments = Failed errorMessage }
 
 
-view : Shared -> Model -> Html Msg
-view shared model =
+view : Shared -> Model -> AppInfo -> Html Msg
+view shared model appInfo =
     let
         summary =
-            makeSummary model.query model.offers shared
+            makeSummary model.query model.offers appInfo shared
     in
         H.div []
             [ cardReadWarning
@@ -181,8 +182,8 @@ view shared model =
             ]
 
 
-makeSummary : OffersQuery -> List Offer -> Shared -> Summary
-makeSummary query offers shared =
+makeSummary : OffersQuery -> List Offer -> AppInfo -> Shared -> Summary
+makeSummary query offers appInfo shared =
     let
         productName =
             nameFromFareProduct shared.fareProducts query.productId
@@ -197,8 +198,8 @@ makeSummary query offers shared =
         price =
             totalPrice offers
     in
-        { -- @TODO At some point when expanding to different modes, this should be updated.
-          travelMode = "Buss / trikk"
+        { -- @TODO travelMode should be set dynamically based on ticket conditions.
+          travelMode = appInfo.defaultTravelModes
         , productType = productType
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData

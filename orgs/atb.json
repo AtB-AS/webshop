@@ -5,5 +5,6 @@
     "privacyDeclarationUrl": "https://beta.atb.no/private-policy",
     "englishTranslationsUrl": "https://www.atb.no/ny-nettbutikk/key-words-and-phrases-article17509-2740.html",
     "newWebshopUrl": "https://www.atb.no/vi-oppgraderer/",
-    "travelCardValidPrefix": "1616006"
+    "travelCardValidPrefix": "1616006",
+    "defaultTravelModes": "Buss / trikk"
 }
