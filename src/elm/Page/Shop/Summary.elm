@@ -332,7 +332,6 @@ viewPaymentSection model shared =
             , maybeBuyNotice model.offers
             , maybeVippsNotice model shared
             , B.init buttonText
-                |> B.setElement H.a
                 |> B.setDisabled isLoading
                 |> B.setLoading isLoading
                 |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
