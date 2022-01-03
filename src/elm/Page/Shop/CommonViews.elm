@@ -148,7 +148,7 @@ viewZones model appInfo defaultZone zones onFromZoneSelected onToZoneSelected di
             Maybe.withDefault defaultZone model.toZone
 
         a11yLabel =
-            "Soner, " ++ Maybe.withDefault "" (Utils.stringFromZone zones defaultZone model) ++ " er valgt"
+            "Soner, " ++ Utils.stringFromZone zones defaultZone model ++ " er valgt"
     in
         Section.viewItem
             [ Ui.AccessibleFieldset.view a11yLabel

@@ -203,13 +203,12 @@ makeSummary query offers shared =
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
         , zones =
-            Maybe.withDefault "Ukjent" <|
-                Utils.stringFromZone
-                    shared.tariffZones
-                    "defaultZone"
-                    { fromZone = Just query.fromZoneId
-                    , toZone = Just query.toZoneId
-                    }
+            Utils.stringFromZone
+                shared.tariffZones
+                "defaultZone"
+                { fromZone = Just query.fromZoneId
+                , toZone = Just query.toZoneId
+                }
         , validFrom = Utils.stringFromTravelDate query.travelDate query.timeZone
         , validTo = Utils.stringFromTravelDate query.travelDateEnd query.timeZone
         , travellerData = summerizeOffers shared.userProfiles offers

@@ -58,7 +58,7 @@ view { open, readonly, onOpenClick, icon, id, editTextSuffix, title, value } chi
                         ""
 
                     else
-                        " er valgt," ++ editText
+                        " er valgt, " ++ editText
                    )
 
         regionId =
