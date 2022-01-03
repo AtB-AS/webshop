@@ -146,9 +146,12 @@ viewZones model appInfo defaultZone zones onFromZoneSelected onToZoneSelected di
 
         selectedToZone =
             Maybe.withDefault defaultZone model.toZone
+
+        a11yLabel =
+            "Soner, " ++ Utils.stringFromZone zones defaultZone model ++ " er valgt"
     in
         Section.viewItem
-            [ Ui.AccessibleFieldset.view "Soner"
+            [ Ui.AccessibleFieldset.view a11yLabel
                 [ Section.viewHorizontalGroup
                     [ Select.init "travelFromZone"
                         |> Select.setTitle (Just "Avreisesone")
