@@ -145,10 +145,19 @@ update : Msg -> Environment -> AppInfo -> Model -> PageUpdater Model Msg
 update msg env appInfo model =
     case msg of
         OnEnterPage ->
-            PageUpdater.fromPair ( model, TaskUtil.doTask FetchConsents )
-                |> PageUpdater.addCmd (TaskUtil.doTask GetRecurringPayments)
-                |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Min profil")
-                |> (PageUpdater.addGlobalAction <| GA.FocusItem <| Just "page-header")
+            let
+                focusElement =
+                    case model.editSection of
+                        Just _ ->
+                            Nothing
+
+                        Nothing ->
+                            Just "page-header"
+            in
+                PageUpdater.fromPair ( model, TaskUtil.doTask FetchConsents )
+                    |> PageUpdater.addCmd (TaskUtil.doTask GetRecurringPayments)
+                    |> (PageUpdater.addGlobalAction <| GA.SetTitle <| Just "Min profil")
+                    |> (PageUpdater.addGlobalAction <| GA.FocusItem focusElement)
 
         ResetState ->
             let
