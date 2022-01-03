@@ -549,12 +549,17 @@ viewSidebar model appInfo =
         phoneNumber =
             MaybeUtil.mapWithDefault .phone "<Telefonnummer her>" model.profile
 
+        email =
+            MaybeUtil.mapWithDefault .email "<E-post her>" model.profile
+
         subject =
             "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og andre tilhørende systemer. Profilen min er tilknyttet telefonnummer: "
+            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet følgende identifikator(er): "
                 ++ phoneNumber
+                ++ " "
+                ++ email
             )
                 ++ """
 
@@ -581,7 +586,7 @@ viewSidebar model appInfo =
             , B.init "Slett profil"
                 |> B.setIcon (Just Icon.delete)
                 |> B.setElement H.a
-                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet din profil." ]
+                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer eller e-post for å få slettet din profil." ]
                 |> B.primary B.Primary_destructive
             ]
 
