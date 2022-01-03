@@ -203,13 +203,12 @@ makeSummary query offers shared =
         , product = Maybe.withDefault "Ukjent" productName
         , travellers = humanizeTravellerData travellerData
         , zones =
-            Maybe.withDefault "Ukjent" <|
-                Utils.stringFromZone
-                    shared.tariffZones
-                    "defaultZone"
-                    { fromZone = Just query.fromZoneId
-                    , toZone = Just query.toZoneId
-                    }
+            Utils.stringFromZone
+                shared.tariffZones
+                "defaultZone"
+                { fromZone = Just query.fromZoneId
+                , toZone = Just query.toZoneId
+                }
         , validFrom = Utils.stringFromTravelDate query.travelDate query.timeZone
         , validTo = Utils.stringFromTravelDate query.travelDateEnd query.timeZone
         , travellerData = summerizeOffers shared.userProfiles offers
@@ -316,6 +315,14 @@ viewPaymentSection model shared =
 
                 NonRecurring _ ->
                     "Gå til betaling"
+
+        buttonA11yLabel =
+            case model.paymentSelection of
+                Recurring _ ->
+                    "Betal nå med lagret kort"
+
+                NonRecurring paymentType ->
+                    "Gå til betaling med " ++ PaymentType.toString paymentType
     in
         Section.view
             [ Section.viewHeader "Betaling"
@@ -328,6 +335,7 @@ viewPaymentSection model shared =
                 |> B.setLoading isLoading
                 |> B.setIcon (Just <| Icon.viewMonochrome Icon.rightArrow)
                 |> B.setOnClick (Just BuyOffers)
+                |> B.setAttributes [ A.attribute "aria-label" buttonA11yLabel ]
                 |> B.primary Primary_2
             ]
 

@@ -201,7 +201,8 @@ p + p {
     display: flex;
     align-items: center;
 
-    svg {
+    svg,
+    .ui-img-dark {
         margin-left: var(--spacings-small);
     }
     svg,
@@ -266,7 +267,8 @@ p + p {
         width: 100%;
         padding: var(--spacings-medium);
 
-        svg {
+        svg,
+        .ui-img-dark {
             margin-left: auto;
         }
     }
@@ -327,7 +329,8 @@ p + p {
 
     margin-left: auto;
 
-    svg {
+    svg,
+    .ui-img-dark {
         width: var(--icon-size-small);
         height: var(--icon-size-small);
 
@@ -406,7 +409,8 @@ p + p {
 
 .accountInfo__item {
     display: flex;
-    svg {
+    svg,
+    .ui-img-dark {
         display: block;
         margin-right: var(--spacings-medium);
     }
@@ -473,8 +477,8 @@ p + p {
     display: flex;
     align-items: center;
 
-    .ui-img-dark,
-    svg {
+    svg,
+    .ui-img-dark {
         margin: var(--spacings-large);
         display: block;
     }
@@ -486,7 +490,8 @@ p + p {
 .pageAccount__noTravelCard {
     display: flex;
 
-    svg {
+    svg,
+    .ui-img-dark {
         flex-shrink: 0;
         display: block;
         margin-right: var(--spacings-medium);

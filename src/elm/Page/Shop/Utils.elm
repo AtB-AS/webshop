@@ -102,7 +102,7 @@ nameFromFareProduct products productId =
         |> Maybe.map (.name >> langString)
 
 
-stringFromZone : List TariffZone -> String -> { a | toZone : Maybe String, fromZone : Maybe String } -> Maybe String
+stringFromZone : List TariffZone -> String -> { a | toZone : Maybe String, fromZone : Maybe String } -> String
 stringFromZone tariffZones defaultZone model =
     let
         findName zone =
@@ -118,10 +118,10 @@ stringFromZone tariffZones defaultZone model =
             findName (Maybe.withDefault defaultZone model.toZone)
     in
         if model.fromZone == model.toZone then
-            Just <| "Reise i 1 sone (" ++ fromZoneName ++ ")"
+            "Reise i 1 sone (" ++ fromZoneName ++ ")"
 
         else
-            Just <| "Reise fra sone " ++ fromZoneName ++ " til sone " ++ toZoneName
+            "Reise fra sone " ++ fromZoneName ++ " til sone " ++ toZoneName
 
 
 langString : LangString -> String

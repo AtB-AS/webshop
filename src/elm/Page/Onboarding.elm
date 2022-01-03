@@ -483,6 +483,7 @@ viewProfileInfo _ model =
             [ TextInput.init "firstname"
                 |> TextInput.setTitle (Just "Fornavn")
                 |> TextInput.setPlaceholder "Skriv inn fornavnet ditt"
+                |> TextInput.setRequired False
                 |> TextInput.setOnInput (Just InputFirstName)
                 |> TextInput.setValue (Just model.firstName)
                 |> TextInput.view
@@ -491,6 +492,7 @@ viewProfileInfo _ model =
             [ TextInput.init "lastname"
                 |> TextInput.setTitle (Just "Etternavn")
                 |> TextInput.setPlaceholder "Skriv inn etternavnet ditt"
+                |> TextInput.setRequired False
                 |> TextInput.setOnInput (Just InputLastName)
                 |> TextInput.setValue (Just model.lastName)
                 |> TextInput.view
@@ -506,6 +508,7 @@ viewProfileInfo _ model =
                             "Telefonnummer"
                     )
                 |> TextInput.setPlaceholder "Skriv inn ditt telefonnummer"
+                |> TextInput.setRequired False
                 |> TextInput.setOnInput (Just InputPhone)
                 |> TextInput.setValue (Just model.phone)
                 |> TextInput.setError (V.select PhoneField model.validationErrors)
@@ -523,6 +526,7 @@ viewProfileInfo _ model =
                             "E-postadresse"
                     )
                 |> TextInput.setPlaceholder "Hvor skal vi sende kvitteringer?"
+                |> TextInput.setRequired False
                 |> TextInput.setOnInput (Just InputEmail)
                 |> TextInput.setValue (Just model.email)
                 |> TextInput.setError (V.select EmailField model.validationErrors)

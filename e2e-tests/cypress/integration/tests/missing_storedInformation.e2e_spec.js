@@ -16,27 +16,6 @@ describe('missing stored information scenarios', () => {
         cy.logOut();
     });
 
-    it('a11y check - my profile - change travel card', () => {
-        menu.myProfile().click();
-        verify.verifyHeader('h2', 'Min profil');
-
-        //Check on hover
-        myprofile.addTravelCard().trigger('mouseover');
-        cy.injectAxe().then(() => {
-            cy.a11yCheck(null, null);
-        });
-
-        //Check on editing mode
-        myprofile.addTravelCard().click();
-        //Color-contrast error is checked out in https://github.com/AtB-AS/webshop/issues/249
-        cy.a11yCheck(null, {
-            rules: {
-                'color-contrast': { enabled: false }
-            }
-        });
-        myprofile.cancel()
-    });
-
     it('period ticket - summary should be disabled for non existing travel card', () => {
         menu.buyPeriodTicket().click();
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
@@ -129,6 +108,27 @@ describe('missing stored information scenarios', () => {
 
         //Verify
         mytickets.travelCard().should('not.exist');
+    });
+
+    it('a11y check - my profile - change travel card', () => {
+        menu.myProfile().click();
+        verify.verifyHeader('h2', 'Min profil');
+
+        //Check on hover
+        myprofile.addTravelCard().trigger('mouseover');
+        cy.injectAxe().then(() => {
+            cy.a11yCheck(null, null);
+        });
+
+        //Check on editing mode
+        myprofile.addTravelCard().click();
+        //Color-contrast error is checked out in https://github.com/AtB-AS/webshop/issues/249
+        cy.a11yCheck(null, {
+            rules: {
+                'color-contrast': { enabled: false }
+            }
+        });
+        myprofile.cancel()
     });
 
 })
