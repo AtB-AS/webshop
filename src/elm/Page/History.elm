@@ -301,9 +301,6 @@ viewOrder shared model order =
                 Nothing ->
                     True
 
-        isRefunded =
-            order.state == FareContractStateRefunded
-
         orderIdText =
             "Ordre-ID: " ++ order.orderId
 
@@ -312,13 +309,19 @@ viewOrder shared model order =
 
         orderIdView =
             SR.readAndView spellableOrderIdText orderIdText
+
+        title =
+            TimeUtil.millisToDateHumanized model.timeZone order.created
+                ++ " - "
+                ++ fareProduct
+                ++ travellers
+
+        titleA11yLabel =
+            "Billett kjøpt " ++ title ++ "."
     in
         Ui.Expandable.view
-            { title =
-                TimeUtil.millisToDateHumanized model.timeZone order.created
-                    ++ " - "
-                    ++ fareProduct
-                    ++ travellers
+            { title = title
+            , titleA11yLabel = Just titleA11yLabel
             , id = order.id
             , icon = Nothing
             , open = expanded

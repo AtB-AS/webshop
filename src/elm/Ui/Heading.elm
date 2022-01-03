@@ -9,34 +9,35 @@ module Ui.Heading exposing
 
 import Html as H exposing (Attribute, Html)
 import Html.Attributes as A
+import Html.Attributes.Extra as Attr
 
 
 type Heading
-    = Title String
-    | Component String
-    | Paragraph String
+    = Title String (Maybe String)
+    | Component String (Maybe String)
+    | Paragraph String (Maybe String)
 
 
-headingToClass : Heading -> ( String, String )
+headingToClass : Heading -> ( String, String, Maybe String )
 headingToClass head =
     case head of
-        Title text ->
-            ( "typo-heading__title", text )
+        Title text a11yLabel ->
+            ( "typo-heading__title", text, a11yLabel )
 
-        Component text ->
-            ( "typo-heading__component", text )
+        Component text a11yLabel ->
+            ( "typo-heading__component", text, a11yLabel )
 
-        Paragraph text ->
-            ( "typo-heading__paragraph", text )
+        Paragraph text a11yLabel ->
+            ( "typo-heading__paragraph", text, a11yLabel )
 
 
 headingWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> Heading -> Html msg
 headingWithEl el msg =
     let
-        ( class, text ) =
+        ( class, text, a11yLabel ) =
             headingToClass msg
     in
-        el [ A.class (class ++ " ui-heading") ] [ H.text text ]
+        el [ A.class (class ++ " ui-heading"), Attr.attributeMaybe (A.attribute "aria-label") a11yLabel ] [ H.text text ]
 
 
 heading : Heading -> Html msg
@@ -44,31 +45,31 @@ heading =
     headingWithEl H.h3
 
 
-title : String -> Html msg
-title =
-    Title >> heading
+title : String -> Maybe String -> Html msg
+title text a11yLabel =
+    heading <| Title text a11yLabel
 
 
-component : String -> Html msg
-component =
-    Component >> heading
+component : String -> Maybe String -> Html msg
+component text a11yLabel =
+    heading <| Component text a11yLabel
 
 
-paragraph : String -> Html msg
-paragraph =
-    Paragraph >> heading
+paragraph : String -> Maybe String -> Html msg
+paragraph text a11yLabel =
+    heading <| Paragraph text a11yLabel
 
 
-titleWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Html msg
-titleWithEl el =
-    Title >> headingWithEl el
+titleWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Maybe String -> Html msg
+titleWithEl el text a11yLabel =
+    headingWithEl el <| Title text a11yLabel
 
 
-componentWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Html msg
-componentWithEl el =
-    Component >> headingWithEl el
+componentWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Maybe String -> Html msg
+componentWithEl el text a11yLabel =
+    headingWithEl el <| Component text a11yLabel
 
 
-paragraphWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Html msg
-paragraphWithEl el =
-    Paragraph >> headingWithEl el
+paragraphWithEl : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Maybe String -> Html msg
+paragraphWithEl el text a11yLabel =
+    headingWithEl el <| Paragraph text a11yLabel
