@@ -51,10 +51,10 @@ describe('period ticket purchase', () => {
 
         //Price
         newTicket.price()
-            .should("contain", "860,00")
+            .should("contain", "890,00")
             .and("contain", "kr")
         newTicket.mva()
-            .should("contain", "103,20")
+            .should("contain", "106,80")
     })
 
     it('summary should be enabled for existing travel card', () => {
@@ -130,7 +130,7 @@ describe('period ticket purchase', () => {
         summary.ticketDetails("Sone").should("contain", "Reise i 1 sone (A)")
         summary.ticketDetails("Gyldig fra").should("contain", "Kjøpstidspunkt")
         summary.ticketDetails("Gyldig til").should("contain", getFutureDate(30))
-        summary.price().should("contain", "860,00")
+        summary.price().should("contain", "890,00")
     })
 
     it('valid to date in summary should reflect the product', () => {
@@ -184,7 +184,7 @@ describe('period ticket purchase', () => {
     })
 
     it('changing ticket product should update the offer and summary', () => {
-        let currentOffer = 860
+        let currentOffer = 890
         const prod = '7-dagersbillett'
 
         //Change
@@ -212,7 +212,7 @@ describe('period ticket purchase', () => {
     })
 
     it('changing traveller should update the offer and summary', () => {
-        let currentOffer = 860
+        let currentOffer = 890
         const trav = 'Barn'
 
         //Change
@@ -241,7 +241,7 @@ describe('period ticket purchase', () => {
     })
 
     it('changing zones should update the offer and summary', () => {
-        let currentOffer = 860
+        let currentOffer = 890
         const arrZone = 'B1'
 
         //Change

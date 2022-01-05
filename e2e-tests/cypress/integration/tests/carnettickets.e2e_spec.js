@@ -41,10 +41,10 @@ describe('carnet ticket purchase', () => {
 
         //Price
         newTicket.price()
-            .should("contain", "400,00")
+            .should("contain", "420,00")
             .and("contain", "kr")
         newTicket.mva()
-            .should("contain", "48,00")
+            .should("contain", "50,40")
     })
 
     it('summary should show default ticket parameters', () => {
@@ -57,7 +57,7 @@ describe('carnet ticket purchase', () => {
         summary.ticketDetails("Reisende").should("contain", "1 Voksen")
         summary.ticketDetails("Sone").should("contain", "Reise i 1 sone (A)")
         summary.ticketDetails("Gyldig fra").should("contain", "Kjøpstidspunkt")
-        summary.price().should("contain", "400,00")
+        summary.price().should("contain", "420,00")
     })
 
     it('summary should be enabled for existing travel card', () => {
@@ -141,7 +141,7 @@ describe('carnet ticket purchase', () => {
     })
 
     it('changing traveller should update the offer and summary', () => {
-        let currentOffer = 400
+        let currentOffer = 420
         const trav = 'Barn'
 
         //Change
@@ -170,7 +170,7 @@ describe('carnet ticket purchase', () => {
     })
 
     it('changing zones should update the offer and summary', () => {
-        let currentOffer = 400
+        let currentOffer = 420
         const arrZone = 'B1'
 
         //Change
