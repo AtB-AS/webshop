@@ -10,7 +10,7 @@ import Dict exposing (Dict)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
-import Html as H exposing (Html, a)
+import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
