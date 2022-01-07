@@ -574,15 +574,14 @@ viewSidebar model appInfo =
             "Slett profilen min"
 
         body =
-            (if hasPhoneProvider == True then
-                "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet følgende telefonnummer: " ++ identifier
+            "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. "
+                ++ (if hasPhoneProvider == True then
+                        "Profilen min er tilknyttet følgende telefonnummer: "
 
-             else if hasPhoneProvider == False then
-                "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet e-post: " ++ identifier
-
-             else
-                "Jeg logget inn med <sett inn telefonummer eller e-post du logget inn i nettbutikken med>."
-            )
+                    else
+                        "Profilen min er tilknyttet følgende e-post: "
+                   )
+                ++ identifier
                 ++ """
 
                 Jeg forstår at sletting av min profil innebærer følgende:
