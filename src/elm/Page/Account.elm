@@ -555,20 +555,34 @@ view _ appInfo shared model _ =
 viewSidebar : Model -> AppInfo -> Html Msg
 viewSidebar model appInfo =
     let
-        phoneNumber =
-            MaybeUtil.mapWithDefault .phone "<Telefonnummer her>" model.profile
+        hasPhoneProvider =
+            model.profile
+                |> Maybe.map .signInMethods
+                |> Maybe.map (List.map .provider)
+                |> Maybe.withDefault []
+                |> List.member MiscService.Phone
 
-        email =
-            MaybeUtil.mapWithDefault .email "<E-post her>" model.profile
+        identifier =
+            if hasPhoneProvider == True then
+                model.profile
+                    |> Maybe.map .signInMethods
+                    |> Maybe.map (List.map .uid)
+                    |> Maybe.withDefault []
+                    |> List.head
+
+            else
+                model.profile
+                    |> Maybe.map .signInMethods
+                    |> Maybe.map (List.map .uid)
+                    |> Maybe.withDefault []
+                    |> List.head
 
         subject =
             "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet følgende identifikator(er): "
-                ++ phoneNumber
-                ++ " "
-                ++ email
+            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet følgende identifikator: "
+                ++ Maybe.withDefault "" identifier
             )
                 ++ """
 
