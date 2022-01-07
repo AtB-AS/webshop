@@ -553,10 +553,10 @@ view _ appInfo shared model _ =
 
 
 getIdentifier : Maybe MiscService.Profile -> MiscService.SignInProvider -> String
-getIdentifier profile provider =
+getIdentifier profile selectedProvider =
     profile
         |> Maybe.map .signInMethods
-        |> Maybe.map (List.filter (\n -> n.provider == provider))
+        |> Maybe.map (List.filter (\n -> n.provider == selectedProvider))
         |> Maybe.map (List.map .uid)
         |> Maybe.withDefault []
         |> List.head
