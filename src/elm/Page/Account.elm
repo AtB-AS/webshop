@@ -563,26 +563,25 @@ viewSidebar model appInfo =
                 |> List.member MiscService.Phone
 
         identifier =
-            if hasPhoneProvider == True then
-                model.profile
-                    |> Maybe.map .signInMethods
-                    |> Maybe.map (List.map .uid)
-                    |> Maybe.withDefault []
-                    |> List.head
-
-            else
-                model.profile
-                    |> Maybe.map .signInMethods
-                    |> Maybe.map (List.map .uid)
-                    |> Maybe.withDefault []
-                    |> List.head
+            model.profile
+                |> Maybe.map .signInMethods
+                |> Maybe.map (List.map .uid)
+                |> Maybe.withDefault []
+                |> List.head
+                |> Maybe.withDefault ""
 
         subject =
             "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet følgende identifikator: "
-                ++ Maybe.withDefault "" identifier
+            (if hasPhoneProvider == True then
+                "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet følgende telefonnummer: " ++ identifier
+
+             else if hasPhoneProvider == False then
+                "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. Profilen min er tilknyttet e-post: " ++ identifier
+
+             else
+                "Jeg logget inn med <sett inn telefonummer eller e-post du logget inn i nettbutikken med>."
             )
                 ++ """
 
