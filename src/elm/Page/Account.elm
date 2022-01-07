@@ -10,7 +10,7 @@ import Dict exposing (Dict)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
-import Html as H exposing (Html)
+import Html as H exposing (Html, a)
 import Html.Attributes as A
 import Html.Events as E
 import Html.Extra
@@ -552,6 +552,17 @@ view _ appInfo shared model _ =
         ]
 
 
+getIdentifier : Maybe MiscService.Profile -> MiscService.SignInProvider -> String
+getIdentifier profile provider =
+    profile
+        |> Maybe.map .signInMethods
+        |> Maybe.map (List.filter (\n -> n.provider == provider))
+        |> Maybe.map (List.map .uid)
+        |> Maybe.withDefault []
+        |> List.head
+        |> Maybe.withDefault ""
+
+
 viewSidebar : Model -> AppInfo -> Html Msg
 viewSidebar model appInfo =
     let
@@ -562,26 +573,17 @@ viewSidebar model appInfo =
                 |> Maybe.withDefault []
                 |> List.member MiscService.Phone
 
-        identifier =
-            model.profile
-                |> Maybe.map .signInMethods
-                |> Maybe.map (List.map .uid)
-                |> Maybe.withDefault []
-                |> List.head
-                |> Maybe.withDefault ""
-
         subject =
             "Slett profilen min"
 
         body =
             "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. "
                 ++ (if hasPhoneProvider == True then
-                        "Profilen min er tilknyttet følgende telefonnummer: "
+                        "Profilen min er tilknyttet følgende telefonnummer: " ++ getIdentifier model.profile MiscService.Phone
 
                     else
-                        "Profilen min er tilknyttet følgende e-post: "
+                        "Profilen min er tilknyttet følgende e-post: " ++ getIdentifier model.profile MiscService.Password
                    )
-                ++ identifier
                 ++ """
 
                 Jeg forstår at sletting av min profil innebærer følgende:
