@@ -295,6 +295,7 @@ init flags url navKey =
             , englishTranslationsUrl = flags.orgConf.englishTranslationsUrl
             , newWebshopUrl = flags.orgConf.newWebshopUrl
             , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
+            , supportEmail = flags.orgConf.supportEmail
             }
 
         ( overviewModel, overviewCmd ) =

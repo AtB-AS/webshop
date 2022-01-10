@@ -548,23 +548,42 @@ view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
 view _ appInfo shared model _ =
     H.div [ A.class "page" ]
         [ viewMain model shared appInfo
-        , H.aside [] [ viewSidebar model ]
+        , H.aside [] [ viewSidebar model appInfo ]
         ]
 
 
-viewSidebar : Model -> Html Msg
-viewSidebar model =
+getIdentifier : Maybe MiscService.Profile -> MiscService.SignInProvider -> String
+getIdentifier profile selectedProvider =
+    profile
+        |> Maybe.map .signInMethods
+        |> Maybe.map (List.filter (\n -> n.provider == selectedProvider))
+        |> Maybe.map (List.map .uid)
+        |> Maybe.withDefault []
+        |> List.head
+        |> Maybe.withDefault ""
+
+
+viewSidebar : Model -> AppInfo -> Html Msg
+viewSidebar model appInfo =
     let
-        phoneNumber =
-            MaybeUtil.mapWithDefault .phone "<Telefonnummer her>" model.profile
+        hasPhoneProvider =
+            model.profile
+                |> Maybe.map .signInMethods
+                |> Maybe.map (List.map .provider)
+                |> Maybe.withDefault []
+                |> List.member MiscService.Phone
 
         subject =
             "Slett profilen min"
 
         body =
-            ("Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikk og AtB-systemene. Profilen min er tilknyttet telefonnummer: "
-                ++ phoneNumber
-            )
+            "Jeg ønsker at min profil med all tilhørende informasjon slettes fra nettbutikken og andre tilhørende systemer. "
+                ++ (if hasPhoneProvider == True then
+                        "Profilen min er tilknyttet følgende telefonnummer: " ++ getIdentifier model.profile MiscService.Phone
+
+                    else
+                        "Profilen min er tilknyttet følgende e-post: " ++ getIdentifier model.profile MiscService.Password
+                   )
                 ++ """
 
                 Jeg forstår at sletting av min profil innebærer følgende:
@@ -575,7 +594,8 @@ viewSidebar model =
                 """
 
         deleteLink =
-            "mailto:kundeservice@atb.no"
+            "mailto:"
+                ++ appInfo.supportEmail
                 ++ Url.toQuery
                     [ Url.string "body" body
                     , Url.string "subject" subject
@@ -589,7 +609,7 @@ viewSidebar model =
             , B.init "Slett profil"
                 |> B.setIcon (Just Icon.delete)
                 |> B.setElement H.a
-                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer for å få slettet din profil." ]
+                |> B.setAttributes [ A.href deleteLink, A.title "Send e-post til kundeservice med telefonnummer eller e-post for å få slettet din profil." ]
                 |> B.primary B.Primary_destructive
             ]
 
