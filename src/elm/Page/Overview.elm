@@ -245,28 +245,28 @@ update msg env model shared =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ shared model _ =
+view env _ shared model _ =
     H.div []
         [ PH.init
             |> PH.setTitle (Just "Mine billetter")
             |> PH.view
         , H.div [ A.class "page page--overview" ]
-            [ viewSidebar shared model
+            [ viewSidebar env shared model
             , viewMain shared model
             ]
         ]
 
 
-viewSidebar : Shared -> Model -> Html Msg
-viewSidebar shared model =
+viewSidebar : Environment -> Shared -> Model -> Html Msg
+viewSidebar env shared model =
     H.aside [ A.class "sidebar" ]
-        [ viewAccountInfo shared model
+        [ viewAccountInfo env shared model
         , viewActions shared
         ]
 
 
-viewAccountInfo : Shared -> Model -> Html Msg
-viewAccountInfo shared _ =
+viewAccountInfo : Environment -> Shared -> Model -> Html Msg
+viewAccountInfo env shared _ =
     let
         name =
             viewNameMaybe shared.profile
@@ -298,6 +298,13 @@ viewAccountInfo shared _ =
                                     ]
                                 ]
                         )
+                , S.viewLabelItem
+                    "Kundenummer"
+                    [ H.p [ A.class "accountInfo__item", A.title "Kundenummer" ]
+                        [ Icon.profile
+                        , H.text <| String.fromInt env.customerNumber
+                        ]
+                    ]
                 , B.init "Rediger profil"
                     |> B.setDisabled False
                     |> B.setIcon (Just Icon.edit)

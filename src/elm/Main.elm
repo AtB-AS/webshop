@@ -547,6 +547,7 @@ update msg model =
                         newEnvironment =
                             { oldEnvironment
                                 | customerId = Just value.customerId
+                                , customerNumber = value.customerNumber
                                 , customerEmail = value.email
                                 , token = value.token
                             }
@@ -883,6 +884,7 @@ type alias UserData =
     , email : String
     , userId : String
     , customerId : String
+    , customerNumber : Int
     , provider : FirebaseAuth.Provider
     , stopOnboarding : Bool
     }
@@ -899,6 +901,7 @@ userDataDecoder =
                 Decode.string
             )
         |> DecodeP.required "uid" Decode.string
+        |> DecodeP.required "customerNumber" Decode.int
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
         |> DecodeP.optional "stopOnboarding" Decode.bool False
 
