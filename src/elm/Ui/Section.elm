@@ -12,6 +12,7 @@ module Ui.Section exposing
     , viewLabelItem
     , viewPaddedItem
     , viewWithIcon
+    , viewWithIconWidthPadding
     , viewWithOptions
     )
 
@@ -75,6 +76,12 @@ viewWithIcon : Html msg -> List (Html msg) -> Html msg
 viewWithIcon icon children =
     H.div [ A.class "ui-section__itemWithIcon" ]
         [ H.div [ A.class "ui-section__itemWithIcon__icon" ] [ icon ], H.div [ A.class "ui-section__itemWithIcon__content" ] children ]
+
+
+viewWithIconWidthPadding : List (Html msg) -> Html msg
+viewWithIconWidthPadding children =
+    H.div [ A.class "ui-section__viewWithIconWidthPadding" ]
+        [ H.div [ A.class "ui-section__viewWithIconWidthPadding__content" ] children ]
 
 
 viewPaddedItem : List (Html msg) -> Html msg
