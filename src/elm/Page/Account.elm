@@ -545,9 +545,9 @@ focusBox id =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ appInfo shared model _ =
+view env appInfo shared model _ =
     H.div [ A.class "page" ]
-        [ viewMain model shared appInfo
+        [ viewMain env model shared appInfo
         , H.aside [] [ viewSidebar model appInfo ]
         ]
 
@@ -614,13 +614,13 @@ viewSidebar model appInfo =
             ]
 
 
-viewMain : Model -> Shared -> AppInfo -> Html Msg
-viewMain model shared appInfo =
+viewMain : Environment -> Model -> Shared -> AppInfo -> Html Msg
+viewMain env model shared appInfo =
     H.div [ A.class "main" ]
         [ Ui.Section.view
             (case model.profile of
                 Just profile ->
-                    [ viewProfile model profile
+                    [ viewProfile env model profile
                     , viewSignIn model profile
                     , viewRecurringPayments model
                     , viewTravelCard model profile
@@ -633,8 +633,8 @@ viewMain model shared appInfo =
         ]
 
 
-viewProfile : Model -> Profile -> Html Msg
-viewProfile model profile =
+viewProfile : Environment -> Model -> Profile -> Html Msg
+viewProfile env model profile =
     let
         onSave =
             Just SaveNames
@@ -688,6 +688,11 @@ viewProfile model profile =
                                 ]
                             )
                     )
+            , Ui.Section.viewWithIconWidthPadding
+                [ Ui.Section.viewLabelItem "Kundenummer"
+                    [ H.text <| String.fromInt env.customerNumber
+                    ]
+                ]
             , viewEmailAddress model profile
             , viewPhoneNumber model profile
             ]

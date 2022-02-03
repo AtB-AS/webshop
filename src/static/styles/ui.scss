@@ -152,6 +152,14 @@
     flex: 1;
 }
 
+.ui-section__viewWithIconWidthPadding {
+    background: var(--colors-background_0-backgroundColor);
+    color: var(--colors-background_0-color);
+}
+.ui-section__viewWithIconWidthPadding__content {
+    margin-left: calc(var(--spacings-xLarge) * 2 + var(--ws-icon-size-xLarge));
+}
+
 // Style for ./src/Ui/LabelItem.elm
 .ui-labelItem {
     display: block;
