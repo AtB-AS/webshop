@@ -422,19 +422,8 @@ if (isDevelopment) {
                     use: ['style-loader', 'css-loader']
                 },
                 {
-                    test: /\.(svg|eot|otf|ttf|woff|woff2)$/,
+                    test: /\.(eot|otf|ttf|woff|woff2)$/,
                     use: 'file-loader'
-                },
-                {
-                    test: /\.(jpg|png|gif)$/,
-                    use: [
-                        {
-                            loader: 'url-loader',
-                            options: {
-                                limit: 10000
-                            }
-                        }
-                    ]
                 }
             ]
         }
@@ -468,7 +457,7 @@ if (isDevelopment) {
                     }
                 },
                 {
-                    test: /\.(eot|otf|ttf|woff|woff2|jpe?g|png|gif|svg)$/i,
+                    test: /\.(eot|otf|ttf|woff|woff2)$/i,
                     use: {
                         loader: 'file-loader',
                         options: {
