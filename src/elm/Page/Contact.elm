@@ -50,10 +50,10 @@ update msg _ model =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view _ _ _ model _ =
+view env _ _ model _ =
     H.div [ A.class "page page--twoColumns" ]
         [ viewCustomerSupport model
-        , viewIntercom model
+        , Html.Extra.viewIf env.intercomEnabled <| viewIntercom model
         ]
 
 

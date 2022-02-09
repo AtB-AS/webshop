@@ -24,6 +24,7 @@ type alias Environment =
     , language : Language
     , installId : String
     , showValidityWarning : Bool
+    , intercomEnabled : Bool
     , customerId : Maybe String
     , customerNumber : Int
     , customerEmail : String
