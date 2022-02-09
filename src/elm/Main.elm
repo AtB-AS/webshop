@@ -301,7 +301,7 @@ init flags url navKey =
             , englishTranslationsUrl = flags.orgConf.englishTranslationsUrl
             , newWebshopUrl = flags.orgConf.newWebshopUrl
             , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
-            , supportEmail = flags.orgConf.supportUrl
+            , supportEmail = flags.orgConf.supportEmail
             , supportUrl = flags.orgConf.supportUrl
             }
 
@@ -706,6 +706,7 @@ header model contentClass =
             , ( "Nytt klippekort", Route.ShopCarnet, Shared.hasCarnetTickets model.shared )
             , ( "Kjøpshistorikk", Route.History, True )
             , ( "Min profil", Route.Settings, True )
+            , ( "Kontakt", Route.Contact, True )
             ]
 
         showHeader =

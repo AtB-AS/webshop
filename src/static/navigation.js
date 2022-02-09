@@ -1,7 +1,7 @@
 class AtbNavigation extends HTMLElement {
     constructor() {
         super();
-        this.mql = window.matchMedia('(max-width: 850px)');
+        this.mql = window.matchMedia('(max-width: 950px)');
     }
 
     connectedCallback() {
