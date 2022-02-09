@@ -103,6 +103,7 @@ type alias Flags =
     , installId : String
     , loggedIn : Bool
     , showValidityWarning : Bool
+    , intercomEnabled : Bool
     , orgConf : OrgModule.OrganizationConfiguration
     }
 
@@ -130,6 +131,7 @@ flagsDecoder =
         |> DecodeP.required "installId" Decode.string
         |> DecodeP.required "loggedIn" Decode.bool
         |> DecodeP.required "showValidityWarning" Decode.bool
+        |> DecodeP.required "intercomEnabled" Decode.bool
         |> DecodeP.required "orgConf" OrgModule.orgConfDecoder
 
 
@@ -281,6 +283,7 @@ init flags url navKey =
             , language = English
             , installId = flags.installId
             , showValidityWarning = flags.showValidityWarning
+            , intercomEnabled = flags.intercomEnabled
             , customerId = Nothing
             , customerNumber = Nothing
             , customerEmail = ""
