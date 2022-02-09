@@ -1107,10 +1107,12 @@ a.ui-button--link,
     white-space: nowrap !important;
 }
 
-.ui-icon--large > * {
+.ui-icon--large > *,
+.ui-icon--large img {
     width: var(--ws-icon-size-xLarge);
     height: var(--ws-icon-size-xLarge);
 }
+
 .ui-icon--monochrome {
     svg,
     path {

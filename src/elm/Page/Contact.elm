@@ -63,7 +63,7 @@ viewCustomerSupport _ =
         [ S.view
             [ S.viewPaddedItem
                 [ Ui.Heading.component "Kontakt AtB" Nothing
-                , viewIconSplit Icon.profileLarge "For spørsmål om billetter, rutetider eller du trenger hjelp til å komme i dialog med oss."
+                , viewIconSplit (Icon.viewLarge Icon.contact) "For spørsmål om billetter, rutetider eller du trenger hjelp til å komme i dialog med oss."
                 ]
             , B.init "Kontakt oss (åpner atb.no)"
                 |> B.setElement H.a
@@ -80,7 +80,7 @@ viewIntercom _ =
         [ S.view
             [ S.viewPaddedItem
                 [ Ui.Heading.component "Foreslå forbedringer av nettbutikken" Nothing
-                , viewIconSplit Icon.profileLarge "Her kan du sende tilbakemeldinger på nettbutikken. Du kan også rapportere feil."
+                , viewIconSplit (Icon.viewLarge Icon.feedback) "Her kan du sende tilbakemeldinger på nettbutikken. Du kan også rapportere feil."
                 ]
             , B.init "Send tilbakemelding til utviklingsteamet"
                 |> B.setElement H.a
