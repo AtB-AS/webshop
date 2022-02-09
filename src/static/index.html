@@ -23,7 +23,7 @@
             name="apple-mobile-web-app-title"
             content="<%= elmFlags.orgConf.siteTitle %>"
         />
-        <link rel="icon" href="/assets/icons/favicon.svg" />
+        <link rel="icon" href="/assets/colors/icons/favicon.svg" />
 
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link
@@ -45,9 +45,7 @@
             gtag('js', new Date());
             gtag('config', '<%= gaTrackingId %>');
         </script>
-        <% } %>
-
-        <% if (intercomEnabled) { %>
+        <% } %> <% if (intercomEnabled) { %>
         <script>
             // We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/vdemedo2'
             (function () {

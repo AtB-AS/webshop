@@ -602,7 +602,7 @@ viewTravelCard _ model =
                             ]
                         ]
                     , Ui.ImgThemed.view
-                        [ A.src "/assets/images/travelcard-help-illustration.svg"
+                        [ A.src "/assets/colors/images/travelcard-help-illustration.svg"
                         , A.class "onboarding__travelCard__illustration"
                         , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
                         ]
@@ -640,7 +640,7 @@ viewTravelCard _ model =
                                 |> MaskedInput.view model.travelCardState model.travelCard
                             ]
                         , H.img
-                            [ A.src "/assets/images/travelcard-help-illustration.svg"
+                            [ A.src "/assets/colors/images/travelcard-help-illustration.svg"
                             , A.class "onboarding__travelCard__illustration"
                             , A.alt "t:kort-nummer finner du i øverst til høyre på t:kortet ditt."
                             ]
@@ -673,10 +673,10 @@ viewAppAdvert _ _ =
                     [ A.class "onboarding__badgeButtons" ]
                     [ H.a
                         [ A.href "https://apps.apple.com/us/app/id1502395251", A.rel "noopener", A.title "Se AtB-app i App Store (åpner nytt vindu)", A.target "_blank" ]
-                        [ H.img [ A.src "/assets/icons/badge-ios.svg", A.alt "iOS badge" ] [] ]
+                        [ H.img [ A.src "/assets/colors/icons/badge-ios.svg", A.alt "iOS badge" ] [] ]
                     , H.a
                         [ A.href "https://play.google.com/store/apps/details?id=no.mittatb.store", A.rel "noopener", A.title "Se AtB-app i Google Play Store (åpner nytt vindu)", A.target "_blank" ]
-                        [ H.img [ A.src "/assets/icons/badge-android.svg", A.alt "Android badge" ] [] ]
+                        [ H.img [ A.src "/assets/colors/icons/badge-android.svg", A.alt "Android badge" ] [] ]
                     ]
                 ]
             , Button.init "Fullfør"

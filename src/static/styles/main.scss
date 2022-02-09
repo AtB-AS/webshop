@@ -87,13 +87,13 @@ button {
 .app {
     flex: 1;
     position: relative;
-    background: url('../assets/images/background-illustration.svg') no-repeat
-        center top;
+    background: url('../assets/colors/images/background-illustration.svg')
+        no-repeat center top;
     background-size: 100%;
 }
 @media (prefers-color-scheme: dark) {
     :not(.override-light) .app {
-        background: url('../assets/images/background-illustration-dark.svg')
+        background: url('../assets/colors/images/background-illustration-dark.svg')
             no-repeat center top;
         background-size: 100%;
     }
@@ -556,14 +556,14 @@ table {
 .onboarding__travelCard__input {
     padding-left: calc(2rem + var(--spacings-xLarge));
 
-    background: url('../assets/images/travelcard-help-icons.svg') left center
-        no-repeat;
+    background: url('../assets/colors/images/travelcard-help-icons.svg') left
+        center no-repeat;
     margin-bottom: calc(2 * var(--spacings-xLarge));
 }
 @media (prefers-color-scheme: dark) {
     :not(.override-light) .onboarding__travelCard__input {
-        background: url('../assets/images/travelcard-help-icons-dark.svg') left
-            center no-repeat;
+        background: url('../assets/colors/images/travelcard-help-icons-dark.svg')
+            left center no-repeat;
     }
 }
 
