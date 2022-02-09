@@ -250,7 +250,7 @@ delete =
 
 travelCard : Html msg
 travelCard =
-    Ui.ImgThemed.view [ A.src "/assets/icons/travelcard.svg", A.alt "Reisekort" ] []
+    Ui.ImgThemed.viewMono [ A.src "/assets/mono/ticketing/travelcard.svg", A.alt "Reisekort" ] []
 
 
 phone : Html msg
@@ -294,34 +294,19 @@ creditcard =
 
 visa : Html msg
 visa =
-    H.img [ A.src "/assets/icons/paymentcard-visa.svg", A.attribute "aria-hidden" "true" ] []
+    H.img [ A.src "/assets/mono/ticketing/Visa.svg", A.attribute "aria-hidden" "true" ] []
 
 
 mastercard : Html msg
 mastercard =
-    H.img [ A.src "/assets/icons/paymentcard-mastercard.svg", A.attribute "aria-hidden" "true" ] []
+    H.img [ A.src "/assets/mono/ticketing/MasterCard.svg", A.attribute "aria-hidden" "true" ] []
 
 
 {-| Vipps icon - should be embedded in a box with a background color of #FF5B24.
 -}
 vipps : Html msg
 vipps =
-    S.svg [ SA.width "20", SA.height "20", SA.viewBox "0 0 20 20", SA.fill "none" ]
-        [ S.path
-            [ SA.fillRule "evenodd"
-            , SA.clipRule "evenodd"
-            , SA.d "M17.6875 4H2.3125C1.58763 4 1 4.58763 1 5.3125V14.6875C1 15.4124 1.58763 16 2.3125 16H17.6875C18.4124 16 19 15.4124 19 14.6875V5.3125C19 4.58763 18.4124 4 17.6875 4Z"
-            , SA.fill "#FF5B24"
-            ]
-            []
-        , S.path
-            [ SA.fillRule "evenodd"
-            , SA.clipRule "evenodd"
-            , SA.d "M11.449 8.59844C11.9654 8.59844 12.4079 8.20641 12.4079 7.64294H12.408C12.408 7.07933 11.9654 6.68744 11.449 6.68744C10.9327 6.68744 10.4903 7.07933 10.4903 7.64294C10.4903 8.20641 10.9327 8.59844 11.449 8.59844ZM12.7029 10.1423C12.0635 10.9752 11.3874 11.551 10.1949 11.551H10.1951C8.97843 11.551 8.03166 10.8159 7.29415 9.73791C6.99902 9.2968 6.54419 9.19885 6.21224 9.43161C5.90496 9.65219 5.83139 10.1177 6.11395 10.5221C7.13417 12.078 8.54777 12.9844 10.1949 12.9844C11.7071 12.9844 12.8873 12.2494 13.8091 11.0243C14.1532 10.5711 14.1409 10.1055 13.8091 9.8482C13.5017 9.60295 13.0469 9.68909 12.7029 10.1423V10.1423Z"
-            , SA.fill "white"
-            ]
-            []
-        ]
+    H.img [ A.src "/assets/mono/ticketing/Vipps.svg", A.attribute "aria-hidden" "true" ] []
 
 
 cross : Html msg
@@ -737,7 +722,7 @@ fastTime =
 
 travelCardOutlined : Html msg
 travelCardOutlined =
-    Ui.ImgThemed.view [ A.src "/assets/icons/travelcard-outlined.svg", A.alt "T:kort" ] []
+    Ui.ImgThemed.viewMono [ A.src "/assets/mono/ticketing/travelcard-outlined.svg", A.alt "T:kort" ] []
 
 
 cloudOutlined : Html msg

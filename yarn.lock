@@ -25,10 +25,15 @@
   dependencies:
     binwrap "^0.2.3"
 
-"@atb-as/generate-assets@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-1.1.0.tgz#607250427f2db7898d27d134174fd4d6c7655962"
-  integrity sha512-xLLwye7KqZxNgzzGtF6yBDGMEKclJzH+kKJKX9OTu3rrbbkKXVUo3o47VjKcHG1E4PzedzjcgpxwgnzNVM+kFQ==
+"@atb-as/generate-assets@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-2.2.2.tgz#7715970bf5ebc6f341828d40e2e8cf62a218ae92"
+  integrity sha512-YF4x/q/9Ppuro7n+PbCTmuVTbpMkSJ8PInFznRyiBGyPbRg0tHR59ss/8zfn08SqLgGksSDpx2/w22L3bUD/tg==
+  dependencies:
+    commander "^8.3.0"
+    fast-glob "^3.2.7"
+    micromatch "^4.0.4"
+    stream-editor "^1.11.0"
 
 "@atb-as/theme@^5.0.3":
   version "5.0.3"
@@ -7276,6 +7281,11 @@ stable@^0.1.8:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha1-Fhx9rBd2Wf2YEfQ3cfqZOBR4Yow=
+
+stream-editor@^1.11.0:
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/stream-editor/-/stream-editor-1.11.0.tgz#07c6e2894f2b92fe156f5c197d948f0fbecbd75f"
+  integrity sha512-c6crVqWTzQKXDYHkU7b13nqo2bHkT1xpF7E1NcBD9UyOXgDvi4tFKBQ3ChFqYinig0o7c9pAiUs7PEPCvCxt1A==
 
 string-width@^4.1.0, string-width@^4.2.0:
   version "4.2.2"

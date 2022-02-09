@@ -12,11 +12,11 @@
         "reinstall": "rimraf node_modules && yarn",
         "webpack-defaults": "webpack-defaults",
         "e2e-test": "yarn --cwd e2e-tests install && yarn --cwd e2e-tests cypress:run",
-        "setup": "generate-assets $WEBSHOP_ORG_ID ./src/static/assets"
+        "setup": "generate-assets all $WEBSHOP_ORG_ID -o ./src/static/assets"
     },
     "devDependencies": {
         "@atb-as/elm-format": "^1.0.1",
-        "@atb-as/generate-assets": "^1.1.0",
+        "@atb-as/generate-assets": "^2.2.2",
         "@atb-as/theme": "^5.0.3",
         "@babel/core": "^7.17.2",
         "@babel/preset-env": "^7.16.11",

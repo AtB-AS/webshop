@@ -729,7 +729,7 @@ header model contentClass =
                     [ H.h1 [ A.class "pageHeader__logo" ]
                         [ H.a [ Route.href Route.Home ]
                             [ H.img
-                                [ A.src "/assets/icons/icon.svg"
+                                [ A.src "/assets/mono/dark/logo/logo.svg"
                                 , A.alt ""
                                 , A.attribute "role" "none"
                                 ]

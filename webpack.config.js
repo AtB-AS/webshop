@@ -336,7 +336,7 @@ const commonConfig = {
                     }
                 },
                 {
-                    from: `src/static/assets/favicon.ico`,
+                    from: `src/static/assets/colors/favicon.ico`,
                     to: 'favicon.ico'
                 },
                 {
