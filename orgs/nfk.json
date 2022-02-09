@@ -6,5 +6,6 @@
     "newWebshopUrl": "https://www.reisnordland.no/ny-nettbutikk",
     "englishTranslationsUrl": "https://www.reisnordland.no/nettbutikk-key-words-and-phrases",
     "travelCardValidPrefix": "",
-    "supportEmail": "sentrumsterminalen@boreal.no"
+    "supportEmail": "sentrumsterminalen@boreal.no",
+    "supportUrl": "https://www.reisnordland.no/kontakt-oss"
 }

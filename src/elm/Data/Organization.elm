@@ -14,6 +14,7 @@ type alias OrganizationConfiguration =
     , newWebshopUrl : Maybe String
     , travelCardValidPrefix : String
     , supportEmail : String
+    , supportUrl : String
     }
 
 
@@ -28,6 +29,7 @@ orgConfDecoder =
         |> DecodeP.optional "newWebshopUrl" (Decode.map Just Decode.string) Nothing
         |> DecodeP.required "travelCardValidPrefix" Decode.string
         |> DecodeP.required "supportEmail" Decode.string
+        |> DecodeP.required "supportUrl" Decode.string
 
 
 orgIdFromString : String -> OrgId

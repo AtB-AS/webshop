@@ -50,25 +50,25 @@ update msg _ model =
 
 
 view : Environment -> AppInfo -> Shared -> Model -> Maybe Route -> Html Msg
-view env _ _ model _ =
+view env appInfo _ model _ =
     H.div [ A.class "page page--twoColumns" ]
-        [ viewCustomerSupport model
+        [ viewCustomerSupport appInfo model
         , Html.Extra.viewIf env.intercomEnabled <| viewIntercom model
         ]
 
 
-viewCustomerSupport : Model -> Html Msg
-viewCustomerSupport _ =
+viewCustomerSupport : AppInfo -> Model -> Html Msg
+viewCustomerSupport appInfo _ =
     H.div []
         [ S.view
             [ S.viewPaddedItem
                 [ Ui.Heading.component "Kontakt AtB" Nothing
                 , viewIconSplit (Icon.viewLarge Icon.contact) "For spørsmål om billetter, rutetider eller du trenger hjelp til å komme i dialog med oss."
                 ]
-            , B.init "Kontakt oss (åpner atb.no)"
+            , B.init "Kontakt oss (åpner nytt vindu)"
                 |> B.setElement H.a
                 |> B.setIcon (Just Icon.rightArrow)
-                |> B.setAttributes [ A.href "" ]
+                |> B.setAttributes [ A.href appInfo.supportUrl, A.target "_blank" ]
                 |> B.primary B.Primary_2
             ]
         ]

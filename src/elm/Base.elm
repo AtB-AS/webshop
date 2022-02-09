@@ -18,4 +18,5 @@ type alias AppInfo =
     , newWebshopUrl : Maybe String
     , travelCardValidPrefix : String
     , supportEmail : String
+    , supportUrl : String
     }
