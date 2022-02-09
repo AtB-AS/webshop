@@ -352,13 +352,13 @@ const commonConfig = {
                 languageSwitcher: languageSwitcher || isDevelopment,
                 version: gitDescribe(),
                 commit: gitCommitHash(),
-                orgConf: appConfig
+                orgConf: appConfig,
+                intercomEnabled: !!(
+                    process.env.INTERCOM_ENABLED || localConfig.intercomEnabled
+                )
             }),
             gaTrackingId: JSON.stringify(
                 process.env.GA_TRACKING_ID || localConfig.gaTrackingId
-            ),
-            intercomEnabled: JSON.stringify(
-                !!(process.env.INTERCOM_ENABLED || localConfig.intercomEnabled)
             ),
             firebaseConfig: JSON.stringify(getFirebaseConfig(localConfig))
         })

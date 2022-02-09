@@ -83,9 +83,8 @@ viewIntercom _ =
                 , viewIconSplit (Icon.viewLarge Icon.feedback) "Her kan du sende tilbakemeldinger på nettbutikken. Du kan også rapportere feil."
                 ]
             , B.init "Send tilbakemelding til utviklingsteamet"
-                |> B.setElement H.a
                 |> B.setIcon (Just Icon.rightArrow)
-                |> B.setAttributes [ A.href "" ]
+                |> B.setAttributes [ A.id "open-intercom" ]
                 |> B.tertiary
             ]
         ]
