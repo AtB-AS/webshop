@@ -32,6 +32,7 @@ type Route
     | Payment PaymentResponseQuery
     | History
     | Settings
+    | Contact
     | Login LoginMethodPath
     | NotFound
 
@@ -82,6 +83,7 @@ parser =
         , Parser.map History <| s "history"
         , Parser.map Payment <| s "payment" <?> paymentResponseQueryParser
         , Parser.map Settings <| s "settings"
+        , Parser.map Contact <| s "contact"
         , Parser.map Login <| s "login" </> parseLoginMethod
         ]
 
@@ -120,6 +122,9 @@ routeToString page =
 
                 Settings ->
                     [ "settings" ]
+
+                Contact ->
+                    [ "contact" ]
 
                 NotFound ->
                     [ "not-found" ]

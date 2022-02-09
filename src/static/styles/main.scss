@@ -390,6 +390,13 @@ p + p {
     margin: 3.25rem auto;
     grid-template-columns: 1fr;
 }
+.page--twoColumns {
+    grid-template-columns: 1fr 1fr;
+}
+.page--twoColumns > :only-child {
+    grid-column: 1/1;
+}
+
 .page--threeColumns {
     grid-template-columns: 1fr 1fr 1fr;
 }
@@ -500,6 +507,13 @@ p + p {
 
 .pageAccount__recurringPayment__expiry {
     padding-top: var(--spacings-medium);
+}
+
+.pageContact__iconSplit {
+    display: flex;
+    margin: var(--spacings-small) 0 0;
+    gap: var(--spacings-small);
+    align-items: center;
 }
 
 // Components

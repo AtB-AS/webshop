@@ -18,6 +18,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Notification exposing (Notification)
 import Page.Account as AccountPage exposing (Msg(..))
+import Page.Contact as ContactPage
 import Page.History as HistoryPage
 import Page.Login as LoginPage
 import Page.Onboarding as OnboardingPage
@@ -54,6 +55,7 @@ type Msg
     | ShopMsg ShopPage.Msg
     | ShopCarnetMsg ShopCarnetPage.Msg
     | HistoryMsg HistoryPage.Msg
+    | ContactMsg ContactPage.Msg
     | AccountMsg AccountPage.Msg
     | LoginMsg LoginPage.Msg
     | OnboardingMsg OnboardingPage.Msg
@@ -76,6 +78,7 @@ type alias Model =
     , shop : ShopPage.Model
     , shopCarnet : ShopCarnetPage.Model
     , history : HistoryPage.Model
+    , contact : ContactPage.Model
     , account : AccountPage.Model
     , shared : Shared
     , login : LoginPage.Model
@@ -326,6 +329,7 @@ init flags url navKey =
                 , shopCarnet = Tuple.first ShopCarnetPage.init
                 , history = Tuple.first HistoryPage.init
                 , account = accountModel
+                , contact = Tuple.first ContactPage.init
                 , shared = Shared.init
                 , login = loginModel
                 , onboarding = Nothing
@@ -461,6 +465,11 @@ update msg model =
         HistoryMsg subMsg ->
             HistoryPage.update subMsg model.environment model.history
                 |> PageUpdater.map (\newModel -> { model | history = newModel }) HistoryMsg
+                |> doPageUpdate
+
+        ContactMsg subMsg ->
+            ContactPage.update subMsg model.environment model.contact
+                |> PageUpdater.map (\newModel -> { model | contact = newModel }) ContactMsg
                 |> doPageUpdate
 
         AccountMsg subMsg ->
@@ -826,6 +835,11 @@ viewPage model =
                 HistoryPage.view env model.appInfo shared model.history model.route
                     |> H.map HistoryMsg
                     |> wrapSubPage "Kjøpshistorikk"
+
+            Just Route.Contact ->
+                ContactPage.view env model.appInfo shared model.contact model.route
+                    |> H.map ContactMsg
+                    |> wrapSubPage "Kontakt AtB"
 
             Just Route.Settings ->
                 AccountPage.view env model.appInfo shared model.account model.route

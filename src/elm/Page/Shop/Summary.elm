@@ -173,7 +173,7 @@ view shared model =
     in
         H.div []
             [ cardReadWarning
-            , H.div [ A.class "page page--threeColumns" ]
+            , H.div [ A.class "page" ]
                 [ viewTicketSection summary
                 , viewPriceSection summary
                 , viewPaymentSection model shared
