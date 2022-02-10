@@ -302,7 +302,7 @@ viewAccountInfo env shared _ =
                     "Kundenummer"
                     [ H.p [ A.class "accountInfo__item", A.title "Kundenummer" ]
                         [ Icon.profile
-                        , H.text <| Util.Maybe.mapWithDefault String.fromInt "Fant ikke kundenummer. Ta kontakt med kundeservice" env.customerNumber
+                        , H.text <| Util.Maybe.mapWithDefault String.fromInt "Fant ikke kundenummer. Ta kontakt med kundeservice." env.customerNumber
                         ]
                     ]
                 , B.init "Rediger profil"
