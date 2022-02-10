@@ -51,6 +51,7 @@ type Msg
     | InputEmail String
     | InputPassword String
     | DoLogin
+    | LoginWithProvider FirebaseAuth.Provider
     | ResendPhoneCode
     | ResetPassword
     | SetLoginMethod LoginMethod
@@ -172,6 +173,12 @@ update msg env model navKey =
 
                 Err errors ->
                     PageUpdater.init { model | validationErrors = errors }
+
+        LoginWithProvider provider ->
+            PageUpdater.fromPair
+                ( { model | error = Nothing, validationErrors = V.init, loading = True }
+                , FirebaseAuth.loginWithProvider provider
+                )
 
         LoggedIn ->
             PageUpdater.fromPair ( Tuple.first init, Route.newUrl navKey Route.Home )
@@ -415,7 +422,19 @@ viewPhoneLogin model appInfo =
             ]
         , Ui.Section.viewItem <| viewPhoneInputs model
         , Ui.Section.viewPaddedItem
-            [ H.p [] [ H.a [ Route.href <| Route.Login EmailPath ] [ H.text "Jeg vil heller bruke e-post" ] ]
+            [ H.p
+                []
+                [ H.a [ Route.href <| Route.Login EmailPath ]
+                    [ H.text "Jeg vil heller bruke e-post" ]
+                ]
+            ]
+        , Ui.Section.viewPaddedItem
+            [ B.init "Jeg vil heller bruke Vipps"
+                |> B.setIcon Nothing
+                |> B.setLoading model.loading
+                |> B.setOnClick (Just <| LoginWithProvider FirebaseAuth.Vipps)
+                |> B.setType "button"
+                |> B.primary B.Primary_2
             ]
         , prerequisitesNotice appInfo
         , B.init "Send engangskode"

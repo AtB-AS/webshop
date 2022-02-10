@@ -678,6 +678,40 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
         });
 });
 
+// TODO: Make sure we only handle Vipps messages.
+window.addEventListener("message", function(ev) {
+    if (typeof ev.data !== 'string') {
+        return;
+    }
+
+    // Should check if this is Vipps message.
+    firebase
+        .auth()
+        .signInWithCustomToken(ev.data)
+        .then((userCredential) => {
+            fetchAuthInfo(userCredential.user);
+        })
+        .catch((error) => {
+            console.log('[debug] vipps login error', error);
+            console.log(
+                '[debug] vipps login error json',
+                JSON.stringify(error)
+            );
+
+            handleAuthError(error);
+        });
+});
+
+app.ports.loginProvider.subscribe((provider) => {
+    switch (provider) {
+        case 'vipps':
+            window.open('https://atbauth-p7kz45bx3q-ew.a.run.app/auth/vipps', "vipps-auth", "popup,width=460,height=999");
+            break;
+        default:
+            console.log('[debug] invalid login provider', provider);
+    }
+});
+
 async function sendVerificationEmail() {
     const actionCodeSettings = {
         url: window.location.origin

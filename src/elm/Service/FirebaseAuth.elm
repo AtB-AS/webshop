@@ -7,6 +7,7 @@ port module Service.FirebaseAuth exposing
     , confirmPhone
     , loginEmail
     , loginPhone
+    , loginWithProvider
     , onError
     , onPasswordReset
     , onRequestCode
@@ -33,6 +34,7 @@ type Provider
     = Google
     | Microsoft
     | Phone
+    | Vipps
     | Password
     | Anonymous
     | Unknown String
@@ -113,6 +115,12 @@ port checkVerifyUserResponse : (Bool -> msg) -> Sub msg
 port verifyUserRequested : (Encode.Value -> msg) -> Sub msg
 
 
+{-| Initiate login with the given provider. Only use with
+providers that don't need any extra data.
+-}
+port loginProvider : String -> Cmd msg
+
+
 
 -- HELPERS
 
@@ -120,6 +128,11 @@ port verifyUserRequested : (Encode.Value -> msg) -> Sub msg
 signOut : Cmd msg
 signOut =
     signOutHandler ()
+
+
+loginWithProvider : Provider -> Cmd msg
+loginWithProvider =
+    providerToString >> loginProvider
 
 
 {-| Called when SMS has been sent and we need the user to enter the code.
@@ -182,6 +195,31 @@ providerFromString provider =
 
         value ->
             Unknown value
+
+
+providerToString : Provider -> String
+providerToString provider =
+    case provider of
+        Google ->
+            "google.com"
+
+        Microsoft ->
+            "microsoft.com"
+
+        Phone ->
+            "phone"
+
+        Vipps ->
+            "vipps"
+
+        Password ->
+            "password"
+
+        Anonymous ->
+            "anonymouse"
+
+        Unknown value ->
+            value
 
 
 {-| Decode a provider.
