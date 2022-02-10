@@ -25,10 +25,10 @@
   dependencies:
     binwrap "^0.2.3"
 
-"@atb-as/generate-assets@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-2.3.0.tgz#d7bb888ad98ab486ad70887fd2af984fe62b9414"
-  integrity sha512-sAGncLFLDiIqVhOs0nvKV0IvyIgnKIf9XRXcggYBjyfZ3n5u4B3H5Ras25sZWYTHEoZ+ADpmJf8YYghGhfN5GQ==
+"@atb-as/generate-assets@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@atb-as/generate-assets/-/generate-assets-2.4.1.tgz#0399283bb9da3c82afc9f542f7e89e08445c95e5"
+  integrity sha512-dIWJUVUypkKB4Xgf2XoPVAc9RTlCbZ4kYhYU6yzFsn0BbxZDJHKyb8JfudNc+AaR3ce/9FZ3EB6d7EaMaK7ZOQ==
   dependencies:
     commander "^8.3.0"
     fast-glob "^3.2.7"
