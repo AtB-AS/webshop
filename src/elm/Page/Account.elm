@@ -690,7 +690,7 @@ viewProfile env model profile =
                     )
             , Ui.Section.viewWithIconWidthPadding
                 [ Ui.Section.viewLabelItem "Kundenummer"
-                    [ H.text <| String.fromInt env.customerNumber
+                    [ H.text <| MaybeUtil.mapWithDefault String.fromInt "Fant ikke kundenummer. Ta kontakt med kundeservice" env.customerNumber
                     ]
                 ]
             , viewEmailAddress model profile

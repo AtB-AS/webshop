@@ -261,7 +261,8 @@ async function fetchAuthInfo(user, stopOnboarding) {
                     } else {
                         app.ports.signedInInfo.send({
                             token: idToken.token,
-                            customerNumber: idToken.claims.customer_number,
+                            customerNumber:
+                                idToken.claims.customer_number || null,
                             email: email,
                             phone: phone,
                             uid: accountId,
