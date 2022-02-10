@@ -279,7 +279,7 @@ init flags url navKey =
             , installId = flags.installId
             , showValidityWarning = flags.showValidityWarning
             , customerId = Nothing
-            , customerNumber = 0
+            , customerNumber = Nothing
             , customerEmail = ""
             , token = ""
             }
@@ -377,7 +377,7 @@ update msg model =
                             model.environment
 
                         newEnvironment =
-                            { oldEnvironment | customerNumber = number }
+                            { oldEnvironment | customerNumber = Just number }
                     in
                         ( { model | environment = newEnvironment }, Cmd.none )
 
@@ -884,7 +884,7 @@ type alias UserData =
     , email : String
     , userId : String
     , customerId : String
-    , customerNumber : Int
+    , customerNumber : Maybe Int
     , provider : FirebaseAuth.Provider
     , stopOnboarding : Bool
     }
@@ -901,7 +901,7 @@ userDataDecoder =
                 Decode.string
             )
         |> DecodeP.required "uid" Decode.string
-        |> DecodeP.required "customerNumber" Decode.int
+        |> DecodeP.optional "customerNumber" (Decode.map Just Decode.int) Nothing
         |> DecodeP.required "provider" FirebaseAuth.providerDecoder
         |> DecodeP.optional "stopOnboarding" Decode.bool False
 

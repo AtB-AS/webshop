@@ -411,6 +411,8 @@ p + p {
     display: flex;
     svg,
     .ui-img-dark {
+        flex-shrink: 0;
+        width: var(--icon-size-normal);
         display: block;
         margin-right: var(--spacings-medium);
     }
