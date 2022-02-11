@@ -49,8 +49,7 @@
         "webpack-dev-server": "4.7.4",
         "webpack-merge": "5.8.0",
         "webpack-subresource-integrity": "5.1.0",
-        "wicg-inert": "^3.1.1",
-        "workbox-webpack-plugin": "6.4.2"
+        "wicg-inert": "^3.1.1"
     },
     "browserslist": [
         "defaults, not IE 11"
