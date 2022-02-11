@@ -303,6 +303,7 @@ init flags url navKey =
             , travelCardValidPrefix = flags.orgConf.travelCardValidPrefix
             , supportEmail = flags.orgConf.supportEmail
             , supportUrl = flags.orgConf.supportUrl
+            , orderTravelCardUrl = flags.orgConf.orderTravelCardUrl
             }
 
         ( overviewModel, overviewCmd ) =

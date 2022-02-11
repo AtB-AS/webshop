@@ -7,5 +7,6 @@
     "newWebshopUrl": "https://www.atb.no/vi-oppgraderer/",
     "travelCardValidPrefix": "1616006",
     "supportEmail": "kundeservice@atb.no",
-    "supportUrl": "https://atb.no/kundeservice/"
+    "supportUrl": "https://atb.no/kundeservice/",
+    "orderTravelCardUrl": "https://www.atb.no/bestill-tkort/"
 }

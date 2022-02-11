@@ -19,4 +19,5 @@ type alias AppInfo =
     , travelCardValidPrefix : String
     , supportEmail : String
     , supportUrl : String
+    , orderTravelCardUrl : String
     }

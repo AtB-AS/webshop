@@ -7,5 +7,6 @@
     "englishTranslationsUrl": "https://www.reisnordland.no/nettbutikk-key-words-and-phrases",
     "travelCardValidPrefix": "",
     "supportEmail": "sentrumsterminalen@boreal.no",
-    "supportUrl": "https://www.reisnordland.no/kontakt-oss"
+    "supportUrl": "https://www.reisnordland.no/kontakt-oss",
+    "orderTravelCardUrl": "https://www.reisnordland.no/skjema-bestilling-av-reisekort"
 }
