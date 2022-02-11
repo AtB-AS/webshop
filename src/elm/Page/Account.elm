@@ -623,7 +623,7 @@ viewMain env model shared appInfo =
                     [ viewProfile env model profile
                     , viewSignIn model profile
                     , viewRecurringPayments model
-                    , viewTravelCard model profile
+                    , viewTravelCard appInfo model profile
                     , viewPrivacy model shared appInfo
                     ]
 
@@ -874,8 +874,8 @@ fieldInEditMode state actual =
     state == Just actual
 
 
-viewTravelCard : Model -> Profile -> Html Msg
-viewTravelCard model profile =
+viewTravelCard : AppInfo -> Model -> Profile -> Html Msg
+viewTravelCard appInfo model profile =
     let
         onSave =
             Just SaveTravelCard
@@ -967,7 +967,7 @@ viewTravelCard model profile =
                                                     [ H.text "Legg til et t:kort" ]
                                                 , H.text ". Har du ikke t:kort kan du "
                                                 , H.a
-                                                    [ A.href "https://www.atb.no/bestill-tkort/"
+                                                    [ A.href appInfo.orderTravelCardUrl
                                                     , A.target "_blank"
                                                     , A.title "Gå til skjema for å bestille nytt t:kort sendt til deg (åpner ny side)."
                                                     ]

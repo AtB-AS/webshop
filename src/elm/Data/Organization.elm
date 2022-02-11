@@ -15,6 +15,7 @@ type alias OrganizationConfiguration =
     , travelCardValidPrefix : String
     , supportEmail : String
     , supportUrl : String
+    , orderTravelCardUrl : String
     }
 
 
@@ -30,6 +31,7 @@ orgConfDecoder =
         |> DecodeP.required "travelCardValidPrefix" Decode.string
         |> DecodeP.required "supportEmail" Decode.string
         |> DecodeP.required "supportUrl" Decode.string
+        |> DecodeP.required "orderTravelCardUrl" Decode.string
 
 
 orgIdFromString : String -> OrgId
