@@ -8,7 +8,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { SubresourceIntegrityPlugin } = require('webpack-subresource-integrity');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const dotenv = require('dotenv');
 
@@ -485,11 +484,6 @@ if (isDevelopment) {
             // Extract CSS into a separate file.
             new MiniCssExtractPlugin({
                 filename: 'static/styles/[contenthash].css'
-            }),
-
-            // Set up Workbox
-            new WorkboxWebpackPlugin.GenerateSW({
-                exclude: ['index.html']
             })
         ],
         optimization: {
