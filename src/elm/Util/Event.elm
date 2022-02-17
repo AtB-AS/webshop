@@ -1,4 +1,4 @@
-module Util.Event exposing (onEnter)
+module Util.Event exposing (onEnter, stopDefaultEvents)
 
 import Html exposing (Attribute)
 import Html.Events as E
@@ -16,3 +16,16 @@ onEnter msg =
                 Decode.fail "not ENTER"
     in
         E.on "keydown" (Decode.andThen isEnter E.keyCode)
+
+
+stopDefaultEvents : msg -> Attribute msg
+stopDefaultEvents msg =
+    msg
+        |> Decode.succeed
+        |> Decode.map alwaysStopDefaultEvents
+        |> E.custom "submit"
+
+
+alwaysStopDefaultEvents : msg -> { message : msg, stopPropagation : Bool, preventDefault : Bool }
+alwaysStopDefaultEvents msg =
+    { message = msg, stopPropagation = True, preventDefault = True }

@@ -23,6 +23,7 @@ import Ui.Message as Message
 import Ui.PageHeader as PH
 import Ui.ScreenReaderText as SR
 import Ui.Section
+import Util.Event as EventUtil
 import Util.PhoneNumber
 import Util.Validation as V exposing (FormError, ValidationErrors)
 import Validate exposing (Valid)
@@ -431,9 +432,11 @@ viewPhoneLogin model appInfo =
         , Ui.Section.viewPaddedItem
             [ H.button
                 [ E.onClick <| LoginWithProvider FirebaseAuth.Vipps
+                , A.type_ "button"
                 , A.style "border" "none"
                 , A.style "background" "none"
                 , A.style "cursor" "pointer"
+                , EventUtil.stopDefaultEvents NoOp
                 ]
                 [ vippsLoginButton ]
             ]
