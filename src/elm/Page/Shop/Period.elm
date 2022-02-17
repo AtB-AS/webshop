@@ -564,12 +564,17 @@ view _ appInfo shared model _ =
                                 , icon = Icon.duration
                                 , value = summary.duration
                                 , open = model.mainView == Duration
-                                , readonly = False
+                                , readonly = List.length shared.availablePeriodProducts == 1
                                 , onOpenClick = Just (ShowView Duration)
                                 , id = "varighet"
                                 , editTextSuffix = "varighet"
                                 }
-                                [ viewProducts model defaultProduct shared.availablePeriodProducts ]
+                                [ if List.length shared.availablePeriodProducts == 1 then
+                                    Html.Extra.nothing
+
+                                  else
+                                    viewProducts model defaultProduct shared.availablePeriodProducts
+                                ]
                             , Ui.Group.view
                                 { title = "Reisende"
                                 , icon = Icon.bus
