@@ -137,6 +137,12 @@ webshop/
    ├─ nfk.json
 ```
 
+## Release
+
+The webshop is automatically released to staging then new changes on the master branch. To release to production edit the latest release version in GitHub and select _Publish release_.
+
+Normally we increment the minor version when releasing a new version, but if there are no visible changes and only small fixes then the patch version may be incremented.
+
 ## License
 
 This project is licensed under the EUPL 1.2 license ([LICENSE](LICENSE) or
