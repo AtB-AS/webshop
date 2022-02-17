@@ -678,6 +678,7 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
         });
 });
 
+let vippsWindow;
 // TODO: Make sure we only handle Vipps messages.
 window.addEventListener("message", function(ev) {
     if (typeof ev.data !== 'string') {
@@ -690,6 +691,7 @@ window.addEventListener("message", function(ev) {
         .signInWithCustomToken(ev.data)
         .then((userCredential) => {
             fetchAuthInfo(userCredential.user);
+	    vippsWindow.close();
         })
         .catch((error) => {
             console.log('[debug] vipps login error', error);
@@ -705,7 +707,7 @@ window.addEventListener("message", function(ev) {
 app.ports.loginProvider.subscribe((provider) => {
     switch (provider) {
         case 'vipps':
-            window.open('https://atbauth-p7kz45bx3q-ew.a.run.app/auth/vipps', "vipps-auth", "popup,width=460,height=999");
+            vippsWindow = window.open('https://atbauth-p7kz45bx3q-ew.a.run.app/auth/vipps', "vipps-auth", "popup,width=460,height=999");
             break;
         default:
             console.log('[debug] invalid login provider', provider);
