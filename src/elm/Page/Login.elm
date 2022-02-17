@@ -429,12 +429,13 @@ viewPhoneLogin model appInfo =
                 ]
             ]
         , Ui.Section.viewPaddedItem
-            [ B.init "Jeg vil heller bruke Vipps"
-                |> B.setIcon Nothing
-                |> B.setLoading model.loading
-                |> B.setOnClick (Just <| LoginWithProvider FirebaseAuth.Vipps)
-                |> B.setType "button"
-                |> B.primary B.Primary_2
+            [ H.button
+                [ E.onClick <| LoginWithProvider FirebaseAuth.Vipps
+                , A.style "border" "none"
+                , A.style "background" "none"
+                , A.style "cursor" "pointer"
+                ]
+                [ vippsLoginButton ]
             ]
         , prerequisitesNotice appInfo
         , B.init "Send engangskode"
@@ -444,6 +445,13 @@ viewPhoneLogin model appInfo =
             |> B.primary B.Primary_2
         ]
     ]
+
+
+{-| Vipps login button.
+-}
+vippsLoginButton : Html msg
+vippsLoginButton =
+    H.img [ A.src "/vipps-login.svg", A.attribute "aria-hidden" "true" ] []
 
 
 viewEmailLogin : Model -> AppInfo -> List (Html Msg)

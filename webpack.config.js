@@ -342,6 +342,10 @@ const commonConfig = {
                 {
                     from: `src/static/assets/`,
                     to: 'assets/'
+                },
+                {
+                    from: `src/static/vipps-login.svg`,
+                    to: 'vipps-login.svg'
                 }
             ]
         }),
