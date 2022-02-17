@@ -62,7 +62,7 @@ reserve env phoneNumber paymentSelection storePayment offers =
             [ ( "offers", Encode.list encodeOffer offers )
             , encodePaymentSelection paymentSelection
             , ( "store_payment", encodeStorePayment paymentSelection storePayment )
-            , ( "sca_excemption", Encode.bool True )
+            , ( "sca_excemption", Encode.bool (isScaExcemption paymentSelection) )
             , ( "payment_redirect_url", Encode.string (env.localUrl ++ "/payment?transaction_id={transaction_id}&payment_id={payment_id}&order_id={order_id}") )
             ]
                 ++ MaybeUtil.mapWithDefault (\p -> [ ( "phone_number", Encode.string p ) ]) [] vippsPhoneNumber
@@ -299,6 +299,16 @@ encodePaymentSelection paymentSelection =
 
         Recurring id ->
             ( "recurring_payment_id", Encode.int id )
+
+
+isScaExcemption : PaymentSelection -> Bool
+isScaExcemption paymentSelection =
+    case paymentSelection of
+        NonRecurring PaymentType.Vipps ->
+            False
+
+        _ ->
+            True
 
 
 recurringPaymentDecoder : Decoder RecurringPayment
