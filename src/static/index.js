@@ -184,6 +184,7 @@ function clearRefreshToken() {
 }
 
 let retryAttempts = MAX_RETRY_ATTEMPTS;
+
 function enqueueRefreshToken(user, expirationString) {
     const expiration = new Date(expirationString).valueOf();
     const now = new Date().valueOf();
@@ -679,19 +680,23 @@ app.ports.loginEmail.subscribe(({ email, password }) => {
 });
 
 let vippsWindow;
-// TODO: Make sure we only handle Vipps messages.
-window.addEventListener("message", function(ev) {
-    if (typeof ev.data !== 'string') {
+
+window.addEventListener('message', function (ev) {
+    if (typeof ev.data !== 'object' || ev.data === null) {
         return;
     }
 
-    // Should check if this is Vipps message.
+    // Make sure we only handle Vipps messages.
+    if (ev.data.source !== 'vipps') {
+        return;
+    }
+
     firebase
         .auth()
-        .signInWithCustomToken(ev.data)
+        .signInWithCustomToken(ev.data.token)
         .then((userCredential) => {
             fetchAuthInfo(userCredential.user);
-	    vippsWindow.close();
+            vippsWindow.close();
         })
         .catch((error) => {
             console.log('[debug] vipps login error', error);
@@ -707,7 +712,11 @@ window.addEventListener("message", function(ev) {
 app.ports.loginProvider.subscribe((provider) => {
     switch (provider) {
         case 'vipps':
-            vippsWindow = window.open('https://atbauth-p7kz45bx3q-ew.a.run.app/auth/vipps', "vipps-auth", "popup,width=460,height=999");
+            vippsWindow = window.open(
+                'https://atbauth-p7kz45bx3q-ew.a.run.app/auth/vipps',
+                'vipps-auth',
+                'popup,width=460,height=999'
+            );
             break;
         default:
             console.log('[debug] invalid login provider', provider);
@@ -728,6 +737,7 @@ async function sendVerificationEmail() {
         app.ports.verifyUserRequested.send(error);
     }
 }
+
 app.ports.verifyUser.subscribe(sendVerificationEmail);
 
 app.ports.resetPassword.subscribe((email) => {
