@@ -1,6 +1,5 @@
 module Service.Ticket exposing
     ( endRecurringPayment
-    , getPaymentStatus
     , getRecurringPayments
     , receipt
     , reserve
@@ -88,17 +87,6 @@ receipt env emailAddress orderId =
                 ]
     in
         HttpUtil.post env url (Http.jsonBody body) (Http.expectStringResponse (\_ -> Ok ()))
-
-
-getPaymentStatus : Environment -> Int -> Http.Request PaymentStatus
-getPaymentStatus env paymentId =
-    let
-        url =
-            Url.Builder.crossOrigin env.baseUrl
-                [ "ticket", "v1", "payments", String.fromInt paymentId ]
-                []
-    in
-        HttpUtil.get env url (Http.expectJson paymentStatusDecoder)
 
 
 getRecurringPayments : Environment -> Http.Request (List RecurringPayment)
