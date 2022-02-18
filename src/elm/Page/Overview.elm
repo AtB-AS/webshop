@@ -43,9 +43,7 @@ type Msg
     | UpdateTime Time.Posix
     | AdjustTimeZone Time.Zone
     | ToggleTicket String
-    | AddActiveReservation Reservation
     | Logout
-    | ReceivePaymentStatus Int (Result Http.Error PaymentStatus)
     | RequestReceipt String
     | ReceiveReceipt String (Result Http.Error ())
 
@@ -58,7 +56,6 @@ type alias Model =
     , inspection : Status Inspection
     , currentTime : Time.Posix
     , expanded : Maybe String
-    , reservations : List ( Reservation, ReservationStatus )
     , timeZone : Time.Zone
     , error : Maybe String
     , sendingReceipt : List String
@@ -74,7 +71,6 @@ init =
       , inspection = NotLoaded
       , currentTime = Time.millisToPosix 0
       , expanded = Nothing
-      , reservations = []
       , timeZone = Time.utc
       , error = Nothing
       , sendingReceipt = []
@@ -101,15 +97,8 @@ update msg env model shared =
                                 |> Util.FareContract.filterNotExpiredAtTime model.currentTime
                                 |> List.sortBy .created
                                 |> List.reverse
-
-                        orderIds =
-                            List.map .orderId tickets
-
-                        activeReservations =
-                            model.reservations
-                                |> List.filter (\( reservation, _ ) -> not <| List.member reservation.orderId orderIds)
                     in
-                        PageUpdater.init { model | tickets = tickets, reservations = activeReservations, error = Nothing }
+                        PageUpdater.init { model | tickets = tickets, error = Nothing }
 
                 Err _ ->
                     PageUpdater.init
@@ -145,71 +134,12 @@ update msg env model shared =
                             Just id
                 }
 
-        AddActiveReservation active ->
-            let
-                existsFromBefore =
-                    model.reservations
-                        |> List.map (Tuple.first >> .paymentId)
-                        |> List.member active.paymentId
-            in
-                if existsFromBefore then
-                    PageUpdater.init model
-
-                else
-                    PageUpdater.fromPair
-                        ( { model | reservations = ( active, NotCaptured ) :: model.reservations }
-                        , fetchPaymentStatus env active.paymentId
-                        )
-
         Logout ->
             PageUpdater.init model
                 |> PageUpdater.addGlobalAction GA.Logout
 
         AdjustTimeZone zone ->
             PageUpdater.init { model | timeZone = zone }
-
-        ReceivePaymentStatus paymentId result ->
-            let
-                updateReservationToStatus state =
-                    model.reservations
-                        |> List.map
-                            (\( reservation, status ) ->
-                                if reservation.paymentId /= paymentId then
-                                    ( reservation, status )
-
-                                else
-                                    ( reservation, state )
-                            )
-
-                withoutCurrentReservation =
-                    List.filter (Tuple.first >> .paymentId >> (/=) paymentId) model.reservations
-            in
-                case result of
-                    Ok paymentStatus ->
-                        case paymentStatus.status of
-                            "CAPTURE" ->
-                                PageUpdater.init { model | reservations = updateReservationToStatus Captured }
-
-                            "CANCEL" ->
-                                PageUpdater.init
-                                    { model | reservations = withoutCurrentReservation }
-
-                            "CREDIT" ->
-                                PageUpdater.init
-                                    { model | reservations = withoutCurrentReservation }
-
-                            "REJECT" ->
-                                PageUpdater.init
-                                    { model | reservations = withoutCurrentReservation }
-
-                            _ ->
-                                PageUpdater.fromPair ( model, fetchPaymentStatus env paymentId )
-
-                    _ ->
-                        -- Either there was no longer a reservation, or the payment failed. We treat this
-                        -- as if the payment was cancelled so the user can try again.
-                        PageUpdater.init
-                            { model | reservations = withoutCurrentReservation }
 
         RequestReceipt orderId ->
             case shared.profile of
@@ -385,7 +315,7 @@ viewMain shared model =
                 |> Util.FareContract.filterNotExpiredAtTime model.currentTime
 
         emptyResults =
-            List.isEmpty validTickets && List.isEmpty model.reservations
+            List.isEmpty validTickets
     in
         H.div [ A.class "main" ]
             [ case ( emptyResults, model.error ) of
@@ -405,8 +335,9 @@ viewMain shared model =
 
 viewPending : Model -> List (Html msg)
 viewPending model =
-    model.reservations
-        |> List.map Ui.TicketDetails.viewActivation
+    -- model.reservations
+    --     |> List.map Ui.TicketDetails.viewActivation
+    []
 
 
 viewTicketCards : Shared -> List FareContract -> Model -> List (Html Msg)
@@ -465,14 +396,3 @@ sendReceipt env profile orderId =
         TicketService.receipt env profile.email orderId
             |> Http.toTask
             |> Task.attempt (ReceiveReceipt orderId)
-
-
-fetchPaymentStatus : Environment -> Int -> Cmd Msg
-fetchPaymentStatus env paymentId =
-    Process.sleep 500
-        |> Task.andThen
-            (\_ ->
-                TicketService.getPaymentStatus env paymentId
-                    |> Http.toTask
-            )
-        |> Task.attempt (ReceivePaymentStatus paymentId)

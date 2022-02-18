@@ -239,21 +239,13 @@ setRouteInternal initialRoute maybeRoute model =
                                 maybeReservation.responseCode
                                     |> Maybe.map ((==) Route.Cancel)
                                     |> Maybe.withDefault False
-
-                            reservation =
-                                { transactionId = Maybe.withDefault 1 maybeReservation.transactionId
-                                , paymentId = Maybe.withDefault 1 maybeReservation.paymentId
-                                , orderId = Maybe.withDefault "" maybeReservation.orderId
-                                , url = ""
-                                }
                         in
                             if noPaymentId || isCancelled then
                                 Route.modifyUrl model.navKey Route.Home
 
                             else
                                 Cmd.batch
-                                    [ TaskUtil.doTask <| OverviewMsg <| OverviewPage.AddActiveReservation reservation
-                                    , Route.modifyUrl model.navKey Route.Home
+                                    [ Route.modifyUrl model.navKey Route.Home
                                     ]
 
                     Just _ ->
