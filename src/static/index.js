@@ -56,6 +56,7 @@ firebase.initializeApp(firebaseConfig);
 // Closure data for unsubscribing on changes.
 let unsubscribeConfigurationSnapshot = null;
 let unsubscribeFareContractSnapshot = null;
+let unsubscribeReservationSnapshots = null;
 let unsubscribeFetchUserDataSnapshot = null;
 
 let onboardingUser = null;
@@ -286,6 +287,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
 
                         loadConfiguration();
                         loadFareContracts(accountId);
+                        loadReservations(accountId);
                     }
                 });
         }
@@ -410,6 +412,37 @@ function loadFareContracts(accountId) {
         },
         function (e) {
             console.error('Error when retrieving fare contracts for user', e);
+
+            if (e.message.includes('insufficient permissions')) {
+                updateElmWithLoggedOutAndCleanUp();
+            }
+        }
+    );
+}
+
+function loadReservations(accountId) {
+    const basePath = `customers/${accountId}`;
+    const tokenPath = `${basePath}/reservations`;
+    unsubscribeReservationSnapshots && unsubscribeReservationSnapshots();
+
+    console.log('[debug] fetching reservations');
+
+    unsubscribeReservationSnapshots = db.collection(tokenPath).onSnapshot(
+        (docs) => {
+            const reservations = [];
+            docs.forEach((doc) => {
+                const payload = doc.data();
+                if (!payload) return;
+
+                // Transform firebase time fields to epoch millis
+                payload.created = to_millis(payload.created);
+                reservations.push(payload);
+            });
+
+            app.ports.receiveReservations.send(reservations);
+        },
+        function (e) {
+            console.error('Error when retrieving reservations for user', e);
 
             if (e.message.includes('insufficient permissions')) {
                 updateElmWithLoggedOutAndCleanUp();
