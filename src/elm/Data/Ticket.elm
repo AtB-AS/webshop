@@ -1,10 +1,7 @@
 module Data.Ticket exposing
     ( Offer
-    , PaymentStatus
     , Price
     , RecurringPayment
-    , Reservation
-    , ReservationStatus(..)
     , Ticket
     )
 
@@ -37,26 +34,6 @@ type alias Offer =
     , travellerId : String
     , validTo : String
     , validFrom : String
-    }
-
-
-type ReservationStatus
-    = Captured
-    | NotCaptured
-
-
-type alias Reservation =
-    { orderId : String
-    , paymentId : Int
-    , transactionId : Int
-    , url : String
-    }
-
-
-type alias PaymentStatus =
-    { orderId : String
-    , status : String
-    , paymentType : String
     }
 
 

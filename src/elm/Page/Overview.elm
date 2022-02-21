@@ -2,7 +2,6 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
-import Data.Ticket exposing (PaymentStatus, Reservation, ReservationStatus(..))
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -15,7 +14,6 @@ import Json.Decode as Decode exposing (Decoder)
 import List.Extra
 import Notification
 import PageUpdater exposing (PageUpdater)
-import Process
 import Route exposing (Route)
 import Service.Misc as MiscService exposing (Profile)
 import Service.Ticket as TicketService

@@ -21,6 +21,7 @@ port module Service.Misc exposing
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
 import Data.PaymentType as PaymentType
+import Data.Reservation exposing (Reservation)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
@@ -180,6 +181,24 @@ onProfileChange msg =
 saveProfile : Profile -> Cmd msg
 saveProfile =
     encodeProfile >> firestoreWriteProfile
+
+
+{-| Decode a fare cxontract from Firestore.
+-}
+reservationDecoder : Decoder Reservation
+reservationDecoder =
+    Decode.succeed FareContract
+        |> DecodeP.required "created" Decode.int
+        |> DecodeP.required "orderId" Decode.string
+        |> DecodeP.required "paymentId" Decode.int
+        |> DecodeP.required "transactionId" Decode.int
+        |> DecodeP.required "url" Decode.string
+        |> DecodeP.optional "paymentType"
+            (Decode.andThen
+                (List.filterMap PaymentType.fromEntur >> Decode.succeed)
+                (Decode.list Decode.string)
+            )
+            []
 
 
 {-| Decode a fare contract from Firestore.
