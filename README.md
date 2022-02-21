@@ -150,6 +150,7 @@ After a new deployment to production, there are some steps that should be follow
 - Remove the saved card
 - Ask for a receipt on e-mail
 
+Lastly, try the main functionality on different browsers, e.g. Chrome, Firefox, Edge and Safari.
 
 ## License
 
