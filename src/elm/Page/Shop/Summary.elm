@@ -3,7 +3,7 @@ module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, cardReadW
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
 import Data.Reservation exposing (Reservation)
-import Data.Ticket exposing (Offer, RecurringPayment)
+import Data.Ticket exposing (Offer, RecurringPayment, TicketReservation)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA
@@ -36,7 +36,7 @@ import Util.Time as TimeUtil
 
 type Msg
     = BuyOffers
-    | ReceiveBuyOffers (Result Http.Error Reservation)
+    | ReceiveBuyOffers (Result Http.Error TicketReservation)
     | ReceiveRecurringPayments (Result Http.Error (List RecurringPayment))
     | SetPaymentSelection PaymentSelection
     | SetStorePayment Bool

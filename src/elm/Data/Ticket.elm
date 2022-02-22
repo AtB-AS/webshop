@@ -3,6 +3,8 @@ module Data.Ticket exposing
     , Price
     , RecurringPayment
     , Ticket
+    , TicketReservation
+    , TicketReservationStatus(..)
     )
 
 import Data.PaymentType exposing (PaymentType)
@@ -34,6 +36,19 @@ type alias Offer =
     , travellerId : String
     , validTo : String
     , validFrom : String
+    }
+
+
+type TicketReservationStatus
+    = Captured
+    | NotCaptured
+
+
+type alias TicketReservation =
+    { orderId : String
+    , paymentId : Int
+    , transactionId : Int
+    , url : String
     }
 
 

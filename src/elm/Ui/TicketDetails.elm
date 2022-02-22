@@ -262,8 +262,8 @@ viewActiveAccessText validAccesses =
             String.fromInt num ++ " aktive klipp"
 
 
-viewActivation : ( Reservation, PaymentStatus ) -> Html msg
-viewActivation ( reservation, status ) =
+viewActivation : Reservation -> Html msg
+viewActivation reservation =
     let
         classList =
             [ ( "ui-ticketDetails", True )
@@ -278,8 +278,8 @@ viewActivation ( reservation, status ) =
             activeReservationLoading
 
         captureText =
-            case status of
-                CAPTURE ->
+            case reservation.paymentStatus of
+                Just CAPTURE ->
                     "Betaling godkjent. Henter billett..."
 
                 _ ->
