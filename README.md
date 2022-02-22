@@ -137,6 +137,21 @@ webshop/
    ├─ nfk.json
 ```
 
+## Verification of a new deploy
+
+Quality assurance of new features, improvements and bug fixes have defined process, which is described more [here](https://github.com/AtB-AS/org/blob/master/guides/quality_assurance.md#qa-in-atb-webshop).
+
+After a new deployment to production, there are some steps that should be followed to ensure the deployment and its integrations:
+- Log in with both phone and e-mail
+- Add and remove a travelcard
+- Verify the chat possibility (i.e. Intercom)
+- Buy a new periodic ticket with a payment card (and save this card)
+- Buy a new carnet card with Vipps
+- Remove the saved card
+- Ask for a receipt on e-mail
+
+Lastly, try the main functionality on different browsers, e.g. Chrome, Firefox, Edge and Safari.
+
 ## License
 
 This project is licensed under the EUPL 1.2 license ([LICENSE](LICENSE) or
