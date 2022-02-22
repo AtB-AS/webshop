@@ -1,4 +1,4 @@
-module Data.Reservation exposing (..)
+module Data.Reservation exposing (PaymentStatus(..), Reservation)
 
 import Data.PaymentType exposing (PaymentType)
 
@@ -9,11 +9,17 @@ type alias Reservation =
     , paymentId : Int
     , transactionId : Int
     , url : String
-    , paymentType : PaymentType
-    , paymentStatus : ReservationStatus
+    , paymentStatus : Maybe PaymentStatus
+    , paymentType : Maybe PaymentType
     }
 
 
-type ReservationStatus
-    = Captured
-    | NotCaptured
+type PaymentStatus
+    = AUTHENTICATE
+    | CANCEL
+    | CAPTURE
+    | CREATE
+    | CREDIT
+    | IMPORT
+    | INITIATE
+    | REJECT

@@ -2,6 +2,7 @@ module Page.Overview exposing (Model, Msg(..), init, subscriptions, update, view
 
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
+import Data.Reservation exposing (Reservation)
 import Data.Webshop exposing (Inspection, Token)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -36,6 +37,7 @@ import Util.Status exposing (Status(..))
 type Msg
     = OnEnterPage
     | ReceiveFareContracts (Result Decode.Error (List FareContract))
+    | ReceiveReservations (Result Decode.Error (List Reservation))
     | ReceiveTokenPayloads (Result Decode.Error (List ( String, String )))
     | OpenEditTravelCard
     | UpdateTime Time.Posix
@@ -48,6 +50,7 @@ type Msg
 
 type alias Model =
     { tickets : List FareContract
+    , reservations : List Reservation
     , tokens : List Token
     , tokenPayloads : List ( String, String )
     , travelCardId : String
@@ -63,6 +66,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { tickets = []
+      , reservations = []
       , tokens = []
       , tokenPayloads = []
       , travelCardId = ""
@@ -97,6 +101,18 @@ update msg env model shared =
                                 |> List.reverse
                     in
                         PageUpdater.init { model | tickets = tickets, error = Nothing }
+
+                Err _ ->
+                    PageUpdater.init
+                        { model
+                            | error =
+                                Just "Fikk ikke hentet billetter. Prøv igjen senere, eller ta kontakt med kundeservice om problemet vedvarer."
+                        }
+
+        ReceiveReservations result ->
+            case result of
+                Ok reservations ->
+                    PageUpdater.init { model | reservations = reservations }
 
                 Err _ ->
                     PageUpdater.init
@@ -366,6 +382,10 @@ subscriptions _ =
         , MiscService.receiveFareContracts
             (Decode.decodeValue (Decode.list MiscService.fareContractDecoder)
                 >> ReceiveFareContracts
+            )
+        , MiscService.receiveReservations
+            (Decode.decodeValue (Decode.list MiscService.reservationDecoder)
+                >> ReceiveReservations
             )
         , Time.every 1000 UpdateTime
         ]
