@@ -3,7 +3,7 @@ module Ui.TicketDetails exposing (view, viewActivation)
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet)
 import Data.PaymentType as PaymentType exposing (PaymentType)
 import Data.RefData exposing (LangString(..))
-import Data.Ticket exposing (Reservation, ReservationStatus(..))
+import Data.Reservation exposing (PaymentStatus(..), Reservation)
 import Dict exposing (Dict)
 import Dict.Extra
 import Fragment.Icon as Icon
@@ -262,7 +262,7 @@ viewActiveAccessText validAccesses =
             String.fromInt num ++ " aktive klipp"
 
 
-viewActivation : ( Reservation, ReservationStatus ) -> Html msg
+viewActivation : ( Reservation, PaymentStatus ) -> Html msg
 viewActivation ( reservation, status ) =
     let
         classList =
@@ -279,10 +279,10 @@ viewActivation ( reservation, status ) =
 
         captureText =
             case status of
-                Captured ->
+                CAPTURE ->
                     "Betaling godkjent. Henter billett..."
 
-                NotCaptured ->
+                _ ->
                     "Prosesseres... ikke gyldig enda."
 
         spellableOrderId =

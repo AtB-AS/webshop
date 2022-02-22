@@ -14,14 +14,16 @@ port module Service.Misc exposing
     , onboardingRefreshAuth
     , onboardingStart
     , receiveFareContracts
+    , receiveReservations
     , receiveTokens
     , reloadPage
+    , reservationDecoder
     , saveProfile
     )
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
 import Data.PaymentType as PaymentType
-import Data.Reservation exposing (Reservation)
+import Data.Reservation exposing (PaymentStatus(..), Reservation)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode
@@ -43,6 +45,9 @@ port receiveTokens : (Encode.Value -> msg) -> Sub msg
 
 
 port receiveFareContracts : (Encode.Value -> msg) -> Sub msg
+
+
+port receiveReservations : (Encode.Value -> msg) -> Sub msg
 
 
 port convertTime : ( String, String ) -> Cmd msg
@@ -187,18 +192,19 @@ saveProfile =
 -}
 reservationDecoder : Decoder Reservation
 reservationDecoder =
-    Decode.succeed FareContract
+    Decode.succeed Reservation
         |> DecodeP.required "created" Decode.int
         |> DecodeP.required "orderId" Decode.string
         |> DecodeP.required "paymentId" Decode.int
         |> DecodeP.required "transactionId" Decode.int
         |> DecodeP.required "url" Decode.string
+        |> DecodeP.optional "paymentStatus" paymentStatusDecoder Nothing
         |> DecodeP.optional "paymentType"
             (Decode.andThen
-                (List.filterMap PaymentType.fromEntur >> Decode.succeed)
-                (Decode.list Decode.string)
+                (PaymentType.fromEntur >> Decode.succeed)
+                Decode.string
             )
-            []
+            Nothing
 
 
 {-| Decode a fare contract from Firestore.
@@ -227,6 +233,43 @@ fareContractDecoder =
 
 
 -- INTERNAL
+
+
+paymentStatusDecoder : Decoder (Maybe PaymentStatus)
+paymentStatusDecoder =
+    Decode.andThen
+        ((\value ->
+            case value of
+                "AUTHENTICATE" ->
+                    Just AUTHENTICATE
+
+                "CANCEL" ->
+                    Just CANCEL
+
+                "CAPTURE" ->
+                    Just CAPTURE
+
+                "CREATE" ->
+                    Just CREATE
+
+                "CREDIT" ->
+                    Just CREDIT
+
+                "IMPORT" ->
+                    Just IMPORT
+
+                "INITIATE" ->
+                    Just INITIATE
+
+                "REJECT" ->
+                    Just REJECT
+
+                _ ->
+                    Nothing
+         )
+            >> Decode.succeed
+        )
+        Decode.string
 
 
 fareContractStateDecoder : Decoder FareContractState

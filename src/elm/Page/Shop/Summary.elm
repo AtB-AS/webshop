@@ -2,7 +2,8 @@ module Page.Shop.Summary exposing (Model, Msg, Summary, TravellerData, cardReadW
 
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (FareProduct, LangString(..), ProductType(..), UserProfile, UserType(..))
-import Data.Ticket exposing (Offer, RecurringPayment, Reservation)
+import Data.Reservation exposing (Reservation)
+import Data.Ticket exposing (Offer, RecurringPayment)
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
 import GlobalActions as GA

@@ -8,12 +8,14 @@ module Service.Ticket exposing
 
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (UserType(..))
-import Data.Ticket exposing (Offer, PaymentStatus, Price, RecurringPayment, Reservation)
+import Data.Reservation exposing (Reservation)
+import Data.Ticket exposing (Offer, Price, RecurringPayment)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode exposing (Value)
+import Service.Misc exposing (reservationDecoder)
 import Url.Builder
 import Util.Http as HttpUtil
 import Util.Maybe as MaybeUtil
@@ -113,14 +115,6 @@ endRecurringPayment env id =
 
 
 -- INTERNAL
-
-
-paymentStatusDecoder : Decoder PaymentStatus
-paymentStatusDecoder =
-    Decode.succeed PaymentStatus
-        |> DecodeP.required "order_id" Decode.string
-        |> DecodeP.required "status" Decode.string
-        |> DecodeP.required "payment_type" Decode.string
 
 
 encodeTraveller : ( UserType, Int ) -> Value
@@ -248,15 +242,6 @@ encodeOffer ( offerId, count ) =
         [ ( "offer_id", Encode.string offerId )
         , ( "count", Encode.int count )
         ]
-
-
-reservationDecoder : Decoder Reservation
-reservationDecoder =
-    Decode.succeed Reservation
-        |> DecodeP.required "order_id" Decode.string
-        |> DecodeP.required "payment_id" Decode.int
-        |> DecodeP.required "transaction_id" Decode.int
-        |> DecodeP.required "url" Decode.string
 
 
 encodePaymentType : PaymentType -> Value
