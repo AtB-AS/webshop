@@ -144,7 +144,7 @@ Quality assurance of new features, improvements and bug fixes have defined proce
 After a new deployment to production, there are some steps that should be followed to ensure the deployment and its integrations:
 - Log in with both phone and e-mail
 - Add and remove a travelcard
-- Verify the chat-possibility (i.e. Inetrcom)
+- Verify the chat possibility (i.e. Intercom)
 - Buy a new periodic ticket with a payment card (and save this card)
 - Buy a new carnet card with Vipps
 - Remove the saved card
