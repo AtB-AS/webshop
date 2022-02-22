@@ -328,8 +328,11 @@ viewMain shared model =
             model.tickets
                 |> Util.FareContract.filterNotExpiredAtTime model.currentTime
 
+        validReservations =
+            model.reservations
+
         emptyResults =
-            List.isEmpty validTickets
+            List.isEmpty validTickets && List.isEmpty validReservations
     in
         H.div [ A.class "main" ]
             [ case ( emptyResults, model.error ) of
@@ -349,9 +352,8 @@ viewMain shared model =
 
 viewPending : Model -> List (Html msg)
 viewPending model =
-    -- model.reservations
-    --     |> List.map Ui.TicketDetails.viewActivation
-    []
+    model.reservations
+        |> List.map Ui.TicketDetails.viewActivation
 
 
 viewTicketCards : Shared -> List FareContract -> Model -> List (Html Msg)

@@ -8,14 +8,12 @@ module Service.Ticket exposing
 
 import Data.PaymentType as PaymentType exposing (PaymentCard(..), PaymentSelection(..), PaymentType(..))
 import Data.RefData exposing (UserType(..))
-import Data.Reservation exposing (Reservation)
-import Data.Ticket exposing (Offer, Price, RecurringPayment)
+import Data.Ticket exposing (Offer, Price, RecurringPayment, TicketReservation)
 import Environment exposing (Environment)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
 import Json.Encode as Encode exposing (Value)
-import Service.Misc exposing (reservationDecoder)
 import Url.Builder
 import Util.Http as HttpUtil
 import Util.Maybe as MaybeUtil
@@ -48,7 +46,7 @@ search env travelDate product travellers zones =
 
 {-| Reserve offers.
 -}
-reserve : Environment -> Maybe String -> PaymentSelection -> Bool -> List ( String, Int ) -> Http.Request Reservation
+reserve : Environment -> Maybe String -> PaymentSelection -> Bool -> List ( String, Int ) -> Http.Request TicketReservation
 reserve env phoneNumber paymentSelection storePayment offers =
     let
         url =
@@ -242,6 +240,15 @@ encodeOffer ( offerId, count ) =
         [ ( "offer_id", Encode.string offerId )
         , ( "count", Encode.int count )
         ]
+
+
+reservationDecoder : Decoder TicketReservation
+reservationDecoder =
+    Decode.succeed TicketReservation
+        |> DecodeP.required "order_id" Decode.string
+        |> DecodeP.required "payment_id" Decode.int
+        |> DecodeP.required "transaction_id" Decode.int
+        |> DecodeP.required "url" Decode.string
 
 
 encodePaymentType : PaymentType -> Value
