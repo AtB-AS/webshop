@@ -114,16 +114,12 @@ update msg env model shared =
                 Ok reservations ->
                     PageUpdater.init { model | reservations = reservations }
 
-                Err err ->
-                    let
-                        foo =
-                            Debug.log "err" err
-                    in
-                        PageUpdater.init
-                            { model
-                                | error =
-                                    Just "Fikk ikke hentet billetter. Prøv igjen senere, eller ta kontakt med kundeservice om problemet vedvarer."
-                            }
+                Err _ ->
+                    PageUpdater.init
+                        { model
+                            | error =
+                                Just "Fikk ikke hentet billetter. Prøv igjen senere, eller ta kontakt med kundeservice om problemet vedvarer."
+                        }
 
         ReceiveTokenPayloads result ->
             case result of
