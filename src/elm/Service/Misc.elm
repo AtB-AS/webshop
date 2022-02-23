@@ -188,7 +188,7 @@ saveProfile =
     encodeProfile >> firestoreWriteProfile
 
 
-{-| Decode a fare cxontract from Firestore.
+{-| Decode a reservation from Firestore.
 -}
 reservationDecoder : Decoder Reservation
 reservationDecoder =
@@ -201,8 +201,8 @@ reservationDecoder =
         |> DecodeP.optional "paymentStatus" paymentStatusDecoder Nothing
         |> DecodeP.optional "paymentType"
             (Decode.andThen
-                (PaymentType.fromEntur >> Decode.succeed)
-                Decode.string
+                (PaymentType.fromInt >> Decode.succeed)
+                Decode.int
             )
             Nothing
 
