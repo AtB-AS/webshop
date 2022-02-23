@@ -31,6 +31,7 @@ import Ui.TravelCardText
 import Util.FareContract
 import Util.Maybe
 import Util.PhoneNumber
+import Util.Reservation
 import Util.Status exposing (Status(..))
 
 
@@ -112,7 +113,11 @@ update msg env model shared =
         ReceiveReservations result ->
             case result of
                 Ok reservations ->
-                    PageUpdater.init { model | reservations = reservations }
+                    let
+                        filteredReservations =
+                            Util.Reservation.filterValidReservations model.currentTime reservations
+                    in
+                        PageUpdater.init { model | reservations = filteredReservations }
 
                 Err _ ->
                     PageUpdater.init
