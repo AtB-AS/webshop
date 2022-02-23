@@ -305,7 +305,7 @@ viewActivation reservation =
                             (SR.readAndView spellableOrderId reservation.orderId)
                         , Html.Extra.viewMaybe
                             (\paymentType ->
-                                Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType [ paymentType ] ]
+                                Ui.LabelItem.viewCompact "Betales med" [ H.text <| formatPaymentType [ paymentType ] ]
                             )
                             reservation.paymentType
                         ]
