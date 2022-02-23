@@ -358,7 +358,7 @@ viewMain shared model =
 viewPending : Model -> List (Html msg)
 viewPending model =
     model.reservations
-        |> List.map Ui.TicketDetails.viewActivation
+        |> List.map Ui.TicketDetails.viewReservation
 
 
 viewTicketCards : Shared -> List FareContract -> Model -> List (Html Msg)

@@ -1,4 +1,4 @@
-module Ui.TicketDetails exposing (view, viewActivation)
+module Ui.TicketDetails exposing (view, viewReservation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet)
 import Data.PaymentType as PaymentType exposing (PaymentType)
@@ -262,8 +262,8 @@ viewActiveAccessText validAccesses =
             String.fromInt num ++ " aktive klipp"
 
 
-viewActivation : Reservation -> Html msg
-viewActivation reservation =
+viewReservation : Reservation -> Html msg
+viewReservation reservation =
     let
         classList =
             [ ( "ui-ticketDetails", True )
