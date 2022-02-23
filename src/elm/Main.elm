@@ -230,23 +230,8 @@ setRouteInternal initialRoute maybeRoute model =
                     Just Route.Home ->
                         TaskUtil.doTask <| OverviewMsg OverviewPage.OnEnterPage
 
-                    Just (Route.Payment maybeReservation) ->
-                        let
-                            noPaymentId =
-                                maybeReservation.paymentId == Nothing
-
-                            isCancelled =
-                                maybeReservation.responseCode
-                                    |> Maybe.map ((==) Route.Cancel)
-                                    |> Maybe.withDefault False
-                        in
-                            if noPaymentId || isCancelled then
-                                Route.modifyUrl model.navKey Route.Home
-
-                            else
-                                Cmd.batch
-                                    [ Route.modifyUrl model.navKey Route.Home
-                                    ]
+                    Just (Route.Payment _) ->
+                        Route.modifyUrl model.navKey Route.Home
 
                     Just _ ->
                         TaskUtil.doTask <| GlobalAction <| GA.SetTitle Nothing
