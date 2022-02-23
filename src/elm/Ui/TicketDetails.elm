@@ -271,7 +271,6 @@ viewActivation reservation =
 
         classListMetadata =
             [ ( "ui-ticketDetails__metaDataitem", True )
-            , ( "ui-ticketDetails__metaDataitem--padded", True )
             ]
 
         icon =
@@ -300,9 +299,16 @@ viewActivation reservation =
                         ]
                     ]
                 , H.div [ A.classList classListMetadata ]
-                    [ Ui.LabelItem.viewCompact
-                        "Ordre-ID"
-                        (SR.readAndView spellableOrderId reservation.orderId)
+                    [ viewHorizontalItem
+                        [ Ui.LabelItem.viewCompact
+                            "Ordre-ID"
+                            (SR.readAndView spellableOrderId reservation.orderId)
+                        , Html.Extra.viewMaybe
+                            (\paymentType ->
+                                Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType [ paymentType ] ]
+                            )
+                            reservation.paymentType
+                        ]
                     ]
                 ]
             ]
