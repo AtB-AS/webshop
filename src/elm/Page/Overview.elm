@@ -51,7 +51,8 @@ type Msg
 
 type alias Model =
     { tickets : List FareContract
-    , reservations : List Reservation
+    , allFareContracts : List FareContract
+    , allReservations : List Reservation
     , tokens : List Token
     , tokenPayloads : List ( String, String )
     , travelCardId : String
@@ -67,7 +68,8 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { tickets = []
-      , reservations = []
+      , allFareContracts = []
+      , allReservations = []
       , tokens = []
       , tokenPayloads = []
       , travelCardId = ""
@@ -101,7 +103,12 @@ update msg env model shared =
                                 |> List.sortBy .created
                                 |> List.reverse
                     in
-                        PageUpdater.init { model | tickets = tickets, error = Nothing }
+                        PageUpdater.init
+                            { model
+                                | tickets = tickets
+                                , allFareContracts = fareContracts
+                                , error = Nothing
+                            }
 
                 Err _ ->
                     PageUpdater.init
@@ -113,11 +120,7 @@ update msg env model shared =
         ReceiveReservations result ->
             case result of
                 Ok reservations ->
-                    let
-                        filteredReservations =
-                            Util.Reservation.filterValidReservations model.currentTime reservations
-                    in
-                        PageUpdater.init { model | reservations = filteredReservations }
+                    PageUpdater.init { model | allReservations = reservations }
 
                 Err _ ->
                     PageUpdater.init
@@ -334,7 +337,7 @@ viewMain shared model =
                 |> Util.FareContract.filterNotExpiredAtTime model.currentTime
 
         validReservations =
-            model.reservations
+            Util.Reservation.filterValidReservations model.currentTime model.allFareContracts model.allReservations
 
         emptyResults =
             List.isEmpty validTickets && List.isEmpty validReservations
@@ -351,14 +354,13 @@ viewMain shared model =
                     Message.error error
 
                 ( False, Nothing ) ->
-                    H.div [] (viewPending model ++ viewTicketCards shared validTickets model)
+                    H.div [] (viewPending validReservations ++ viewTicketCards shared validTickets model)
             ]
 
 
-viewPending : Model -> List (Html msg)
-viewPending model =
-    model.reservations
-        |> List.map Ui.TicketDetails.viewReservation
+viewPending : List Reservation -> List (Html msg)
+viewPending reservations =
+    List.map Ui.TicketDetails.viewReservation reservations
 
 
 viewTicketCards : Shared -> List FareContract -> Model -> List (Html Msg)

@@ -1,5 +1,6 @@
 module Util.Reservation exposing (filterValidReservations, isNotAbortedReservation, isReservationWithinAnHour)
 
+import Data.FareContract exposing (FareContract)
 import Data.Reservation exposing (PaymentStatus(..), Reservation)
 import Time
 
@@ -26,9 +27,19 @@ isReservationWithinAnHour now reservation =
         anHourAfterReservation >= nowMs
 
 
-filterValidReservations : Time.Posix -> List Reservation -> List Reservation
-filterValidReservations currentTime reservations =
+isNotInFareContracts : List FareContract -> Reservation -> Bool
+isNotInFareContracts fareContracts reservation =
+    let
+        orderIds =
+            List.map .orderId fareContracts
+    in
+        not <| List.member reservation.orderId orderIds
+
+
+filterValidReservations : Time.Posix -> List FareContract -> List Reservation -> List Reservation
+filterValidReservations currentTime fareContracts reservations =
     reservations
         |> List.filter (.paymentStatus >> (/=) Nothing)
         |> List.filter isNotAbortedReservation
         |> List.filter (isReservationWithinAnHour currentTime)
+        |> List.filter (isNotInFareContracts fareContracts)
