@@ -21,11 +21,11 @@
     "withBuyTicket": false,
     "buyTicketTimeout": 600000,
 
-    "futureTicketOrderId": "P5VAJ3QY",
-    "futureTicketStartDateEN": "2022-02-10",
-    "futureTicketStartDateNO": "10.02.2022",
-    "futureTicketEndDateEN": "2022-02-17",
-    "futureTicketEndDateNO": "17.02.2022",
+    "futureTicketOrderId": "P3LRJ535",
+    "futureTicketStartDateEN": "2022-05-15",
+    "futureTicketStartDateNO": "15.05.2022",
+    "futureTicketEndDateEN": "2022-05-22",
+    "futureTicketEndDateNO": "22.05.2022",
     "travelCardNo": "3445454533634685",
     "travelCardAsDisplayed": "45 3363468",
 
