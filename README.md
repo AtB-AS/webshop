@@ -141,7 +141,7 @@ webshop/
 
 The webshop is automatically released to staging then new changes on the master branch. To release to production edit the latest release version in GitHub and select _Publish release_.
 
-Normally we increment the minor version when releasing a new version, but if there are no visible changes and only small fixes then the patch version may be incremented.
+Normally we increment the minor version when releasing a new version, but if there are no visible changes and only small fixes then the patch version may be incremented. Bump as major version if there are any changes that require the release of webshop-backend or any other dependency.
 
 ## License
 
