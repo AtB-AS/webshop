@@ -137,11 +137,28 @@ webshop/
    ├─ nfk.json
 ```
 
+
 ## Release
 
 The webshop is automatically released to staging then new changes on the master branch. To release to production edit the latest release version in GitHub and select _Publish release_.
 
 Normally we increment the minor version when releasing a new version, but if there are no visible changes and only small fixes then the patch version may be incremented. Bump as major version if there are any changes that require the release of webshop-backend or any other dependency.
+
+## Verification of a new release
+
+Quality assurance of new features, improvements and bug fixes have defined process, which is described more [here](https://github.com/AtB-AS/org/blob/master/guides/quality_assurance.md#qa-in-atb-webshop).
+
+After a new deployment to production, there are some steps that should be followed to ensure the deployment and its integrations:
+- Log in with both phone and e-mail
+- Add and remove a travelcard
+- Verify the chat possibility (i.e. Intercom)
+- Buy a new periodic ticket with a payment card (and save this card)
+- Buy a new carnet card with Vipps
+- Remove the saved card
+- Ask for a receipt on e-mail
+
+Lastly, try the main functionality on different browsers, e.g. Chrome, Firefox, Edge and Safari.
+
 
 ## License
 

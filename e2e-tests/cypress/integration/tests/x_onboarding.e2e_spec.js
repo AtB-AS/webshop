@@ -70,32 +70,12 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             });
         });
 
-        it('should confirm the created user', () => {
-            cy.intercept(
-                'POST',
-                '**/identitytoolkit/v3/relyingparty/setAccountInfo**'
-            ).as('setAccountInfo');
-
-            //Possibility to catch 'cross origin error' when confirming the email
-            /*
-            Cypress.on('fail', (error, runnable) => {
-                //debugger
-                //throw error // throw error to have test still fail
+        it('should confirm and onboard the created user', () => {
+            //Let the error 'Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/html')' go
+            cy.on('uncaught:exception', (err, runnable) => {
+                return false
             })
-             */
 
-            cy.readFile('cypress/fixtures/verifyUrl.txt').then(($url) => {
-                expect($url).to.include('firebaseapp');
-                expect($url).to.include('verifyEmail');
-                cy.visit($url);
-            });
-
-            firebase.confirm();
-            cy.wait('@setAccountInfo').wait(500);
-            cy.url().should('contain', Cypress.config('baseUrl'));
-        });
-
-        it('should onboard new user', () => {
             const step1 = 'Profilinformasjon';
             const step2 = 'Samtykker';
             const step3 = 'Legg til t:kort';
@@ -108,6 +88,10 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             const travelCardError2 = '1616006091234567';
             //const travelCard = '1616006912504173'
 
+            cy.intercept(
+                'POST',
+                '**/identitytoolkit/v3/relyingparty/setAccountInfo**'
+            ).as('setAccountInfo');
             cy.intercept('POST', '**/webshop/v1/register').as('registerReq');
             cy.intercept('POST', '**/webshop/v1/consent').as('consentReq');
             cy.intercept('POST', '**/webshop/v1/travelcard').as(
@@ -115,8 +99,19 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             );
             cy.intercept('POST', '**/v1/token**').as('refreshToken');
 
-            cy.visit('');
+            //Verify created user
+            cy.readFile('cypress/fixtures/verifyUrl.txt').then(($url) => {
+                expect($url).to.include('firebaseapp');
+                expect($url).to.include('verifyEmail');
+                cy.visit($url);
+            });
 
+            firebase.confirm();
+            cy.wait('@setAccountInfo').wait(500);
+            cy.url().should('contain', Cypress.config('baseUrl'));
+            cy.reload()
+
+            //On-boarding
             //Check maneuvering forward - including a11y
             onboarding.stepTitle().should('contain', step1);
             cy.a11yCheck(null, null);
