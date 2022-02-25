@@ -137,7 +137,14 @@ webshop/
    ├─ nfk.json
 ```
 
-## Verification of a new deploy
+
+## Release
+
+The webshop is automatically released to staging then new changes on the master branch. To release to production edit the latest release version in GitHub and select _Publish release_.
+
+Normally we increment the minor version when releasing a new version, but if there are no visible changes and only small fixes then the patch version may be incremented. Bump as major version if there are any changes that require the release of webshop-backend or any other dependency.
+
+## Verification of a new release
 
 Quality assurance of new features, improvements and bug fixes have defined process, which is described more [here](https://github.com/AtB-AS/org/blob/master/guides/quality_assurance.md#qa-in-atb-webshop).
 
@@ -151,6 +158,7 @@ After a new deployment to production, there are some steps that should be follow
 - Ask for a receipt on e-mail
 
 Lastly, try the main functionality on different browsers, e.g. Chrome, Firefox, Edge and Safari.
+
 
 ## License
 
