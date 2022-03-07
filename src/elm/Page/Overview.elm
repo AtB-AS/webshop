@@ -50,7 +50,8 @@ type Msg
 
 
 type alias Model =
-    { tickets : List FareContract
+    { validFareContracts : List FareContract
+    , validReservations : List Reservation
     , allFareContracts : List FareContract
     , allReservations : List Reservation
     , tokens : List Token
@@ -67,7 +68,8 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { tickets = []
+    ( { validFareContracts = []
+      , validReservations = []
       , allFareContracts = []
       , allReservations = []
       , tokens = []
@@ -95,20 +97,15 @@ update msg env model shared =
         ReceiveFareContracts result ->
             case result of
                 Ok fareContracts ->
-                    let
-                        -- Only store tickets that are valid into the future.
-                        tickets =
-                            fareContracts
-                                |> Util.FareContract.filterNotExpiredAtTime model.currentTime
-                                |> List.sortBy .created
-                                |> List.reverse
-                    in
-                        PageUpdater.init
-                            { model
-                                | tickets = tickets
-                                , allFareContracts = fareContracts
-                                , error = Nothing
-                            }
+                    PageUpdater.init
+                        { model
+                            | allFareContracts = fareContracts
+                            , validFareContracts =
+                                Util.FareContract.toSortedValidFareContracts model.currentTime fareContracts
+                            , validReservations =
+                                Util.Reservation.filterValidReservations model.currentTime fareContracts model.allReservations
+                            , error = Nothing
+                        }
 
                 Err _ ->
                     PageUpdater.init
@@ -120,7 +117,12 @@ update msg env model shared =
         ReceiveReservations result ->
             case result of
                 Ok reservations ->
-                    PageUpdater.init { model | allReservations = reservations }
+                    PageUpdater.init
+                        { model
+                            | allReservations = reservations
+                            , validReservations =
+                                Util.Reservation.filterValidReservations model.currentTime model.allFareContracts reservations
+                        }
 
                 Err _ ->
                     PageUpdater.init
@@ -332,15 +334,14 @@ viewActions shared =
 viewMain : Shared -> Model -> Html Msg
 viewMain shared model =
     let
-        validTickets =
-            model.tickets
-                |> Util.FareContract.filterNotExpiredAtTime model.currentTime
+        validFareContracts =
+            Util.FareContract.toSortedValidFareContracts model.currentTime model.validFareContracts
 
         validReservations =
-            Util.Reservation.filterValidReservations model.currentTime model.allFareContracts model.allReservations
+            Util.Reservation.filterValidReservations model.currentTime model.allFareContracts model.validReservations
 
         emptyResults =
-            List.isEmpty validTickets && List.isEmpty validReservations
+            List.isEmpty validFareContracts && List.isEmpty validReservations
     in
         H.div [ A.class "main" ]
             [ case ( emptyResults, model.error ) of
@@ -354,7 +355,7 @@ viewMain shared model =
                     Message.error error
 
                 ( False, Nothing ) ->
-                    H.div [] (viewPending validReservations ++ viewTicketCards shared validTickets model)
+                    H.div [] (viewPending validReservations ++ viewTicketCards shared validFareContracts model)
             ]
 
 

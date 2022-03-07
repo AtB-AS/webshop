@@ -1,4 +1,4 @@
-module Util.FareContract exposing (filterNotExpiredAtTime, filterValidAtTime, hasValidState, isNotExpired, isValid)
+module Util.FareContract exposing (filterNotExpiredAtTime, filterValidAtTime, hasValidState, isNotExpired, isValid, toSortedValidFareContracts)
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Time
@@ -27,6 +27,14 @@ filterNotExpiredAtTime timePosix fareContracts =
         |> List.filter (.validTo >> isNotExpired timePosix)
         |> List.filter (hasValidTravelRight timePosix)
         |> List.filter hasValidState
+
+
+toSortedValidFareContracts : Time.Posix -> List FareContract -> List FareContract
+toSortedValidFareContracts timePosix fareContracts =
+    fareContracts
+        |> filterNotExpiredAtTime timePosix
+        |> List.sortBy .created
+        |> List.reverse
 
 
 isNotExpired : Time.Posix -> Int -> Bool
