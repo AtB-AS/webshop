@@ -20,13 +20,17 @@ describe('period ticket purchase', () => {
     });
 
     it('should display default ticket parameters', () => {
+        const defaultPeriodProduct = '24-timersbillett'
+        const defaultPeriodProductPrice = '126,00'
+        const defaultPeriodProductMva = '15,12'
+
         //Type
         newTicket.travelType().should("contain", "Buss og trikk")
 
         //Product
         newTicket.productsSection().then($product => {
             options.areVisible($product, true)
-            options.value($product).should("contain", "30-dagersbillett")
+            options.value($product).should("contain", defaultPeriodProduct)
         })
 
         //Traveller
@@ -51,10 +55,10 @@ describe('period ticket purchase', () => {
 
         //Price
         newTicket.price()
-            .should("contain", "890,00")
+            .should("contain", defaultPeriodProductPrice)
             .and("contain", "kr")
         newTicket.mva()
-            .should("contain", "106,80")
+            .should("contain", defaultPeriodProductMva)
     })
 
     it('summary should be enabled for existing travel card', () => {
@@ -120,17 +124,21 @@ describe('period ticket purchase', () => {
     })
 
     it('summary should show default ticket parameters', () => {
+        const defaultPeriodProduct = '24-timersbillett'
+        const defaultPeriodProductPrice = '126,00'
+        const defaultPeriodProductValidity = 1
+
         newTicket.goToSummary()
 
         //Verify defaults
         summary.ticketDetails("Billettype").should("contain", "Periodebillett")
         summary.ticketDetails("Reisetype").should("contain", "Buss / trikk")
-        summary.ticketDetails("Periode").should("contain", "30-dagersbillett")
+        summary.ticketDetails("Periode").should("contain", defaultPeriodProduct)
         summary.ticketDetails("Reisende").should("contain", "1 Voksen")
         summary.ticketDetails("Sone").should("contain", "Reise i 1 sone (A)")
         summary.ticketDetails("Gyldig fra").should("contain", "Kjøpstidspunkt")
-        summary.ticketDetails("Gyldig til").should("contain", getFutureDate(30))
-        summary.price().should("contain", "890,00")
+        summary.ticketDetails("Gyldig til").should("contain", getFutureDate(defaultPeriodProductValidity))
+        summary.price().should("contain", defaultPeriodProductPrice)
     })
 
     it('valid to date in summary should reflect the product', () => {
@@ -242,7 +250,12 @@ describe('period ticket purchase', () => {
 
     it('changing zones should update the offer and summary', () => {
         let currentOffer = 890
+        const periodProd = '30-dagersbillett'
         const arrZone = 'B1'
+
+        //Init change
+        products.set(periodProd)
+        cy.wait("@zones")
 
         //Change
         zone.arrivalZone().select(arrZone)
