@@ -41,6 +41,7 @@ export const summary = {
 
 export const options = {
     value: elem => cy.wrap(elem).find(".ui-labelItem"),
+    choices: elem => cy.wrap(elem).find('.ui-input-radioGroup').find('.ui-group__item'),
     areVisible: (elem, bool) => {
         if (bool){
             cy.wrap(elem).find(".ui-group__content").should("have.class", "ui-group__content--open")
