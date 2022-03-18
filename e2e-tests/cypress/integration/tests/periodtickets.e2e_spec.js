@@ -203,16 +203,7 @@ describe('period ticket purchase', () => {
     });
 
     it('valid to date in summary should reflect the product', () => {
-        // 30
-        products.set('30-dagersbillett');
-        newTicket.goToSummary();
-        summary.ticketDetails('Periode').should('contain', '30-dagersbillett');
-        summary
-            .ticketDetails('Gyldig til')
-            .should('contain', getFutureDate(30));
-
         // 180
-        summary.back();
         products.set('180-dagersbillett');
         cy.wait('@zones');
         newTicket.goToSummary();
@@ -220,6 +211,15 @@ describe('period ticket purchase', () => {
         summary
             .ticketDetails('Gyldig til')
             .should('contain', getFutureDate(180));
+
+        // 30
+        summary.back();
+        products.set('30-dagersbillett');
+        newTicket.goToSummary();
+        summary.ticketDetails('Periode').should('contain', '30-dagersbillett');
+        summary
+            .ticketDetails('Gyldig til')
+            .should('contain', getFutureDate(30));
 
         // 7
         summary.back();
