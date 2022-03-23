@@ -153,7 +153,10 @@ After a new deployment to production, there are some steps that should be follow
 - Add and remove a travelcard
 - Verify the chat possibility (i.e. Intercom)
 - Buy a new periodic ticket with a payment card (and save this card)
-- Buy a new carnet card with Vipps
+    - Ensure to choose a high price that should trigger SCA
+- Buy new carnet card with a different payment card
+    - Ensure to choose a low price that should not trigger SCA (if enabled)
+- Buy product with Vipps
 - Remove the saved card
 - Ask for a receipt on e-mail
 
