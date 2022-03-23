@@ -284,11 +284,8 @@ encodePaymentSelection paymentSelection =
 isScaExemption : PaymentSelection -> Bool
 isScaExemption paymentSelection =
     case paymentSelection of
-        NonRecurring PaymentType.Vipps ->
-            False
-
         _ ->
-            True
+            False
 
 
 recurringPaymentDecoder : Decoder RecurringPayment
