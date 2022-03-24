@@ -1,7 +1,6 @@
 module Ui.TicketDetails exposing (view, viewReservation)
 
 import Data.FareContract exposing (FareContract, TravelRight(..), TravelRightCarnet)
-import Data.PaymentType as PaymentType exposing (PaymentType)
 import Data.RefData exposing (LangString(..))
 import Data.Reservation exposing (PaymentStatus(..), Reservation)
 import Dict exposing (Dict)
@@ -23,6 +22,7 @@ import Ui.ScreenReaderText as SR
 import Ui.TextContainer
 import Util.FareContract
 import Util.Maybe
+import Util.PaymentType
 import Util.Time as TimeUtil
 
 
@@ -148,7 +148,7 @@ view shared ticketDetails onReceipt =
                             [ H.text <|
                                 TimeUtil.millisToFullHumanized timeZone fareContract.created
                             ]
-                        , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| formatPaymentType fareContract.paymentType ]
+                        , Ui.LabelItem.viewCompact "Betalt med" [ H.text <| Util.PaymentType.format fareContract.paymentType fareContract.paymentTypeGroup ]
                         , Ui.LabelItem.viewCompact "Ordre-ID" <| SR.readAndView spellableOrderId fareContract.orderId
                         ]
                     , B.init "Be om kvittering på e-post"
@@ -305,7 +305,7 @@ viewReservation reservation =
                             (SR.readAndView spellableOrderId reservation.orderId)
                         , Html.Extra.viewMaybe
                             (\paymentType ->
-                                Ui.LabelItem.viewCompact "Betales med" [ H.text <| formatPaymentType [ paymentType ] ]
+                                Ui.LabelItem.viewCompact "Betales med" [ H.text <| Util.PaymentType.format [ paymentType ] [] ]
                             )
                             reservation.paymentType
                         ]
@@ -496,11 +496,6 @@ onlyTravelRightEssentials travelRights =
                         Nothing
             )
             travelRights
-
-
-formatPaymentType : List PaymentType -> String
-formatPaymentType =
-    List.head >> Maybe.map PaymentType.format >> Maybe.withDefault "Ukjent"
 
 
 boolAsString : Bool -> String
