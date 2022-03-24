@@ -1,11 +1,7 @@
 module Page.History exposing (Model, Msg(..), init, subscriptions, update, view)
 
--- import Ui.Input.Text as T
-
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
-import Data.PaymentType as PaymentType exposing (PaymentType)
-import Data.PaymentTypeGroup as PaymentTypeGroup exposing (PaymentTypeGroup)
 import Data.RefData exposing (LangString(..))
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -30,6 +26,7 @@ import Ui.Message as Message
 import Ui.ScreenReaderText as SR
 import Ui.Section
 import Util.Format as Format
+import Util.PaymentType
 import Util.Time as TimeUtil
 
 
@@ -359,7 +356,7 @@ viewOrder shared model order =
                                         ++ TimeUtil.millisToFullHumanized model.timeZone order.created
                                 ]
                             , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
-                            , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType order.paymentTypeGroup ]
+                            , H.div [] [ H.text <| "Betalt med " ++ Util.PaymentType.format order.paymentType order.paymentTypeGroup ]
                             , H.div [] orderIdView
                             ]
                     )
@@ -454,21 +451,6 @@ formatTotal value =
 
         Nothing ->
             "??"
-
-
-formatPaymentType : List PaymentType -> List PaymentTypeGroup -> String
-formatPaymentType paymentTypes paymentTypeGroups =
-    case List.head paymentTypes of
-        Just paymentType ->
-            PaymentType.format paymentType
-
-        Nothing ->
-            case List.head paymentTypeGroups of
-                Just paymentTypeGroup ->
-                    PaymentTypeGroup.format paymentTypeGroup
-
-                Nothing ->
-                    "Ukjent"
 
 
 sendReceipt : Environment -> Profile -> String -> Cmd Msg
