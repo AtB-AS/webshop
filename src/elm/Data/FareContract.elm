@@ -9,6 +9,7 @@ module Data.FareContract exposing
     )
 
 import Data.PaymentType exposing (PaymentType)
+import Data.PaymentTypeGroup exposing (PaymentTypeGroup)
 
 
 type TravelRight
@@ -72,6 +73,7 @@ type alias FareContract =
     , validTo : Int
     , totalAmount : Maybe String
     , paymentType : List PaymentType
+    , paymentTypeGroup : List PaymentTypeGroup
     }
 
 

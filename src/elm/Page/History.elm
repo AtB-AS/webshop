@@ -5,6 +5,7 @@ module Page.History exposing (Model, Msg(..), init, subscriptions, update, view)
 import Base exposing (AppInfo)
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..))
 import Data.PaymentType as PaymentType exposing (PaymentType)
+import Data.PaymentTypeGroup as PaymentTypeGroup exposing (PaymentTypeGroup)
 import Data.RefData exposing (LangString(..))
 import Environment exposing (Environment)
 import Fragment.Icon as Icon
@@ -358,7 +359,7 @@ viewOrder shared model order =
                                         ++ TimeUtil.millisToFullHumanized model.timeZone order.created
                                 ]
                             , H.div [] [ H.text <| "Totalt kr " ++ formatTotal order.totalAmount ]
-                            , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType ]
+                            , H.div [] [ H.text <| "Betalt med " ++ formatPaymentType order.paymentType order.paymentTypeGroup ]
                             , H.div [] orderIdView
                             ]
                     )
@@ -455,9 +456,19 @@ formatTotal value =
             "??"
 
 
-formatPaymentType : List PaymentType -> String
-formatPaymentType =
-    List.head >> Maybe.map PaymentType.format >> Maybe.withDefault "Ukjent"
+formatPaymentType : List PaymentType -> List PaymentTypeGroup -> String
+formatPaymentType paymentTypes paymentTypeGroups =
+    case List.head paymentTypes of
+        Just paymentType ->
+            PaymentType.format paymentType
+
+        Nothing ->
+            case List.head paymentTypeGroups of
+                Just paymentTypeGroup ->
+                    PaymentTypeGroup.format paymentTypeGroup
+
+                Nothing ->
+                    "Ukjent"
 
 
 sendReceipt : Environment -> Profile -> String -> Cmd Msg

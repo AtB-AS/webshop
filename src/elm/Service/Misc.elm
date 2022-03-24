@@ -23,6 +23,7 @@ port module Service.Misc exposing
 
 import Data.FareContract exposing (FareContract, FareContractState(..), TravelRight(..), TravelRightBase, TravelRightCarnet, TravelRightFull, UsedAccess)
 import Data.PaymentType as PaymentType
+import Data.PaymentTypeGroup as PaymentTypeGroup
 import Data.Reservation exposing (PaymentStatus(..), Reservation)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DecodeP
@@ -226,6 +227,12 @@ fareContractDecoder =
         |> DecodeP.optional "paymentType"
             (Decode.andThen
                 (List.filterMap PaymentType.fromEntur >> Decode.succeed)
+                (Decode.list Decode.string)
+            )
+            []
+        |> DecodeP.optional "paymentTypeGroup"
+            (Decode.andThen
+                (List.filterMap PaymentTypeGroup.fromEntur >> Decode.succeed)
                 (Decode.list Decode.string)
             )
             []
