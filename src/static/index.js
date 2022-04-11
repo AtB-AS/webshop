@@ -252,7 +252,7 @@ async function fetchAuthInfo(user, stopOnboarding) {
                 .onSnapshot((doc) => {
                     const profile = doc.data();
 
-                    if (!profile) {
+                    if (!profile || !profile.id) {
                         onboardingUser = user;
                         app.ports.onboardingStart.send([
                             idToken.token,
