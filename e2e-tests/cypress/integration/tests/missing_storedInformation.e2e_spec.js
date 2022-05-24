@@ -9,7 +9,7 @@ describe('missing stored information scenarios', () => {
     before(() => {
         cy.visitMainAsNotAuthorized();
     });
-    beforeEach(function() {
+    beforeEach(function () {
         cy.visitMainAsAuthorized(Cypress.env('email_noTravelCard'));
     });
     after(() => {
@@ -21,69 +21,89 @@ describe('missing stored information scenarios', () => {
         verify.verifyHeader('h2', 'Kjøp ny periodebillett');
 
         //Verify
-        newTicket.infoText().should("contain", "Legg til et t:kort før kjøp av billett")
-        newTicket.goToSummaryButton().should("have.class", "ui-button--disabled")
-    })
+        newTicket
+            .infoText()
+            .should('contain', 'Legg til et t:kort før kjøp av billett');
+        newTicket
+            .goToSummaryButton()
+            .should('have.class', 'ui-button--disabled');
+    });
 
     it('carnet ticket - summary should be disabled for non existing travel card', () => {
         menu.buyCarnetTicket().click();
         verify.verifyHeader('h2', 'Kjøp nytt klippekort');
 
         //Verify
-        newTicket.infoText().should("contain", "Legg til et t:kort før kjøp av billett")
-        newTicket.goToSummaryButton().should("have.class", "ui-button--disabled")
-    })
+        newTicket
+            .infoText()
+            .should('contain', 'Legg til et t:kort før kjøp av billett');
+        newTicket
+            .goToSummaryButton()
+            .should('have.class', 'ui-button--disabled');
+    });
 
     it('my profile - should not have any stored payment cards', () => {
-        cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
+        cy.intercept('GET', '**/ticket/v2/recurring-payments').as(
+            'recurringPayments'
+        );
 
         menu.myProfile().click();
-        cy.wait("@recurringPayments")
+        cy.wait('@recurringPayments');
         verify.verifyHeader('h2', 'Min profil');
 
-        myprofile.storedPayments().should("contain", "Ingen lagrede betalingskort")
-    })
+        myprofile
+            .storedPayments()
+            .should('contain', 'Ingen lagrede betalingskort');
+    });
 
     it('my profile - should show info text when adding travel card', () => {
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
 
-        myprofile.addTravelCard().click()
-        myprofile.addTravelCardInfo()
-            .should('contain', 'Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser')
-
-    })
+        myprofile.addTravelCard().click();
+        myprofile
+            .addTravelCardInfo()
+            .should(
+                'contain',
+                'Ved å registrere et t:kort på profilen din så er det dette du må bruke som reisebevis når du er ute og reiser'
+            );
+    });
 
     it('my profile - should get error messages for wrong travel card', () => {
-        const travelCardError = "3443354354353454"
-        const travelCardError2 = "1616006085855858"
+        const travelCardError = '3443354354353454';
+        const travelCardError2 = '1616006085855858';
 
         cy.intercept('POST', '**/webshop/v1/travelcard').as('addTravelcard');
 
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
 
-        myprofile.addTravelCard().click()
+        myprofile.addTravelCard().click();
         myprofile.travelCardInput().type(travelCardError);
         myprofile.saveValue();
-        myprofile.travelCardError().should("contain", "t:kort id må starte på 1616006")
-        myprofile.travelCardInput().type("{selectall}{del}");
-        myprofile.travelCardInput().type(travelCardError2)
+        myprofile
+            .travelCardError()
+            .should('contain', 't:kort id må starte på 1616006');
+        myprofile.travelCardInput().type('{selectall}{del}');
+        myprofile.travelCardInput().type(travelCardError2);
         myprofile.saveValue();
-        cy.wait("@addTravelcard")
-        myprofile.travelCardError()
-            .should("contain", "du har tastet inn feil t:kortnummer")
-            .and("contain", "se over og kontroller at alt stemmer")
-        myprofile.cancel()
-    })
+        cy.wait('@addTravelcard');
+        myprofile
+            .travelCardError()
+            .should('contain', 'du har tastet inn feil t:kortnummer')
+            .and('contain', 'se over og kontroller at alt stemmer');
+        myprofile.cancel();
+    });
 
-    //TODO Disabled due to problems when changing travelcards (each travelcard is represented as a GUID that is not checked, i.e. multiple travelcards will exist on the accound)
-    xit('account information - should be able to add travel card', () => {
-        const travelCardNo = Cypress.env('travelCardNo')
-        const travelCardAsDisplayed = Cypress.env('travelCardAsDisplayed')
+    // Note! Have an eye to this test, since if it fails to remove the travelcard, the next iteration will also fail (cannot add when oone already exists)
+    it('account information - should be able to add travel card', () => {
+        const travelCardNo = Cypress.env('travelCardNo');
+        const travelCardAsDisplayed = Cypress.env('travelCardAsDisplayed');
 
         cy.intercept('POST', '**/webshop/v1/travelcard').as('addTravelcard');
-        cy.intercept('DELETE', '**/webshop/v1/travelcard').as('removeTravelcard');
+        cy.intercept('DELETE', '**/webshop/v1/travelcard').as(
+            'removeTravelcard'
+        );
 
         //Pre
         menu.startPage().click();
@@ -102,7 +122,7 @@ describe('missing stored information scenarios', () => {
         //Remove
         menu.myProfile().click();
         verify.verifyHeader('h2', 'Min profil');
-        myprofile.removeTravelCard()
+        myprofile.removeTravelCard();
         cy.wait('@removeTravelcard');
         menu.startPage().click();
 
@@ -128,7 +148,6 @@ describe('missing stored information scenarios', () => {
                 'color-contrast': { enabled: false }
             }
         });
-        myprofile.cancel()
+        myprofile.cancel();
     });
-
-})
+});

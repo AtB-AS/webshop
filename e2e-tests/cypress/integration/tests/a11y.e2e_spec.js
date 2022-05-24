@@ -77,7 +77,9 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
                             cy.a11yCheck(null, null);
 
                             mytickets.showDetails($ticket);
-                            mytickets.ticketDetails($ticket).should('be.visible');
+                            mytickets
+                                .ticketDetails($ticket)
+                                .should('be.visible');
 
                             //Check for open ticket
                             cy.a11yCheck(null, null);
@@ -331,7 +333,8 @@ if (Cypress.isBrowser(['chrome', 'chromium', 'electron'])) {
             cy.a11yCheck(null, null);
         });
 
-        it('carnet ticket - summary', () => {
+        //TODO Disablet since carnet is temporarily removed from staging
+        xit('carnet ticket - summary', () => {
             cy.intercept('POST', '**/ticket/v1/search/zones').as('zones');
             cy.intercept('GET', '**/ticket/v2/recurring-payments').as('recurringPayments');
 

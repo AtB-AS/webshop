@@ -85,7 +85,7 @@ describe('ticket details', () => {
         const type = 'Klippekort (10 billetter)';
         const zones = 'Reise i 1 sone (Sone A)';
         const traveller = '1 Voksen';
-        const payment = 'Vipps';
+        const payment = 'Visa';
 
         verify.verifyHeader('h2', 'Mine billetter');
 
@@ -191,7 +191,7 @@ describe('ticket details', () => {
         const type = '7-dagersbillett';
         const zones = 'Reise i 3 soner (Sone A til C1)';
         const traveller = '1 Voksen';
-        const payment = 'Vipps';
+        const payment = 'Visa';
 
         verify.verifyHeader('h2', 'Mine billetter');
 
