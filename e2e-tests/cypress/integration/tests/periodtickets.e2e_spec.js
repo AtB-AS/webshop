@@ -203,7 +203,6 @@ describe('period ticket purchase', () => {
     });
 
     it('valid to date in summary should reflect the product', () => {
-        // 180
         products.set('180-dagersbillett');
         cy.wait('@zones');
         newTicket.goToSummary();

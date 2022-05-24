@@ -21,13 +21,13 @@
     "withBuyTicket": false,
     "buyTicketTimeout": 600000,
 
-    "futureTicketOrderId": "P3LRJ535",
-    "futureTicketStartDateEN": "2022-05-15",
-    "futureTicketStartDateNO": "15.05.2022",
-    "futureTicketEndDateEN": "2022-05-22",
-    "futureTicketEndDateNO": "22.05.2022",
-    "travelCardNo": "3445454533634685",
-    "travelCardAsDisplayed": "45 3363468",
+    "futureTicketOrderId": "S66RZE2L",
+    "futureTicketStartDateEN": "2022-08-16",
+    "futureTicketStartDateNO": "16.08.2022",
+    "futureTicketEndDateEN": "2022-08-23",
+    "futureTicketEndDateNO": "23.08.2022",
+    "travelCardNo": "1616006994850239",
+    "travelCardAsDisplayed": "69 9485023",
 
     "runOnGitHub": false
   }
