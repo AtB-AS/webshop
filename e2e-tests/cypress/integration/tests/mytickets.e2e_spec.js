@@ -43,7 +43,7 @@ describe('account information', () => {
     });
 
     it('registered travel card should be visible', () => {
-        mytickets.travelCard().should("contain", "69 3363471")
+        mytickets.travelCard().should("contain", "69 8903569")
     })
 
     function randomNumbers(number) {
@@ -78,14 +78,14 @@ describe('ticket details', () => {
 
     it('carnet ticket should be correct', () => {
         const order_id = 'R72EMYQA';
-        const validFrom = '20.08.2021 - ' + getValidHours(10) + ':50'
-        const validTo = '21.08.2022 - ' + getValidHours(10) + ':50'
+        const validFrom = '20.08.2021 - ' + getValidHours(11) + ':50'
+        const validTo = '21.08.2022 - ' + getValidHours(11) + ':50'
         const header1 = '10 klipp igjen'
         const header2 = 'Ingen aktive klipp'
         const type = 'Klippekort (10 billetter)';
         const zones = 'Reise i 1 sone (Sone A)';
         const traveller = '1 Voksen';
-        const payment = 'Visa';
+        const payment = 'Vipps';
 
         verify.verifyHeader('h2', 'Mine billetter');
 
@@ -453,7 +453,7 @@ describe('ticket details', () => {
     //Different timezone on the host running GH Actions
     function getValidHours(hours){
         if (Cypress.env('runOnGitHub')){
-            let hh = hours - 1
+            let hh = hours - 2
             if (hh < 10){ hh = '0' + hh}
             return hh
         }

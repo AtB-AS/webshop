@@ -126,7 +126,7 @@ describe('my profile', () => {
 
     it('should get a warning when removing the travel card', () => {
         myprofile.travelCard()
-            .should("contain", "69 3363471")
+            .should("contain", "69 8903569")
 
         myprofile.removeTravelCardButton().click()
         myprofile.removeTravelCardWarning()
@@ -134,7 +134,7 @@ describe('my profile', () => {
         myprofile.cancel()
 
         myprofile.travelCard()
-            .should("contain", "69 3363471")
+            .should("contain", "69 8903569")
     })
 
     it('should be able to change email consent', () => {
