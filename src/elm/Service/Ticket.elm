@@ -284,6 +284,9 @@ encodePaymentSelection paymentSelection =
 isScaExemption : PaymentSelection -> Bool
 isScaExemption paymentSelection =
     case paymentSelection of
+        Recurring _ ->
+            True
+
         _ ->
             False
 
