@@ -27,6 +27,7 @@ type ProductType
     = ProductTypePeriod
     | ProductTypeSingle
     | ProductTypeCarnet
+    | ProductTypeUnknown
 
 
 type DistributionChannel

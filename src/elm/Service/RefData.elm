@@ -39,18 +39,19 @@ productTypeDecoder : Decoder ProductType
 productTypeDecoder =
     Decode.andThen
         (\userType ->
-            case userType of
-                "period" ->
-                    Decode.succeed ProductTypePeriod
+            Decode.succeed <|
+                case userType of
+                    "period" ->
+                        ProductTypePeriod
 
-                "single" ->
-                    Decode.succeed ProductTypeSingle
+                    "single" ->
+                        ProductTypeSingle
 
-                "carnet" ->
-                    Decode.succeed ProductTypeCarnet
+                    "carnet" ->
+                        ProductTypeCarnet
 
-                _ ->
-                    Decode.fail "Invalid product type"
+                    _ ->
+                        ProductTypeUnknown
         )
         Decode.string
 

@@ -528,6 +528,9 @@ nameFromProductType productType =
         ProductTypeCarnet ->
             "Klippekort"
 
+        ProductTypeUnknown ->
+            "Ukjent"
+
 
 langString : LangString -> String
 langString (LangString _ value) =
