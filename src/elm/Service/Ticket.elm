@@ -284,7 +284,13 @@ encodePaymentSelection paymentSelection =
 isScaExemption : PaymentSelection -> Bool
 isScaExemption paymentSelection =
     case paymentSelection of
-        _ ->
+        Recurring _ ->
+            True
+
+        NonRecurring (Nets _) ->
+            True
+
+        NonRecurring Vipps ->
             False
 
 
