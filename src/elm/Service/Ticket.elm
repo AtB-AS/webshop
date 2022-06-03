@@ -287,7 +287,10 @@ isScaExemption paymentSelection =
         Recurring _ ->
             True
 
-        _ ->
+        NonRecurring (Nets _) ->
+            True
+
+        NonRecurring Vipps ->
             False
 
 
